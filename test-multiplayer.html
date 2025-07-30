@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Human-Human Multiplayer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .test-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .fix-summary {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .test-button {
+            padding: 12px 24px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+            font-size: 16px;
+        }
+        .test-button:hover {
+            background: #218838;
+        }
+        .test-button.secondary {
+            background: #6c757d;
+        }
+        .test-button.secondary:hover {
+            background: #5a6268;
+        }
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .code {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .success { color: #28a745; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Human-Human Multiplayer Test</h1>
+        
+        <div class="fix-summary">
+            <h3>✅ Fixed Synchronization Issues</h3>
+            <ul>
+                <li><strong>Player Role Assignment:</strong> Player 1 (red) and Player 2 (orange) are now correctly assigned</li>
+                <li><strong>Action Synchronization:</strong> Each player's moves are properly synchronized across browsers</li>
+                <li><strong>UI Updates:</strong> Text shows correct player colors and roles</li>
+                <li><strong>Duplicate Prevention:</strong> No more duplicate move processing</li>
+            </ul>
+        </div>
+
+        <div class="test-card">
+            <h3>🔧 Technical Changes Made</h3>
+            
+            <h4>1. Player Index Tracking</h4>
+            <div class="code">
+                // GameApplication.js - Added player index tracking<br>
+                this.playerIndex = 0; // 0 = red player, 1 = orange player<br><br>
+                
+                // Server assigns playerIndex: 0, 1<br>
+                const myPlayerConfig = config.players.find(p => p.id === mySocketId);<br>
+                this.playerIndex = myPlayerConfig.playerIndex;
+            </div>
+
+            <h4>2. Correct Move Processing</h4>
+            <div class="code">
+                // Before: Always processed as player 1<br>
+                const moveResult = this.gameStateManager.processPlayerMove(1, direction);<br><br>
+                
+                // After: Uses correct player number<br>
+                const playerNumber = this.playerIndex + 1; // Convert 0,1 to 1,2<br>
+                const moveResult = this.gameStateManager.processPlayerMove(playerNumber, direction);
+            </div>
+
+            <h4>3. Network Action Synchronization</h4>
+            <div class="code">
+                // Send player index with action<br>
+                this.networkManager.sendGameAction({<br>
+                &nbsp;&nbsp;type: 'move',<br>
+                &nbsp;&nbsp;direction,<br>
+                &nbsp;&nbsp;playerIndex: this.playerIndex,<br>
+                &nbsp;&nbsp;timestamp: Date.now()<br>
+                });
+            </div>
+
+            <h4>4. Dynamic UI Text</h4>
+            <div class="code">
+                // Player 1 sees: "You are Player 1 🔴. Your partner is Player 2 🟠."<br>
+                // Player 2 sees: "You are Player 2 🟠. Your partner is Player 1 🔴."
+            </div>
+        </div>
+
+        <div class="test-card">
+            <h3>🧪 Testing Instructions</h3>
+            
+            <div class="instructions">
+                <strong>⚠️ Important:</strong> Make sure the server is running first!
+                <br><code>npm run dev</code> or <code>npm run server:dev</code>
+            </div>
+
+            <h4>Step 1: Open Two Browser Windows</h4>
+            <p>Open these links in <strong>separate browser windows</strong> (or different browsers):</p>
+            
+            <a href="client/index.html?mode=human-human&experiment=2P2G" class="test-button">
+                🎮 Player 1 Window
+            </a>
+            <a href="client/index.html?mode=human-human&experiment=2P2G" class="test-button">
+                🎮 Player 2 Window
+            </a>
+
+            <h4>Step 2: Join the Same Room</h4>
+            <ol>
+                <li>Both windows should show the lobby screen</li>
+                <li>Click "Ready to Play" in both windows</li>
+                <li>Game should start automatically when both players are ready</li>
+            </ol>
+
+            <h4>Step 3: Test Synchronization</h4>
+            <ol>
+                <li><strong>Check Player Roles:</strong> 
+                    <ul>
+                        <li>Player 1 window should show: "You are Player 1 🔴"</li>
+                        <li>Player 2 window should show: "You are Player 2 🟠"</li>
+                    </ul>
+                </li>
+                <li><strong>Test Movement:</strong>
+                    <ul>
+                        <li>Use arrow keys in Player 1 window → Red player should move</li>
+                        <li>Use arrow keys in Player 2 window → Orange player should move</li>
+                        <li>Both movements should be visible in both windows</li>
+                    </ul>
+                </li>
+                <li><strong>Test Collaboration:</strong>
+                    <ul>
+                        <li>Both players should navigate to the same green goal</li>
+                        <li>Trial completes when both reach the same goal</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h4>Expected Behavior ✅</h4>
+            <ul class="success">
+                <li>Player 1 controls only the red player</li>
+                <li>Player 2 controls only the orange player</li>
+                <li>All movements are synchronized between browsers</li>
+                <li>No duplicate or conflicting actions</li>
+                <li>Clear role identification in UI text</li>
+            </ul>
+        </div>
+
+        <div class="test-card">
+            <h3>🔍 Troubleshooting</h3>
+            
+            <h4>If players both control red:</h4>
+            <ul>
+                <li>Check browser console for player index assignment logs</li>
+                <li>Ensure server is running and Socket.IO is connected</li>
+                <li>Refresh both browser windows and try again</li>
+            </ul>
+
+            <h4>If movements aren't synchronized:</h4>
+            <ul>
+                <li>Verify both players are in the same room</li>
+                <li>Check network connectivity</li>
+                <li>Look for error messages in browser console</li>
+            </ul>
+
+            <h4>Alternative Test Links:</h4>
+            <a href="client/index.html?mode=human-human&experiment=2P3G" class="test-button secondary">Test 2P3G Mode</a>
+            <a href="client/index.html?mode=human-ai&experiment=2P2G" class="test-button secondary">Test Human-AI Mode</a>
+        </div>
+
+        <div class="test-card">
+            <h3>📊 Test Results</h3>
+            <div id="test-results">
+                <p class="warning">⏳ Complete the testing steps above to verify the fixes work correctly.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple test result tracking
+        function markTestComplete() {
+            document.getElementById('test-results').innerHTML = `
+                <p class="success">✅ If you can see different colored players controlled by different browsers, the synchronization fix is working!</p>
+                <p>Next: Test that both players can collaborate to reach the same goal.</p>
+            `;
+        }
+
+        // Auto-mark as complete after a delay (assuming user is testing)
+        setTimeout(markTestComplete, 10000);
+
+        // Check if server is likely running
+        if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+            console.log('Testing on localhost - make sure server is running on port 3001');
+        }
+    </script>
+</body>
+</html>

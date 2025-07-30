@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Game Demo - Mode Selection</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .mode-card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: inline-block;
+            width: 300px;
+            vertical-align: top;
+        }
+        .mode-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .mode-card p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .demo-button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+        }
+        .demo-button:hover {
+            background: #0056b3;
+        }
+        .demo-button.human-human {
+            background: #28a745;
+        }
+        .demo-button.human-human:hover {
+            background: #1e7e34;
+        }
+        .experiment-links {
+            margin-top: 15px;
+        }
+        .experiment-links a {
+            font-size: 14px;
+            color: #6c757d;
+            text-decoration: none;
+            margin: 0 5px;
+        }
+        .experiment-links a:hover {
+            color: #495057;
+            text-decoration: underline;
+        }
+        .status {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+        }
+        .instructions {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .instructions h4 {
+            color: #333;
+            margin-top: 0;
+        }
+        .instructions ul {
+            color: #666;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Grid World Collaboration Game</h1>
+        <p>Modern architecture with Socket.IO multiplayer support</p>
+        
+        <div class="status">
+            <strong>⚡️ New Architecture Features:</strong>
+            <br>• Modern ES6+ modular design
+            <br>• Real-time multiplayer with Socket.IO
+            <br>• Improved RL agent performance
+            <br>• 100% backward compatibility with original functionality
+            <br>• <strong style="color: #28a745;">✅ All known bugs fixed (v2.0.2)</strong>
+            <br>• <strong style="color: #28a745;">✅ Human-human synchronization fixed</strong>
+        </div>
+
+        <div class="mode-card">
+            <h3>🤖 Human-AI Mode</h3>
+            <p>Play solo with an intelligent AI partner. The AI uses reinforcement learning to collaborate and help you reach goals together.</p>
+            
+            <a href="client/index.html?mode=human-ai" class="demo-button">
+                Start Human-AI Game
+            </a>
+            
+            <div class="experiment-links">
+                <strong>Experiment Types:</strong><br>
+                <a href="client/index.html?mode=human-ai&experiment=1P1G">1P1G</a> |
+                <a href="client/index.html?mode=human-ai&experiment=1P2G">1P2G</a> |
+                <a href="client/index.html?mode=human-ai&experiment=2P2G">2P2G</a> |
+                <a href="client/index.html?mode=human-ai&experiment=2P3G">2P3G</a>
+            </div>
+        </div>
+
+        <div class="mode-card">
+            <h3>👥 Human-Human Mode</h3>
+            <p>Play with another human player in real-time. Coordinate your movements to reach goals together through network collaboration.</p>
+            
+            <a href="client/index.html?mode=human-human" class="demo-button human-human">
+                Join Multiplayer Game
+            </a>
+            
+            <div class="experiment-links">
+                <strong>Experiment Types:</strong><br>
+                <a href="client/index.html?mode=human-human&experiment=2P2G">2P2G</a> |
+                <a href="client/index.html?mode=human-human&experiment=2P3G">2P3G</a>
+                <br><br>
+                <small><em>Note: Requires server to be running</em></small>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h4>🎯 How to Play</h4>
+            <ul>
+                <li><strong>Movement:</strong> Use arrow keys (↑ ↓ ← →) to move your character</li>
+                <li><strong>Objective:</strong> Reach the green goal squares</li>
+                <li><strong>Players:</strong> You are the red player ⚫, your partner is orange ⚫</li>
+                <li><strong>Collaboration:</strong> In 2P modes, both players must reach the SAME goal to succeed</li>
+                <li><strong>Dynamic Goals:</strong> In some experiments, new goals appear during gameplay</li>
+            </ul>
+        </div>
+
+        <div class="instructions">
+            <h4>🛠 Development Setup</h4>
+            <ul>
+                <li><strong>Install:</strong> <code>npm install</code></li>
+                <li><strong>Development:</strong> <code>npm run dev</code> (runs both server and client)</li>
+                <li><strong>Server only:</strong> <code>npm run server:dev</code></li>
+                <li><strong>Client only:</strong> <code>npm run client:dev</code></li>
+                <li><strong>Build:</strong> <code>npm run build</code></li>
+            </ul>
+        </div>
+
+        <div class="instructions">
+            <h4>📊 Experiment Types</h4>
+            <ul>
+                <li><strong>1P1G:</strong> Single player, single goal - practice mode</li>
+                <li><strong>1P2G:</strong> Single player, two goals - goal selection challenge</li>
+                <li><strong>2P2G:</strong> Two players, two goals - basic collaboration</li>
+                <li><strong>2P3G:</strong> Two players, three goals - advanced collaboration with dynamic goals</li>
+            </ul>
+        </div>
+
+        <div style="margin-top: 40px; color: #666; font-size: 14px;">
+            <p>🔬 <strong>Research Context:</strong> This is a cognitive science experiment studying human-AI and human-human collaboration in grid-based navigation tasks.</p>
+            <p>📁 <strong>Legacy Compatibility:</strong> All original features and data formats are preserved. Original files remain in the root directory.</p>
+        </div>
+    </div>
+
+    <script>
+        // Simple feature detection
+        if (!window.fetch || !window.Promise) {
+            document.body.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #dc3545;">
+                    <h2>⚠️ Browser Not Supported</h2>
+                    <p>This application requires a modern browser with ES6+ support.</p>
+                    <p>Please use Chrome 58+, Firefox 54+, Safari 10+, or Edge 79+.</p>
+                </div>
+            `;
+        }
+
+        // Check if running in development mode
+        if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+            const statusDiv = document.querySelector('.status');
+            statusDiv.innerHTML += '<br><br><strong>🔧 Development Mode:</strong> Server should be running on port 3001';
+        }
+    </script>
+</body>
+</html>

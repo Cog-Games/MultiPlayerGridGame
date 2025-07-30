@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Bug Fixes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .fix-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .code { 
+            background: #f8f9fa; 
+            padding: 10px; 
+            border-radius: 4px; 
+            font-family: monospace; 
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Bug Fix Verification</h1>
+        
+        <div class="fix-card">
+            <h3>✅ Fix 1: Human-AI startExperiment Function</h3>
+            <p><strong>Issue:</strong> <code>this.experimentManager.startExperiment is not a function</code></p>
+            <p><strong>Fix:</strong> Added missing <code>startExperiment</code> method to ExperimentManager</p>
+            <div class="code">
+                async startExperiment(experimentType) {<br>
+                &nbsp;&nbsp;await this.startExperimentSequence([experimentType]);<br>
+                }
+            </div>
+            <button class="test-button" onclick="testFix1()">Test Fix 1</button>
+            <div id="fix1-result"></div>
+        </div>
+
+        <div class="fix-card">
+            <h3>✅ Fix 2: NetworkManager isConnected Property</h3>
+            <p><strong>Issue:</strong> <code>this.networkManager.isConnected is not a function</code></p>
+            <p><strong>Fix:</strong> Changed from <code>isConnected()</code> to <code>isConnected</code> property access</p>
+            <div class="code">
+                // Before: this.networkManager.isConnected()<br>
+                // After:  this.networkManager.isConnected
+            </div>
+            <button class="test-button" onclick="testFix2()">Test Fix 2</button>
+            <div id="fix2-result"></div>
+        </div>
+
+        <div class="fix-card">
+            <h3>✅ Fix 3: Null RLAgent Error Protection</h3>
+            <p><strong>Issue:</strong> <code>Cannot read properties of null (reading 'getAIAction')</code></p>
+            <p><strong>Fix:</strong> Added null checks for rlAgent in human-human mode</p>
+            <div class="code">
+                if (!gameState.player2 || !gameState.currentGoals || !this.rlAgent) return;
+            </div>
+            <button class="test-button" onclick="testFix3()">Test Fix 3</button>
+            <div id="fix3-result"></div>
+        </div>
+
+        <div class="fix-card">
+            <h3>🎮 Mode Testing</h3>
+            <p>Test both game modes with the fixes applied:</p>
+            <a href="client/index.html?mode=human-ai" class="test-button">Test Human-AI Mode</a>
+            <a href="client/index.html?mode=human-human" class="test-button">Test Human-Human Mode</a>
+        </div>
+
+        <div class="fix-card">
+            <h3>📊 Test Results Summary</h3>
+            <div id="overall-results">
+                Click the test buttons above to verify each fix.
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { GameApplication } from './client/src/core/GameApplication.js';
+        import { ExperimentManager } from './client/src/experiments/ExperimentManager.js';
+        import { NetworkManager } from './client/src/network/NetworkManager.js';
+        import { GameStateManager } from './client/src/game/GameStateManager.js';
+        import { UIManager } from './client/src/ui/UIManager.js';
+
+        let testResults = {
+            fix1: false,
+            fix2: false,
+            fix3: false
+        };
+
+        // Test Fix 1: startExperiment method exists
+        window.testFix1 = function() {
+            const resultDiv = document.getElementById('fix1-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const gameStateManager = new GameStateManager();
+                const uiManager = new UIManager(document.createElement('div'));
+                const experimentManager = new ExperimentManager(gameStateManager, uiManager);
+                
+                if (typeof experimentManager.startExperiment === 'function') {
+                    resultDiv.innerHTML = '<p class="success">✅ PASSED: startExperiment method exists</p>';
+                    testResults.fix1 = true;
+                } else {
+                    resultDiv.innerHTML = '<p class="error">❌ FAILED: startExperiment method not found</p>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ FAILED: ${error.message}</p>`;
+            }
+            
+            updateOverallResults();
+        };
+
+        // Test Fix 2: isConnected property access
+        window.testFix2 = function() {
+            const resultDiv = document.getElementById('fix2-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const networkManager = new NetworkManager();
+                
+                // Check that isConnected is a boolean property, not a function
+                if (typeof networkManager.isConnected === 'boolean') {
+                    resultDiv.innerHTML = '<p class="success">✅ PASSED: isConnected is a boolean property</p>';
+                    testResults.fix2 = true;
+                } else if (typeof networkManager.isConnected === 'function') {
+                    resultDiv.innerHTML = '<p class="error">❌ FAILED: isConnected is still a function</p>';
+                } else {
+                    resultDiv.innerHTML = '<p class="error">❌ FAILED: isConnected property not found</p>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ FAILED: ${error.message}</p>`;
+            }
+            
+            updateOverallResults();
+        };
+
+        // Test Fix 3: Null rlAgent protection
+        window.testFix3 = function() {
+            const resultDiv = document.getElementById('fix3-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const gameStateManager = new GameStateManager();
+                const uiManager = new UIManager(document.createElement('div'));
+                const experimentManager = new ExperimentManager(gameStateManager, uiManager);
+                
+                // Simulate human-human mode by setting rlAgent to null
+                experimentManager.rlAgent = null;
+                
+                // Try to call makeAIMove - should not throw error
+                experimentManager.makeAIMove();
+                
+                resultDiv.innerHTML = '<p class="success">✅ PASSED: makeAIMove handles null rlAgent gracefully</p>';
+                testResults.fix3 = true;
+            } catch (error) {
+                if (error.message.includes('getAIAction')) {
+                    resultDiv.innerHTML = '<p class="error">❌ FAILED: Still trying to call getAIAction on null rlAgent</p>';
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ FAILED: ${error.message}</p>`;
+                }
+            }
+            
+            updateOverallResults();
+        };
+
+        function updateOverallResults() {
+            const resultsDiv = document.getElementById('overall-results');
+            const passedCount = Object.values(testResults).filter(Boolean).length;
+            const totalCount = Object.keys(testResults).length;
+            
+            let html = `<h4>Overall: ${passedCount}/${totalCount} fixes verified</h4><ul>`;
+            html += `<li>Fix 1 (startExperiment): ${testResults.fix1 ? '✅ PASSED' : '❌ PENDING'}</li>`;
+            html += `<li>Fix 2 (isConnected): ${testResults.fix2 ? '✅ PASSED' : '❌ PENDING'}</li>`;
+            html += `<li>Fix 3 (null rlAgent): ${testResults.fix3 ? '✅ PASSED' : '❌ PENDING'}</li>`;
+            html += '</ul>';
+            
+            if (passedCount === totalCount) {
+                html += '<p class="success"><strong>🎉 All fixes verified! Ready for production.</strong></p>';
+            }
+            
+            resultsDiv.innerHTML = html;
+        }
+
+        // Auto-run tests after a short delay
+        setTimeout(() => {
+            console.log('Auto-running fix verification tests...');
+            testFix1();
+            setTimeout(testFix2, 100);
+            setTimeout(testFix3, 200);
+        }, 1000);
+    </script>
+</body>
+</html>
