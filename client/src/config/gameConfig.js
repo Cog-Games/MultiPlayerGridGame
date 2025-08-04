@@ -1,8 +1,20 @@
 // Modern configuration system combining all original configs
+
+// Helper function to safely get environment variables
+const getEnvVar = (key, defaultValue) => {
+  try {
+    return import.meta.env?.[key] || defaultValue;
+  } catch (error) {
+    // Fallback for when import.meta.env is not available (e.g., direct HTML loading)
+    console.warn(`Environment variable ${key} not available, using default: ${defaultValue}`);
+    return defaultValue;
+  }
+};
+
 export const CONFIG = {
   // Server configuration
   server: {
-    url: import.meta.env.VITE_SERVER_URL || 'http://localhost:3001',
+    url: getEnvVar('VITE_SERVER_URL', 'http://localhost:3001'),
     reconnectAttempts: 3,
     reconnectDelay: 1000
   },
@@ -13,7 +25,7 @@ export const CONFIG = {
     version: '2.0.0',
     matrixSize: 15,
     maxGameLength: 50,
-    
+
     // Player configuration
     players: {
       player1: {
@@ -22,7 +34,7 @@ export const CONFIG = {
         description: 'Human player (you)'
       },
       player2: {
-        type: 'ai', // Can be 'ai' or 'human'
+        type: 'human', // Can be 'ai' or 'human'
         color: 'orange',
         description: 'AI agent or human partner'
       }
@@ -31,11 +43,14 @@ export const CONFIG = {
     // Experiment configuration
     experiments: {
       order: ['2P2G', '2P3G'], // Default experiment order
+      // order: ['2P3G'], // Default experiment order
+      // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Default experiment order
+
       numTrials: {
         '1P1G': 3,
         '1P2G': 12,
-        '2P2G': 12,
-        '2P3G': 12
+        '2P2G': 2,
+        '2P3G': 2
       }
     },
 
@@ -68,8 +83,9 @@ export const CONFIG = {
 
   // Visual settings
   visual: {
-    canvasSize: 600,
+    canvasSize: 632, // (cellSize + padding) * matrixSize + padding = (40 + 2) * 15 + 2 = 632
     cellSize: 40,
+    padding: 2,
     colors: {
       background: '#ffffff',
       grid: '#cccccc',

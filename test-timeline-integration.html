@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timeline Integration Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+        }
+        
+        .test-controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            max-width: 300px;
+        }
+        
+        .test-controls h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+        }
+        
+        .test-controls button {
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .test-controls button:hover {
+            background: #0056b3;
+        }
+        
+        .test-controls button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin: 10px 0;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        #app {
+            min-height: 100vh;
+        }
+        
+        .timeline-debug {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-width: 400px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .timeline-debug h4 {
+            margin: 0 0 10px 0;
+            color: #fff;
+        }
+        
+        .debug-log {
+            margin: 2px 0;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    
+    <!-- Test Controls -->
+    <div class="test-controls">
+        <h3>🧪 Timeline Test Controls</h3>
+        
+        <button id="startTimelineBtn">Start Full Timeline</button>
+        <button id="startHumanAIBtn">Start Human-AI Mode</button>
+        <button id="skipToGameBtn" disabled>Skip to Game</button>
+        <button id="simulateTrialBtn" disabled>Simulate Trial Complete</button>
+        <button id="resetBtn">Reset Test</button>
+        
+        <div id="status" class="status info">
+            Ready to test timeline integration
+        </div>
+        
+        <div style="margin-top: 15px;">
+            <strong>Test Modes:</strong><br>
+            <label style="display: block; margin: 5px 0;">
+                <input type="radio" name="testMode" value="full-timeline" checked> Full Timeline Flow
+            </label>
+            <label style="display: block; margin: 5px 0;">
+                <input type="radio" name="testMode" value="experiment-only"> Experiment Manager Only
+            </label>
+        </div>
+    </div>
+    
+    <!-- Debug Console -->
+    <div class="timeline-debug">
+        <h4>📋 Timeline Debug Log</h4>
+        <div id="debugLog"></div>
+    </div>
+
+    <script type="module">
+        import { TimelineManager } from './client/src/timeline/TimelineManager.js';
+        import { GameStateManager } from './client/src/game/GameStateManager.js';
+        import { UIManager } from './client/src/ui/UIManager.js';
+        import { ExperimentManager } from './client/src/experiments/ExperimentManager.js';
+        import { CONFIG } from './client/src/config/gameConfig.js';
+
+        // Test application class
+        class TimelineTestApp {
+            constructor() {
+                this.container = document.getElementById('app');
+                this.debugLog = document.getElementById('debugLog');
+                this.status = document.getElementById('status');
+                
+                this.timelineManager = null;
+                this.gameStateManager = null;
+                this.uiManager = null;
+                this.experimentManager = null;
+                
+                this.setupEventHandlers();
+                this.log('Timeline Test App initialized');
+            }
+            
+            log(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = document.createElement('div');
+                logEntry.className = 'debug-log';
+                logEntry.innerHTML = `[${timestamp}] ${message}`;
+                this.debugLog.appendChild(logEntry);
+                this.debugLog.scrollTop = this.debugLog.scrollHeight;
+                
+                console.log(`[Timeline Test] ${message}`);
+                
+                // Update status
+                this.updateStatus(message, type);
+            }
+            
+            updateStatus(message, type = 'info') {
+                this.status.className = `status ${type}`;
+                this.status.textContent = message;
+            }
+            
+            setupEventHandlers() {
+                document.getElementById('startTimelineBtn').onclick = () => this.startTimelineFlow();
+                document.getElementById('startHumanAIBtn').onclick = () => this.startHumanAIMode();
+                document.getElementById('skipToGameBtn').onclick = () => this.skipToGame();
+                document.getElementById('simulateTrialBtn').onclick = () => this.simulateTrialComplete();
+                document.getElementById('resetBtn').onclick = () => this.reset();
+            }
+            
+            async startTimelineFlow() {
+                try {
+                    this.log('🚀 Starting full timeline flow...', 'info');
+                    
+                    // Initialize managers
+                    this.gameStateManager = new GameStateManager();
+                    this.uiManager = new UIManager(this.container);
+                    this.timelineManager = new TimelineManager(this.container);
+                    
+                    // Create experiment manager with timeline integration
+                    this.experimentManager = new ExperimentManager(
+                        this.gameStateManager, 
+                        this.uiManager,
+                        this.timelineManager
+                    );
+                    
+                    // Set up timeline event monitoring
+                    this.setupTimelineEventMonitoring();
+                    
+                    // Start the full timeline
+                    this.timelineManager.start();
+                    
+                    this.log('✅ Timeline flow started successfully', 'success');
+                    this.enableGameControls();
+                    
+                } catch (error) {
+                    this.log(`❌ Error starting timeline: ${error.message}`, 'error');
+                    console.error('Timeline start error:', error);
+                }
+            }
+            
+            async startHumanAIMode() {
+                try {
+                    this.log('🎮 Starting Human-AI mode (experiment manager only)...', 'info');
+                    
+                    // Initialize managers without timeline
+                    this.gameStateManager = new GameStateManager();
+                    this.uiManager = new UIManager(this.container);
+                    this.experimentManager = new ExperimentManager(this.gameStateManager, this.uiManager);
+                    
+                    // Configure for human-AI mode
+                    CONFIG.game.players.player2.type = 'ai';
+                    this.uiManager.setPlayerInfo(0, 'human-ai');
+                    this.uiManager.showMainScreen();
+                    
+                    // Start experiment sequence
+                    await this.experimentManager.startExperimentSequence(['1P1G', '2P2G']);
+                    
+                    this.log('✅ Human-AI mode started successfully', 'success');
+                    this.enableGameControls();
+                    
+                } catch (error) {
+                    this.log(`❌ Error starting Human-AI mode: ${error.message}`, 'error');
+                    console.error('Human-AI start error:', error);
+                }
+            }
+            
+            setupTimelineEventMonitoring() {
+                if (!this.timelineManager) return;
+                
+                // Monitor all timeline events
+                const events = [
+                    'show-fixation', 'start-trial', 'show-trial-feedback',
+                    'waiting-for-partner', 'partner-connected', 'all-players-ready',
+                    'save-data'
+                ];
+                
+                events.forEach(eventName => {
+                    this.timelineManager.on(eventName, (data) => {
+                        this.log(`📡 Timeline event: ${eventName}`, 'info');
+                        if (data) {
+                            console.log(`Event data:`, data);
+                        }
+                    });
+                });
+                
+                this.log('📡 Timeline event monitoring enabled', 'info');
+            }
+            
+            skipToGame() {
+                if (this.timelineManager) {
+                    // Find and jump to first trial stage
+                    const trialStageIndex = this.timelineManager.stages.findIndex(stage => stage.type === 'trial');
+                    if (trialStageIndex >= 0) {
+                        this.timelineManager.currentStageIndex = trialStageIndex;
+                        this.timelineManager.runCurrentStage();
+                        this.log(`⏭️ Skipped to trial stage (${trialStageIndex})`, 'success');
+                    } else {
+                        this.log('❌ No trial stage found to skip to', 'error');
+                    }
+                }
+            }
+            
+            simulateTrialComplete() {
+                if (this.experimentManager) {
+                    const mockResult = {
+                        success: Math.random() > 0.5,
+                        trialComplete: true,
+                        completionTime: Date.now(),
+                        moves: Math.floor(Math.random() * 20) + 5
+                    };
+                    
+                    this.experimentManager.handleTrialComplete(mockResult);
+                    this.log(`🎯 Simulated trial completion: ${mockResult.success ? 'SUCCESS' : 'FAILURE'}`, 'success');
+                }
+            }
+            
+            enableGameControls() {
+                document.getElementById('skipToGameBtn').disabled = false;
+                document.getElementById('simulateTrialBtn').disabled = false;
+            }
+            
+            reset() {
+                this.log('🔄 Resetting test application...', 'info');
+                
+                // Cleanup
+                if (this.experimentManager) {
+                    this.experimentManager.restart();
+                }
+                
+                // Clear references
+                this.timelineManager = null;
+                this.gameStateManager = null;
+                this.uiManager = null;
+                this.experimentManager = null;
+                
+                // Reset UI
+                this.container.innerHTML = '';
+                this.debugLog.innerHTML = '';
+                
+                // Disable controls
+                document.getElementById('skipToGameBtn').disabled = true;
+                document.getElementById('simulateTrialBtn').disabled = true;
+                
+                this.log('✅ Reset complete - ready for new test', 'success');
+            }
+        }
+
+        // Initialize test app when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            window.timelineTestApp = new TimelineTestApp();
+        });
+    </script>
+</body>
+</html>

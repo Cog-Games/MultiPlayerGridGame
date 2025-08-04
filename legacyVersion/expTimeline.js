@@ -101,14 +101,6 @@ function createTimelineStages() {
         handler: showProlificRedirectStage
     });
 
-    // Add completion stage (only once at the end)
-    // timeline.stages.push({
-    //     type: 'complete',
-    //     handler: showCompletionStage
-    // });
-
-    // console.log(`Timeline created with ${timeline.stages.length} total stages`);
-    // console.log('Timeline stages:', timeline.stages.map((stage, index) => `${index}: ${stage.type}`).join(', '));
 
 }
 
@@ -279,35 +271,7 @@ function showWelcomeInfoStage(stage) {
     document.body.focus();
 }
 
-/**
- * Show welcome stage (matching jsPsych)
- */
-function showWelcomeStage(stage) {
-    var container = document.getElementById('container');
-    var experimentType = stage.experimentType;
 
-    var welcomeMessage = getWelcomeMessage(experimentType);
-
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="text-align: center;">
-                ${welcomeMessage}
-            </div>
-        </div>
-    `;
-
-    // Handle spacebar or any key to continue
-    function handleKeyPress(event) {
-        if (event.code === 'Space' || event.key === ' ') {
-            event.preventDefault();
-            document.removeEventListener('keydown', handleKeyPress);
-            nextStage();
-        }
-    }
-
-    document.addEventListener('keydown', handleKeyPress);
-    document.body.focus();
-}
 
 /**
  * Show instructions stage
@@ -350,40 +314,7 @@ function showInstructionsStage(stage) {
     document.body.focus();
 }
 
-/**
- * Show pre-trial stage (show map without spacebar prompt)
- */
-function showPreTrialStage(stage) {
-    var container = document.getElementById('container');
-    var trialIndex = stage.trialIndex;
-    var experimentType = stage.experimentType;
-    var experimentIndex = stage.experimentIndex;
-    var currentDesign = timeline.mapData[experimentType][trialIndex];
 
-    // Setup grid matrix for display
-    setupGridMatrixForTrial(currentDesign, experimentType);
-
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="text-align: center;">
-                <h3 style="margin-bottom: 10px;">Game ${experimentIndex + 1}</h3>
-                <h4 style="margin-bottom: 20px;">Round ${trialIndex + 1} of ${NODEGAME_CONFIG.numTrials[experimentType]}</h4>
-                <div id="gameCanvas" style="margin-bottom: 20px;"></div>
-                <p style="font-size: 20px;">You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: red; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
-            </div>
-        </div>
-    `;
-
-    // Create and draw canvas
-    var canvas = nodeGameCreateGameCanvas();
-    document.getElementById('gameCanvas').appendChild(canvas);
-    nodeGameUpdateGameDisplay();
-
-    // Auto-advance after configurable duration
-    setTimeout(() => {
-        nextStage();
-    }, NODEGAME_CONFIG.timing.preTrialDisplayDuration);
-}
 
 /**
  * Show fixation stage (configurable duration)
@@ -438,51 +369,7 @@ function showFixationStage(stage) {
 }
 
 
-/**
- * Show wait message during AI turns (matching jsPsych)
- */
-function showWaitMessage() {
-    // Remove any existing wait message
-    var existingMsg = document.getElementById('waitMessageBelowGrid');
-    if (existingMsg) {
-        existingMsg.remove();
-    }
 
-    // Find the game canvas
-    var canvas = document.querySelector('canvas');
-    if (canvas) {
-        // Redraw grid as usual
-        nodeGameUpdateGameDisplay();
-
-        // Insert wait message below the grid
-        var waitMsg = document.createElement('div');
-        waitMsg.id = 'waitMessageBelowGrid';
-        waitMsg.style.cssText = `
-            margin-top: 20px;
-            text-align: center;
-            font-size: 20px;
-            color: #333;
-            background: rgba(255,255,255,0.95);
-            border: 1px solid #007bff;
-            border-radius: 8px;
-            padding: 12px 24px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        `;
-        waitMsg.textContent = 'Please wait for the other player to reach the goal';
-
-        // Try to insert after the canvas
-        if (canvas.parentNode) {
-            // Insert after canvas
-            if (canvas.nextSibling) {
-                canvas.parentNode.insertBefore(waitMsg, canvas.nextSibling);
-            } else {
-                canvas.parentNode.appendChild(waitMsg);
-            }
-        }
-    }
-}
 
 
 /**
@@ -1682,85 +1569,8 @@ function updateWaitingStatus(message) {
     }
 }
 
-/**
- * Show connection lost message and provide reconnection option
- */
-function showConnectionLostMessage() {
-    const messagesEl = document.getElementById('trialMessages');
-    if (messagesEl) {
-        messagesEl.innerHTML = `
-            <div style="color: #dc3545; padding: 10px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px;">
-                <strong>Connection Lost</strong><br>
-                Your connection to the server has been lost.
-                <div style="margin-top: 10px;">
-                    <button onclick="attemptReconnection()" style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 10px;">
-                        Reconnect
-                    </button>
-                    <button onclick="location.reload()" style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
-                        Refresh Page
-                    </button>
-                </div>
-            </div>
-        `;
-    } else {
-        // Fallback if trialMessages element doesn't exist
-        console.warn('Connection lost but no trialMessages element found');
-        if (confirm('Connection lost. Would you like to reconnect?')) {
-            attemptReconnection();
-        }
-    }
-}
-/**
- * Show "Game is ready" message and wait for space bar to start
- */
-function showGameReadyMessage() {
-    const container = document.getElementById('container');
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="max-width: 600px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
-                <h1 style="color: #28a745; margin-bottom: 30px;">✅ Game is Ready!</h1>
 
-                <div style="margin: 40px 0;">
-                    <div style="width: 80px; height: 80px; background-color: #28a745; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="white"/>
-                        </svg>
-                    </div>
-                </div>
 
-                <div style="font-size: 20px; color: #333; margin-bottom: 20px;">
-                    <p><strong>Partner found and connection established!</strong></p>
-                    <p>The game is ready to begin.</p>
-                </div>
-
-                <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-                    <p style="margin: 0; font-size: 16px; color: #155724;">
-                        <strong>Press the space bar to start the game.</strong>
-                    </p>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Add event listener for space bar to continue
-    function handleSpacebar(event) {
-        if (event.code === 'Space' || event.key === ' ') {
-            event.preventDefault();
-            document.removeEventListener('keydown', handleSpacebar);
-
-            // Send player_ready event to server
-            if (socket) {
-                console.log('Sending player_ready event from showGameReadyMessage');
-                socket.emit('player_ready', {});
-            }
-
-            proceedToNextStage();
-        }
-    }
-
-    document.addEventListener('keydown', handleSpacebar);
-    document.body.focus();
-}
 
 // =================================================================================================
 // MAKE FUNCTIONS GLOBALLY AVAILABLE FOR NON-MODULE SCRIPTS
@@ -1770,15 +1580,13 @@ function showGameReadyMessage() {
 window.createTimelineStages = createTimelineStages;
 
 // Make other important functions available globally
-window.showCompletionStage = showCompletionStage;
 window.showQuestionnaireStage = showQuestionnaireStage;
 window.showGameFeedbackStage = showGameFeedbackStage;
 window.showEndExperimentInfoStage = showEndExperimentInfoStage;
 window.showProlificRedirectStage = showProlificRedirectStage;
 window.showWaitingForPartnerStage = showWaitingForPartnerStage;
 window.updateWaitingStatus = updateWaitingStatus;
-window.showGameReadyMessage = showGameReadyMessage;
-window.showConnectionLostMessage = showConnectionLostMessage;
+
 window.exportExperimentData = exportExperimentData;
 
 // Make timeline navigation functions available globally

@@ -134,19 +134,10 @@ export class UIManager {
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
         <div style="text-align: center;">
-          <div id="game-header" style="margin-bottom: 20px;">
-            <h3 id="game-title">Game</h3>
-            <h4 id="trial-info">Round 1</h4>
-          </div>
-          <div id="game-canvas-container" style="margin-bottom: 20px;">
-            <!-- Canvas will be inserted here -->
-          </div>
-          <div id="game-instructions" style="font-size: 20px;">
-            <!-- Instructions will be set by updateGameInstructions method -->
-          </div>
-          <div id="game-status" style="margin-top: 20px; min-height: 30px;">
-            <!-- Status messages will appear here -->
-          </div>
+          <h3 id="game-title" style="margin-bottom: 10px;">Game</h3>
+          <h4 id="trial-info" style="margin-bottom: 20px;">Round 1</h4>
+          <div id="gameCanvas" style="margin-bottom: 20px;"></div>
+          <p style="font-size: 20px;">You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: red; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
         </div>
       </div>
     `;
@@ -154,47 +145,15 @@ export class UIManager {
     // Create game canvas
     this.createGameCanvas();
     this.setupKeyboardControls();
-    
-    // Update instructions based on player role
-    this.updateGameInstructions();
   }
 
-  updateGameInstructions() {
-    const instructionsElement = document.getElementById('game-instructions');
-    if (!instructionsElement) return;
-
-    let playerColor, partnerColor, playerRole, partnerRole;
-    
-    if (this.playerIndex === 0) {
-      playerColor = 'red';
-      partnerColor = 'orange';
-      playerRole = 'Player 1';
-      partnerRole = 'Player 2';
-    } else {
-      playerColor = 'orange';
-      partnerColor = 'red';
-      playerRole = 'Player 2';
-      partnerRole = 'Player 1';
-    }
-
-    if (this.gameMode === 'human-human') {
-      instructionsElement.innerHTML = `
-        You are ${playerRole} <span style="display: inline-block; width: 18px; height: 18px; background-color: ${playerColor}; border-radius: 50%; vertical-align: middle;"></span>. 
-        Your partner is ${partnerRole} <span style="display: inline-block; width: 18px; height: 18px; background-color: ${partnerColor}; border-radius: 50%; vertical-align: middle;"></span>.
-        <br>Press ↑ ↓ ← → to move.
-      `;
-    } else {
-      instructionsElement.innerHTML = `
-        You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: red; border-radius: 50%; vertical-align: middle;"></span>. 
-        Press ↑ ↓ ← → to move.
-      `;
-    }
-  }
 
   createGameCanvas() {
-    const container = document.getElementById('game-canvas-container');
-    this.gameCanvas = this.renderer.createCanvas();
-    container.appendChild(this.gameCanvas);
+    const container = document.getElementById('gameCanvas');
+    if (container) {
+      this.gameCanvas = this.renderer.createCanvas();
+      container.appendChild(this.gameCanvas);
+    }
   }
 
   setupKeyboardControls() {
@@ -382,6 +341,104 @@ export class UIManager {
         </div>
       </div>
     `;
+  }
+
+  // Timeline integration methods
+  showFixation() {
+    // Create a simple fixation cross display
+    console.log('⚡ Showing fixation display');
+    
+    this.container.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+        <div style="font-size: 48px; font-weight: bold; color: #333;">
+          +
+        </div>
+      </div>
+    `;
+  }
+
+  showTrialFeedbackInContainer(success, canvasContainer) {
+    // Show trial feedback in a specific container (used by timeline)
+    console.log(`📊 Showing trial feedback in container: ${success ? 'SUCCESS' : 'FAILURE'}`);
+    
+    if (!canvasContainer) {
+      console.warn('No canvas container provided for trial feedback');
+      return;
+    }
+
+    // Create feedback overlay
+    const feedbackOverlay = document.createElement('div');
+    feedbackOverlay.style.cssText = `
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      border-radius: 8px;
+    `;
+    
+    feedbackOverlay.innerHTML = `
+      <div style="text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 20px;">
+          ${success ? '✅' : '❌'}
+        </div>
+        <div>
+          ${success ? 'Success!' : 'Try Again'}
+        </div>
+      </div>
+    `;
+    
+    // Add to container
+    canvasContainer.style.position = 'relative';
+    canvasContainer.appendChild(feedbackOverlay);
+    
+    // Auto-remove after delay
+    setTimeout(() => {
+      if (feedbackOverlay.parentNode) {
+        feedbackOverlay.parentNode.removeChild(feedbackOverlay);
+      }
+    }, 2000);
+  }
+
+  setupGameCanvasInContainer(container) {
+    // Set up game canvas within a specific container (used by timeline) 
+    // Matches legacy nodeGameCreateGameCanvas function
+    console.log('🎨 Setting up game canvas in timeline container');
+    
+    if (!container) {
+      console.error('No container provided for game canvas');
+      return;
+    }
+
+    // Create canvas element using same parameters as legacy version
+    const canvas = document.createElement('canvas');
+    canvas.id = 'gameCanvas';
+    
+    // Use correct dimensions for current game configuration
+    canvas.width = CONFIG.visual.canvasSize;   // 600px for 15x15 grid
+    canvas.height = CONFIG.visual.canvasSize;  // 600px for 15x15 grid
+    canvas.style.border = '2px solid #333';
+    canvas.style.display = 'block';
+    canvas.style.margin = '20px auto'; // Center horizontally and add vertical spacing
+
+    // Clear container and add canvas
+    container.innerHTML = '';
+    container.appendChild(canvas);
+
+    // Store reference to canvas
+    this.gameCanvas = canvas;
+
+    // Set up keyboard controls for the game
+    this.setupKeyboardControls();
+
+    console.log('✅ Game canvas set up in timeline container');
   }
 
   // Cleanup

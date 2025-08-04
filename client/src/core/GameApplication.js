@@ -2,6 +2,7 @@ import { NetworkManager } from '../network/NetworkManager.js';
 import { GameStateManager } from '../game/GameStateManager.js';
 import { UIManager } from '../ui/UIManager.js';
 import { ExperimentManager } from '../experiments/ExperimentManager.js';
+import { TimelineManager } from '../timeline/TimelineManager.js';
 import { CONFIG } from '../config/gameConfig.js';
 
 export class GameApplication {
@@ -11,23 +12,36 @@ export class GameApplication {
     this.gameStateManager = null;
     this.uiManager = null;
     this.experimentManager = null;
+    this.timelineManager = null;
     this.isInitialized = false;
     this.playerIndex = 0; // 0 = red player, 1 = orange player
     this.gameConfig = null; // Store game configuration from server
+    this.useTimelineFlow = true; // Enable timeline flow by default
   }
 
   async start(options = {}) {
-    const { mode = 'human-ai', experimentType = '2P2G', roomId = null } = options;
+    const { mode = 'human-ai', experimentType = '2P2G', roomId = null, useTimeline = true } = options;
+    
+    // Check URL parameters for timeline preference
+    const urlParams = new URLSearchParams(window.location.search);
+    this.useTimelineFlow = urlParams.get('timeline') !== 'false' && useTimeline;
+    
+    console.log(`Starting application with timeline flow: ${this.useTimelineFlow}`);
     
     try {
       // Initialize components
       await this.initialize(mode, experimentType, roomId);
       
-      // Start the appropriate mode
-      if (mode === 'human-human') {
-        await this.startMultiplayerMode(experimentType, roomId);
+      // Start the appropriate flow
+      if (this.useTimelineFlow) {
+        await this.startTimelineFlow(mode, experimentType, roomId);
       } else {
-        await this.startSinglePlayerMode(experimentType);
+        // Legacy flow
+        if (mode === 'human-human') {
+          await this.startMultiplayerMode(experimentType, roomId);
+        } else {
+          await this.startSinglePlayerMode(experimentType);
+        }
       }
       
       console.log('Application started successfully');
@@ -43,19 +57,189 @@ export class GameApplication {
     // Initialize core managers
     this.gameStateManager = new GameStateManager();
     this.uiManager = new UIManager(this.container);
-    this.experimentManager = new ExperimentManager(this.gameStateManager, this.uiManager);
+    
+    // Initialize timeline manager if using timeline flow
+    if (this.useTimelineFlow) {
+      this.timelineManager = new TimelineManager(this.container);
+      this.setupTimelineEventHandlers();
+    }
+    
+    // Initialize experiment manager with or without timeline
+    this.experimentManager = new ExperimentManager(
+      this.gameStateManager, 
+      this.uiManager,
+      this.timelineManager
+    );
 
     // Initialize network manager if needed
-    if (mode === 'human-human') {
-      this.networkManager = new NetworkManager();
-      await this.networkManager.connect();
-      this.setupNetworkEventHandlers();
+    const urlParams = new URLSearchParams(window.location.search);
+    const skipNetwork = urlParams.get('skipNetwork') === 'true';
+    
+    if (mode === 'human-human' && !skipNetwork) {
+      try {
+        this.networkManager = new NetworkManager();
+        await this.networkManager.connect();
+        this.setupNetworkEventHandlers();
+        console.log('✅ Network manager initialized');
+      } catch (error) {
+        console.warn('⚠️ Failed to initialize network manager:', error.message);
+        console.log('💡 You can test timeline with mock multiplayer using: ?skipNetwork=true');
+        this.networkManager = null;
+      }
+    } else if (skipNetwork) {
+      console.log('⚠️ Network connection skipped for testing');
+      this.networkManager = null;
     }
 
     // Set up UI event handlers
     this.setupUIEventHandlers();
 
     this.isInitialized = true;
+  }
+
+  async startTimelineFlow(mode, experimentType, roomId) {
+    console.log(`🎬 Starting timeline flow for ${mode} mode`);
+    
+    // Check if we should skip network connection for testing
+    const urlParams = new URLSearchParams(window.location.search);
+    const skipNetwork = urlParams.get('skipNetwork') === 'true';
+    
+    // Configure game mode
+    if (mode === 'human-human') {
+      CONFIG.game.players.player2.type = 'human';
+      
+      if (!skipNetwork && this.networkManager) {
+        console.log('🌐 Setting up real multiplayer timeline integration');
+        this.setupMultiplayerTimelineIntegration(experimentType, roomId);
+      } else {
+        console.log('🤖 Using mock multiplayer for timeline (server not available or skipped)');
+        this.setupMockMultiplayerForTimeline();
+      }
+    } else {
+      CONFIG.game.players.player2.type = 'ai';
+      this.uiManager.setPlayerInfo(0, 'human-ai');
+    }
+    
+    // Start the complete timeline flow
+    this.timelineManager.start();
+  }
+
+  setupMultiplayerTimelineIntegration(experimentType, roomId) {
+    // Handle multiplayer connection within timeline flow
+    this.timelineManager.on('waiting-for-partner', async (data) => {
+      console.log('Timeline requesting partner connection...');
+      
+      // Ensure we're in human-human mode for this experiment
+      CONFIG.game.players.player2.type = 'human';
+      console.log('🎮 Set player2 type to human for multiplayer experiment');
+      
+      try {
+        // Join or create room
+        const room = await this.networkManager.joinRoom({
+          roomId,
+          gameMode: 'human-human',
+          experimentType: data.experimentType
+        });
+        
+        console.log('Joined room during timeline flow:', room);
+      } catch (error) {
+        console.error('Failed to join room during timeline:', error);
+        // Could emit an error event back to timeline here
+      }
+    });
+
+    // Handle player ready event from timeline
+    this.timelineManager.on('player-ready', () => {
+      console.log('🎮 Timeline player clicked ready - forwarding to network');
+      if (this.networkManager && this.networkManager.isConnected) {
+        this.networkManager.setPlayerReady();
+      } else {
+        console.warn('⚠️ Network manager not available for player ready');
+      }
+    });
+  }
+
+  setupMockMultiplayerForTimeline() {
+    console.log('🤖 Setting up mock multiplayer timeline events...');
+    
+    // Mock multiplayer events for timeline testing when server isn't available
+    this.timelineManager.on('waiting-for-partner', async (data) => {
+      console.log('🤖 Mock: Timeline waiting for partner - simulating connection...');
+      
+      // Ensure we're in human-human mode for this experiment (even in mock mode)
+      CONFIG.game.players.player2.type = 'human';
+      console.log('🎮 Mock: Set player2 type to human for mock multiplayer experiment');
+      
+      // Simulate finding a partner after 2 seconds
+      setTimeout(() => {
+        console.log('🤖 Mock: Partner found, showing ready button');
+        this.timelineManager.emit('partner-connected', {
+          players: [
+            { id: 'mock-player1', name: 'You' },
+            { id: 'mock-player2', name: 'AI Partner' }
+          ]
+        });
+      }, 2000);
+    });
+
+    this.timelineManager.on('player-ready', () => {
+      console.log('🤖 Mock: Player clicked ready, simulating partner ready...');
+      
+      // Simulate both players ready after 1 second
+      setTimeout(() => {
+        console.log('🤖 Mock: Both players ready, starting game');
+        this.uiManager.setPlayerInfo(0, 'human-human');
+        this.timelineManager.emit('all-players-ready', {
+          gameMode: 'human-human',
+          players: [
+            { id: 'mock-player1', playerIndex: 0 },
+            { id: 'mock-player2', playerIndex: 1 }
+          ]
+        });
+      }, 1000);
+    });
+    
+    console.log('✅ Mock multiplayer timeline events registered');
+  }
+
+  setupTimelineEventHandlers() {
+    if (!this.timelineManager) return;
+    
+    // Handle timeline save-data event
+    this.timelineManager.on('save-data', (experimentData) => {
+      console.log('💾 Timeline requesting data save:', experimentData);
+      this.saveExperimentData(experimentData);
+    });
+    
+    // Handle any multiplayer-specific timeline events
+    this.timelineManager.on('partner-connected', () => {
+      console.log('👥 Partner connected via timeline');
+    });
+    
+    this.timelineManager.on('all-players-ready', () => {
+      console.log('🎮 All players ready via timeline');
+    });
+    
+    console.log('📡 Timeline event handlers setup completed');
+  }
+
+  saveExperimentData(data) {
+    // Save experiment data (could be localStorage, server upload, etc.)
+    try {
+      const dataStr = JSON.stringify(data, null, 2);
+      
+      // Save to localStorage as backup
+      localStorage.setItem('experimentData', dataStr);
+      
+      // Create downloadable file
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      console.log('💾 Experiment data saved:', data);
+      
+    } catch (error) {
+      console.error('Failed to save experiment data:', error);
+    }
   }
 
   async startSinglePlayerMode(experimentType) {
@@ -104,18 +288,63 @@ export class GameApplication {
     // Room events
     this.networkManager.on('room-joined', (data) => {
       console.log('Room joined:', data);
-      this.uiManager.updateLobbyInfo(data);
+      
+      if (this.useTimelineFlow && this.timelineManager) {
+        // Notify timeline that we have a partner
+        this.timelineManager.emit('partner-connected', data);
+      } else {
+        // Legacy flow
+        this.uiManager.updateLobbyInfo(data);
+      }
     });
 
     this.networkManager.on('player-joined', (data) => {
       console.log('Player joined:', data);
-      this.uiManager.updatePlayerList(data.players);
+      
+      if (this.useTimelineFlow && this.timelineManager) {
+        // Notify timeline about player changes
+        this.timelineManager.emit('partner-connected', data);
+      } else {
+        // Legacy flow
+        this.uiManager.updatePlayerList(data.players);
+      }
     });
 
     this.networkManager.on('player-disconnected', (data) => {
       console.log('Player disconnected:', data);
-      this.uiManager.updatePlayerList(data.players);
-      this.uiManager.showNotification('Partner disconnected');
+      
+      if (this.useTimelineFlow) {
+        // Handle disconnection in timeline flow
+        // Could pause timeline or show error
+        console.log('Partner disconnected during timeline flow');
+      } else {
+        // Legacy flow
+        this.uiManager.updatePlayerList(data.players);
+        this.uiManager.showNotification('Partner disconnected');
+      }
+    });
+
+    // Handle player ready status updates
+    this.networkManager.on('player-ready-status', (data) => {
+      console.log('Player ready status update:', data);
+      
+      if (this.useTimelineFlow && this.timelineManager) {
+        // Check if all players are ready based on the updated player list
+        const allReady = data.players && data.players.every(p => p.isReady);
+        console.log(`All players ready: ${allReady}`, data.players);
+        
+        if (allReady) {
+          // Only emit all-players-ready if we haven't already done so
+          console.log('🎮 All players ready - emitting to timeline');
+          this.timelineManager.emit('all-players-ready', {
+            gameMode: 'human-human',
+            players: data.players
+          });
+        }
+      } else {
+        // Legacy flow - update lobby info
+        this.uiManager.updatePlayerReadyStatus(data.players);
+      }
     });
 
     // Game events
@@ -131,7 +360,15 @@ export class GameApplication {
         console.log(`I am player ${this.playerIndex + 1} (${this.playerIndex === 0 ? 'red' : 'orange'})`);
       }
       
-      this.startNetworkedGame(config);
+      if (this.useTimelineFlow) {
+        // Set player info for timeline flow
+        this.uiManager.setPlayerInfo(this.playerIndex, config.gameMode);
+        // Notify timeline that both players are ready
+        this.timelineManager.emit('all-players-ready', config);
+      } else {
+        // Legacy networked game flow
+        this.startNetworkedGame(config);
+      }
     });
 
     this.networkManager.on('player-action', (data) => {

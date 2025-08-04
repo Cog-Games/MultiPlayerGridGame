@@ -1,11 +1,13 @@
 import { CONFIG } from '../config/gameConfig.js';
 import { RLAgent } from '../ai/RLAgent.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
+import { mapLoader } from '../utils/MapLoader.js';
 
 export class ExperimentManager {
-  constructor(gameStateManager, uiManager) {
+  constructor(gameStateManager, uiManager, timelineManager = null) {
     this.gameStateManager = gameStateManager;
     this.uiManager = uiManager;
+    this.timelineManager = timelineManager;
     this.rlAgent = new RLAgent();
     
     this.currentExperimentSequence = [];
@@ -15,8 +17,15 @@ export class ExperimentManager {
     this.gameLoopInterval = null;
     this.aiMoveInterval = null;
     
-    // Load map data
-    this.mapData = this.loadMapData();
+    // Initialize map data with MapLoader
+    this.mapLoader = mapLoader;
+    console.log('🗺️ ExperimentManager initialized with MapLoader');
+    
+    // Ensure map data is loaded
+    this.ensureMapDataLoaded();
+    
+    // Set up timeline event handlers if timeline manager is provided
+    this.setupTimelineIntegration();
   }
 
   async startExperiment(experimentType) {
@@ -135,13 +144,23 @@ export class ExperimentManager {
   }
 
   runTrial2P2G() {
-    // Two players, two goals - handle AI movement
-    this.setupAIMovement();
+    // Two players, two goals - check if AI or human player 2
+    if (CONFIG.game.players.player2.type === 'ai') {
+      this.setupAIMovement();
+    } else {
+      // Human-human mode - no AI movement setup needed
+      console.log('2P2G: Human-human mode - waiting for network player actions');
+    }
   }
 
   runTrial2P3G() {
-    // Two players, three goals - handle AI movement and new goal presentation
-    this.setupAIMovement();
+    // Two players, three goals - check if AI or human player 2
+    if (CONFIG.game.players.player2.type === 'ai') {
+      this.setupAIMovement();
+    } else {
+      // Human-human mode - no AI movement setup needed
+      console.log('2P3G: Human-human mode - waiting for network player actions');
+    }
     this.setupNewGoalCheck2P3G();
   }
 
@@ -274,6 +293,13 @@ export class ExperimentManager {
   handleTrialComplete(result) {
     console.log('Trial completed:', result);
 
+    // If we're using timeline manager, delegate to timeline handler
+    if (this.timelineManager && this.currentTrialCompleteCallback) {
+      this.handleTimelineTrialComplete(result);
+      return;
+    }
+
+    // Original standalone logic
     // Clear intervals
     this.clearGameIntervals();
 
@@ -349,16 +375,57 @@ export class ExperimentManager {
     await this.startExperimentSequence();
   }
 
-  getTrialDesign(experimentType, trialIndex) {
-    // Use fallback design for now
-    // In the full implementation, this would load from the map data
-    return GameHelpers.createFallbackDesign(experimentType);
+  async getTrialDesign(experimentType, trialIndex) {
+    console.log(`🗺️ Loading trial design for ${experimentType} trial ${trialIndex}`);
+    
+    // Ensure map data is loaded
+    await this.ensureMapDataLoaded();
+    
+    try {
+      // For collaboration experiments after trial 12, use random maps
+      if (experimentType.includes('2P') && trialIndex >= CONFIG.game.successThreshold.randomSamplingAfterTrial) {
+        const randomDesign = this.mapLoader.getRandomMapForCollaborationGame(experimentType, trialIndex);
+        if (randomDesign) {
+          console.log('✅ Loaded random map design:', randomDesign);
+          return randomDesign;
+        }
+      }
+      
+      // Get maps for experiment type
+      const mapsForExperiment = this.mapLoader.getMapsForExperiment(experimentType);
+      console.log(`🗺️ Available maps for ${experimentType}:`, Object.keys(mapsForExperiment || {}).length);
+      
+      if (!mapsForExperiment || Object.keys(mapsForExperiment).length === 0) {
+        console.warn('⚠️ No maps available, using fallback design');
+        return this.mapLoader.createFallbackDesign(experimentType);
+      }
+      
+      // Select map based on trial index (or randomly if too many trials)
+      const mapKeys = Object.keys(mapsForExperiment);
+      const selectedKey = mapKeys[trialIndex % mapKeys.length];
+      const selectedMapArray = mapsForExperiment[selectedKey];
+      
+      if (Array.isArray(selectedMapArray) && selectedMapArray.length > 0) {
+        const design = { ...selectedMapArray[0] }; // Clone the design
+        console.log(`✅ Loaded map design for trial ${trialIndex}:`, design);
+        return design;
+      }
+      
+      console.warn('⚠️ Invalid map structure, using fallback design');
+      return this.mapLoader.createFallbackDesign(experimentType);
+      
+    } catch (error) {
+      console.error('❌ Error loading trial design:', error);
+      return this.mapLoader.createFallbackDesign(experimentType);
+    }
   }
 
-  loadMapData() {
-    // Placeholder for loading map data
-    // In the full implementation, this would load the map configurations
-    return {};
+  async ensureMapDataLoaded() {
+    if (!this.mapLoader.mapData) {
+      console.log('🗺️ Waiting for map data to load...');
+      await this.mapLoader.initialize();
+      console.log('✅ Map data loaded for ExperimentManager');
+    }
   }
 
   clearGameIntervals() {
@@ -376,6 +443,159 @@ export class ExperimentManager {
       clearTimeout(this.gameTimeoutId);
       this.gameTimeoutId = null;
     }
+  }
+
+  // Timeline Integration
+  setupTimelineIntegration() {
+    if (!this.timelineManager) return;
+    
+    // Handle timeline events
+    this.timelineManager.on('show-fixation', (data) => {
+      this.handleFixationDisplay(data);
+    });
+    
+    this.timelineManager.on('start-trial', (data) => {
+      this.handleTimelineTrialStart(data);
+    });
+    
+    this.timelineManager.on('show-trial-feedback', (data) => {
+      this.handleTrialFeedback(data);
+    });
+    
+    console.log('✅ Timeline integration setup completed');
+  }
+  
+  handleFixationDisplay(data) {
+    const { experimentType, experimentIndex, trialIndex } = data;
+    console.log(`⚡ Showing fixation for ${experimentType} trial ${trialIndex}`);
+    
+    // Find the fixation container that timeline created
+    const fixationContainer = document.getElementById('fixation-canvas-container');
+    if (fixationContainer) {
+      // Add fixation cross to the timeline's container instead of replacing the whole page
+      fixationContainer.innerHTML = `
+        <div style="font-size: 48px; font-weight: bold; color: #333; padding: 50px;">
+          +
+        </div>
+      `;
+      console.log('✅ Fixation cross added to timeline container');
+    } else {
+      console.warn('⚠️ Fixation container not found, timeline may not be set up properly');
+      // Fallback: use UIManager's method
+      this.uiManager.showFixation();
+    }
+  }
+  
+  async handleTimelineTrialStart(data) {
+    const { experimentType, experimentIndex, trialIndex, onComplete } = data;
+    console.log(`🎮 Timeline starting trial ${trialIndex} of ${experimentType}`);
+    
+    // Store completion callback
+    this.currentTrialCompleteCallback = onComplete;
+    
+    try {
+      // Get trial design (now async)
+      let design = await this.getTrialDesign(experimentType, trialIndex);
+      if (!design) {
+        console.error('Failed to get trial design, using fallback');
+        design = GameHelpers.createFallbackDesign(experimentType);
+      }
+      
+      // Initialize trial
+      this.gameStateManager.initializeTrial(trialIndex, experimentType, design);
+      
+      // Update UI - use timeline's game container
+      this.uiManager.updateGameInfo(experimentIndex, trialIndex, experimentType);
+      
+      // Set up game canvas in timeline's container
+      const gameContainer = document.getElementById('game-canvas-container');
+      if (gameContainer) {
+        console.log('✅ Found timeline game container, setting up game canvas');
+        this.uiManager.setupGameCanvasInContainer(gameContainer);
+      } else {
+        console.warn('⚠️ Timeline game container not found, using fallback');
+      }
+      
+      this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+      
+      // Start trial execution
+      this.startTimelineTrialExecution(experimentType);
+      
+    } catch (error) {
+      console.error('❌ Error starting timeline trial:', error);
+      // Use fallback design if everything fails
+      const fallbackDesign = GameHelpers.createFallbackDesign(experimentType);
+      this.gameStateManager.initializeTrial(trialIndex, experimentType, fallbackDesign);
+      this.uiManager.updateGameInfo(experimentIndex, trialIndex, experimentType);
+      this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+      this.startTimelineTrialExecution(experimentType);
+    }
+  }
+  
+  startTimelineTrialExecution(experimentType) {
+    // Clear any existing intervals
+    this.clearGameIntervals();
+    
+    // Start appropriate trial type
+    switch (experimentType) {
+      case '1P1G':
+        this.runTrial1P1G();
+        break;
+      case '1P2G':
+        this.runTrial1P2G();
+        break;
+      case '2P2G':
+        this.runTrial2P2G();
+        break;
+      case '2P3G':
+        this.runTrial2P3G();
+        break;
+      default:
+        console.error('Unknown experiment type:', experimentType);
+    }
+    
+    // Set up game timeout
+    this.setupTimelineGameTimeout();
+  }
+  
+  setupTimelineGameTimeout() {
+    const timeout = setTimeout(() => {
+      console.log('Game timeout reached');
+      this.handleTimelineTrialComplete({ success: false, timeout: true });
+    }, CONFIG.game.maxGameLength * 1000);
+    
+    this.gameTimeoutId = timeout;
+  }
+  
+  handleTimelineTrialComplete(result) {
+    console.log('Timeline trial completed:', result);
+    
+    // Clear intervals
+    this.clearGameIntervals();
+    
+    // Finalize trial data
+    this.gameStateManager.finalizeTrial(result.success || result.trialComplete);
+    
+    // Get trial data for timeline
+    const trialData = {
+      ...result,
+      trialData: this.gameStateManager.getCurrentTrialData(),
+      gameState: this.gameStateManager.getCurrentState()
+    };
+    
+    // Call timeline completion callback
+    if (this.currentTrialCompleteCallback) {
+      this.currentTrialCompleteCallback(trialData);
+      this.currentTrialCompleteCallback = null;
+    }
+  }
+  
+  handleTrialFeedback(data) {
+    const { success, experimentType, trialIndex, canvasContainer } = data;
+    console.log(`📊 Showing trial feedback for ${experimentType} trial ${trialIndex}`);
+    
+    // Create feedback display in the provided container
+    this.uiManager.showTrialFeedbackInContainer(success, canvasContainer);
   }
 
   // Public API

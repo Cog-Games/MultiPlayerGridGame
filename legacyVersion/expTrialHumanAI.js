@@ -6,6 +6,41 @@
  */
 
 /**
+ * Show wait message when player1 has reached goal but player2 hasn't
+ */
+function showWaitMessage() {
+    // Find the game canvas container
+    var gameCanvas = document.getElementById('gameCanvas');
+    if (gameCanvas) {
+        // Create or update wait message
+        var waitMessage = document.getElementById('wait-message');
+        if (!waitMessage) {
+            waitMessage = document.createElement('div');
+            waitMessage.id = 'wait-message';
+            waitMessage.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 20px;
+                border-radius: 10px;
+                text-align: center;
+                z-index: 1000;
+                font-size: 18px;
+            `;
+            gameCanvas.parentNode.appendChild(waitMessage);
+        }
+        waitMessage.innerHTML = `
+            <div style="margin-bottom: 10px;">⏳</div>
+            <div>Waiting for partner to finish...</div>
+        `;
+        waitMessage.style.display = 'block';
+    }
+}
+
+/**
  * Get AI action
  */
 function getAIAction(gridMatrix, currentPos, goals, playerPos = null) {

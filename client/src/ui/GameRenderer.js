@@ -6,6 +6,8 @@ export class GameRenderer {
     this.ctx = null;
     this.cellSize = CONFIG.visual.cellSize;
     this.canvasSize = CONFIG.visual.canvasSize;
+    this.padding = CONFIG.visual.padding;
+    this.effectiveCellSize = this.cellSize + this.padding; // Cell + padding as used in legacy
   }
 
   createCanvas() {
@@ -28,11 +30,12 @@ export class GameRenderer {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     
-    // Clear canvas
-    this.ctx.fillStyle = CONFIG.visual.colors.background;
-    this.ctx.fillRect(0, 0, this.canvasSize, this.canvasSize);
+    // Draw background with padding (legacy style)
+    this.ctx.fillStyle = CONFIG.visual.colors.grid; // Use grid color for background lines
+    this.ctx.fillRect(0 - this.padding, 0 - this.padding, 
+                     this.canvasSize + this.padding, this.canvasSize + this.padding);
     
-    // Draw grid
+    // Draw game grid cells
     this.drawGrid();
     
     // Draw game objects
@@ -40,27 +43,19 @@ export class GameRenderer {
   }
 
   drawGrid() {
-    this.ctx.strokeStyle = CONFIG.visual.colors.grid;
-    this.ctx.lineWidth = 1;
-    
     const gridSize = CONFIG.game.matrixSize;
     
-    // Draw horizontal lines
-    for (let i = 0; i <= gridSize; i++) {
-      const y = i * this.cellSize;
-      this.ctx.beginPath();
-      this.ctx.moveTo(0, y);
-      this.ctx.lineTo(this.canvasSize, y);
-      this.ctx.stroke();
-    }
-    
-    // Draw vertical lines
-    for (let i = 0; i <= gridSize; i++) {
-      const x = i * this.cellSize;
-      this.ctx.beginPath();
-      this.ctx.moveTo(x, 0);
-      this.ctx.lineTo(x, this.canvasSize);
-      this.ctx.stroke();
+    // Draw grid cells with padding (legacy style)
+    for (let row = 0; row < gridSize; row++) {
+      for (let col = 0; col < gridSize; col++) {
+        this.ctx.fillStyle = CONFIG.visual.colors.background; // White cell background
+        this.ctx.fillRect(
+          col * this.effectiveCellSize + this.padding,
+          row * this.effectiveCellSize + this.padding,
+          this.cellSize,
+          this.cellSize
+        );
+      }
     }
   }
 
@@ -79,8 +74,9 @@ export class GameRenderer {
   }
 
   drawCell(row, col, cellType) {
-    const x = col * this.cellSize;
-    const y = row * this.cellSize;
+    // Use legacy-style positioning with padding
+    const x = col * this.effectiveCellSize + this.padding;
+    const y = row * this.effectiveCellSize + this.padding;
     const centerX = x + this.cellSize / 2;
     const centerY = y + this.cellSize / 2;
     const radius = this.cellSize * 0.35;

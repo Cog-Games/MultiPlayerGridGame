@@ -382,6 +382,10 @@ export class GameStateManager {
     return { ...this.currentState };
   }
 
+  getCurrentTrialData() {
+    return { ...this.trialData };
+  }
+
   getTrialData() {
     return { ...this.trialData };
   }

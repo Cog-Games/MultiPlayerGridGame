@@ -56,12 +56,7 @@ function generateRandomizedDistanceSequence(numTrials) {
     return sequence;
 }
 
-/**
- * Generate randomized distance condition sequence for 1P2G trials
- * Ensures equal representation of each condition in random order
- * @param {number} numTrials - Number of 1P2G trials
- * @returns {Array} - Randomized array of distance conditions
- */
+
 function generateRandomized1P2GDistanceSequence(numTrials) {
     var allConditions = [
         ONEP2G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1,
@@ -94,8 +89,7 @@ function generateRandomized1P2GDistanceSequence(numTrials) {
         sequence[m] = sequence[randomIndex];
         sequence[randomIndex] = temp;
     }
-    // console.log('Generated randomized distance condition sequence for', numTrials, 'trials:');
-    // console.log('Trials per condition:', trialsPerCondition, 'Remaining trials:', remainingTrials);
+
     console.log('Sequence:', sequence);
     return sequence;
 }
@@ -131,15 +125,6 @@ function setDistanceConditionSequence(newSequence) {
     TWOP3G_CONFIG.distanceConditionSequence = newSequence;
 }
 
-/**
- * Generate new goal with sophisticated constraints based on distance condition
- * @param {Array} player2Pos - Player2 position (AI or human partner) [row, col]
- * @param {Array} player1Pos - Player1 position (human player) [row, col]
- * @param {Array} oldGoals - Array of existing goal positions
- * @param {number} player2CurrentGoalIndex - Index of player2's current goal in oldGoals array
- * @param {string} distanceCondition - Distance condition type ('closer_to_player2', 'closer_to_player1', 'equal_to_both', 'no_new_goal')
- * @returns {Object|null} - Object with position and metadata, or null if no goal generated
- */
 function generateNewGoal(player2Pos, player1Pos, oldGoals, player2CurrentGoalIndex, distanceCondition) {
     // Check if no new goal should be generated
     if (distanceCondition === TWOP3G_CONFIG.distanceConditions.NO_NEW_GOAL) {
@@ -371,14 +356,6 @@ function isInRectangleBetween(position, point1, point2) {
     return (posRow >= minRow && posRow <= maxRow && posCol >= minCol && posCol <= maxCol);
 }
 
-/**
- * Check for new goal presentation - Unified version supporting both human-AI and human-human modes
- * @param {Object} [options={}] - Configuration options for different experiment versions
- * @param {Function} [options.callback] - Callback function after goal presentation
- * @param {boolean} [options.isHumanHuman] - Whether this is human-human mode (vs human-AI)
- * @param {Function} [options.serverRequestHandler] - Handler for server-side goal generation (human-human mode)
- * @param {Function} [options.displayUpdater] - Custom display update function
- */
 function checkNewGoalPresentation2P3G(options) {
     // Handle both old callback-only signature and new options signature
     if (typeof options === 'function') {
@@ -523,14 +500,6 @@ function checkNewGoalPresentation2P3G(options) {
         // Generate new goal using current positions and distance condition
         var newGoalResult = generateNewGoal(player2Pos, player1Pos, gameData.currentGoals, player1CurrentGoal, distanceCondition);
 
-        console.log('generateNewGoal result:', newGoalResult);
-        console.log('Parameters passed to generateNewGoal:');
-        console.log('  - player2Pos:', player2Pos);
-        console.log('  - player1Pos:', player1Pos);
-        console.log('  - currentGoals:', gameData.currentGoals);
-        console.log('  - player1CurrentGoal (index):', player1CurrentGoal);
-        console.log('  - distanceCondition:', distanceCondition);
-
         if (newGoalResult) {
             console.log('=== NEW GOAL GENERATED LOCALLY ===');
 
@@ -616,10 +585,7 @@ function checkNewGoalPresentation2P3G(options) {
         }
     } else {
         console.log('=== NEW GOAL CONDITIONS NOT MET ===');
-        console.log('  - Player1 goal null?', player1CurrentGoal === null);
-        console.log('  - Player2 goal null?', player2CurrentGoal === null);
-        console.log('  - Goals same?', player1CurrentGoal === player2CurrentGoal);
-        console.log('  - Already presented?', (typeof newGoalPresented !== 'undefined') ? newGoalPresented : 'undefined');
+
     }
 }
 
@@ -685,18 +651,7 @@ function checkTrialEnd2P3G(callback) {
     }
 }
 
-// =================================================================================================
-// 1P2G Functions - Experimental Design Logic
-// =================================================================================================
 
-/**
- * Check for new goal presentation in 1P2G based on distance condition (supports both human-AI and human-human versions)
- * @param {Object} [options={}] - Configuration options for different experiment versions
- * @param {Array} [options.playerPosition] - Override player position (defaults to gameData.player1 or gameData.currentPlayerPos)
- * @param {Function} [options.distanceCalculator] - Custom distance calculation function
- * @param {Function} [options.displayUpdater] - Custom display update function
- * @param {Function} [options.callback] - Callback function after goal presentation
- */
 function checkNewGoalPresentation1P2G(options) {
     console.log('=== 1P2G NEW GOAL CHECK START ===');
 
@@ -827,12 +782,6 @@ function checkNewGoalPresentation1P2G(options) {
     console.log('=== 1P2G NEW GOAL CHECK END ===');
 }
 
-/**
- * Generate new goal for 1P2G based on distance condition (similar to 2P3G)
- * @param {Array} firstGoal - Position of the first goal [row, col]
- * @param {string} distanceCondition - Distance condition type
- * @returns {Array|null} - Position of the new goal or null if not found
- */
 function generateNewGoalFor1P2G(firstGoal, distanceCondition) {
     if (!firstGoal || !Array.isArray(firstGoal) || firstGoal.length < 2) {
         console.error('Invalid first goal provided to generateNewGoalFor1P2G:', firstGoal);
@@ -1089,12 +1038,7 @@ function shouldEndExperimentDueToSuccessThreshold() {
     return false;
 }
 
-/**
- * Check if should continue to next trial for given experiment
- * @param {string} experimentType - Type of experiment
- * @param {number} trialIndex - Current trial index
- * @returns {boolean} - True if should continue
- */
+
 function shouldContinueToNextTrial(experimentType, trialIndex) {
     // Only apply to collaboration games
     if (!experimentType.includes('2P')) {
