@@ -9,21 +9,21 @@ export class ExperimentManager {
     this.uiManager = uiManager;
     this.timelineManager = timelineManager;
     this.rlAgent = new RLAgent();
-    
+
     this.currentExperimentSequence = [];
     this.currentExperimentIndex = 0;
     this.currentTrialIndex = 0;
     this.isRunning = false;
     this.gameLoopInterval = null;
     this.aiMoveInterval = null;
-    
+
     // Initialize map data with MapLoader
     this.mapLoader = mapLoader;
     console.log('🗺️ ExperimentManager initialized with MapLoader');
-    
+
     // Ensure map data is loaded
     this.ensureMapDataLoaded();
-    
+
     // Set up timeline event handlers if timeline manager is provided
     this.setupTimelineIntegration();
   }
@@ -54,10 +54,10 @@ export class ExperimentManager {
     console.log(`Starting experiment ${this.currentExperimentIndex + 1}/${this.currentExperimentSequence.length}: ${experimentType}`);
 
     this.currentTrialIndex = 0;
-    
+
     // Show consent or instruction if needed
     await this.showExperimentIntroduction(experimentType);
-    
+
     // Start first trial
     await this.startNextTrial(experimentType);
   }
@@ -70,7 +70,7 @@ export class ExperimentManager {
 
   async startNextTrial(experimentType) {
     const maxTrials = CONFIG.game.experiments.numTrials[experimentType] || 12;
-    
+
     // Check if experiment should end early due to success threshold
     if (this.shouldEndExperimentEarly(experimentType)) {
       console.log(`Experiment ${experimentType} ended early due to success threshold`);
@@ -167,7 +167,7 @@ export class ExperimentManager {
   setupAIMovement() {
     // Skip AI movement setup if no AI agent available
     if (!this.rlAgent) return;
-    
+
     const aiMoveDelay = CONFIG.game.agent.delay;
     let player1AtGoal = false;
 
@@ -193,7 +193,7 @@ export class ExperimentManager {
       if (!gameState.player1 || !gameState.player2) return;
 
       const currentPlayer1AtGoal = GameHelpers.isGoalReached(gameState.player1, gameState.currentGoals);
-      
+
       if (!player1AtGoal && currentPlayer1AtGoal) {
         // Player1 just reached goal
         player1AtGoal = true;
@@ -231,7 +231,7 @@ export class ExperimentManager {
     if (direction) {
       const moveResult = this.gameStateManager.processPlayerMove(2, direction);
       this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
-      
+
       if (moveResult.trialComplete) {
         this.handleTrialComplete(moveResult);
       }
@@ -272,12 +272,12 @@ export class ExperimentManager {
 
   actionToDirection(action) {
     const [deltaRow, deltaCol] = action;
-    
+
     if (deltaRow === -1 && deltaCol === 0) return 'up';
     if (deltaRow === 1 && deltaCol === 0) return 'down';
     if (deltaRow === 0 && deltaCol === -1) return 'left';
     if (deltaRow === 0 && deltaCol === 1) return 'right';
-    
+
     return null;
   }
 
@@ -319,10 +319,10 @@ export class ExperimentManager {
 
   shouldEndExperimentEarly(experimentType) {
     if (!CONFIG.game.successThreshold.enabled) return false;
-    
+
     const experimentData = this.gameStateManager.getExperimentData();
     const threshold = experimentData.successThreshold;
-    
+
     return threshold.consecutiveSuccesses >= CONFIG.game.successThreshold.consecutiveSuccessesRequired &&
            threshold.totalTrialsCompleted >= CONFIG.game.successThreshold.minTrialsBeforeCheck;
   }
@@ -330,7 +330,7 @@ export class ExperimentManager {
   completeAllExperiments() {
     console.log('All experiments completed');
     this.isRunning = false;
-    
+
     // Get final results
     const experimentData = this.gameStateManager.getExperimentData();
     const results = {
@@ -339,10 +339,10 @@ export class ExperimentManager {
       successRate: GameHelpers.calculateSuccessRate(experimentData.allTrialsData),
       totalTime: GameHelpers.formatDuration(Date.now() - (experimentData.allTrialsData[0]?.trialStartTime || Date.now()))
     };
-    
+
     // Show completion screen
     this.uiManager.showExperimentComplete(results);
-    
+
     // Export data if needed
     this.exportExperimentData(experimentData);
   }
@@ -363,24 +363,24 @@ export class ExperimentManager {
   // Multiplayer experiment support
   async startMultiplayerExperiment(config) {
     console.log('Starting multiplayer experiment:', config);
-    
+
     // Configure for multiplayer mode
     this.currentExperimentSequence = [config.experimentType];
-    
+
     // Disable AI agent for human-human mode
     if (config.gameMode === 'human-human') {
       this.rlAgent = null;
     }
-    
+
     await this.startExperimentSequence();
   }
 
   async getTrialDesign(experimentType, trialIndex) {
     console.log(`🗺️ Loading trial design for ${experimentType} trial ${trialIndex}`);
-    
+
     // Ensure map data is loaded
     await this.ensureMapDataLoaded();
-    
+
     try {
       // For collaboration experiments after trial 12, use random maps
       if (experimentType.includes('2P') && trialIndex >= CONFIG.game.successThreshold.randomSamplingAfterTrial) {
@@ -390,30 +390,30 @@ export class ExperimentManager {
           return randomDesign;
         }
       }
-      
+
       // Get maps for experiment type
       const mapsForExperiment = this.mapLoader.getMapsForExperiment(experimentType);
       console.log(`🗺️ Available maps for ${experimentType}:`, Object.keys(mapsForExperiment || {}).length);
-      
+
       if (!mapsForExperiment || Object.keys(mapsForExperiment).length === 0) {
         console.warn('⚠️ No maps available, using fallback design');
         return this.mapLoader.createFallbackDesign(experimentType);
       }
-      
+
       // Select map based on trial index (or randomly if too many trials)
       const mapKeys = Object.keys(mapsForExperiment);
       const selectedKey = mapKeys[trialIndex % mapKeys.length];
       const selectedMapArray = mapsForExperiment[selectedKey];
-      
+
       if (Array.isArray(selectedMapArray) && selectedMapArray.length > 0) {
         const design = { ...selectedMapArray[0] }; // Clone the design
         console.log(`✅ Loaded map design for trial ${trialIndex}:`, design);
         return design;
       }
-      
+
       console.warn('⚠️ Invalid map structure, using fallback design');
       return this.mapLoader.createFallbackDesign(experimentType);
-      
+
     } catch (error) {
       console.error('❌ Error loading trial design:', error);
       return this.mapLoader.createFallbackDesign(experimentType);
@@ -433,12 +433,12 @@ export class ExperimentManager {
       clearInterval(this.gameLoopInterval);
       this.gameLoopInterval = null;
     }
-    
+
     if (this.aiMoveInterval) {
       clearInterval(this.aiMoveInterval);
       this.aiMoveInterval = null;
     }
-    
+
     if (this.gameTimeoutId) {
       clearTimeout(this.gameTimeoutId);
       this.gameTimeoutId = null;
@@ -448,27 +448,27 @@ export class ExperimentManager {
   // Timeline Integration
   setupTimelineIntegration() {
     if (!this.timelineManager) return;
-    
+
     // Handle timeline events
     this.timelineManager.on('show-fixation', (data) => {
       this.handleFixationDisplay(data);
     });
-    
+
     this.timelineManager.on('start-trial', (data) => {
       this.handleTimelineTrialStart(data);
     });
-    
+
     this.timelineManager.on('show-trial-feedback', (data) => {
       this.handleTrialFeedback(data);
     });
-    
+
     console.log('✅ Timeline integration setup completed');
   }
-  
+
   handleFixationDisplay(data) {
     const { experimentType, experimentIndex, trialIndex } = data;
     console.log(`⚡ Showing fixation for ${experimentType} trial ${trialIndex}`);
-    
+
     // Find the fixation container that timeline created
     const fixationContainer = document.getElementById('fixation-canvas-container');
     if (fixationContainer) {
@@ -485,14 +485,14 @@ export class ExperimentManager {
       this.uiManager.showFixation();
     }
   }
-  
+
   async handleTimelineTrialStart(data) {
     const { experimentType, experimentIndex, trialIndex, onComplete } = data;
     console.log(`🎮 Timeline starting trial ${trialIndex} of ${experimentType}`);
-    
+
     // Store completion callback
     this.currentTrialCompleteCallback = onComplete;
-    
+
     try {
       // Get trial design (now async)
       let design = await this.getTrialDesign(experimentType, trialIndex);
@@ -500,13 +500,13 @@ export class ExperimentManager {
         console.error('Failed to get trial design, using fallback');
         design = GameHelpers.createFallbackDesign(experimentType);
       }
-      
+
       // Initialize trial
       this.gameStateManager.initializeTrial(trialIndex, experimentType, design);
-      
+
       // Update UI - use timeline's game container
       this.uiManager.updateGameInfo(experimentIndex, trialIndex, experimentType);
-      
+
       // Set up game canvas in timeline's container
       const gameContainer = document.getElementById('game-canvas-container');
       if (gameContainer) {
@@ -515,12 +515,12 @@ export class ExperimentManager {
       } else {
         console.warn('⚠️ Timeline game container not found, using fallback');
       }
-      
+
       this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
-      
+
       // Start trial execution
       this.startTimelineTrialExecution(experimentType);
-      
+
     } catch (error) {
       console.error('❌ Error starting timeline trial:', error);
       // Use fallback design if everything fails
@@ -531,11 +531,11 @@ export class ExperimentManager {
       this.startTimelineTrialExecution(experimentType);
     }
   }
-  
+
   startTimelineTrialExecution(experimentType) {
     // Clear any existing intervals
     this.clearGameIntervals();
-    
+
     // Start appropriate trial type
     switch (experimentType) {
       case '1P1G':
@@ -553,49 +553,66 @@ export class ExperimentManager {
       default:
         console.error('Unknown experiment type:', experimentType);
     }
-    
+
     // Set up game timeout
     this.setupTimelineGameTimeout();
   }
-  
+
   setupTimelineGameTimeout() {
     const timeout = setTimeout(() => {
       console.log('Game timeout reached');
       this.handleTimelineTrialComplete({ success: false, timeout: true });
     }, CONFIG.game.maxGameLength * 1000);
-    
+
     this.gameTimeoutId = timeout;
   }
-  
+
   handleTimelineTrialComplete(result) {
     console.log('Timeline trial completed:', result);
-    
+
     // Clear intervals
     this.clearGameIntervals();
-    
+
+    // Determine success based on experiment type
+    let success;
+    const currentTrialData = this.gameStateManager.getCurrentTrialData();
+    const experimentType = this.gameStateManager.getCurrentState().experimentType;
+
+    if (experimentType.startsWith('1P')) {
+      // Single player experiments - use the success flag
+      success = result.success || result.trialComplete;
+    } else {
+      // 2P experiments - use collaboration success
+      success = currentTrialData.collaborationSucceeded;
+    }
+
     // Finalize trial data
-    this.gameStateManager.finalizeTrial(result.success || result.trialComplete);
-    
+    this.gameStateManager.finalizeTrial(success);
+
     // Get trial data for timeline
     const trialData = {
       ...result,
+      success: success, // Override with correct success value
       trialData: this.gameStateManager.getCurrentTrialData(),
       gameState: this.gameStateManager.getCurrentState()
     };
-    
+
     // Call timeline completion callback
     if (this.currentTrialCompleteCallback) {
       this.currentTrialCompleteCallback(trialData);
       this.currentTrialCompleteCallback = null;
     }
   }
-  
+
   handleTrialFeedback(data) {
     const { success, experimentType, trialIndex, canvasContainer } = data;
     console.log(`📊 Showing trial feedback for ${experimentType} trial ${trialIndex}`);
-    
+
+    // Determine message type based on experiment type
+    const messageType = experimentType.startsWith('1P') ? 'single' : 'collaboration';
+
     // Create feedback display in the provided container
-    this.uiManager.showTrialFeedbackInContainer(success, canvasContainer);
+    this.uiManager.showTrialFeedbackInContainer(success, canvasContainer, messageType);
   }
 
   // Public API

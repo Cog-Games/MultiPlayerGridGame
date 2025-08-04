@@ -211,6 +211,14 @@ export class GameApplication {
       this.saveExperimentData(experimentData);
     });
 
+    // Handle trial feedback event
+    this.timelineManager.on('show-trial-feedback', (data) => {
+      console.log('📊 Timeline requesting trial feedback:', data);
+      if (this.experimentManager) {
+        this.experimentManager.handleTrialFeedback(data);
+      }
+    });
+
     // Handle any multiplayer-specific timeline events
     this.timelineManager.on('partner-connected', () => {
       console.log('👥 Partner connected via timeline');

@@ -593,24 +593,37 @@ export class TimelineManager {
     const trialResult = this.experimentData.experiments[experimentType]?.[trialIndex];
     const success = trialResult?.success || false;
 
-    // Create main container with game canvas for feedback
-    this.container.innerHTML = `
-      <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-        <div style="text-align: center; max-width: 600px; width: 100%;">
-          <h3 style="margin-bottom: 10px;">Game ${experimentIndex + 1}</h3>
-          <h4 style="margin-bottom: 20px;">Round ${trialIndex + 1} Results</h4>
-          <div id="feedbackCanvasContainer" style="margin: 0 auto 20px auto; position: relative; display: flex; justify-content: center;"></div>
-        </div>
-      </div>
-    `;
+    // Instead of creating a new page, show feedback as overlay on the current game canvas
+    // Find the existing game canvas container
+    const gameCanvasContainer = document.getElementById('game-canvas-container');
 
-    // Emit event to create feedback overlay (similar to legacy)
-    this.emit('show-trial-feedback', {
-      success,
-      experimentType,
-      trialIndex,
-      canvasContainer: document.getElementById('feedbackCanvasContainer')
-    });
+    if (gameCanvasContainer) {
+      // Show feedback overlay on the existing game canvas
+      this.emit('show-trial-feedback', {
+        success,
+        experimentType,
+        trialIndex,
+        canvasContainer: gameCanvasContainer
+      });
+    } else {
+      // Fallback: create a new container if game canvas not found
+      this.container.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+          <div style="text-align: center; max-width: 600px; width: 100%;">
+            <h3 style="margin-bottom: 10px;">Game ${experimentIndex + 1}</h3>
+            <h4 style="margin-bottom: 20px;">Round ${trialIndex + 1} Results</h4>
+            <div id="feedbackCanvasContainer" style="margin: 0 auto 20px auto; position: relative; display: flex; justify-content: center;"></div>
+          </div>
+        </div>
+      `;
+
+      this.emit('show-trial-feedback', {
+        success,
+        experimentType,
+        trialIndex,
+        canvasContainer: document.getElementById('feedbackCanvasContainer')
+      });
+    }
 
     // Auto-advance after feedback duration
     setTimeout(() => {

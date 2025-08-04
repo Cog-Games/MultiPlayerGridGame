@@ -9,7 +9,7 @@ export class GameStateManager {
     this.isMoving = false;
     this.gameStartTime = 0;
     this.stepCount = 0;
-    
+
     this.reset();
   }
 
@@ -23,7 +23,7 @@ export class GameStateManager {
       trialIndex: 0,
       gameMode: 'human-ai'
     };
-    
+
     this.trialData = {
       trialIndex: 0,
       experimentType: null,
@@ -109,7 +109,7 @@ export class GameStateManager {
 
     // Set up grid matrix
     this.setupGridMatrix(design, experimentType);
-    
+
     // Update current state
     this.currentState.experimentType = experimentType;
     this.currentState.trialIndex = trialIndex;
@@ -216,13 +216,13 @@ export class GameStateManager {
 
   updatePlayerPosition(playerIndex, oldPos, newPos) {
     const objectType = playerIndex === 1 ? GAME_OBJECTS.player : GAME_OBJECTS.ai_player;
-    
+
     // Clear old position
     this.currentState.gridMatrix[oldPos[0]][oldPos[1]] = GAME_OBJECTS.blank;
-    
+
     // Set new position
     this.currentState.gridMatrix[newPos[0]][newPos[1]] = objectType;
-    
+
     // Update player state
     if (playerIndex === 1) {
       this.currentState.player1 = [...newPos];
@@ -233,7 +233,7 @@ export class GameStateManager {
 
   recordPlayerMove(playerIndex, action, reactionTime) {
     const player = playerIndex === 1 ? this.currentState.player1 : this.currentState.player2;
-    
+
     if (playerIndex === 1) {
       this.trialData.player1Actions.push(action);
       this.trialData.player1Trajectory.push([...player]);
@@ -247,19 +247,19 @@ export class GameStateManager {
   detectAndRecordGoals(playerIndex, action) {
     const player = playerIndex === 1 ? this.currentState.player1 : this.currentState.player2;
     const goalHistory = playerIndex === 1 ? this.trialData.player1CurrentGoal : this.trialData.player2CurrentGoal;
-    
+
     const detectedGoal = GameHelpers.detectPlayerGoal(player, action, this.currentState.currentGoals, goalHistory);
-    
+
     if (playerIndex === 1) {
       this.trialData.player1CurrentGoal.push(detectedGoal);
-      
+
       // Record first detected goal
       if (detectedGoal !== null && this.trialData.player1FirstDetectedGoal === null) {
         this.trialData.player1FirstDetectedGoal = detectedGoal;
       }
     } else {
       this.trialData.player2CurrentGoal.push(detectedGoal);
-      
+
       // Record first detected goal
       if (detectedGoal !== null && this.trialData.player2FirstDetectedGoal === null) {
         this.trialData.player2FirstDetectedGoal = detectedGoal;
@@ -267,23 +267,23 @@ export class GameStateManager {
     }
 
     // Check for first shared goal (2P3G only)
-    if (this.currentState.experimentType === '2P3G' && 
-        this.trialData.player1CurrentGoal.length > 0 && 
+    if (this.currentState.experimentType === '2P3G' &&
+        this.trialData.player1CurrentGoal.length > 0 &&
         this.trialData.player2CurrentGoal.length > 0) {
-      
+
       const p1Goal = this.trialData.player1CurrentGoal[this.trialData.player1CurrentGoal.length - 1];
       const p2Goal = this.trialData.player2CurrentGoal[this.trialData.player2CurrentGoal.length - 1];
-      
-      if (p1Goal !== null && p2Goal !== null && p1Goal === p2Goal && 
+
+      if (p1Goal !== null && p2Goal !== null && p1Goal === p2Goal &&
           this.trialData.firstDetectedSharedGoal === null) {
         this.trialData.firstDetectedSharedGoal = p1Goal;
       }
     }
   }
 
-  checkTrialCompletion() {
+    checkTrialCompletion() {
     const player1AtGoal = GameHelpers.isGoalReached(this.currentState.player1, this.currentState.currentGoals);
-    const player2AtGoal = this.currentState.player2 ? 
+    const player2AtGoal = this.currentState.player2 ?
       GameHelpers.isGoalReached(this.currentState.player2, this.currentState.currentGoals) : true;
 
     // Record when players reach goals
@@ -303,14 +303,20 @@ export class GameStateManager {
 
     // Check completion conditions based on experiment type
     if (this.currentState.experimentType.startsWith('1P')) {
+      // Single player experiments - just need player1 to reach any goal
       return player1AtGoal;
     } else {
       // 2P experiments - both players must reach goals
       if (player1AtGoal && player2AtGoal) {
-        // Check collaboration success
+        // For 2P2G and 2P3G, collaboration success means both players reach the SAME goal
         const p1Goal = this.trialData.player1FinalReachedGoal;
         const p2Goal = this.trialData.player2FinalReachedGoal;
+
+        // Collaboration succeeds when both players reach the same goal
         this.trialData.collaborationSucceeded = (p1Goal === p2Goal && p1Goal !== null);
+
+        // For 2P experiments, trial is complete when both players reach goals
+        // but the success depends on whether they reached the same goal
         return true;
       }
     }
@@ -323,27 +329,27 @@ export class GameStateManager {
     this.trialData.completed = success;
     this.trialData.endTime = Date.now();
     this.trialData.totalSteps = this.stepCount;
-    
+
     // Add to experiment data
     this.experimentData.allTrialsData.push({ ...this.trialData });
-    
+
     // Update success threshold tracking
     this.updateSuccessThreshold(success);
   }
 
   updateSuccessThreshold(success) {
     const threshold = this.experimentData.successThreshold;
-    
+
     threshold.totalTrialsCompleted++;
     threshold.successHistory.push(success);
-    
+
     if (success) {
       threshold.consecutiveSuccesses++;
       threshold.lastSuccessTrial = threshold.totalTrialsCompleted - 1;
     } else {
       threshold.consecutiveSuccesses = 0;
     }
-    
+
     // Check if threshold reached
     if (threshold.consecutiveSuccesses >= CONFIG.game.successThreshold.consecutiveSuccessesRequired &&
         threshold.totalTrialsCompleted >= CONFIG.game.successThreshold.minTrialsBeforeCheck) {

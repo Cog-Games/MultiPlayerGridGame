@@ -261,9 +261,14 @@ export class UIManager {
   // Feedback and results
   showTrialFeedback(result) {
     const success = result.success || result.collaborationSucceeded;
+    const experimentType = result.experimentType || '2P2G'; // Default to collaboration type
+
+    // Determine message type based on experiment type
+    const messageType = experimentType.startsWith('1P') ? 'single' : 'collaboration';
+
     const message = success ?
-      '🎉 Trial completed successfully!' :
-      '❌ Trial completed - try again next time!';
+      (messageType === 'single' ? '🎉 Goal reached!' : '🎉 Collaboration succeeded!') :
+      (messageType === 'single' ? '❌ Time up!' : '❌ Collaboration failed!');
 
     this.showGameStatus(message, success ? 'success' : 'warning');
 
@@ -362,7 +367,7 @@ export class UIManager {
     `;
   }
 
-  showTrialFeedbackInContainer(success, canvasContainer) {
+  showTrialFeedbackInContainer(success, canvasContainer, messageType = 'collaboration') {
     // Show trial feedback in a specific container (used by timeline)
     console.log(`📊 Showing trial feedback in container: ${success ? 'SUCCESS' : 'FAILURE'}`);
 
@@ -371,43 +376,104 @@ export class UIManager {
       return;
     }
 
-    // Create feedback overlay
-    const feedbackOverlay = document.createElement('div');
-    feedbackOverlay.style.cssText = `
+    // Validate messageType
+    if (messageType !== 'single' && messageType !== 'collaboration') {
+      console.warn('Invalid messageType. Must be "single" or "collaboration"');
+      messageType = 'collaboration';
+    }
+
+    // Create visual feedback based on success
+    let visualFeedback;
+    if (success) {
+      // Smile face for success
+      visualFeedback = `
+        <div style="display: flex; justify-content: center; margin: 30px 0;">
+          <div style="
+            width: 120px;
+            height: 120px;
+            background-color: #28a745;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+          ">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12,1A11,11,0,1,0,23,12,11.013,11.013,0,0,0,12,1Zm0,20a9,9,0,1,1,9-9A9.011,9.011,0,0,1,12,21Zm6-8A6,6,0,0,1,6,13a1,1,0,0,1,2,0,4,4,0,0,0,8,0,1,1,0,0,1,2,0ZM8,10V9a1,1,0,0,1,2,0v1a1,1,0,0,1-2,0Zm6,0V9a1,1,0,0,1,2,0v1a1,1,0,0,1-2,0Z" fill="white"/>
+            </svg>
+          </div>
+        </div>
+      `;
+    } else {
+      // Sad face for failure
+      visualFeedback = `
+        <div style="display: flex; justify-content: center; margin: 30px 0;">
+          <div style="
+            width: 120px;
+            height: 120px;
+            background-color: #dc3545;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+          ">
+            <svg width="80" height="80" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19.5 10c.277 0 .5.223.5.5v3c0 .277-.223.5-.5.5s-.5-.223-.5-.5v-3c0-.277.223-.5.5-.5zm-9 0c.277 0 .5.223.5.5v3c0 .277-.223.5-.5.5s-.5-.223-.5-.5v-3c0-.277.223-.5.5-.5zM15 20c-2.104 0-4.186.756-5.798 2.104-.542.4.148 1.223.638.76C11.268 21.67 13.137 21 15 21s3.732.67 5.16 1.864c.478.45 1.176-.364.638-.76C19.186 20.756 17.104 20 15 20zm0-20C6.722 0 0 6.722 0 15c0 8.278 6.722 15 15 15 8.278 0 15-6.722 15-15 0-8.278-6.722-15-15-15zm0 1c7.738 0 14 6.262 14 14s-6.262 14-14 14S1 22.738 1 15 7.262 1 15 1z" fill="white"/>
+            </svg>
+          </div>
+        </div>
+      `;
+    }
+
+    // Determine message based on messageType
+    let message;
+    if (messageType === 'single') {
+      message = success ? 'Goal reached!' : 'Time up!';
+    } else if (messageType === 'collaboration') {
+      message = success ? 'Collaboration succeeded!' : 'Collaboration failed!';
+    }
+
+    // Create overlay div positioned absolutely over the canvas
+    const overlay = document.createElement('div');
+    overlay.innerHTML = `
+      <div style="
+        text-align: center;
+        background: rgba(255, 255, 255, 0.95);
+        border: 3px solid ${success ? '#28a745' : '#dc3545'};
+        border-radius: 15px;
+        padding: 30px 40px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(5px);
+      ">
+        <div style="font-size: 32px; font-weight: bold; margin-bottom: 20px; color: ${success ? '#28a745' : '#dc3545'};">
+          ${message}
+        </div>
+        ${visualFeedback}
+      </div>
+    `;
+    overlay.style.cssText = `
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.8);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      pointer-events: none;
+      width: auto;
+      height: auto;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
-      font-size: 24px;
-      font-weight: bold;
-      border-radius: 8px;
     `;
 
-    feedbackOverlay.innerHTML = `
-      <div style="text-align: center;">
-        <div style="font-size: 48px; margin-bottom: 20px;">
-          ${success ? '✅' : '❌'}
-        </div>
-        <div>
-          ${success ? 'Success!' : 'Try Again'}
-        </div>
-      </div>
-    `;
-
-    // Add to container
+    // Add overlay to canvas container
     canvasContainer.style.position = 'relative';
-    canvasContainer.appendChild(feedbackOverlay);
+    canvasContainer.appendChild(overlay);
 
     // Auto-remove after delay
     setTimeout(() => {
-      if (feedbackOverlay.parentNode) {
-        feedbackOverlay.parentNode.removeChild(feedbackOverlay);
+      if (overlay.parentNode) {
+        overlay.parentNode.removeChild(overlay);
       }
     }, 2000);
   }
