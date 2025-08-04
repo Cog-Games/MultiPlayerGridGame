@@ -45,6 +45,7 @@ export const CONFIG = {
       order: ['2P2G', '2P3G'], // Default experiment order
       // order: ['2P3G'], // Default experiment order
       // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Default experiment order
+      // order: [ '2P3G'], // Default experiment order
 
       numTrials: {
         '1P1G': 3,
@@ -91,7 +92,7 @@ export const CONFIG = {
       grid: '#cccccc',
       player1: '#ff0000',
       player2: '#ff8800',
-      goal: '#00ff00',
+      goal: '#0066ff',
       obstacle: '#333333'
     }
   },

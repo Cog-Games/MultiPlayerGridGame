@@ -57,7 +57,7 @@ export class UIManager {
         <div style="text-align: center; max-width: 600px; padding: 20px;">
           <h1 style="margin-bottom: 20px;">Grid World Collaboration Experiment</h1>
           <p style="font-size: 18px; margin-bottom: 30px;">
-            Welcome to the grid-based collaboration game. You'll work with an AI partner 
+            Welcome to the grid-based collaboration game. You'll work with an AI partner
             to navigate through different scenarios and reach goals together.
           </p>
           <div style="margin-bottom: 30px;">
@@ -65,17 +65,17 @@ export class UIManager {
             <ul style="text-align: left; display: inline-block;">
               <li>Use arrow keys (↑ ↓ ← →) to move</li>
               <li>You are the red player ⚫</li>
-              <li>Your AI partner is the orange player ⚫</li>
+              <li>Your partner is the orange player ⚫</li>
               <li>Work together to reach the green goals ⚫</li>
             </ul>
           </div>
           <button id="start-experiment" style="
-            padding: 15px 30px; 
-            font-size: 18px; 
-            background: #007bff; 
-            color: white; 
-            border: none; 
-            border-radius: 5px; 
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
           ">
             Start Experiment
@@ -103,12 +103,12 @@ export class UIManager {
             <!-- Player list will be populated here -->
           </div>
           <button id="ready-button" style="
-            padding: 15px 30px; 
-            font-size: 18px; 
-            background: #28a745; 
-            color: white; 
-            border: none; 
-            border-radius: 5px; 
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
             display: none;
           ">
@@ -131,13 +131,18 @@ export class UIManager {
 
   showGameScreen() {
     this.currentScreen = 'game';
+
+    // Determine player color based on playerIndex
+    const playerColor = this.playerIndex === 0 ? CONFIG.visual.colors.player1 : CONFIG.visual.colors.player2;
+    const playerName = this.playerIndex === 0 ? 'Player 1 (Red)' : 'Player 2 (Orange)';
+
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
         <div style="text-align: center;">
           <h3 id="game-title" style="margin-bottom: 10px;">Game</h3>
           <h4 id="trial-info" style="margin-bottom: 20px;">Round 1</h4>
           <div id="gameCanvas" style="margin-bottom: 20px;"></div>
-          <p style="font-size: 20px;">You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: red; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
+          <p style="font-size: 20px;">You are ${playerName} <span style="display: inline-block; width: 18px; height: 18px; background-color: ${playerColor}; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
         </div>
       </div>
     `;
@@ -165,7 +170,7 @@ export class UIManager {
     this.keyboardHandler = (event) => {
       const key = event.code;
       const validKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
-      
+
       if (validKeys.includes(key)) {
         event.preventDefault();
         const direction = key.replace('Arrow', '').toLowerCase();
@@ -186,7 +191,7 @@ export class UIManager {
         <p>Game Mode: ${roomData.gameMode === 'human-human' ? 'Human vs Human' : 'Human vs AI'}</p>
         <p>Experiment: ${roomData.experimentType}</p>
       `;
-      
+
       // Show ready button if room has players
       if (roomData.players && roomData.players.length > 0) {
         document.getElementById('ready-button').style.display = 'inline-block';
@@ -202,7 +207,7 @@ export class UIManager {
         <div style="text-align: left; display: inline-block;">
           ${players.map((player, index) => `
             <div style="margin: 5px 0;">
-              Player ${index + 1}: ${player.id.substring(0, 8)}... 
+              Player ${index + 1}: ${player.id.substring(0, 8)}...
               ${player.isReady ? '✅ Ready' : '⏳ Not Ready'}
             </div>
           `).join('')}
@@ -221,11 +226,11 @@ export class UIManager {
   updateGameInfo(experimentIndex, trialIndex, experimentType) {
     const gameTitle = document.getElementById('game-title');
     const trialInfo = document.getElementById('trial-info');
-    
+
     if (gameTitle) {
       gameTitle.textContent = `Game ${experimentIndex + 1}`;
     }
-    
+
     if (trialInfo) {
       trialInfo.textContent = `Round ${trialIndex + 1}`;
     }
@@ -240,7 +245,7 @@ export class UIManager {
         warning: '#ffc107',
         error: '#dc3545'
       };
-      
+
       statusElement.innerHTML = `
         <div style="color: ${colors[type] || colors.info}; font-weight: bold;">
           ${message}
@@ -256,12 +261,12 @@ export class UIManager {
   // Feedback and results
   showTrialFeedback(result) {
     const success = result.success || result.collaborationSucceeded;
-    const message = success ? 
-      '🎉 Trial completed successfully!' : 
+    const message = success ?
+      '🎉 Trial completed successfully!' :
       '❌ Trial completed - try again next time!';
-    
+
     this.showGameStatus(message, success ? 'success' : 'warning');
-    
+
     // Auto-hide after delay
     setTimeout(() => {
       this.showGameStatus('');
@@ -281,12 +286,12 @@ export class UIManager {
             <p><strong>Total Time:</strong> ${results.totalTime}</p>
           </div>
           <button onclick="window.location.reload()" style="
-            padding: 15px 30px; 
-            font-size: 18px; 
-            background: #007bff; 
-            color: white; 
-            border: none; 
-            border-radius: 5px; 
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
           ">
             Start New Experiment
@@ -311,9 +316,9 @@ export class UIManager {
       box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     `;
     notification.textContent = message;
-    
+
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
       if (notification.parentNode) {
         notification.parentNode.removeChild(notification);
@@ -328,12 +333,12 @@ export class UIManager {
           <h2>⚠️ Error</h2>
           <p style="margin: 20px 0;">${message}</p>
           <button onclick="window.location.reload()" style="
-            padding: 10px 20px; 
-            font-size: 16px; 
-            background: #dc3545; 
-            color: white; 
-            border: none; 
-            border-radius: 5px; 
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
           ">
             Retry
@@ -347,7 +352,7 @@ export class UIManager {
   showFixation() {
     // Create a simple fixation cross display
     console.log('⚡ Showing fixation display');
-    
+
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
         <div style="font-size: 48px; font-weight: bold; color: #333;">
@@ -360,7 +365,7 @@ export class UIManager {
   showTrialFeedbackInContainer(success, canvasContainer) {
     // Show trial feedback in a specific container (used by timeline)
     console.log(`📊 Showing trial feedback in container: ${success ? 'SUCCESS' : 'FAILURE'}`);
-    
+
     if (!canvasContainer) {
       console.warn('No canvas container provided for trial feedback');
       return;
@@ -383,7 +388,7 @@ export class UIManager {
       font-weight: bold;
       border-radius: 8px;
     `;
-    
+
     feedbackOverlay.innerHTML = `
       <div style="text-align: center;">
         <div style="font-size: 48px; margin-bottom: 20px;">
@@ -394,11 +399,11 @@ export class UIManager {
         </div>
       </div>
     `;
-    
+
     // Add to container
     canvasContainer.style.position = 'relative';
     canvasContainer.appendChild(feedbackOverlay);
-    
+
     // Auto-remove after delay
     setTimeout(() => {
       if (feedbackOverlay.parentNode) {
@@ -408,10 +413,10 @@ export class UIManager {
   }
 
   setupGameCanvasInContainer(container) {
-    // Set up game canvas within a specific container (used by timeline) 
+    // Set up game canvas within a specific container (used by timeline)
     // Matches legacy nodeGameCreateGameCanvas function
     console.log('🎨 Setting up game canvas in timeline container');
-    
+
     if (!container) {
       console.error('No container provided for game canvas');
       return;
@@ -420,7 +425,7 @@ export class UIManager {
     // Create canvas element using same parameters as legacy version
     const canvas = document.createElement('canvas');
     canvas.id = 'gameCanvas';
-    
+
     // Use correct dimensions for current game configuration
     canvas.width = CONFIG.visual.canvasSize;   // 600px for 15x15 grid
     canvas.height = CONFIG.visual.canvasSize;  // 600px for 15x15 grid
@@ -446,7 +451,7 @@ export class UIManager {
     if (this.keyboardHandler) {
       document.removeEventListener('keydown', this.keyboardHandler);
     }
-    
+
     this.eventHandlers.clear();
     this.gameCanvas = null;
     this.keyboardHandler = null;

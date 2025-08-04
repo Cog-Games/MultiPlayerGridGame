@@ -20,7 +20,7 @@ export class TimelineManager {
       completed: false
     };
     this.eventHandlers = new Map();
-    
+
     // Success threshold tracking for collaboration experiments
     this.successThreshold = {
       consecutiveSuccesses: 0,
@@ -34,6 +34,10 @@ export class TimelineManager {
     this.sharedMapData = {};
     this.isMapHost = false;
     this.pendingMapSync = false;
+
+    // Player information for multiplayer games
+    this.playerIndex = 0; // Default to player 0 (red)
+    this.gameMode = 'human-ai'; // Default game mode
   }
 
   // Event system
@@ -64,6 +68,13 @@ export class TimelineManager {
         }
       });
     }
+  }
+
+  // Set player information for multiplayer games
+  setPlayerInfo(playerIndex, gameMode) {
+    this.playerIndex = playerIndex;
+    this.gameMode = gameMode;
+    console.log(`🎮 TimelineManager: Set player info - Player ${playerIndex + 1} (${playerIndex === 0 ? 'red' : 'orange'}) in ${gameMode} mode`);
   }
 
   /**
@@ -198,7 +209,7 @@ export class TimelineManager {
   addCollaborationExperimentStages(experimentType, experimentIndex) {
     // Initialize success threshold tracking for this experiment
     this.initializeSuccessThresholdTracking();
-    
+
     // Add initial trial stages - more will be added dynamically based on performance
     this.addTrialStages(experimentType, experimentIndex, 0);
   }
@@ -413,7 +424,7 @@ export class TimelineManager {
               Ready to Play
             </button>
           </div>
-          
+
           <div style="margin-top: 20px; font-size: 12px; color: #666;">
             <p>For testing: Press <strong>SPACE</strong> to skip waiting and continue with AI partner</p>
           </div>
@@ -437,7 +448,7 @@ export class TimelineManager {
         event.preventDefault();
         document.removeEventListener('keydown', handleSkipWaiting);
         console.log('⏭️ Skipping multiplayer waiting - continuing with AI partner');
-        
+
         // Convert to AI mode and continue
         CONFIG.game.players.player2.type = 'ai';
         this.nextStage();
@@ -522,13 +533,22 @@ export class TimelineManager {
       console.log(`⚡ Fixation completed for trial ${trialIndex} - advancing to next stage`);
       this.nextStage();
     }, CONFIG.game.timing.fixationDuration);
-    
+
     // Store timeout ID for potential cleanup
     this.currentFixationTimeout = timeoutId;
   }
 
   runTrialStage(experimentType, experimentIndex, trialIndex) {
     console.log(`🎮 Starting trial ${trialIndex} of ${experimentType}`);
+
+    // Determine player color and name for multiplayer games
+    let playerColor = CONFIG.visual.colors.player1; // Default red
+    let playerName = 'Player 1 (Red)';
+
+    if (this.gameMode === 'human-human' && experimentType.includes('2P')) {
+      playerColor = this.playerIndex === 0 ? CONFIG.visual.colors.player1 : CONFIG.visual.colors.player2;
+      playerName = this.playerIndex === 0 ? 'Player 1 (Red)' : 'Player 2 (Orange)';
+    }
 
     // Create trial container with game canvas area
     this.container.innerHTML = `
@@ -539,7 +559,7 @@ export class TimelineManager {
             <!-- Game canvas will be inserted here by ExperimentManager -->
           </div>
           <div style="margin-top: 20px; font-size: 14px; color: #666;">
-            <p>Use arrow keys to move your player</p>
+            <p>You are ${playerName} <span style="display: inline-block; width: 18px; height: 18px; background-color: ${playerColor}; border-radius: 50%; vertical-align: middle;"></span>. Use arrow keys to move.</p>
           </div>
         </div>
       </div>
@@ -595,7 +615,7 @@ export class TimelineManager {
     // Auto-advance after feedback duration
     setTimeout(() => {
       console.log(`📊 Post-trial feedback completed for trial ${trialIndex}`);
-      
+
       // Check if we should continue to next trial or end the experiment
       if (experimentType.includes('2P') && CONFIG.game.successThreshold.enabled) {
         // Dynamic trial progression for collaboration experiments
@@ -1058,8 +1078,8 @@ export class TimelineManager {
       console.log(`Checking stage ${nextStageIndex}: ${nextStage.type}`);
 
       // If it's a different experiment type, game-feedback stage, questionnaire stage, or completion stage, stop here
-      if (nextStage.type === 'game-feedback' || 
-          nextStage.type === 'questionnaire' || 
+      if (nextStage.type === 'game-feedback' ||
+          nextStage.type === 'questionnaire' ||
           nextStage.type === 'completion' ||
           (nextStage.experimentType && nextStage.experimentType !== currentExperimentType)) {
         console.log(`Found stopping point: ${nextStage.type}`);
