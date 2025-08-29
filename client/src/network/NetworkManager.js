@@ -72,6 +72,7 @@ export class NetworkManager {
       'player-joined',
       'player-disconnected',
       'player-ready-status',
+      'match-play-ready-status',
       'game-started',
       'player-action',
       'game-state-update',
@@ -126,6 +127,12 @@ export class NetworkManager {
   setPlayerReady() {
     if (this.isConnected) {
       this.socket.emit('player-ready');
+    }
+  }
+
+  setMatchPlayReady() {
+    if (this.isConnected) {
+      this.socket.emit('match-play-ready');
     }
   }
 

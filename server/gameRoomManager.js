@@ -47,7 +47,8 @@ export class GameRoomManager {
     const player = {
       id: playerId,
       joinedAt: new Date(),
-      isReady: false
+      isReady: false,
+      isMatchReady: false
     };
     
     room.players.push(player);
@@ -117,10 +118,26 @@ export class GameRoomManager {
     }
   }
 
+  setPlayerMatchReady(playerId, isReady = true) {
+    const room = this.getPlayerRoom(playerId);
+    if (room) {
+      const player = room.players.find(p => p.id === playerId);
+      if (player) {
+        player.isMatchReady = isReady;
+      }
+    }
+  }
+
   areAllPlayersReady(roomId) {
     const room = this.rooms.get(roomId);
     return room && room.players.length === room.maxPlayers && 
            room.players.every(p => p.isReady);
+  }
+
+  areAllPlayersMatchReady(roomId) {
+    const room = this.rooms.get(roomId);
+    return room && room.players.length === room.maxPlayers &&
+           room.players.every(p => p.isMatchReady);
   }
 
   getRoomStats() {

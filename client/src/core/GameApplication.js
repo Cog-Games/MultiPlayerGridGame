@@ -157,6 +157,16 @@ export class GameApplication {
         console.warn('⚠️ Network manager not available for player ready');
       }
     });
+
+    // Handle match-play space readiness from timeline
+    this.timelineManager.on('match-play-ready', () => {
+      console.log('🎮 Timeline match-play SPACE pressed - forwarding to network');
+      if (this.networkManager && this.networkManager.isConnected) {
+        this.networkManager.setMatchPlayReady();
+      } else {
+        console.warn('⚠️ Network manager not available for match-play-ready');
+      }
+    });
   }
 
   setupMockMultiplayerForTimeline() {
@@ -232,21 +242,52 @@ export class GameApplication {
   }
 
   saveExperimentData(data) {
-    // Save experiment data (could be localStorage, server upload, etc.)
+    // Save/export experiment data in legacy-compatible shape
     try {
-      const dataStr = JSON.stringify(data, null, 2);
+      // Pull comprehensive trial data from GameStateManager (legacy: allTrialsData)
+      const gsData = this.gameStateManager?.getExperimentData?.() || { allTrialsData: [], successThreshold: {} };
+
+      // Participant ID: prefer existing, else try Prolific PID from URL
+      let participantId = data.participantId;
+      if (!participantId) {
+        const params = new URLSearchParams(window.location.search);
+        participantId = params.get('PROLIFIC_PID') || params.get('prolific_pid') || `participant_${Date.now()}`;
+      }
+
+      // Legacy-compatible export object
+      const exportObj = {
+        participantId,
+        timestamp: new Date().toISOString(),
+        experimentOrder: (window.CONFIG?.game?.experiments?.order) || (window.CONFIG?.game?.experiments?.order) || [],
+        allTrialsData: gsData.allTrialsData || [],
+        questionnaireData: data.questionnaire || null,
+        successThreshold: gsData.successThreshold || {},
+        completionCode: data.completionCode || '',
+        version: (window.CONFIG?.game?.version) || '2.0.0',
+        experimentType: (this.timelineManager?.gameMode === 'human-human') ? 'human-human' : 'human-AI'
+      };
+
+      const dataStr = JSON.stringify(exportObj, null, 2);
 
       // Save to localStorage as backup
       localStorage.setItem('experimentData', dataStr);
 
-      // Create downloadable file
+      // Trigger download with legacy-style filename
+      const safeId = String(exportObj.participantId).replace(/[^a-zA-Z0-9_-]/g, '_');
+      const filename = `experiment_data_${safeId}_${new Date().toISOString().slice(0,10)}.json`;
       const blob = new Blob([dataStr], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
-      console.log('💾 Experiment data saved:', data);
-
+      console.log('💾 Experiment data exported (legacy-compatible):', filename);
     } catch (error) {
-      console.error('Failed to save experiment data:', error);
+      console.error('Failed to save/export experiment data:', error);
     }
   }
 

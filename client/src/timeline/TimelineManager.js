@@ -11,7 +11,7 @@ export class TimelineManager {
     this.currentStageIndex = 0;
     this.mapData = {};
     this.experimentData = {
-      participantId: this.generateParticipantId(),
+      participantId: this.getParticipantId(),
       startTime: new Date().toISOString(),
       consentTime: null,
       experiments: {},
@@ -116,19 +116,31 @@ export class TimelineManager {
       // Waiting room only for true human-human multiplayer experiments
       // For human-AI mode, 2P experiments run with AI as the second player
       const isMultiplayer = experimentType.includes('2P');
-      const isHumanHuman = this.isHumanHumanMode();
-      console.log(`🔍 Experiment ${experimentType}: isMultiplayer=${isMultiplayer}, isHumanHuman=${isHumanHuman}`);
+      console.log(`🔍 Experiment ${experimentType}: isMultiplayer=${isMultiplayer}`);
 
-      if (isMultiplayer && isHumanHuman) {
-        console.log(`➕ Adding waiting room stage for ${experimentType}`);
+      if (isMultiplayer) {
+        console.log(`➕ Adding waiting + ready + match-play stages for ${experimentType}`);
+        // Stage 1: Waiting for partner (spinner + status)
         this.stages.push({
           type: 'waiting_for_partner',
           experimentType: experimentType,
           experimentIndex: expIndex,
           handler: () => this.showWaitingForPartnerStage(experimentType, expIndex)
         });
-      } else {
-        console.log(`⏭️  Skipping waiting room for ${experimentType} (isMultiplayer=${isMultiplayer}, isHumanHuman=${isHumanHuman})`);
+        // Stage 2: Ready to play (after partner connected or simulated)
+        this.stages.push({
+          type: 'ready_to_play',
+          experimentType: experimentType,
+          experimentIndex: expIndex,
+          handler: () => this.showReadyToPlayStage(experimentType, expIndex)
+        });
+        // Stage 3: Match play gate (Game is Ready! press space)
+        this.stages.push({
+          type: 'match_play',
+          experimentType: experimentType,
+          experimentIndex: expIndex,
+          handler: () => this.showMatchPlayStage(experimentType, expIndex)
+        });
       }
 
       // Add trial stages (fixation -> trial -> feedback sequence)
@@ -338,26 +350,26 @@ export class TimelineManager {
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
         <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
-          <h2 style="color: #333; margin-bottom: 30px;">Welcome to the Game!</h2>
+          <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Welcome to the Game!</h2>
 
           <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
-            <div style="text-align: center; line-height: 1.6; margin-bottom: 30px; font-size: 18px; max-width: 600px;">
+            <div style="text-align: center; line-height: 1.6; margin-bottom: 30px; font-size: 22px; max-width: 600px;">
               <p style="margin-bottom: 10px;">
-                You will be playing a navigation game where there are hungry travelers who need to reach a restaurant as soon as possible to get some food.
+                You will play a navigation game where hungry travelers need to reach restaurants as quickly as possible.
               </p>
               <p style="margin-bottom: 20px;">
                 <span style="color: #007bff; font-weight: bold;">
-                  Your goal is to use the arrow keys on the computer to control one of the travelers to reach one of the restaurants for a meal as quickly as possible, using the shortest path.
+                  Your goal: Use the arrow keys to guide your traveler to a restaurant.
                 </span>
               </p>
               <p style="margin-bottom: 20px;">
-                Next, let's see how to play the game and practice for a few rounds!
+                Next, let's see how to play the game!
               </p>
             </div>
           </div>
 
           <div style="margin-top: 30px;">
-            <p style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 20px;">
+            <p style="font-size: 22px; font-weight: bold; color: #333; margin-bottom: 20px;">
               Press the <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-family: monospace;">spacebar</span> to continue!
             </p>
           </div>
@@ -399,35 +411,30 @@ export class TimelineManager {
   }
 
   showWaitingForPartnerStage(experimentType, experimentIndex) {
+    const humanHuman = this.isHumanHumanMode();
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
         <div id="waiting-room" style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 600px; text-align: center;">
-          <h2 style="color: #333; margin-bottom: 30px;">Waiting for Partner</h2>
+          <h2 style="color: #333; margin-bottom: 30px;">${humanHuman ? 'Finding another player ...' : 'Connecting to partner ...'}</h2>
 
           <div style="margin-bottom: 30px;">
             <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
           </div>
 
-          <p style="font-size: 18px; color: #666; margin-bottom: 20px;">
-            Connecting you with another player...
-          </p>
+          <p style="font-size: 18px; color: #666; margin-bottom: 20px;">Connecting you with another player...</p>
 
           <p style="font-size: 14px; color: #999;">
             This may take a few moments.
           </p>
 
-          <div id="ready-section" style="display: none; margin-top: 30px;">
-            <p style="font-size: 16px; color: #333; margin-bottom: 15px;">
-              Partner found! Click ready when you're prepared to start.
-            </p>
-            <button id="ready-btn" style="background: #28a745; color: white; border: none; padding: 12px 30px; border-radius: 5px; font-size: 16px; cursor: pointer;">
-              Ready to Play
-            </button>
-          </div>
-
           <div style="margin-top: 20px; font-size: 12px; color: #666;">
             <p>For testing: Press <strong>SPACE</strong> to skip waiting and continue with AI partner</p>
           </div>
+          ${humanHuman ? `
+            <div id="cancelButtonContainer" style="margin-top: 10px;">
+              <button id="cancel-wait-btn" style="background: #6c757d; color: white; border: none; padding: 8px 16px; font-size: 14px; border-radius: 5px; cursor: pointer;">Cancel and Exit</button>
+            </div>
+          ` : ''}
         </div>
       </div>
 
@@ -435,9 +442,6 @@ export class TimelineManager {
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
-        }
-        #ready-btn:hover {
-          background: #218838 !important;
         }
       </style>
     `;
@@ -456,47 +460,133 @@ export class TimelineManager {
     };
     document.addEventListener('keydown', handleSkipWaiting);
 
-    // Emit event to start multiplayer connection
-    this.emit('waiting-for-partner', { experimentType, experimentIndex });
+    if (humanHuman) {
+      // Emit event to start multiplayer connection
+      this.emit('waiting-for-partner', { experimentType, experimentIndex });
 
-    // Store handlers for cleanup
-    const partnerConnectedHandler = () => {
-      console.log('👥 Partner connected - showing ready button');
-      const readySection = document.getElementById('ready-section');
-      const loadingDiv = document.querySelector('div[style*="spin"]');
-      if (readySection && loadingDiv) {
-        loadingDiv.style.display = 'none';
-        readySection.style.display = 'block';
+      // Optional cancel button behavior
+      const cancelBtn = document.getElementById('cancel-wait-btn');
+      if (cancelBtn) {
+        cancelBtn.onclick = () => {
+          console.log('⚠️ Waiting canceled by user');
+          window.close();
+        };
+      }
 
-        // Add click handler for ready button
-        const readyBtn = document.getElementById('ready-btn');
-        if (readyBtn) {
-          readyBtn.onclick = () => {
-            readyBtn.disabled = true;
-            readyBtn.textContent = 'Waiting for partner...';
-            readyBtn.style.background = '#6c757d';
-            this.emit('player-ready');
+      // When partner connects, advance to the Ready stage
+      const partnerConnectedHandler = () => {
+        console.log('👥 Partner connected - advancing to Ready to Play stage');
+        document.removeEventListener('keydown', handleSkipWaiting);
+        this.off('partner-connected', partnerConnectedHandler);
+        this.nextStage();
+      };
+
+      // Ensure single handler for this stage
+      this.eventHandlers.delete('partner-connected');
+      this.on('partner-connected', partnerConnectedHandler);
+    } else {
+      // Human-AI mode: simulate waiting, then proceed
+      const waitMs = CONFIG.game.timing.waitingForPartnerDuration || 1000;
+      console.log(`🕐 Simulating partner matching for ${waitMs}ms (AI mode)`);
+      setTimeout(() => {
+        document.removeEventListener('keydown', handleSkipWaiting);
+        this.nextStage();
+      }, waitMs);
+    }
+  }
+
+  showReadyToPlayStage(experimentType, experimentIndex) {
+    const humanHuman = this.isHumanHumanMode() && CONFIG.game.players.player2.type === 'human';
+
+    if (humanHuman) {
+      // Human-human: Ready button flow
+      this.container.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+          <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 600px; text-align: center;">
+            <h2 style="color: #333; margin-bottom: 20px;">Partner Found</h2>
+            <p style="font-size: 16px; color: #333; margin-bottom: 15px;">Click ready when you're prepared to start.</p>
+            <button id="ready-btn" style="background: #28a745; color: white; border: none; padding: 12px 30px; border-radius: 5px; font-size: 16px; cursor: pointer;">
+              Ready to Play
+            </button>
+            <p style="margin-top: 15px; font-size: 12px; color: #666;">Waiting for both players to be ready...</p>
+          </div>
+        </div>
+        <style>
+          #ready-btn:hover { background: #218838 !important; }
+        </style>
+      `;
+
+      const readyBtn = document.getElementById('ready-btn');
+      if (readyBtn) {
+        readyBtn.onclick = () => {
+          readyBtn.disabled = true;
+          readyBtn.textContent = 'Waiting for partner...';
+          readyBtn.style.background = '#6c757d';
+          this.emit('player-ready');
+        };
+      }
+
+      const allPlayersReadyHandler = () => {
+        console.log('🎮 All players ready - proceed to match play gate');
+        this.off('all-players-ready', allPlayersReadyHandler);
+        this.nextStage();
+      };
+
+      // Ensure single handler for this stage
+      this.eventHandlers.delete('all-players-ready');
+      this.on('all-players-ready', allPlayersReadyHandler);
+    } else {
+      // Human-AI: Immediately proceed to the match play gate screen
+      this.nextStage();
+    }
+  }
+
+  showMatchPlayStage(experimentType, experimentIndex) {
+    // Unified match play gate (Game is Ready!); requires BOTH players to press SPACE to proceed
+    this.container.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+        <div style="max-width: 600px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
+          <h1 style="color: #28a745; margin-bottom: 30px;">✅ Game is Ready!</h1>
+          <div style="font-size: 20px; color: #333; margin-bottom: 20px;">
+            <p><strong>${this.isHumanHumanMode() ? 'Both players are ready!' : 'Partner found and connection established!'}</strong></p>
+            <p>The game is ready to begin.</p>
+          </div>
+          <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+            <p style="margin: 0; font-size: 16px; color: #155724;"><strong>Press the space bar to start the game.</strong></p>
+          </div>
+          <div id="match-status" style="font-size: 14px; color: #666; display: none;">Waiting for the other player to press space...</div>
+        </div>
+      </div>
+    `;
+
+    const handleSpacebar = (event) => {
+      if (event.code === 'Space' || event.key === ' ') {
+        event.preventDefault();
+        document.removeEventListener('keydown', handleSpacebar);
+
+        // Signal match-play readiness
+        this.emit('match-play-ready');
+
+        // In human-human mode, wait for server game-started (mapped to all-players-ready)
+        // In human-AI mode, proceed immediately
+        if (this.isHumanHumanMode() && CONFIG.game.players.player2.type === 'human') {
+          const status = document.getElementById('match-status');
+          if (status) status.style.display = 'block';
+
+          const allReadyHandler = () => {
+            this.off('all-players-ready', allReadyHandler);
+            this.nextStage();
           };
+          // Ensure single listener
+          this.eventHandlers.delete('all-players-ready');
+          this.on('all-players-ready', allReadyHandler);
+        } else {
+          this.nextStage();
         }
       }
     };
-
-    const allPlayersReadyHandler = () => {
-      console.log('🎮 All players ready - starting game');
-      document.removeEventListener('keydown', handleSkipWaiting);
-      // Clean up these specific handlers
-      this.off('partner-connected', partnerConnectedHandler);
-      this.off('all-players-ready', allPlayersReadyHandler);
-      this.nextStage();
-    };
-
-    // Remove any existing handlers for this stage before adding new ones
-    this.eventHandlers.delete('partner-connected');
-    this.eventHandlers.delete('all-players-ready');
-
-    // Register the handlers
-    this.on('partner-connected', partnerConnectedHandler);
-    this.on('all-players-ready', allPlayersReadyHandler);
+    document.addEventListener('keydown', handleSpacebar);
+    document.body.focus();
   }
 
   showFixationStage(experimentType, experimentIndex, trialIndex) {
@@ -847,15 +937,16 @@ export class TimelineManager {
    */
 
   isHumanHumanMode() {
-    // Check if we're in true human-human multiplayer mode
-    // For this implementation, we default to human-AI mode unless explicitly configured
+    // Prefer explicit runtime state, then config, then URL param
+    if (this.gameMode === 'human-human') return true;
+
+    if (GameConfigUtils && typeof GameConfigUtils.isHumanHumanMode === 'function') {
+      if (GameConfigUtils.isHumanHumanMode()) return true;
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const mode = urlParams.get('mode');
-    const isHumanHuman = mode === 'human-human';
-    console.log('🔍 URL search params:', window.location.search);
-    console.log('🔍 Mode parameter:', mode);
-    console.log('🔍 Is human-human mode:', isHumanHuman);
-    return isHumanHuman;
+    return mode === 'human-human';
   }
 
   getInstructionsForExperiment(experimentType) {
@@ -864,13 +955,16 @@ export class TimelineManager {
         html: `
           <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
             <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
-              <h2 style="color: #333; margin-bottom: 30px;">Game 1</h2>
-              <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-                <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                  In this practice, you are the traveler <span style="display: inline-block; width: 20px; height: 20px; background-color: red; border-radius: 50%; vertical-align: middle; margin: 0 4px;"></span>, and there will be one restaurant <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span> on the map. Navigate to the restaurant (using ↑ ↓ ← →) as quickly as possible using the shortest path.
-                </p>
+              <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Game 1</h2>
+              <h3 style="color: #000; margin-bottom: 20px; font-size: 24px;">Before we begin, let's practice a few rounds!</h3>
+              <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 28px; margin-bottom: 30px;">
+                <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
+                  <li>You are the traveler <span style=\"display: inline-block; width: 20px; height: 20px; background-color: red; border-radius: 50%; vertical-align: middle; margin: 0 4px;\"></span>.</li>
+                  <li>There is one restaurant <span style=\"display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;\"></span> on the map.</li>
+                  <li>Use the arrow keys (↑↓←→) to reach a restaurant.</li>
+                </ul>
               </div>
-              <p style="font-size: 20px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+              <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
             </div>
           </div>
         `
@@ -879,16 +973,19 @@ export class TimelineManager {
         html: `
           <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
             <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
-              <h2 style="color: #333; margin-bottom: 30px;">Game 2</h2>
-              <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-                <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                  Good job!
+              <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Game 2</h2>
+              <h3 style="color: #000; margin-bottom: 20px; font-size: 24px;">Great job!</h3>
+              <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 28px; margin-bottom: 30px;">
+                <p style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left;">
+                  Now there will be several identical restaurants on the map.
                 </p>
-                <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                  Let's continue. Now, there will be several identical restaurants <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span> on the map. Note that some restaurants are already open before you start. During the game, other restaurants may open and appear on the map. All restaurants are identical, and your goal is to navigate to one of them as quickly as possible using the shortest path.
-                </p>
+                <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
+                  <li>Each round, you can <strong>win</strong> by getting to one of the restaurants.</li>
+                  <li>Note that some restaurants are already open when the round starts. Others may appear later.</li>
+                  <li>For each round that you win, you earn an additional 10 cents.</li>
+                </ul>
               </div>
-              <p style="font-size: 20px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+              <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
             </div>
           </div>
         `
@@ -897,19 +994,19 @@ export class TimelineManager {
         html: `
           <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
             <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
-              <h2 style="color: #333; margin-bottom: 30px;">Game 3</h2>
-              <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-                <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                  Good job! Now, you will be playing with another player!
+              <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Game 3</h2>
+              <h3 style="color: #000; margin-bottom: 20px; font-size: 24px;">Well done!</h3>
+              <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 28px; margin-bottom: 30px;">
+                <p style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left;">
+                  Let's continue. In this new game, you will collaborate with another player.
                 </p>
-                <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                  In this new game, there are only tables for two at these restaurants <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span>, so you and another player have to go together in order to eat. You can also cross paths or touch sometimes on your way to your destination, and that's okay too!
-                </p>
-                <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                  Let's practice first!
-                </p>
+                <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
+                  <li>Each round, you can <strong> win </strong> if both of you go to the <strong> same </strong> restaurant.</li>
+                  <li>You lose the round if you end up at different restaurants.</li>
+                  <li>For each round that you win, you earn an additional 10 cents.</li>
+                </ul>
               </div>
-              <p style="font-size: 20px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+              <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
             </div>
           </div>
         `
@@ -918,16 +1015,20 @@ export class TimelineManager {
         html: `
           <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
             <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
-              <h2 style="color: #333; margin-bottom: 30px;">Game 4</h2>
-              <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-                <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                  Good job! Now, let's start the final game.
+              <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Game 4</h2>
+              <h3 style="color: #000; margin-bottom: 20px; font-size: 24px;">Good job!</h3>
+              <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 28px; margin-bottom: 30px;">
+                <p style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left;">
+                  Now, let's start the final game! You will collaborate with the same player as before.
                 </p>
-                <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                  You will still be playing the same player in the previous game. But now, there may be several identical restaurants <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span> on the map. Note that some restaurants are already open before you start. During the game, other restaurants may open and appear on the map. All restaurants are identical, but you and the other player need to navigate to one of them together as quickly as possible using the shortest path.
-                </p>
+                <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
+                  <li>Each round, you can <strong> win </strong> if both of you go to the <strong> same </strong> restaurant.</li>
+                  <li>You lose the round if you end up at different restaurants.</li>
+                  <li> <strong> Note that some restaurants are already open when the round starts. Others may appear later.</strong></li>
+                  <li>For each round that you win, you earn an additional 10 cents.</li>
+                </ul>
               </div>
-              <p style="font-size: 20px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+              <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
             </div>
           </div>
         `
@@ -949,6 +1050,17 @@ export class TimelineManager {
 
   generateParticipantId() {
     return 'P' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+  }
+
+  getParticipantId() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const prolific = params.get('PROLIFIC_PID') || params.get('prolific_pid');
+      if (prolific) return prolific;
+    } catch (e) {
+      // ignore
+    }
+    return this.generateParticipantId();
   }
 
   generateCompletionCode() {

@@ -31,19 +31,34 @@ export class GameEventHandler {
       }
     });
 
-    // Player ready
+    // Player ready at the Ready screen (button click)
     socket.on('player-ready', () => {
       const room = this.roomManager.getPlayerRoom(socket.id);
       if (room) {
         this.roomManager.setPlayerReady(socket.id, true);
-        
+
         io.to(room.id).emit('player-ready-status', {
           playerId: socket.id,
           players: room.players
         });
+        // Note: Do NOT start the game here; wait for match-play space press
+      }
+    });
 
-        // Start game if all players ready
-        if (this.roomManager.areAllPlayersReady(room.id)) {
+    // Match play ready (SPACE pressed on "Game is Ready" screen)
+    socket.on('match-play-ready', () => {
+      const room = this.roomManager.getPlayerRoom(socket.id);
+      if (room) {
+        this.roomManager.setPlayerMatchReady(socket.id, true);
+
+        // Optionally broadcast status updates here if UI needs it
+        io.to(room.id).emit('match-play-ready-status', {
+          playerId: socket.id,
+          players: room.players
+        });
+
+        // Start game only when BOTH players have pressed space
+        if (this.roomManager.areAllPlayersMatchReady(room.id)) {
           this.startGame(room, io);
         }
       }
