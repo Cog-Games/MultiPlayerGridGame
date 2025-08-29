@@ -11,18 +11,15 @@
  */
 
 /**
- * Generate randomized distance condition sequence for 2P3G trials
+ * Generate randomized distance condition sequence for experiments
  * Ensures equal representation of each condition in random order
- * @param {number} numTrials - Number of 2P3G trials
+ * @param {number} numTrials - Number of trials
+ * @param {Object} CONFIG - Configuration object containing distanceConditions
  * @returns {Array} - Randomized array of distance conditions
  */
-function generateRandomizedDistanceSequence(numTrials) {
-    var allConditions = [
-        TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2,
-        TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1,
-        TWOP3G_CONFIG.distanceConditions.EQUAL_TO_BOTH,
-        TWOP3G_CONFIG.distanceConditions.NO_NEW_GOAL
-    ];
+function generateRandomizedDistanceSequence(numTrials, CONFIG) {
+    // Dynamically get all distance conditions from the config
+    var allConditions = Object.values(CONFIG.distanceConditions);
 
     var numConditions = allConditions.length;
     var trialsPerCondition = Math.floor(numTrials / numConditions);
@@ -52,47 +49,221 @@ function generateRandomizedDistanceSequence(numTrials) {
     console.log('Generated randomized distance condition sequence for', numTrials, 'trials:');
     console.log('Trials per condition:', trialsPerCondition, 'Remaining trials:', remainingTrials);
     console.log('Sequence:', sequence);
-
     return sequence;
 }
 
 
-function generateRandomized1P2GDistanceSequence(numTrials) {
-    var allConditions = [
-        ONEP2G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1,
-        ONEP2G_CONFIG.distanceConditions.FARTHER_TO_PLAYER1,
-        ONEP2G_CONFIG.distanceConditions.EQUAL_TO_PLAYER1,
-        ONEP2G_CONFIG.distanceConditions.NO_NEW_GOAL
-    ];
+// =================================================================================================
+// 1P2G Functions - Experimental Design Logic
+// =================================================================================================
 
-    var numConditions = allConditions.length;
-    var trialsPerCondition = Math.floor(numTrials / numConditions);
-    var remainingTrials = numTrials % numConditions;
+/**
+ * Generate new goal for 1P2G based on distance condition
+ * @param {Array} firstGoal - Position of the first goal [row, col]
+ * @param {string} distanceCondition - Distance condition type
+ * @returns {Array|null} - Position of the new goal or null if not found
+ */
+function generateNewGoalFor1P2G(firstGoal, distanceCondition) {
+    if (!firstGoal || !Array.isArray(firstGoal) || firstGoal.length < 2) {
+        console.error('Invalid first goal provided to generateNewGoalFor1P2G:', firstGoal);
+        return null;
+    }
 
-    // Create array with equal representation of each condition
-    var sequence = [];
-    for (var i = 0; i < numConditions; i++) {
-        for (var j = 0; j < trialsPerCondition; j++) {
-            sequence.push(allConditions[i]);
+    var player1Pos = gameData.player1 || gameData.currentPlayerPos;
+    var distanceCalculator = getDistanceCalculator();
+
+    if (!distanceCalculator) {
+        console.error('1P2G: No distance calculator available in generateNewGoalFor1P2G');
+        return null;
+    }
+
+    var player1DistanceToFirstGoal = distanceCalculator(player1Pos, firstGoal);
+
+    function isValidPosition(row, col) {
+        return gameData.gridMatrix[row][col] === OBJECT.blank &&
+               !gameData.currentGoals.some(goal => goal[0] === row && goal[1] === col);
+    }
+
+    function checkDistanceCondition(player1DistanceToSecondGoal, isRelaxed) {
+        var distanceDiff = Math.abs(player1DistanceToSecondGoal - player1DistanceToFirstGoal);
+
+        switch (distanceCondition) {
+            case ONEP2G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1:
+                var minDiff = ONEP2G_CONFIG.distanceConstraint.minDistanceDiff;
+                var maxDiff = ONEP2G_CONFIG.distanceConstraint.maxDistanceDiff;
+                return player1DistanceToSecondGoal < player1DistanceToFirstGoal &&
+                       distanceDiff >= minDiff && distanceDiff <= maxDiff;
+
+            case ONEP2G_CONFIG.distanceConditions.FARTHER_TO_PLAYER1:
+                var minDiff = ONEP2G_CONFIG.distanceConstraint.minDistanceDiff;
+                var maxDiff = ONEP2G_CONFIG.distanceConstraint.maxDistanceDiff;
+                return player1DistanceToSecondGoal > player1DistanceToFirstGoal &&
+                       distanceDiff >= minDiff && distanceDiff <= maxDiff;
+
+            case ONEP2G_CONFIG.distanceConditions.EQUAL_TO_PLAYER1:
+                return Math.abs(player1DistanceToSecondGoal - player1DistanceToFirstGoal) === 0;
+
+            default:
+                return isRelaxed;
         }
     }
 
-    // Add remaining trials (if any) by cycling through conditions
-    for (var k = 0; k < remainingTrials; k++) {
-        sequence.push(allConditions[k]);
+    function findValidPositions(isRelaxed) {
+        var validPositions = [];
+
+        for (var row = 0; row < EXPSETTINGS.matrixsize; row++) {
+            for (var col = 0; col < EXPSETTINGS.matrixsize; col++) {
+                if (!isValidPosition(row, col)) continue;
+
+                var secondGoal = [row, col];
+                var player1DistanceToSecondGoal = distanceCalculator(player1Pos, secondGoal);
+                var distanceBetweenGoals = distanceCalculator(firstGoal, secondGoal);
+
+                var constraints = isRelaxed ? {
+                    minPlayer1Distance: 1,
+                    minGoalDistance: 2
+                } : {
+                    minPlayer1Distance: ONEP2G_CONFIG.goalConstraints.minDistanceFromHuman,
+                    maxPlayer1Distance: ONEP2G_CONFIG.goalConstraints.maxDistanceFromHuman,
+                    minGoalDistance: ONEP2G_CONFIG.goalConstraints.minDistanceBetweenGoals
+                };
+
+                var meetsConstraints = player1DistanceToSecondGoal >= constraints.minPlayer1Distance &&
+                                     (!constraints.maxPlayer1Distance || player1DistanceToSecondGoal <= constraints.maxPlayer1Distance) &&
+                                     distanceBetweenGoals >= constraints.minGoalDistance &&
+                                     checkDistanceCondition(player1DistanceToSecondGoal, isRelaxed);
+
+                if (meetsConstraints) {
+                    validPositions.push(secondGoal);
+                }
+            }
+        }
+
+        return validPositions;
     }
 
-    // Shuffle the sequence using Fisher-Yates algorithm
-    for (var m = sequence.length - 1; m > 0; m--) {
-        var randomIndex = Math.floor(Math.random() * (m + 1));
-        var temp = sequence[m];
-        sequence[m] = sequence[randomIndex];
-        sequence[randomIndex] = temp;
+    var validPositions = findValidPositions(false);
+    if (validPositions.length > 0) {
+        var selectedGoal = validPositions[Math.floor(Math.random() * validPositions.length)];
+        var player1DistanceToNewGoal = distanceCalculator(player1Pos, selectedGoal);
+
+        console.log('1P2G: Distance to OLD goal (first):', player1DistanceToFirstGoal);
+        console.log('1P2G: Distance to NEW goal:', player1DistanceToNewGoal);
+
+        return selectedGoal;
     }
 
-    console.log('Sequence:', sequence);
-    return sequence;
+    console.log('generateNewGoal: No valid goals found with strict constraints, trying relaxed constraints');
+
+    var relaxedValidPositions = findValidPositions(true);
+    if (relaxedValidPositions.length > 0) {
+        var selectedRelaxedGoal = relaxedValidPositions[Math.floor(Math.random() * relaxedValidPositions.length)];
+        var player1DistanceToNewGoal = distanceCalculator(player1Pos, selectedRelaxedGoal);
+
+        console.log('1P2G: Distance to OLD goal (first):', player1DistanceToFirstGoal);
+        console.log('1P2G: Distance to NEW goal:', player1DistanceToNewGoal);
+
+        return selectedRelaxedGoal;
+    }
+
+    console.log('generateSecondGoalFor1P2G: No valid goals found even with relaxed constraints');
+    return null;
 }
+
+function getDistanceCalculator() {
+    if (typeof calculatetGirdDistance === 'function') {
+        return calculatetGirdDistance;
+    }
+    if (window.NodeGameHelpers && window.NodeGameHelpers.calculatetGirdDistance) {
+        return window.NodeGameHelpers.calculatetGirdDistance;
+    }
+    if (window.calculatetGirdDistance) {
+        return window.calculatetGirdDistance;
+    }
+    return null;
+}
+/**
+ * Check for new goal presentation in 1P2G based on distance condition
+ * @param {Object|Function} [options={}] - Configuration options or callback function
+ */
+function checkNewGoalPresentation1P2G(options) {
+    if (typeof options === 'function') {
+        options = { callback: options };
+    }
+    options = options || {};
+
+    if (gameData.stepCount < ONEP2G_CONFIG.minStepsBeforeNewGoal) {
+        return;
+    }
+
+    var player1CurrentGoal = getLatestPlayer1Goal();
+
+    if (player1CurrentGoal === null || gameData.currentTrialData.newGoalPresented === true) {
+        return;
+    }
+
+    var distanceCondition = gameData.currentTrialData.distanceCondition || ONEP2G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1;
+
+    if (distanceCondition === ONEP2G_CONFIG.distanceConditions.NO_NEW_GOAL) {
+        gameData.currentTrialData.newGoalPresented = true;
+        return;
+    }
+
+    if (gameData.currentGoals.length < 2) {
+        return;
+    }
+
+    var newGoal = generateNewGoalFor1P2G(gameData.currentGoals[0], distanceCondition);
+
+    if (newGoal) {
+        addNewGoalToGame(newGoal, distanceCondition, options);
+        if (options.callback) options.callback();
+    }
+}
+
+function getLatestPlayer1Goal() {
+    var goals = gameData.currentTrialData.player1CurrentGoal;
+    return goals && goals.length > 0 ? goals[goals.length - 1] : null;
+}
+
+function addNewGoalToGame(newGoal, distanceCondition, options) {
+    gameData.gridMatrix[newGoal[0]][newGoal[1]] = OBJECT.goal;
+    gameData.currentGoals.push(newGoal);
+
+    if (window.RLAgent && window.RLAgent.resetNewGoalPreCalculationFlag) {
+        window.RLAgent.resetNewGoalPreCalculationFlag();
+    }
+
+    gameData.currentTrialData.newGoalPresented = true;
+    gameData.currentTrialData.newGoalPresentedTime = gameData.stepCount;
+    gameData.currentTrialData.newGoalPosition = newGoal;
+    gameData.currentTrialData.newGoalConditionType = distanceCondition;
+
+    recordDistances(newGoal, options);
+    updateDisplay(options);
+}
+
+function recordDistances(newGoal, options) {
+    var playerPosition = options.playerPosition || gameData.player1 || gameData.currentPlayerPos;
+    var distanceCalculator = options.distanceCalculator || getDistanceCalculator();
+
+    if (playerPosition && distanceCalculator) {
+        var firstGoal = gameData.currentGoals[0];
+        gameData.currentTrialData.humanDistanceToFirstGoal = distanceCalculator(playerPosition, firstGoal);
+        gameData.currentTrialData.humanDistanceToNewGoal = distanceCalculator(playerPosition, newGoal);
+    }
+}
+
+function updateDisplay(options) {
+    var displayUpdater = options.displayUpdater ||
+                        (typeof nodeGameUpdateGameDisplay === 'function' ? nodeGameUpdateGameDisplay :
+                         window.nodeGameUpdateGameDisplay);
+
+    if (displayUpdater) {
+        displayUpdater();
+    }
+}
+
 
 // =================================================================================================
 // 2P3G Functions - Experimental Design Logic
@@ -125,166 +296,131 @@ function setDistanceConditionSequence(newSequence) {
     TWOP3G_CONFIG.distanceConditionSequence = newSequence;
 }
 
-function generateNewGoal(player2Pos, player1Pos, oldGoals, player2CurrentGoalIndex, distanceCondition) {
-    // Check if no new goal should be generated
-    if (distanceCondition === TWOP3G_CONFIG.distanceConditions.NO_NEW_GOAL) {
-        return null;
-    }
-
-    if (player2CurrentGoalIndex === null || player2CurrentGoalIndex >= oldGoals.length) {
+/**
+ * Generate new goal with constraints based on distance condition
+ * @param {Array} player2Pos - Player2 position [row, col]
+ * @param {Array} player1Pos - Player1 position [row, col]
+ * @param {Array} oldGoals - Array of existing goal positions
+ * @param {number} player2CurrentGoalIndex - Index of player2's current goal
+ * @param {string} distanceCondition - Distance condition type
+ * @returns {Object|null} - Object with position and metadata, or null
+ */
+function generateNewGoalFor2P3G(player2Pos, player1Pos, oldGoals, player2CurrentGoalIndex, distanceCondition) {
+    if (distanceCondition === TWOP3G_CONFIG.distanceConditions.NO_NEW_GOAL ||
+        player2CurrentGoalIndex === null || player2CurrentGoalIndex >= oldGoals.length) {
         return null;
     }
 
     var player2CurrentGoal = oldGoals[player2CurrentGoalIndex];
     var oldDistanceSum = calculatetGirdDistance(player2Pos, player2CurrentGoal) +
                         calculatetGirdDistance(player1Pos, player2CurrentGoal);
+    var player2DistanceToOldGoal = calculatetGirdDistance(player2Pos, player2CurrentGoal);
+    var player1DistanceToOldGoal = calculatetGirdDistance(player1Pos, player2CurrentGoal);
 
-    // Find all valid positions for the new goal based on distance condition
-    var validPositions = [];
-    for (var row = 0; row < EXPSETTINGS.matrixsize; row++) {
-        for (var col = 0; col < EXPSETTINGS.matrixsize; col++) {
-            var newGoal = [row, col];
+    function checkDistanceCondition2P3G(newGoalDistanceToPlayer1, newGoalDistanceToPlayer2, newDistanceSum, isRelaxed) {
+        var tolerance = isRelaxed ? 1 : 0.1;
+        var minDiff = isRelaxed ? 0 : TWOP3G_CONFIG.distanceConstraint.minDistanceDiff;
+        var maxDiff = isRelaxed ? 30 : TWOP3G_CONFIG.distanceConstraint.maxDistanceDiff;
 
-            // Check if position is not occupied by players or obstacles
-            if (gameData.gridMatrix[row][col] === OBJECT.blank || gameData.gridMatrix[row][col] === OBJECT.goal) {
-                var newGoalDistanceToPlayer2 = calculatetGirdDistance(player2Pos, newGoal);
-                var newGoalDistanceToPlayer1 = calculatetGirdDistance(player1Pos, newGoal);
-                var newDistanceSum = newGoalDistanceToPlayer2 + newGoalDistanceToPlayer1;
+        switch (distanceCondition) {
+            case TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2:
+                var distanceDiff = Math.abs(newGoalDistanceToPlayer2 - player2DistanceToOldGoal);
+                return newGoalDistanceToPlayer2 < player2DistanceToOldGoal &&
+                       distanceDiff >= minDiff && distanceDiff <= maxDiff &&
+                       Math.abs(newDistanceSum - oldDistanceSum) <= tolerance;
 
-                var player2DistanceToOldGoal = calculatetGirdDistance(player2Pos, player2CurrentGoal);
-                var player1DistanceToOldGoal = calculatetGirdDistance(player1Pos, player2CurrentGoal);
+            case TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1:
+                var distanceDiff = Math.abs(newGoalDistanceToPlayer1 - player1DistanceToOldGoal);
+                return newGoalDistanceToPlayer1 < player1DistanceToOldGoal &&
+                       distanceDiff >= minDiff && distanceDiff <= maxDiff &&
+                       Math.abs(newDistanceSum - oldDistanceSum) <= tolerance;
 
-                // Basic constraints that apply to all conditions
-                var sumConstraint = TWOP3G_CONFIG.goalConstraints.maintainDistanceSum ?
-                    Math.abs(newDistanceSum - oldDistanceSum) < 0.1 : true;
-                var blockingConstraint = TWOP3G_CONFIG.goalConstraints.blockPathCheck ?
-                    !isGoalBlockingPath(player1Pos, newGoal, oldGoals) : true;
-                var rectangleConstraint = TWOP3G_CONFIG.goalConstraints.avoidRectangleArea ?
-                    !isInRectangleBetween(newGoal, player2Pos, player2CurrentGoal) : true;
-                var player1DistanceConstraint = newGoalDistanceToPlayer1 >= TWOP3G_CONFIG.goalConstraints.minDistanceFromHuman &&
-                                            newGoalDistanceToPlayer1 <= TWOP3G_CONFIG.goalConstraints.maxDistanceFromHuman;
+            case TWOP3G_CONFIG.distanceConditions.EQUAL_TO_BOTH:
+                var distanceDiff = Math.abs(newGoalDistanceToPlayer2 - newGoalDistanceToPlayer1);
+                var equalTolerance = isRelaxed ? 2 : 1; // Increased tolerance for equal distance
+                var sumTolerance = isRelaxed ? 2 : 1; // More relaxed sum tolerance for EQUAL_TO_BOTH
+                var meetsEqualCondition = distanceDiff <= equalTolerance &&
+                                        Math.abs(newDistanceSum - oldDistanceSum) <= sumTolerance;
 
-                // Distance condition-specific constraints
-                var distanceConditionMet = false;
-                var conditionType = '';
 
-                switch (distanceCondition) {
-                    case TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2:
-                        // New goal closer to player2, equal joint distance
-                        distanceConditionMet = newGoalDistanceToPlayer2 < player2DistanceToOldGoal - TWOP3G_CONFIG.distanceConstraint.closerThreshold &&
-                                             Math.abs(newDistanceSum - oldDistanceSum) < 0.1;
-                        conditionType = 'closer_to_player2';
-                        break;
+                return meetsEqualCondition;
 
-                    case TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1:
-                        // New goal closer to player1, equal joint distance
-                        distanceConditionMet = newGoalDistanceToPlayer1 < player1DistanceToOldGoal - TWOP3G_CONFIG.distanceConstraint.closerThreshold &&
-                                             Math.abs(newDistanceSum - oldDistanceSum) < 0.1;
-                        conditionType = 'closer_to_player1';
-                        break;
-
-                    case TWOP3G_CONFIG.distanceConditions.EQUAL_TO_BOTH:
-                        // New goal equal distance to both player1 and player2, equal joint distance
-                        var distanceDifference = Math.abs(newGoalDistanceToPlayer2 - newGoalDistanceToPlayer1);
-                        distanceConditionMet = distanceDifference < 0.1 && // Equal distance to both players
-                                             Math.abs(newDistanceSum - oldDistanceSum) < 0.1; // Equal sum distance
-                        conditionType = 'equal_to_both';
-                        break;
-
-                    default:
-                        return null;
-                }
-
-                if (distanceConditionMet && sumConstraint && blockingConstraint && rectangleConstraint && player1DistanceConstraint) {
-                    validPositions.push({
-                        position: newGoal,
-                        conditionType: conditionType,
-                        distanceToPlayer2: newGoalDistanceToPlayer2,
-                        distanceToPlayer1: newGoalDistanceToPlayer1,
-                        distanceSum: newDistanceSum
-                    });
-                }
-            }
+            default:
+                return Math.abs(newDistanceSum - oldDistanceSum) <= tolerance;
         }
     }
 
-    // Return a random valid position, or null if none found
-    console.log('generateNewGoal: Found', validPositions.length, 'valid positions');
-    if (validPositions.length > 0) {
-        var selectedGoalData = validPositions[Math.floor(Math.random() * validPositions.length)];
-        console.log('generateNewGoal: Selected position:', selectedGoalData.position);
-        return {
-            position: selectedGoalData.position,
-            conditionType: selectedGoalData.conditionType,
-            distanceToPlayer2: selectedGoalData.distanceToPlayer2,
-            distanceToPlayer1: selectedGoalData.distanceToPlayer1,
-            distanceSum: selectedGoalData.distanceSum
-        };
+    function meetsBasicConstraints2P3G(newGoalDistanceToPlayer1, newGoal, isRelaxed) {
+        if (isRelaxed) {
+            // When relaxed, only check that the goal is not too close to player1 (minimum safety distance)
+            return newGoalDistanceToPlayer1 >= 1;
+        }
+
+        var config = TWOP3G_CONFIG.goalConstraints;
+        return newGoalDistanceToPlayer1 >= config.minDistanceFromHuman &&
+               newGoalDistanceToPlayer1 <= config.maxDistanceFromHuman &&
+               (!config.blockPathCheck || !isGoalBlockingPath(player1Pos, newGoal, oldGoals)) &&
+               (!config.avoidRectangleArea || !isInRectangleBetween(newGoal, player2Pos, player2CurrentGoal));
     }
 
-    var relaxedValidPositions = [];
-    for (var row = 0; row < EXPSETTINGS.matrixsize; row++) {
-        for (var col = 0; col < EXPSETTINGS.matrixsize; col++) {
-            var newGoal = [row, col];
+    function isValidPosition2P3G(row, col) {
+        return gameData.gridMatrix[row][col] === OBJECT.blank &&
+               !oldGoals.some(goal => goal[0] === row && goal[1] === col);
+    }
 
-            // Only check basic constraints: not occupied and reasonable distance from human
-            if (gameData.gridMatrix[row][col] === OBJECT.blank || gameData.gridMatrix[row][col] === OBJECT.goal) {
+    function findValidPositions2P3G(isRelaxed) {
+        var validPositions = [];
+
+        for (var row = 0; row < EXPSETTINGS.matrixsize; row++) {
+            for (var col = 0; col < EXPSETTINGS.matrixsize; col++) {
+                if (!isValidPosition2P3G(row, col)) continue;
+
+                var newGoal = [row, col];
                 var newGoalDistanceToPlayer2 = calculatetGirdDistance(player2Pos, newGoal);
                 var newGoalDistanceToPlayer1 = calculatetGirdDistance(player1Pos, newGoal);
                 var newDistanceSum = newGoalDistanceToPlayer2 + newGoalDistanceToPlayer1;
 
-                // Relaxed constraints: maintain equal sum but with larger tolerance
-                var player1DistanceOk = newGoalDistanceToPlayer1 >= 1; // Minimum 1 distance from player1
-                var relaxedSumConstraint = Math.abs(newDistanceSum - oldDistanceSum) <= 1; // More relaxed tolerance for sum
-                var distanceConditionMet = false;
+                if (meetsBasicConstraints2P3G(newGoalDistanceToPlayer1, newGoal, isRelaxed) &&
+                    checkDistanceCondition2P3G(newGoalDistanceToPlayer1, newGoalDistanceToPlayer2, newDistanceSum, isRelaxed)) {
 
-                switch (distanceCondition) {
-                    case TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2:
-                        // Require new goal to be closer to player2 AND maintain approximately equal sum
-                        distanceConditionMet = newGoalDistanceToPlayer2 < calculatetGirdDistance(player2Pos, player2CurrentGoal) && relaxedSumConstraint;
-                        break;
-
-                    case TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1:
-                        // Require new goal to be closer to player1 AND maintain approximately equal sum
-                        distanceConditionMet = newGoalDistanceToPlayer1 < calculatetGirdDistance(player1Pos, player2CurrentGoal) && relaxedSumConstraint;
-                        break;
-
-                    case TWOP3G_CONFIG.distanceConditions.EQUAL_TO_BOTH:
-                        // Allow larger tolerance for equal distance but still maintain equal sum
-                        var distanceDifference = Math.abs(newGoalDistanceToPlayer2 - newGoalDistanceToPlayer1);
-                        distanceConditionMet = distanceDifference <= 2 && relaxedSumConstraint; // More relaxed tolerance
-                        break;
-
-                    default:
-                        distanceConditionMet = relaxedSumConstraint; // At minimum, maintain approximately equal sum
-                        break;
-                }
-
-                if (player1DistanceOk && distanceConditionMet) {
-                    relaxedValidPositions.push({
+                    validPositions.push({
                         position: newGoal,
                         conditionType: distanceCondition,
                         distanceToPlayer2: newGoalDistanceToPlayer2,
                         distanceToPlayer1: newGoalDistanceToPlayer1,
                         distanceSum: newDistanceSum
                     });
+
                 }
             }
         }
+
+        return validPositions;
     }
 
-    console.log('generateNewGoal: Found', relaxedValidPositions.length, 'relaxed valid positions');
-    if (relaxedValidPositions.length > 0) {
-        var selectedRelaxedGoalData = relaxedValidPositions[Math.floor(Math.random() * relaxedValidPositions.length)];
-        console.log('generateNewGoal: Selected relaxed position:', selectedRelaxedGoalData.position);
-        return {
-            position: selectedRelaxedGoalData.position,
-            conditionType: selectedRelaxedGoalData.conditionType,
-            distanceToPlayer2: selectedRelaxedGoalData.distanceToPlayer2,
-            distanceToPlayer1: selectedRelaxedGoalData.distanceToPlayer1,
-            distanceSum: selectedRelaxedGoalData.distanceSum
-        };
+    var validPositions = findValidPositions2P3G(false);
+
+
+    if (validPositions.length > 0) {
+        var selectedGoalResult = validPositions[Math.floor(Math.random() * validPositions.length)];
+
+        console.log('Player1 and Player2 distance to OLD goal:', player1DistanceToOldGoal, player2DistanceToOldGoal);
+        console.log('Player1 and Player2 distance to NEW goal:', selectedGoalResult.distanceToPlayer1, selectedGoalResult.distanceToPlayer2);
+
+        return selectedGoalResult;
     }
+    console.log('No valid goals found with strict constraints, trying relaxed constraints');
+
+    var relaxedValidPositions = findValidPositions2P3G(true);
+    if (relaxedValidPositions.length > 0) {
+        var selectedRelaxedResult = relaxedValidPositions[Math.floor(Math.random() * relaxedValidPositions.length)];
+
+        console.log('Player1 and Player2 distance to OLD goal:', player1DistanceToOldGoal, player2DistanceToOldGoal);
+        console.log('Player1 and Player2 distance to NEW goal:', selectedRelaxedResult.distanceToPlayer1, selectedRelaxedResult.distanceToPlayer2);
+
+        return selectedRelaxedResult;
+    }
+    console.log('No valid goals found with relaxed constraints');
 
     return null;
 }
@@ -356,236 +492,193 @@ function isInRectangleBetween(position, point1, point2) {
     return (posRow >= minRow && posRow <= maxRow && posCol >= minCol && posCol <= maxCol);
 }
 
+/**
+ * Check for new goal presentation in 2P3G
+ * @param {Object|Function} [options={}] - Configuration options or callback function
+ */
 function checkNewGoalPresentation2P3G(options) {
-    // Handle both old callback-only signature and new options signature
     if (typeof options === 'function') {
         options = { callback: options };
     }
     options = options || {};
 
-    // Only proceed if this is actually a 2P3G experiment
-    if (gameData.currentExperiment !== '2P3G') {
+    if (gameData.currentExperiment !== '2P3G' ||
+        gameData.stepCount < TWOP3G_CONFIG.minStepsBeforeNewGoal) {
         return;
     }
 
-    // Detect version automatically if not specified
-    var isHumanHuman = options.isHumanHuman;
-    if (isHumanHuman === undefined) {
-        // Auto-detect based on available data structures
-        isHumanHuman = (typeof socket !== 'undefined' && socket &&
-                       gameData.currentTrialData.player1CurrentGoal !== undefined) ||
-                      (gameData.multiplayer && gameData.multiplayer.myPlayerId);
+    var isHumanHuman = detectHumanHumanMode(options);
+    var playerGoals = initializePlayerGoals();
+    var currentGoals = getCurrentGoals(playerGoals);
+
+    if (!shouldPresentNewGoal(currentGoals)) {
+        return;
     }
 
-    console.log('Detected mode:', isHumanHuman ? 'Human-Human' : 'Human-AI');
+    var playerPositions = getPlayerPositions(isHumanHuman);
 
-    // Get goal tracking arrays based on version
-    var player1Goals, player2Goals, player1InferredGoals, player2InferredGoals;
+    if (isHumanHuman && options.serverRequestHandler) {
+        handleServerSideGoalGeneration(currentGoals, playerPositions, options);
+    } else {
+        handleLocalGoalGeneration(currentGoals, playerPositions, isHumanHuman, options);
+    }
+}
 
+function detectHumanHumanMode(options) {
+    if (options.isHumanHuman !== undefined) {
+        return options.isHumanHuman;
+    }
+    return (typeof socket !== 'undefined' && socket &&
+            gameData.currentTrialData.player1CurrentGoal !== undefined) ||
+           (gameData.multiplayer && gameData.multiplayer.myPlayerId);
+}
+
+function initializePlayerGoals() {
     if (!gameData.currentTrialData.player1CurrentGoal) {
         gameData.currentTrialData.player1CurrentGoal = [];
         gameData.currentTrialData.player2CurrentGoal = [];
-        if (typeof window !== 'undefined') {
-            window.player1InferredGoals = window.player1InferredGoals || [];
-            window.player2InferredGoals = window.player2InferredGoals || [];
-        }
     }
-    player1Goals = gameData.currentTrialData.player1CurrentGoal;
-    player2Goals = gameData.currentTrialData.player2CurrentGoal;
-    player1InferredGoals = (typeof window !== 'undefined') ? window.player1InferredGoals : [];
-    player2InferredGoals = (typeof window !== 'undefined') ? window.player2InferredGoals : [];
+    return {
+        player1Goals: gameData.currentTrialData.player1CurrentGoal,
+        player2Goals: gameData.currentTrialData.player2CurrentGoal
+    };
+}
 
-    // Check minimum steps requirement
-    if (gameData.stepCount < TWOP3G_CONFIG.minStepsBeforeNewGoal) {
-        console.log('Minimum steps not met:', gameData.stepCount, '<', TWOP3G_CONFIG.minStepsBeforeNewGoal);
-        return;
+function getCurrentGoals(playerGoals) {
+    return {
+        player1: playerGoals.player1Goals.length > 0 ?
+                playerGoals.player1Goals[playerGoals.player1Goals.length - 1] : null,
+        player2: playerGoals.player2Goals.length > 0 ?
+                playerGoals.player2Goals[playerGoals.player2Goals.length - 1] : null
+    };
+}
+
+function shouldPresentNewGoal(currentGoals) {
+    var alreadyPresented = newGoalPresented ||
+                          (typeof window !== 'undefined' && window.newGoalPresented) ||
+                          gameData.currentTrialData.newGoalPresented;
+
+    return currentGoals.player1 !== null &&
+           currentGoals.player2 !== null &&
+           currentGoals.player1 === currentGoals.player2 &&
+           !alreadyPresented;
+}
+
+function getPlayerPositions(isHumanHuman) {
+    return isHumanHuman ? {
+        player1: gameData.currentPlayerPos,
+        player2: gameData.currentPartnerPos
+    } : {
+        player1: gameData.player1,
+        player2: gameData.player2
+    };
+}
+
+function handleServerSideGoalGeneration(currentGoals, playerPositions, options) {
+    var distanceCondition = getOrGenerateDistanceCondition();
+
+    options.serverRequestHandler({
+        sharedGoalIndex: currentGoals.player1,
+        stepCount: gameData.stepCount,
+        trialIndex: gameData.currentTrialIndex || gameData.currentTrial,
+        player1Pos: playerPositions.player1,
+        player2Pos: playerPositions.player2,
+        currentGoals: gameData.currentGoals,
+        distanceCondition: mapDistanceConditionToServer(distanceCondition)
+    });
+}
+
+function handleLocalGoalGeneration(currentGoals, playerPositions, isHumanHuman, options) {
+    var distanceCondition = gameData.currentTrialData.distanceCondition;
+    var newGoalResult = generateNewGoalFor2P3G(
+        playerPositions.player2,
+        playerPositions.player1,
+        gameData.currentGoals,
+        currentGoals.player1,
+        distanceCondition
+    );
+
+    if (newGoalResult) {
+        addNewGoalToGame2P3G(newGoalResult, currentGoals, playerPositions, isHumanHuman, options);
     }
+}
 
-    // Get current goals for both players
-    var player1CurrentGoal = player1Goals.length > 0 ?
-        player1Goals[player1Goals.length - 1] : null;
-    var player2CurrentGoal = player2Goals.length > 0 ?
-        player2Goals[player2Goals.length - 1] : null;
+function getOrGenerateDistanceCondition() {
+    var distanceCondition = gameData.currentTrialData.distanceCondition;
+    if (!distanceCondition) {
+        var generator = window.getRandomDistanceConditionFor2P3G ||
+                       (window.GameState && window.GameState.getRandomDistanceConditionFor2P3G) ||
+                       function() { return TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2; };
+        distanceCondition = generator(gameData.currentTrial);
+        gameData.currentTrialData.distanceCondition = distanceCondition;
+    }
+    return distanceCondition;
+}
 
-    console.log('Current goals - Player1:', player1CurrentGoal, 'Player2:', player2CurrentGoal);
-    console.log('New goal presented (local):', (typeof newGoalPresented !== 'undefined') ? newGoalPresented : 'undefined');
-    console.log('New goal presented (window):', (typeof window.newGoalPresented !== 'undefined') ? window.newGoalPresented : 'undefined');
-    console.log('New goal presented (trial data):', gameData.currentTrialData.newGoalPresented);
-    console.log('Goal arrays - Player1:', player1Goals, 'Player2:', player2Goals);
-    console.log('Step count:', gameData.stepCount, 'Min required:', TWOP3G_CONFIG.minStepsBeforeNewGoal);
+function addNewGoalToGame2P3G(newGoalResult, currentGoals, playerPositions, isHumanHuman, options) {
+    updateGlobalState(newGoalResult);
+    addGoalToGrid(newGoalResult);
+    resetAIPreCalculation(isHumanHuman);
+    recordTrialData(newGoalResult, currentGoals, playerPositions, isHumanHuman);
+    updateDisplay2P3G(options, isHumanHuman);
 
-    // Check if both players are heading to the same goal and new goal hasn't been presented yet
-    console.log('Condition check:');
-    console.log('  - Player1 goal null?', player1CurrentGoal === null);
-    console.log('  - Player2 goal null?', player2CurrentGoal === null);
-    console.log('  - Goals same?', player1CurrentGoal === player2CurrentGoal);
-    console.log('  - Already presented (local)?', (typeof newGoalPresented !== 'undefined') ? newGoalPresented : 'undefined');
-    console.log('  - Already presented (window)?', (typeof window.newGoalPresented !== 'undefined') ? window.newGoalPresented : 'undefined');
-    console.log('  - Already presented (trial data)?', gameData.currentTrialData.newGoalPresented);
+    if (options.callback) options.callback();
+}
 
-    // Check if new goal has already been presented (check all possible sources)
-    var alreadyPresented = (typeof newGoalPresented !== 'undefined' && newGoalPresented) ||
-                          (typeof window.newGoalPresented !== 'undefined' && window.newGoalPresented) ||
-                          (gameData.currentTrialData.newGoalPresented === true);
+function updateGlobalState(newGoalResult) {
+    if (typeof window !== 'undefined') {
+        window.newGoalPresented = true;
+        window.newGoalPosition = newGoalResult.position;
+    }
+    newGoalPresented = true;
+    gameData.currentTrialData.newGoalPresented = true;
+}
 
-    if (player1CurrentGoal !== null && player2CurrentGoal !== null &&
-        player1CurrentGoal === player2CurrentGoal &&
-        !alreadyPresented) {
+function addGoalToGrid(newGoalResult) {
+    var goalValue = (typeof OBJECT !== 'undefined') ? OBJECT.goal : 2;
+    gameData.gridMatrix[newGoalResult.position[0]][newGoalResult.position[1]] = goalValue;
+    gameData.currentGoals.push(newGoalResult.position);
+}
 
-        console.log('=== BOTH PLAYERS HEADING TO SAME GOAL ===');
-        console.log('Shared goal index:', player1CurrentGoal);
+function resetAIPreCalculation(isHumanHuman) {
+    if (!isHumanHuman && window.RLAgent && window.RLAgent.resetNewGoalPreCalculationFlag) {
+        window.RLAgent.resetNewGoalPreCalculationFlag();
+    }
+}
 
-        // Get player positions based on version
-        var player1Pos, player2Pos;
+function recordTrialData(newGoalResult, currentGoals, playerPositions, isHumanHuman) {
+    var trialData = gameData.currentTrialData;
+
+    trialData.isNewGoalCloserToPlayer2 = newGoalResult.conditionType === TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2;
+    trialData.newGoalPresentedTime = gameData.stepCount;
+    trialData.newGoalPosition = newGoalResult.position;
+    trialData.newGoalConditionType = newGoalResult.conditionType;
+    trialData.newGoalDistanceSum = newGoalResult.distanceSum;
+    trialData.newGoalDistanceToPlayer1 = newGoalResult.distanceToPlayer1;
+    trialData.newGoalDistanceToPlayer2 = newGoalResult.distanceToPlayer2;
+
+    if (gameData.currentGoals[currentGoals.player1]) {
+        var oldGoal = gameData.currentGoals[currentGoals.player1];
+        var distance1 = calculatetGirdDistance(playerPositions.player1, oldGoal);
+        var distance2 = calculatetGirdDistance(playerPositions.player2, oldGoal);
+
         if (isHumanHuman) {
-            player1Pos = gameData.currentPlayerPos;
-            player2Pos = gameData.currentPartnerPos;
+            trialData.player1DistanceToOldGoal = distance1;
+            trialData.player2DistanceToOldGoal = distance2;
         } else {
-            player1Pos = gameData.player1;
-            player2Pos = gameData.player2;
+            trialData.humanDistanceToOldGoal = distance1;
+            trialData.aiDistanceToOldGoal = distance2;
         }
+    }
+}
 
-        console.log('Player positions - Player1:', player1Pos, 'Player2:', player2Pos);
-
-        // Handle server-side goal generation for human-human mode
-        if (isHumanHuman && options.serverRequestHandler &&
-            typeof socket !== 'undefined' && socket && gameData.currentPartnerPos) {
-
-            console.log('=== USING SERVER-SIDE GOAL GENERATION ===');
-
-            // Get or generate distance condition
-            var distanceCondition = gameData.currentTrialData.distanceCondition;
-
-            if (!distanceCondition) {
-                // Try to get the function from various sources
-                var getRandomDistanceCondition = window.getRandomDistanceConditionFor2P3G ||
-                                               (window.GameState && window.GameState.getRandomDistanceConditionFor2P3G) ||
-                                               function(trialIndex) {
-                                                   // Fallback: return a default condition
-                                                   console.warn('getRandomDistanceConditionFor2P3G not available, using fallback');
-                                                   return TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2;
-                                               };
-                distanceCondition = getRandomDistanceCondition(gameData.currentTrial);
-                gameData.currentTrialData.distanceCondition = distanceCondition;
-                console.log('Generated distance condition:', distanceCondition);
-            }
-
-            // Map distance conditions to server format
-            var serverDistanceCondition = mapDistanceConditionToServer(distanceCondition);
-            console.log('Mapped distance condition:', distanceCondition, '->', serverDistanceCondition);
-
-            // Call the server request handler
-            options.serverRequestHandler({
-                sharedGoalIndex: player1CurrentGoal,
-                stepCount: gameData.stepCount,
-                trialIndex: gameData.currentTrialIndex || gameData.currentTrial,
-                player1Pos: player1Pos,
-                player2Pos: player2Pos,
-                currentGoals: gameData.currentGoals,
-                distanceCondition: serverDistanceCondition
-            });
-
-            console.log('=== SERVER REQUEST SENT VIA HANDLER ===');
-            return; // Server will handle the rest
-        }
-
-        // Local goal generation (human-AI mode or human-human fallback)
-        console.log('=== USING LOCAL GOAL GENERATION ===');
-
-        // Get distance condition for this trial
-        var distanceCondition = gameData.currentTrialData.distanceCondition;
-
-        console.log('Using distance condition:', distanceCondition);
-
-        // Generate new goal using current positions and distance condition
-        var newGoalResult = generateNewGoal(player2Pos, player1Pos, gameData.currentGoals, player1CurrentGoal, distanceCondition);
-
-        if (newGoalResult) {
-            console.log('=== NEW GOAL GENERATED LOCALLY ===');
-
-            // Set global variables for compatibility
-            if (typeof window !== 'undefined') {
-                if (isHumanHuman) {
-                    window.isNewGoalCloserToPlayer2 = newGoalResult.conditionType === TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2;
-                    window.newGoalPosition = newGoalResult.position;
-                    window.newGoalPresented = true;
-                } else {
-                    window.isNewGoalCloserToPlayer2 = newGoalResult.conditionType === TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2;
-                    window.newGoalPosition = newGoalResult.position;
-                    window.newGoalPresented = true;
-                }
-            }
-
-            // Set local variable and trial data flag
-            newGoalPresented = true;
-            gameData.currentTrialData.newGoalPresented = true;
-
-            // Add new goal to the grid and goals list
-            var goalValue = (typeof OBJECT !== 'undefined') ? OBJECT.goal : 2;
-            gameData.gridMatrix[newGoalResult.position[0]][newGoalResult.position[1]] = goalValue;
-            gameData.currentGoals.push(newGoalResult.position);
-
-            // Reset pre-calculation flag for AI version
-            if (!isHumanHuman && window.RLAgent && window.RLAgent.resetNewGoalPreCalculationFlag) {
-                window.RLAgent.resetNewGoalPreCalculationFlag();
-            }
-
-            // Record in trial data with proper naming based on version
-            if (isHumanHuman) {
-                gameData.currentTrialData.isNewGoalCloserToPlayer2 = newGoalResult.conditionType === TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2;
-                gameData.currentTrialData.newGoalDistanceToPlayer1 = newGoalResult.distanceToPlayer1;
-                gameData.currentTrialData.newGoalDistanceToPlayer2 = newGoalResult.distanceToPlayer2;
-            } else {
-                gameData.currentTrialData.isNewGoalCloserToPlayer2 = newGoalResult.conditionType === TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2;
-                gameData.currentTrialData.newGoalDistanceToPlayer1 = newGoalResult.distanceToPlayer1;
-                gameData.currentTrialData.newGoalDistanceToPlayer2 = newGoalResult.distanceToPlayer2;
-            }
-
-            // Common trial data
-            gameData.currentTrialData.newGoalPresentedTime = gameData.stepCount;
-            gameData.currentTrialData.newGoalPosition = newGoalResult.position;
-            gameData.currentTrialData.newGoalConditionType = newGoalResult.conditionType;
-            gameData.currentTrialData.newGoalDistanceSum = newGoalResult.distanceSum;
-
-            // Calculate and record distances to old goal
-            if (gameData.currentGoals && gameData.currentGoals[player1CurrentGoal]) {
-                var oldGoal = gameData.currentGoals[player1CurrentGoal];
-                var distance1ToOldGoal = calculatetGirdDistance(player1Pos, oldGoal);
-                var distance2ToOldGoal = calculatetGirdDistance(player2Pos, oldGoal);
-
-                if (isHumanHuman) {
-                    gameData.currentTrialData.player1DistanceToOldGoal = distance1ToOldGoal;
-                    gameData.currentTrialData.player2DistanceToOldGoal = distance2ToOldGoal;
-                } else {
-                    gameData.currentTrialData.humanDistanceToOldGoal = distance1ToOldGoal;
-                    gameData.currentTrialData.aiDistanceToOldGoal = distance2ToOldGoal;
-                }
-            }
-
-            console.log('New goal created at:', newGoalResult.position);
-            console.log('Trial data updated with distances');
-
-            // Update display
-            if (options.displayUpdater) {
-                options.displayUpdater();
-            } else if (!isHumanHuman && typeof nodeGameUpdateGameDisplay !== 'undefined') {
-                nodeGameUpdateGameDisplay();
-            } else if (isHumanHuman && typeof updateGameVisualization !== 'undefined') {
-                updateGameVisualization();
-            }
-
-            // Call callback
-            if (options.callback) {
-                options.callback();
-            }
-
-            console.log('=== NEW GOAL PRESENTATION COMPLETE ===');
-        } else {
-            console.error('Failed to generate new goal locally');
-        }
-    } else {
-        console.log('=== NEW GOAL CONDITIONS NOT MET ===');
-
+function updateDisplay2P3G(options, isHumanHuman) {
+    if (options.displayUpdater) {
+        options.displayUpdater();
+    } else if (!isHumanHuman && typeof nodeGameUpdateGameDisplay !== 'undefined') {
+        nodeGameUpdateGameDisplay();
+    } else if (isHumanHuman && typeof updateGameVisualization !== 'undefined') {
+        updateGameVisualization();
     }
 }
 
@@ -648,319 +741,15 @@ function checkTrialEnd2P3G(callback) {
     } else if (player1AtGoal && !player2AtGoal) {
         // Show wait message when player1 reached goal but player2 hasn't
         showWaitMessage();
+    } else if (player1AtGoal && player2AtGoal) {
+        // Both players reached goals - restore movement instructions if they were hidden
+        if (typeof showMovementInstructions === 'function') {
+            showMovementInstructions();
+        }
     }
 }
 
 
-function checkNewGoalPresentation1P2G(options) {
-    console.log('=== 1P2G NEW GOAL CHECK START ===');
-
-    // Handle both old callback-only signature and new options signature
-    if (typeof options === 'function') {
-        options = { callback: options };
-    }
-    options = options || {};
-
-    console.log('1P2G: Current stepCount:', gameData.stepCount, 'Required minimum:', ONEP2G_CONFIG.minStepsBeforeNewGoal);
-
-    // Check minimum steps requirement
-    if (gameData.stepCount < ONEP2G_CONFIG.minStepsBeforeNewGoal) {
-        console.log('1P2G: Minimum steps not met, returning early');
-        return;
-    }
-
-    // Get current player1 goal
-    var player1CurrentGoal = gameData.currentTrialData.player1CurrentGoal && gameData.currentTrialData.player1CurrentGoal.length > 0 ?
-        gameData.currentTrialData.player1CurrentGoal[gameData.currentTrialData.player1CurrentGoal.length - 1] : null;
-
-    console.log('1P2G: player1CurrentGoal:', player1CurrentGoal);
-    console.log('1P2G: player1CurrentGoal array:', gameData.currentTrialData.player1CurrentGoal);
-    console.log('1P2G: newGoalPresented:', gameData.currentTrialData.newGoalPresented);
-
-    // Check if player1 goal is detected and new goal hasn't been presented yet
-    if (player1CurrentGoal !== null && gameData.currentTrialData.newGoalPresented !== true) {
-        console.log('1P2G: Conditions met for new goal presentation!');
-        // Get distance condition for this trial
-        var distanceCondition = gameData.currentTrialData.distanceCondition || ONEP2G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1;
-
-        // Check if no new goal condition
-        if (distanceCondition === ONEP2G_CONFIG.distanceConditions.NO_NEW_GOAL) {
-            console.log('1P2G: No new goal condition - no new goal will be presented');
-            gameData.currentTrialData.newGoalPresented = true; // Mark as handled
-            return;
-        }
-
-        // Present new goal when human goal is detected (similar to 2P3G logic)
-        if (gameData.currentGoals.length >= 2) {
-            var firstGoal = gameData.currentGoals[0];
-
-            // Generate new goal position based on distance condition
-            var newGoal = generateNewGoalFor1P2G(firstGoal, distanceCondition);
-
-            if (newGoal) {
-                // Add new goal to the grid and goals list (like 2P3G)
-                gameData.gridMatrix[newGoal[0]][newGoal[1]] = OBJECT.goal;
-                gameData.currentGoals.push(newGoal);
-
-                // Reset pre-calculation flag when new goal is added (human-AI specific)
-                if (window.RLAgent && window.RLAgent.resetNewGoalPreCalculationFlag) {
-                    window.RLAgent.resetNewGoalPreCalculationFlag();
-                }
-
-                // Mark as presented
-                gameData.currentTrialData.newGoalPresented = true;
-
-                // Record in trial data
-                gameData.currentTrialData.newGoalPresentedTime = gameData.stepCount;
-                gameData.currentTrialData.newGoalPosition = newGoal;
-                gameData.currentTrialData.newGoalConditionType = distanceCondition;
-
-                // Get player position (support both versions)
-                var playerPosition = options.playerPosition ||
-                                   gameData.player1 ||
-                                   gameData.currentPlayerPos;
-
-                if (!playerPosition) {
-                    console.error('1P2G: No player position available for distance calculation');
-                    if (options.callback) options.callback();
-                    return;
-                }
-
-                // Calculate and record distances using appropriate function
-                var distanceCalculator = options.distanceCalculator;
-                if (!distanceCalculator) {
-                    // Try to find appropriate distance calculator
-                    if (typeof calculatetGirdDistance === 'function') {
-                        distanceCalculator = calculatetGirdDistance; // Human-AI version
-                    } else if (window.NodeGameHelpers && window.NodeGameHelpers.calculatetGirdDistance) {
-                        distanceCalculator = window.NodeGameHelpers.calculatetGirdDistance; // Human-Human version
-                    } else if (window.calculatetGirdDistance) {
-                        distanceCalculator = window.calculatetGirdDistance; // Global alias
-                    } else {
-                        console.error('1P2G: No distance calculator available');
-                        distanceCalculator = function() { return 0; }; // Fallback
-                    }
-                }
-
-                var humanDistanceToFirstGoal = distanceCalculator(playerPosition, firstGoal);
-                var humanDistanceToNewGoal = distanceCalculator(playerPosition, newGoal);
-                gameData.currentTrialData.humanDistanceToFirstGoal = humanDistanceToFirstGoal;
-                gameData.currentTrialData.humanDistanceToNewGoal = humanDistanceToNewGoal;
-
-                console.log('1P2G: New goal presented at step', gameData.stepCount, ':', newGoal, 'Condition:', distanceCondition);
-                console.log('  - Distance to FIRST goal:', humanDistanceToFirstGoal);
-                console.log('  - Distance to NEW goal:', humanDistanceToNewGoal);
-
-                // Update display using appropriate function
-                var displayUpdater = options.displayUpdater;
-                if (!displayUpdater) {
-                    // Try to find appropriate display updater
-                    if (typeof nodeGameUpdateGameDisplay === 'function') {
-                        displayUpdater = nodeGameUpdateGameDisplay; // Human-AI version
-                    } else if (window.nodeGameUpdateGameDisplay) {
-                        displayUpdater = window.nodeGameUpdateGameDisplay; // Global alias
-                    } else {
-                        console.log('1P2G: No display updater available, skipping display update');
-                        displayUpdater = function() {}; // Fallback
-                    }
-                }
-
-                displayUpdater();
-
-                if (options.callback) options.callback();
-            } else {
-                console.log('checkNewGoalPresentation1P2G: Failed to generate new goal');
-            }
-        } else {
-            console.log('1P2G: Not presenting new goal - not enough goals:', gameData.currentGoals.length);
-        }
-    } else {
-        console.log('1P2G: Conditions NOT met for new goal presentation:');
-        console.log('  - player1CurrentGoal is null?', player1CurrentGoal === null);
-        console.log('  - newGoalPresented?', gameData.currentTrialData.newGoalPresented);
-    }
-    console.log('=== 1P2G NEW GOAL CHECK END ===');
-}
-
-function generateNewGoalFor1P2G(firstGoal, distanceCondition) {
-    if (!firstGoal || !Array.isArray(firstGoal) || firstGoal.length < 2) {
-        console.error('Invalid first goal provided to generateNewGoalFor1P2G:', firstGoal);
-        return null;
-    }
-
-    // Get human player position (support both human-AI and human-human versions)
-            var player1Pos = gameData.player1 || gameData.currentPlayerPos;
-    if (!player1Pos || !Array.isArray(player1Pos) || player1Pos.length < 2) {
-        console.error('Invalid player1 position for 1P2G goal generation');
-        console.error('  - gameData.player1:', gameData.player1);
-        console.error('  - gameData.currentPlayerPos:', gameData.currentPlayerPos);
-        return null;
-    }
-
-    // Get distance calculator (support both human-AI and human-human versions)
-    var distanceCalculator;
-    if (typeof calculatetGirdDistance === 'function') {
-        distanceCalculator = calculatetGirdDistance; // Human-AI version
-    } else if (window.NodeGameHelpers && window.NodeGameHelpers.calculatetGirdDistance) {
-        distanceCalculator = window.NodeGameHelpers.calculatetGirdDistance; // Human-Human version
-    } else if (window.calculatetGirdDistance) {
-        distanceCalculator = window.calculatetGirdDistance; // Global alias
-    } else {
-        console.error('1P2G: No distance calculator available in generateNewGoalFor1P2G');
-        return null;
-    }
-
-    var player1DistanceToFirstGoal = distanceCalculator(player1Pos, firstGoal);
-
-    // Find all valid positions for the second goal based on distance condition
-    var validPositions = [];
-    for (var row = 0; row < EXPSETTINGS.matrixsize; row++) {
-        for (var col = 0; col < EXPSETTINGS.matrixsize; col++) {
-            var secondGoal = [row, col];
-
-            // Check if position is not occupied by players, obstacles, or existing goals
-            if (gameData.gridMatrix[row][col] === OBJECT.blank) {
-                // Skip if this position is already occupied by any existing goal
-                var isOccupiedByGoal = false;
-                for (var i = 0; i < gameData.currentGoals.length; i++) {
-                    if (row === gameData.currentGoals[i][0] && col === gameData.currentGoals[i][1]) {
-                        isOccupiedByGoal = true;
-                        break;
-                    }
-                }
-                if (isOccupiedByGoal) {
-                    continue;
-                }
-
-                var player1DistanceToSecondGoal = distanceCalculator(player1Pos, secondGoal);
-                var distanceBetweenGoals = distanceCalculator(firstGoal, secondGoal);
-
-                // Basic constraints that apply to all conditions
-                var player1DistanceConstraint = player1DistanceToSecondGoal >= ONEP2G_CONFIG.goalConstraints.minDistanceFromHuman &&
-                                            player1DistanceToSecondGoal <= ONEP2G_CONFIG.goalConstraints.maxDistanceFromHuman;
-                var goalDistanceConstraint = distanceBetweenGoals >= ONEP2G_CONFIG.goalConstraints.minDistanceBetweenGoals;
-
-                // Distance condition-specific constraints
-                var distanceConditionMet = false;
-                var conditionType = '';
-
-                switch (distanceCondition) {
-                    case ONEP2G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1:
-                        // Second goal closer to player1 than first goal
-                        distanceConditionMet = player1DistanceToSecondGoal < player1DistanceToFirstGoal - ONEP2G_CONFIG.distanceConstraint.closerThreshold;
-                        conditionType = 'closer_to_player1';
-                        break;
-
-                    case ONEP2G_CONFIG.distanceConditions.FARTHER_TO_PLAYER1:
-                        // Second goal farther to player1 than first goal
-                        distanceConditionMet = player1DistanceToSecondGoal > player1DistanceToFirstGoal + ONEP2G_CONFIG.distanceConstraint.fartherThreshold;
-                        conditionType = 'farther_to_player1';
-                        break;
-
-                    case ONEP2G_CONFIG.distanceConditions.EQUAL_TO_PLAYER1:
-                        // Second goal equal distance to player1 as first goal
-                        var distanceDifference = Math.abs(player1DistanceToSecondGoal - player1DistanceToFirstGoal);
-                        distanceConditionMet = distanceDifference <= ONEP2G_CONFIG.distanceConstraint.equalTolerance;
-                        conditionType = 'equal_to_player1';
-                        break;
-
-                    default:
-                        return null;
-                }
-
-                if (distanceConditionMet && player1DistanceConstraint && goalDistanceConstraint) {
-                    validPositions.push({
-                        position: secondGoal,
-                        conditionType: conditionType,
-                        distanceToPlayer1: player1DistanceToSecondGoal,
-                        distanceToFirstGoal: player1DistanceToFirstGoal,
-                        distanceBetweenGoals: distanceBetweenGoals
-                    });
-                }
-            }
-        }
-    }
-
-    // Return a random valid position, or null if none found
-    if (validPositions.length > 0) {
-        var selectedGoalData = validPositions[Math.floor(Math.random() * validPositions.length)];
-        return selectedGoalData.position;
-    }
-
-    // Fallback: Try with relaxed constraints if no valid positions found
-    console.log('generateNewGoal: No valid goals found with strict constraints, trying relaxed constraints');
-
-    var relaxedValidPositions = [];
-    for (var row = 0; row < EXPSETTINGS.matrixsize; row++) {
-        for (var col = 0; col < EXPSETTINGS.matrixsize; col++) {
-            var secondGoal = [row, col];
-
-            // Only check basic constraints: not occupied and reasonable distance from human
-            if (gameData.gridMatrix[row][col] === OBJECT.blank) {
-                // Skip if this position is already occupied by any existing goal
-                var isOccupiedByGoal = false;
-                for (var i = 0; i < gameData.currentGoals.length; i++) {
-                    if (row === gameData.currentGoals[i][0] && col === gameData.currentGoals[i][1]) {
-                        isOccupiedByGoal = true;
-                        break;
-                    }
-                }
-                if (isOccupiedByGoal) {
-                    continue;
-                }
-
-                var player1DistanceToSecondGoal = distanceCalculator(player1Pos, secondGoal);
-                var distanceBetweenGoals = distanceCalculator(firstGoal, secondGoal);
-
-                // Relaxed constraints
-                var player1DistanceOk = player1DistanceToSecondGoal >= 1; // Minimum 1 distance from player1
-                var goalDistanceOk = distanceBetweenGoals >= 2; // Minimum 2 distance between goals
-                var distanceConditionMet = false;
-
-                switch (distanceCondition) {
-                    case ONEP2G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1:
-                        // Require new goal to be closer to player1 (with more relaxed threshold)
-                        distanceConditionMet = player1DistanceToSecondGoal < player1DistanceToFirstGoal;
-                        break;
-
-                    case ONEP2G_CONFIG.distanceConditions.FARTHER_TO_PLAYER1:
-                        // Require new goal to be farther to player1 (with more relaxed threshold)
-                        distanceConditionMet = player1DistanceToSecondGoal > player1DistanceToFirstGoal;
-                        break;
-
-                    case ONEP2G_CONFIG.distanceConditions.EQUAL_TO_PLAYER1:
-                        // Allow larger tolerance for equal distance
-                        var distanceDifference = Math.abs(player1DistanceToSecondGoal - player1DistanceToFirstGoal);
-                        distanceConditionMet = distanceDifference <= 3; // More relaxed tolerance
-                        break;
-
-                    default:
-                        distanceConditionMet = true; // Accept any position
-                        break;
-                }
-
-                if (player1DistanceOk && goalDistanceOk && distanceConditionMet) {
-                    relaxedValidPositions.push({
-                        position: secondGoal,
-                        conditionType: distanceCondition,
-                        distanceToPlayer1: player1DistanceToSecondGoal,
-                        distanceToFirstGoal: player1DistanceToFirstGoal,
-                        distanceBetweenGoals: distanceBetweenGoals
-                    });
-                }
-            }
-        }
-    }
-
-    if (relaxedValidPositions.length > 0) {
-        var selectedRelaxedGoalData = relaxedValidPositions[Math.floor(Math.random() * relaxedValidPositions.length)];
-        return selectedRelaxedGoalData.position;
-    }
-
-    console.log('generateSecondGoalFor1P2G: No valid goals found even with relaxed constraints');
-
-    return null;
-}
 
 // =================================================================================================
 // SUCCESS THRESHOLD FUNCTIONS
@@ -1038,7 +827,12 @@ function shouldEndExperimentDueToSuccessThreshold() {
     return false;
 }
 
-
+/**
+ * Check if should continue to next trial for given experiment
+ * @param {string} experimentType - Type of experiment
+ * @param {number} trialIndex - Current trial index
+ * @returns {boolean} - True if should continue
+ */
 function shouldContinueToNextTrial(experimentType, trialIndex) {
     // Only apply to collaboration games
     if (!experimentType.includes('2P')) {
@@ -1069,7 +863,7 @@ window.ExpDesign = {
     // 2P3G functions
     getDistanceCondition: getDistanceCondition,
     setDistanceConditionSequence: setDistanceConditionSequence,
-    generateNewGoal: generateNewGoal,
+    generateNewGoalFor2P3G: generateNewGoalFor2P3G ,
     isGoalBlockingPath: isGoalBlockingPath,
     isInRectangleBetween: isInRectangleBetween,
     checkNewGoalPresentation2P3G: checkNewGoalPresentation2P3G,

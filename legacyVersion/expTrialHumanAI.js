@@ -6,41 +6,6 @@
  */
 
 /**
- * Show wait message when player1 has reached goal but player2 hasn't
- */
-function showWaitMessage() {
-    // Find the game canvas container
-    var gameCanvas = document.getElementById('gameCanvas');
-    if (gameCanvas) {
-        // Create or update wait message
-        var waitMessage = document.getElementById('wait-message');
-        if (!waitMessage) {
-            waitMessage = document.createElement('div');
-            waitMessage.id = 'wait-message';
-            waitMessage.style.cssText = `
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: rgba(0, 0, 0, 0.8);
-                color: white;
-                padding: 20px;
-                border-radius: 10px;
-                text-align: center;
-                z-index: 1000;
-                font-size: 18px;
-            `;
-            gameCanvas.parentNode.appendChild(waitMessage);
-        }
-        waitMessage.innerHTML = `
-            <div style="margin-bottom: 10px;">⏳</div>
-            <div>Waiting for partner to finish...</div>
-        `;
-        waitMessage.style.display = 'block';
-    }
-}
-
-/**
  * Get AI action
  */
 function getAIAction(gridMatrix, currentPos, goals, playerPos = null) {
@@ -79,7 +44,6 @@ function runTrialStage(stage) {
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
             <div style="text-align: center;">
                 <h3 style="margin-bottom: 10px;">Game ${experimentIndex + 1}</h3>
-                <h4 style="margin-bottom: 20px;">${trialCountDisplay}</h4>
                 <div id="gameCanvas" style="margin-bottom: 20px;"></div>
                 <p style="font-size: 20px;">You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: red; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
             </div>
@@ -217,7 +181,7 @@ function runTrial1P1G() {
         // Reset movement flag with a small delay to prevent rapid successive key presses
         setTimeout(() => {
             timeline.isMoving = false;
-        }, 100); // 100ms delay to prevent rapid successive movements
+        }, NODEGAME_CONFIG.timing.movementDelay); // Configurable delay to prevent rapid successive movements
     }
 
     // Set up controls
@@ -310,7 +274,7 @@ function runTrial1P2G() {
         // Reset movement flag with a small delay to prevent rapid successive key presses
         setTimeout(() => {
             timeline.isMoving = false;
-        }, 100); // 100ms delay to prevent rapid successive movements
+        }, NODEGAME_CONFIG.timing.movementDelay); // Configurable delay to prevent rapid successive movements
     }
 
     // Set up controls
@@ -357,6 +321,11 @@ function checkTrialEnd2P2G(callback) {
     } else if (player1AtGoal && !player2AtGoal) {
         // Show wait message when player1 reached goal but player2 hasn't
         showWaitMessage();
+    } else if (player1AtGoal && player2AtGoal) {
+        // Both players reached goals - restore movement instructions if they were hidden
+        if (typeof showMovementInstructions === 'function') {
+            showMovementInstructions();
+        }
     }
 }
 
@@ -367,6 +336,7 @@ function runTrial2P2G() {
     var gameLoopInterval = null;
     var aiMoveInterval = null;
     var player1AtGoal = false;
+    var independentAIMode = NodeGameConfig.isAIMovementModeEnabled();
 
     function handleKeyPress(event) {
         if (timeline.isMoving) {
@@ -395,9 +365,12 @@ function runTrial2P2G() {
         var player1NextState = transition(gameData.player1, realAction);
 
         // Calculate player2 move simultaneously (before updating the grid)
+        // Only if independent AI mode is disabled or if AI hasn't reached goal
         var player2Action = null;
         var player2NextState = null;
-        if (!isGoalReached(gameData.player2, gameData.currentGoals)) {
+        // Only allow AI to move when human's action is valid (not a wall bump)
+        var humanMoveIsValid = !(realAction[0] === 0 && realAction[1] === 0);
+        if (!isGoalReached(gameData.player2, gameData.currentGoals) && !independentAIMode && humanMoveIsValid) {
             player2Action = getAIAction(gameData.gridMatrix, gameData.player2, gameData.currentGoals, gameData.player1);
             var player2RealAction = isValidMove(gameData.gridMatrix, gameData.player2, player2Action);
             player2NextState = transition(gameData.player2, player2RealAction);
@@ -430,6 +403,8 @@ function runTrial2P2G() {
 
         // ADD THIS: Detect and record first goals for both players
         var player1CurrentGoal = detectPlayerGoal(gameData.player1, aimAction, gameData.currentGoals, []);
+        gameData.currentTrialData.player1CurrentGoal.push(player1CurrentGoal);
+        
         var player2CurrentGoal = null;
         if (player2Action) {
             player2CurrentGoal = detectPlayerGoal(gameData.player2, player2Action, gameData.currentGoals, []);
@@ -459,10 +434,14 @@ function runTrial2P2G() {
             document.removeEventListener('keydown', handleKeyPress);
             if (gameLoopInterval) clearInterval(gameLoopInterval);
             if (aiMoveInterval) clearInterval(aiMoveInterval);
+            if (goalCheckInterval) clearInterval(goalCheckInterval);
             setTimeout(() => nextStage(), NODEGAME_CONFIG.timing.trialToFeedbackDelay);
         });
 
-        timeline.isMoving = false;
+        // Reset movement flag with a small delay to prevent rapid successive key presses
+        setTimeout(() => {
+            timeline.isMoving = false;
+        }, NODEGAME_CONFIG.timing.movementDelay); // Configurable delay to prevent rapid successive movements
     }
 
     // Independent player2 movement when player1 has reached goal
@@ -504,6 +483,7 @@ function runTrial2P2G() {
             document.removeEventListener('keydown', handleKeyPress);
             if (gameLoopInterval) clearInterval(gameLoopInterval);
             if (aiMoveInterval) clearInterval(aiMoveInterval);
+            if (goalCheckInterval) clearInterval(goalCheckInterval);
             setTimeout(() => nextStage(), NODEGAME_CONFIG.timing.trialToFeedbackDelay);
         });
     }
@@ -527,22 +507,101 @@ function runTrial2P2G() {
                 return;
             }
 
-                    // Only move if player2 hasn't reached goal and player1 has reached goal
-        if (!isGoalReached(gameData.player2, gameData.currentGoals) && player1AtGoal) {
-            makeIndependentPlayer2Move();
-        } else if (isGoalReached(gameData.player2, gameData.currentGoals)) {
-            // Player2 reached goal, stop independent movement
-            if (aiMoveInterval) {
-                clearInterval(aiMoveInterval);
-                aiMoveInterval = null;
+            // Only move if player2 hasn't reached goal and player1 has reached goal
+            if (!isGoalReached(gameData.player2, gameData.currentGoals) && player1AtGoal) {
+                makeIndependentPlayer2Move();
+            } else if (isGoalReached(gameData.player2, gameData.currentGoals)) {
+                // Player2 reached goal, stop independent movement
+                if (aiMoveInterval) {
+                    clearInterval(aiMoveInterval);
+                    aiMoveInterval = null;
+                }
             }
+        }, NODEGAME_CONFIG.rlAgent.independentAgentDelay);
+    }
+
+    // Start independent AI movement mode (AI moves freely with random intervals)
+    function startIndependentAIMovement() {
+        if (!independentAIMode) return;
+
+        // Clear any existing interval
+        if (aiMoveInterval) {
+            clearInterval(aiMoveInterval);
+            aiMoveInterval = null;
         }
-        }, NODEGAME_CONFIG.independentAgentDelay);
+
+        function scheduleNextAIMove() {
+            if (!gameData || !gameData.player2 || !gameData.currentGoals) {
+                return;
+            }
+
+            // Don't schedule if AI has reached goal
+            if (isGoalReached(gameData.player2, gameData.currentGoals)) {
+                return;
+            }
+
+            // Generate random delay within the configured range
+            var minDelay = NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange.min;
+            var maxDelay = NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange.max;
+            var randomDelay = Math.random() * (maxDelay - minDelay) + minDelay;
+
+            setTimeout(() => {
+                // Check if game is still active and AI hasn't reached goal
+                if (gameData && gameData.player2 && gameData.currentGoals &&
+                    !isGoalReached(gameData.player2, gameData.currentGoals)) {
+
+                    // Make AI move
+                    var player2Action = getAIAction(gameData.gridMatrix, gameData.player2, gameData.currentGoals, gameData.player1);
+                    var player2RealAction = isValidMove(gameData.gridMatrix, gameData.player2, player2Action);
+                    var player2NextState = transition(gameData.player2, player2RealAction);
+
+                    window.DataRecording.recordPlayer2Move(player2Action);
+
+                    // Update player2 position
+                    gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.player2[0], gameData.player2[1], OBJECT.blank);
+                    gameData.gridMatrix = updateMatrix(gameData.gridMatrix, player2NextState[0], player2NextState[1], OBJECT.ai_player);
+                    gameData.player2 = player2NextState;
+
+                    gameData.stepCount++;
+                    nodeGameUpdateGameDisplay();
+
+                    // Check if player2 reached goal and track when
+                    var player2AtGoal = isGoalReached(gameData.player2, gameData.currentGoals);
+                    if (player2AtGoal && gameData.currentTrialData.player2GoalReachedStep === -1) {
+                        gameData.currentTrialData.player2GoalReachedStep = gameData.stepCount;
+                        console.log(`Player2 reached goal at step ${gameData.stepCount}`);
+                    }
+
+                    // Check win condition after AI move
+                    checkTrialEnd2P2G(() => {
+                        document.removeEventListener('keydown', handleKeyPress);
+                        if (gameLoopInterval) clearInterval(gameLoopInterval);
+                        if (aiMoveInterval) clearInterval(aiMoveInterval);
+                        if (goalCheckInterval) clearInterval(goalCheckInterval);
+                        setTimeout(() => nextStage(), NODEGAME_CONFIG.timing.trialToFeedbackDelay);
+                    });
+
+                    // Schedule next move if game is still active
+                    if (gameData && !isGoalReached(gameData.player2, gameData.currentGoals)) {
+                        scheduleNextAIMove();
+                    }
+                }
+            }, randomDelay);
+        }
+
+        // Start the independent AI movement
+        scheduleNextAIMove();
     }
 
     // Set up controls
     document.addEventListener('keydown', handleKeyPress);
     document.body.focus();
+
+    // Start independent AI movement if enabled
+    if (independentAIMode) {
+        console.log('Starting independent AI movement mode');
+        startIndependentAIMovement();
+    }
 
     // Game timeout
     gameLoopInterval = setInterval(() => {
@@ -550,30 +609,33 @@ function runTrial2P2G() {
             document.removeEventListener('keydown', handleKeyPress);
             if (gameLoopInterval) clearInterval(gameLoopInterval);
             if (aiMoveInterval) clearInterval(aiMoveInterval);
+            if (goalCheckInterval) clearInterval(goalCheckInterval);
 
             window.DataRecording.finalizeTrial(false);
             setTimeout(() => nextStage(), NODEGAME_CONFIG.timing.trialToFeedbackDelay);
         }
     }, 100);
 
-    // Monitor for when player1 reaches goal to start independent player2 movement
-    var goalCheckInterval = setInterval(() => {
-        // Check if game data is valid
-        if (!gameData || !gameData.player1 || !gameData.player2 || !gameData.currentGoals) {
-            return;
-        }
-        // Only start independent player2 movement if:
-        // 1. Player1 has actually reached a goal (check current state, not just the flag)
-        // 2. Player2 hasn't reached a goal yet
-        // 3. Independent player2 movement isn't already running
-        // 4. Player1 has made at least one move (stepCount > 0)
-        if (gameData.stepCount > 0 &&
-            isGoalReached(gameData.player1, gameData.currentGoals) &&
-            !isGoalReached(gameData.player2, gameData.currentGoals) &&
-            !aiMoveInterval) {
-            startIndependentPlayer2Movement();
-        }
-    }, 100);
+    // Monitor for when player1 reaches goal to start independent player2 movement (only if not in independent AI mode)
+    if (!independentAIMode) {
+        var goalCheckInterval = setInterval(() => {
+            // Check if game data is valid
+            if (!gameData || !gameData.player1 || !gameData.player2 || !gameData.currentGoals) {
+                return;
+            }
+            // Only start independent player2 movement if:
+            // 1. Player1 has actually reached a goal (check current state, not just the flag)
+            // 2. Player2 hasn't reached a goal yet
+            // 3. Independent player2 movement isn't already running
+            // 4. Player1 has made at least one move (stepCount > 0)
+            if (gameData.stepCount > 0 &&
+                isGoalReached(gameData.player1, gameData.currentGoals) &&
+                !isGoalReached(gameData.player2, gameData.currentGoals) &&
+                !aiMoveInterval) {
+                startIndependentPlayer2Movement();
+            }
+        }, 100);
+    }
 }
 
 /**
@@ -585,6 +647,7 @@ function runTrial2P3G() {
     var player1AtGoal = false;
     var isFrozen = false; // Track if movement is frozen due to new goal
     var freezeTimeout = null; // Track freeze timeout
+    var independentAIMode = NodeGameConfig.isAIMovementModeEnabled();
 
     // Reset 2P3G specific variables for new trial
     // Use global variables from expDesign.js
@@ -634,9 +697,12 @@ function runTrial2P3G() {
         var player1NextState = transition(gameData.player1, realAction);
 
         // Calculate player2 move simultaneously (before updating the grid)
+        // Only if independent AI mode is disabled or if AI hasn't reached goal
         var player2Action = null;
         var player2NextState = null;
-        if (!isGoalReached(gameData.player2, gameData.currentGoals) && !isFrozen) {
+        // Only allow AI to move when human's action is valid (not a wall bump)
+        var humanMoveIsValid = !(realAction[0] === 0 && realAction[1] === 0);
+        if (!isGoalReached(gameData.player2, gameData.currentGoals) && !isFrozen && !independentAIMode && humanMoveIsValid) {
             player2Action = getAIAction(gameData.gridMatrix, gameData.player2, gameData.currentGoals, gameData.player1);
             var player2RealAction = isValidMove(gameData.gridMatrix, gameData.player2, player2Action);
             player2NextState = transition(gameData.player2, player2RealAction);
@@ -709,6 +775,7 @@ function runTrial2P3G() {
             timeline.keyListenerActive = false;
             if (gameLoopInterval) clearInterval(gameLoopInterval);
             if (aiMoveInterval) clearInterval(aiMoveInterval);
+            if (goalCheckInterval) clearInterval(goalCheckInterval);
             if (freezeTimeout) clearTimeout(freezeTimeout);
             setTimeout(() => nextStage(), NODEGAME_CONFIG.timing.trialToFeedbackDelay);
         });
@@ -716,7 +783,7 @@ function runTrial2P3G() {
         // Reset movement flag with a small delay to prevent rapid successive key presses
         setTimeout(() => {
             timeline.isMoving = false;
-        }, 100); // 100ms delay to prevent rapid successive movements
+        }, NODEGAME_CONFIG.timing.movementDelay); // Configurable delay to prevent rapid successive movements
     }
 
     // Function to start freeze period when new goal appears
@@ -778,6 +845,7 @@ function runTrial2P3G() {
             timeline.keyListenerActive = false;
             if (gameLoopInterval) clearInterval(gameLoopInterval);
             if (aiMoveInterval) clearInterval(aiMoveInterval);
+            if (goalCheckInterval) clearInterval(goalCheckInterval);
             if (freezeTimeout) clearTimeout(freezeTimeout);
             setTimeout(() => nextStage(), NODEGAME_CONFIG.timing.trialToFeedbackDelay);
         });
@@ -802,17 +870,103 @@ function runTrial2P3G() {
                 return;
             }
 
-                    // Only move if player2 hasn't reached goal and player1 has reached goal
-        if (!isGoalReached(gameData.player2, gameData.currentGoals) && player1AtGoal) {
-            makeIndependentPlayer2Move();
-        } else if (isGoalReached(gameData.player2, gameData.currentGoals)) {
-            // Player2 reached goal, stop independent movement
-            if (aiMoveInterval) {
-                clearInterval(aiMoveInterval);
-                aiMoveInterval = null;
+            // Only move if player2 hasn't reached goal and player1 has reached goal
+            if (!isGoalReached(gameData.player2, gameData.currentGoals) && player1AtGoal) {
+                makeIndependentPlayer2Move();
+            } else if (isGoalReached(gameData.player2, gameData.currentGoals)) {
+                // Player2 reached goal, stop independent movement
+                if (aiMoveInterval) {
+                    clearInterval(aiMoveInterval);
+                    aiMoveInterval = null;
+                }
             }
+        }, NODEGAME_CONFIG.rlAgent.independentAgentDelay);
+    }
+
+    // Start independent AI movement mode (AI moves freely with random intervals)
+    function startIndependentAIMovement() {
+        if (!independentAIMode) return;
+
+        // Clear any existing interval
+        if (aiMoveInterval) {
+            clearInterval(aiMoveInterval);
+            aiMoveInterval = null;
         }
-        }, NODEGAME_CONFIG.independentAgentDelay);
+
+        function scheduleNextAIMove() {
+            if (!gameData || !gameData.player2 || !gameData.currentGoals) {
+                return;
+            }
+
+            // Don't schedule if AI has reached goal or if movement is frozen
+            if (isGoalReached(gameData.player2, gameData.currentGoals) || isFrozen) {
+                return;
+            }
+
+            // Generate random delay within the configured range
+            var minDelay = NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange.min;
+            var maxDelay = NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange.max;
+            var randomDelay = Math.random() * (maxDelay - minDelay) + minDelay;
+
+            setTimeout(() => {
+                // Check if game is still active and AI hasn't reached goal and not frozen
+                if (gameData && gameData.player2 && gameData.currentGoals &&
+                    !isGoalReached(gameData.player2, gameData.currentGoals) && !isFrozen) {
+
+                    // Make AI move
+                    var player2Action = getAIAction(gameData.gridMatrix, gameData.player2, gameData.currentGoals, gameData.player1);
+                    var player2RealAction = isValidMove(gameData.gridMatrix, gameData.player2, player2Action);
+                    var player2NextState = transition(gameData.player2, player2RealAction);
+
+                    window.DataRecording.recordPlayer2Move(player2Action);
+
+                    // Update player2 position
+                    gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.player2[0], gameData.player2[1], OBJECT.blank);
+                    gameData.gridMatrix = updateMatrix(gameData.gridMatrix, player2NextState[0], player2NextState[1], OBJECT.ai_player);
+                    gameData.player2 = player2NextState;
+
+                    // Detect player2 goals with history tracking (matching original)
+                    var player2CurrentGoal = detectPlayerGoal(gameData.player2, player2Action, gameData.currentGoals, player2InferredGoals);
+                    gameData.currentTrialData.player2CurrentGoal.push(player2CurrentGoal);
+
+                    // Update goal history
+                    if (player2CurrentGoal !== null) {
+                        player2InferredGoals.push(player2CurrentGoal);
+                    }
+
+                    // Record first detected goals for AI
+                    if (player2CurrentGoal !== null && gameData.currentTrialData.player2FirstDetectedGoal === null) {
+                        gameData.currentTrialData.player2FirstDetectedGoal = player2CurrentGoal;
+                        console.log(`Player2 first detected goal: ${player2CurrentGoal}`);
+                    }
+
+                    gameData.stepCount++;
+                    nodeGameUpdateGameDisplay();
+
+                    // Check for new goal presentation (matching original logic)
+                    window.ExpDesign.checkNewGoalPresentation2P3G();
+
+                    // Check win condition after AI move
+                    window.ExpDesign.checkTrialEnd2P3G(() => {
+                        document.removeEventListener('keydown', handleKeyPress);
+                        timeline.keyListenerActive = false;
+                        if (gameLoopInterval) clearInterval(gameLoopInterval);
+                        if (aiMoveInterval) clearInterval(aiMoveInterval);
+                        if (goalCheckInterval) clearInterval(goalCheckInterval);
+                        if (freezeTimeout) clearTimeout(freezeTimeout);
+                        setTimeout(() => nextStage(), NODEGAME_CONFIG.timing.trialToFeedbackDelay);
+                    });
+
+                    // Schedule next move if game is still active
+                    if (gameData && !isGoalReached(gameData.player2, gameData.currentGoals)) {
+                        scheduleNextAIMove();
+                    }
+                }
+            }, randomDelay);
+        }
+
+        // Start the independent AI movement
+        scheduleNextAIMove();
     }
 
     // Set up controls - prevent multiple listeners
@@ -824,6 +978,12 @@ function runTrial2P3G() {
     timeline.keyListenerActive = true;
     document.body.focus();
 
+    // Start independent AI movement if enabled
+    if (independentAIMode) {
+        console.log('Starting independent AI movement mode for 2P3G');
+        startIndependentAIMovement();
+    }
+
     // Game timeout
     gameLoopInterval = setInterval(() => {
         if (gameData.stepCount >= NODEGAME_CONFIG.maxGameLength) {
@@ -831,6 +991,7 @@ function runTrial2P3G() {
             timeline.keyListenerActive = false;
             if (gameLoopInterval) clearInterval(gameLoopInterval);
             if (aiMoveInterval) clearInterval(aiMoveInterval);
+            if (goalCheckInterval) clearInterval(goalCheckInterval);
             if (freezeTimeout) clearTimeout(freezeTimeout);
 
             window.DataRecording.finalizeTrial(false);
@@ -838,25 +999,27 @@ function runTrial2P3G() {
         }
     }, 100);
 
-    // Monitor for when player1 reaches goal to start independent player2 movement
-    var goalCheckInterval = setInterval(() => {
-        // Check if game data is valid
-        if (!gameData || !gameData.player1 || !gameData.player2 || !gameData.currentGoals) {
-            return;
-        }
-        // Only start independent player2 movement if:
-        // 1. Player1 has actually reached a goal (check current state, not just the flag)
-        // 2. Player2 hasn't reached a goal yet
-        // 3. Independent player2 movement isn't already running
-        // 4. Player1 has made at least one move (stepCount > 0)
-        if (gameData.stepCount > 0 &&
-            isGoalReached(gameData.player1, gameData.currentGoals) &&
-            !isGoalReached(gameData.player2, gameData.currentGoals) &&
-            !aiMoveInterval) {
-            console.log('2P2G: Starting independent player2 movement - player1 reached goal, player2 has not (slower pace: ' + NODEGAME_CONFIG.independentAgentDelay + 'ms)');
-            startIndependentPlayer2Movement();
-        }
-    }, 100);
+    // Monitor for when player1 reaches goal to start independent player2 movement (only if not in independent AI mode)
+    if (!independentAIMode) {
+        var goalCheckInterval = setInterval(() => {
+            // Check if game data is valid
+            if (!gameData || !gameData.player1 || !gameData.player2 || !gameData.currentGoals) {
+                return;
+            }
+            // Only start independent player2 movement if:
+            // 1. Player1 has actually reached a goal (check current state, not just the flag)
+            // 2. Player2 hasn't reached a goal yet
+            // 3. Independent player2 movement isn't already running
+            // 4. Player1 has made at least one move (stepCount > 0)
+            if (gameData.stepCount > 0 &&
+                isGoalReached(gameData.player1, gameData.currentGoals) &&
+                !isGoalReached(gameData.player2, gameData.currentGoals) &&
+                !aiMoveInterval) {
+                console.log('2P2G: Starting independent player2 movement - player1 reached goal, player2 has not (slower pace: ' + NODEGAME_CONFIG.rlAgent.independentAgentDelay + 'ms)');
+                startIndependentPlayer2Movement();
+            }
+        }, 100);
+    }
 
     // Override the checkNewGoalPresentation2P3G function to trigger freeze
     var originalCheckNewGoal = checkNewGoalPresentation2P3G;

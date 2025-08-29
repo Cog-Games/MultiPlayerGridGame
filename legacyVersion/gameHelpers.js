@@ -52,33 +52,16 @@ function setupGridMatrixForTrial(design, experimentType) {
     if (experimentType.includes('2P')) {
         gameData.gridMatrix[design.initAIGrid[0]][design.initAIGrid[1]] = OBJECT.ai_player;
         gameData.player2 = [...design.initAIGrid];
-    } else {
-        // For 1P experiments, ensure player2 is not set
-        gameData.player2 = null;
     }
 
     // Add goals
-    console.log('Setting up goals for experiment:', experimentType);
-    console.log('Design object:', design);
-    console.log('target1:', design.target1);
-    console.log('target2:', design.target2);
-
-    if (design.target1 && Array.isArray(design.target1) && design.target1.length >= 2) {
-        gameData.gridMatrix[design.target1[0]][design.target1[1]] = OBJECT.goal;
-        gameData.currentGoals = [design.target1];
-        console.log('✅ Goal 1 set at:', design.target1);
-    } else {
-        console.error('❌ Invalid target1 in design:', design.target1);
-        gameData.currentGoals = [];
-    }
+    gameData.gridMatrix[design.target1[0]][design.target1[1]] = OBJECT.goal;
+    gameData.currentGoals = [design.target1];
 
     // Add second goal if available
-    if (design.target2 && Array.isArray(design.target2) && design.target2.length >= 2) {
+    if (design.target2) {
         gameData.gridMatrix[design.target2[0]][design.target2[1]] = OBJECT.goal;
         gameData.currentGoals.push(design.target2);
-        console.log('✅ Goal 2 set at:', design.target2);
-    } else if (design.target2) {
-        console.error('❌ Invalid target2 in design:', design.target2);
     }
 
     // Pre-calculate joint-RL policy for human-AI initial goals to eliminate first-move lag
@@ -246,14 +229,6 @@ function detectPlayerGoal(playerPos, action, goals, goalHistory) {
  * @returns {Object} - Map data for the experiment
  */
 function getMapsForExperiment(experimentType) {
-    console.log(`🔍 Getting maps for experiment: ${experimentType}`);
-    console.log(`🔍 Available global maps:`, {
-        MapsFor1P1G: typeof window.MapsFor1P1G,
-        MapsFor1P2G: typeof window.MapsFor1P2G,
-        MapsFor2P2G: typeof window.MapsFor2P2G,
-        MapsFor2P3G: typeof window.MapsFor2P3G
-    });
-
     var mapData;
     switch (experimentType) {
         case '1P1G':
@@ -273,7 +248,7 @@ function getMapsForExperiment(experimentType) {
             break;
     }
 
-    console.log(`🔍 Returning map data for ${experimentType}:`, mapData);
+    // console.log(`Returning map data for ${experimentType}:`, mapData);
     return mapData;
 }
 
@@ -320,12 +295,10 @@ function selectRandomMaps(mapData, nTrials) {
  * @returns {Object} - Random map design
  */
 function getRandomMapForCollaborationGame(experimentType, trialIndex) {
-    console.log(`🔍 Getting map for ${experimentType} trial ${trialIndex}`);
-
     // If we're past the random sampling threshold, use random sampling
     if (trialIndex >= NODEGAME_CONFIG.successThreshold.randomSamplingAfterTrial) {
         var mapData = getMapsForExperiment(experimentType);
-        console.log(`Getting random map for ${experimentType} trial ${trialIndex + 1}, mapData:`, mapData);
+        // console.log(`Getting random map for ${experimentType} trial ${trialIndex + 1}, mapData:`, mapData);
 
         if (!mapData || Object.keys(mapData).length === 0) {
             console.error(`No map data available for ${experimentType}`);
@@ -351,19 +324,11 @@ function getRandomMapForCollaborationGame(experimentType, trialIndex) {
         return randomMaps[0];
     } else {
         // Use the pre-selected map from timeline
-        console.log(`Using timeline map data for ${experimentType} trial ${trialIndex}`);
-        console.log('Timeline map data:', timeline.mapData);
-        console.log('Available experiment types:', Object.keys(timeline.mapData));
-
         if (!timeline.mapData[experimentType] || !timeline.mapData[experimentType][trialIndex]) {
             console.error(`No timeline map data available for ${experimentType} trial ${trialIndex}`);
-            console.log('Timeline map data for this experiment:', timeline.mapData[experimentType]);
             return null;
         }
-
-        var selectedDesign = timeline.mapData[experimentType][trialIndex];
-        console.log('Selected design from timeline:', selectedDesign);
-        return selectedDesign;
+        return timeline.mapData[experimentType][trialIndex];
     }
 }
 

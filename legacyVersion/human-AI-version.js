@@ -23,7 +23,6 @@ window.whichGoalReached = whichGoalReached;
 window.detectPlayerGoal = detectPlayerGoal;
 window.getMapsForExperiment = getMapsForExperiment;
 window.generateRandomizedDistanceSequence = generateRandomizedDistanceSequence;
-window.generateRandomized1P2GDistanceSequence = generateRandomized1P2GDistanceSequence;
 window.selectRandomMaps = selectRandomMaps;
 window.getRandomMapForCollaborationGame = getRandomMapForCollaborationGame;
 
@@ -36,6 +35,17 @@ window.nextStage = nextStage;
  */
 function initializeNodeGameExperiments() {
     console.log('Initializing experiments...');
+
+    // Extract and validate participant ID
+    if (window.DataRecording && window.DataRecording.extractProlificId) {
+        const participantId = window.DataRecording.extractProlificId();
+        if (participantId) {
+            gameData.participantId = participantId;
+            console.log('Participant ID initialized:', participantId);
+        } else {
+            console.error('Failed to extract participant ID - this may affect data collection');
+        }
+    }
 
     // Ensure required dependencies are available
     if (typeof DIRECTIONS === 'undefined' || typeof OBJECT === 'undefined') {

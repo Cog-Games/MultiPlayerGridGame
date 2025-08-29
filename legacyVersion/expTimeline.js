@@ -23,21 +23,18 @@ function createTimelineStages() {
         var numTrials = NODEGAME_CONFIG.numTrials[experimentType];
 
         // Select maps for this experiment
-        console.log(`📋 Creating timeline for experiment: ${experimentType}`);
         var experimentMaps = getMapsForExperiment(experimentType);
-        console.log(`📋 Available maps for ${experimentType}:`, experimentMaps);
         var selectedMaps = selectRandomMaps(experimentMaps, numTrials);
-        console.log(`📋 Selected ${selectedMaps.length} maps for ${experimentType}:`, selectedMaps);
         timeline.mapData[experimentType] = selectedMaps;
 
         // Generate randomized distance condition sequence for 1P2G experiments
         if (experimentType === '1P2G') {
-            ONEP2G_CONFIG.distanceConditionSequence = generateRandomized1P2GDistanceSequence(numTrials);
+            ONEP2G_CONFIG.distanceConditionSequence = generateRandomizedDistanceSequence(numTrials, ONEP2G_CONFIG);
         }
 
         // Generate randomized distance condition sequence for 2P3G experiments
         if (experimentType === '2P3G') {
-            TWOP3G_CONFIG.distanceConditionSequence = generateRandomizedDistanceSequence(numTrials);
+            TWOP3G_CONFIG.distanceConditionSequence = generateRandomizedDistanceSequence(numTrials, TWOP3G_CONFIG);
         }
 
         // Add welcome screen for this experiment (uncomment if needed)
@@ -101,6 +98,14 @@ function createTimelineStages() {
         handler: showProlificRedirectStage
     });
 
+    // Add completion stage (only once at the end)
+    // timeline.stages.push({
+    //     type: 'complete',
+    //     handler: showCompletionStage
+    // });
+
+    // console.log(`Timeline created with ${timeline.stages.length} total stages`);
+    // console.log('Timeline stages:', timeline.stages.map((stage, index) => `${index}: ${stage.type}`).join(', '));
 
 }
 
@@ -231,26 +236,26 @@ function showWelcomeInfoStage(stage) {
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
             <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
-                <h2 style="color: #333; margin-bottom: 30px;">Welcome to the Game!</h2>
+                <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Welcome to the Game!</h2>
 
                 <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
-                    <div style="text-align: center; line-height: 1.6; margin-bottom: 30px; font-size: 18px; max-width: 600px;">
+                    <div style="text-align: center; line-height: 1.6; margin-bottom: 30px; font-size: 22px; max-width: 600px;">
                         <p style="margin-bottom: 10px;">
-                            You will be playing a navigation game where there are hungry travelers who need to reach a restaurant as soon as possible to get some food.
+                            You will play a navigation game where hungry travelers need to reach restaurants as quickly as possible.
                         </p>
                         <p style="margin-bottom: 20px;">
                             <span style="color: #007bff; font-weight: bold;">
-                                Your goal is to use the arrow keys on the computer to control one of the travelers to reach one of the restaurants for a meal as quickly as possible, using the shortest path.
+                                Your goal: Use the arrow keys to guide your traveler to a restaurant.
                             </span>
                         </p>
                         <p style="margin-bottom: 20px;">
-                            Next, let's see how to play the game and practice for a few rounds!
+                            Next, let's see how to play the game!
                         </p>
                     </div>
                 </div>
 
                 <div style="margin-top: 30px;">
-                    <p style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 20px;">
+                    <p style="font-size: 22px; font-weight: bold; color: #333; margin-bottom: 20px;">
                         Press the <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-family: monospace;">spacebar</span> to continue!
                     </p>
                 </div>
@@ -271,7 +276,35 @@ function showWelcomeInfoStage(stage) {
     document.body.focus();
 }
 
+/**
+ * Show welcome stage (matching jsPsych)
+ */
+function showWelcomeStage(stage) {
+    var container = document.getElementById('container');
+    var experimentType = stage.experimentType;
 
+    var welcomeMessage = getWelcomeMessage(experimentType);
+
+    container.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+            <div style="text-align: center;">
+                ${welcomeMessage}
+            </div>
+        </div>
+    `;
+
+    // Handle spacebar or any key to continue
+    function handleKeyPress(event) {
+        if (event.code === 'Space' || event.key === ' ') {
+            event.preventDefault();
+            document.removeEventListener('keydown', handleKeyPress);
+            nextStage();
+        }
+    }
+
+    document.addEventListener('keydown', handleKeyPress);
+    document.body.focus();
+}
 
 /**
  * Show instructions stage
@@ -314,7 +347,40 @@ function showInstructionsStage(stage) {
     document.body.focus();
 }
 
+/**
+ * Show pre-trial stage (show map without spacebar prompt)
+ */
+function showPreTrialStage(stage) {
+    var container = document.getElementById('container');
+    var trialIndex = stage.trialIndex;
+    var experimentType = stage.experimentType;
+    var experimentIndex = stage.experimentIndex;
+    var currentDesign = timeline.mapData[experimentType][trialIndex];
 
+    // Setup grid matrix for display
+    setupGridMatrixForTrial(currentDesign, experimentType);
+
+    container.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+            <div style="text-align: center;">
+                <h3 style="margin-bottom: 10px;">Game ${experimentIndex + 1}</h3>
+                <h4 style="margin-bottom: 20px;">Round ${trialIndex + 1} of ${NODEGAME_CONFIG.numTrials[experimentType]}</h4>
+                <div id="gameCanvas" style="margin-bottom: 20px;"></div>
+                <p style="font-size: 20px;">You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: red; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
+            </div>
+        </div>
+    `;
+
+    // Create and draw canvas
+    var canvas = nodeGameCreateGameCanvas();
+    document.getElementById('gameCanvas').appendChild(canvas);
+    nodeGameUpdateGameDisplay();
+
+    // Auto-advance after configurable duration
+    setTimeout(() => {
+        nextStage();
+    }, NODEGAME_CONFIG.timing.preTrialDisplayDuration);
+}
 
 /**
  * Show fixation stage (configurable duration)
@@ -369,7 +435,57 @@ function showFixationStage(stage) {
 }
 
 
+/**
+ * Show wait message during AI turns (matching jsPsych)
+ */
+function showWaitMessage() {
+    // Remove any existing wait message
+    var existingMsg = document.getElementById('waitMessageBelowGrid');
+    if (existingMsg) {
+        existingMsg.remove();
+    }
 
+    // Hide the movement instructions during waiting phase
+    var movementInstructions = document.querySelector('p[style*="font-size: 20px"]');
+    if (movementInstructions && movementInstructions.textContent.includes('Press ↑ ↓ ← → to move')) {
+        movementInstructions.style.display = 'none';
+    }
+
+    // Find the game canvas
+    var canvas = document.querySelector('canvas');
+    if (canvas) {
+        // Redraw grid as usual
+        nodeGameUpdateGameDisplay();
+
+        // Insert wait message below the grid
+        var waitMsg = document.createElement('div');
+        waitMsg.id = 'waitMessageBelowGrid';
+        waitMsg.style.cssText = `
+            margin-top: 20px;
+            text-align: center;
+            font-size: 20px;
+            color: #333;
+            background: rgba(255,255,255,0.95);
+            border: 1px solid #007bff;
+            border-radius: 8px;
+            padding: 12px 24px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        `;
+        waitMsg.textContent = 'Please wait for the other player to reach the goal!';
+
+        // Try to insert after the canvas
+        if (canvas.parentNode) {
+            // Insert after canvas
+            if (canvas.nextSibling) {
+                canvas.parentNode.insertBefore(waitMsg, canvas.nextSibling);
+            } else {
+                canvas.parentNode.appendChild(waitMsg);
+            }
+        }
+    }
+}
 
 
 /**
@@ -380,11 +496,29 @@ function showPostTrialStage(stage) {
     var trialIndex = stage.trialIndex;
     var experimentType = stage.experimentType;
     var experimentIndex = stage.experimentIndex;
-    var lastTrialData = gameData.allTrialsData[gameData.allTrialsData.length - 1];
 
-    var success = lastTrialData.completed;
-    var message = success ? 'Goal reached!' : 'Time up!';
-    var color = success ? 'blue' : 'orange';
+    // Safely get the last trial data with fallback
+    var lastTrialData = null;
+    if (gameData && gameData.allTrialsData && gameData.allTrialsData.length > 0) {
+        lastTrialData = gameData.allTrialsData[gameData.allTrialsData.length - 1];
+    }
+
+    // Set default values if lastTrialData is not available
+    var success = false;
+    var message = 'Trial completed';
+    var color = 'blue';
+
+    if (lastTrialData) {
+        // For 2P experiments, check collaboration success
+        if (experimentType.includes('2P') && lastTrialData.collaborationSucceeded !== undefined) {
+            success = lastTrialData.collaborationSucceeded;
+            message = success ? 'Collaboration succeeded!' : 'Collaboration failed!';
+        } else if (lastTrialData.completed !== undefined) {
+            // For 1P experiments, check individual completion
+            success = lastTrialData.completed;
+            message = success ? 'Goal reached!' : 'Time up!';
+        }
+    }
 
     // For collaboration games, show dynamic trial count
     var trialCountDisplay = '';
@@ -396,10 +530,10 @@ function showPostTrialStage(stage) {
 
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="text-align: center; max-width: 600px; width: 100%;">
+            <div style="text-align: center;">
                 <h3 style="margin-bottom: 10px;">Game ${experimentIndex + 1}</h3>
-                <h4 style="margin-bottom: 20px;">${trialCountDisplay} Results</h4>
-                <div id="gameCanvas" style="margin: 0 auto 20px auto; position: relative; display: flex; justify-content: center;"></div>
+                <div id="gameCanvas" style="margin-bottom: 20px;"></div>
+                <p style="font-size: 20px;">You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: red; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
             </div>
         </div>
     `;
@@ -432,7 +566,7 @@ function showPostTrialStage(stage) {
     }
 
     // Add visual feedback overlay on top of the canvas
-    if (experimentType.includes('2P') && lastTrialData.collaborationSucceeded !== undefined) {
+    if (experimentType.includes('2P') && lastTrialData && lastTrialData.collaborationSucceeded !== undefined) {
         // For 2P experiments, use collaboration feedback overlay
         createTrialFeedbackOverlay(canvasContainer, lastTrialData.collaborationSucceeded, 'collaboration');
     } else if (experimentType.includes('1P')) {
@@ -685,28 +819,28 @@ function showQuestionnaireStage(stage) {
 
                         <div style="margin-bottom: 25px;">
                             <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
-                                Have you ever told a lie?
+                                What is the color of the "Next Page" button in this survey?
                             </label>
                             <div style="display: flex; flex-direction: column; gap: 8px;">
                                 <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="attention_check" value="Definitely yes" required style="margin-right: 10px;">
-                                    Definitely yes
+                                    <input type="radio" name="attention_check" value="Definitely blue" required style="margin-right: 10px;">
+                                    Definitely blue
                                 </label>
                                 <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="attention_check" value="Probably yes" required style="margin-right: 10px;">
-                                    Probably yes
+                                    <input type="radio" name="attention_check" value="Probably blue" required style="margin-right: 10px;">
+                                    Probably blue
                                 </label>
                                 <label style="display: flex; align-items: center; cursor: pointer;">
                                     <input type="radio" name="attention_check" value="Not sure" required style="margin-right: 10px;">
                                     Not sure
                                 </label>
                                 <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="attention_check" value="Probably not" required style="margin-right: 10px;">
-                                    Probably not
+                                    <input type="radio" name="attention_check" value="Probably red" required style="margin-right: 10px;">
+                                    Probably red
                                 </label>
                                 <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="attention_check" value="Definitely not" required style="margin-right: 10px;">
-                                    Definitely not
+                                    <input type="radio" name="attention_check" value="Definitely red" required style="margin-right: 10px;">
+                                    Definitely red
                                 </label>
                             </div>
                         </div>
@@ -770,16 +904,16 @@ function showQuestionnaireStage(stage) {
 
                         <div style="margin-bottom: 25px;">
                             <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
-                                Is this your first time using a computer?
+                                Some people have cats as their pets, true or false?
                             </label>
-                            <textarea name="computer_experience_page2" rows="4" style="
+                            <textarea name="cat_question" rows="4" style="
                                 width: 100%;
                                 padding: 10px;
                                 border: 1px solid #ddd;
                                 border-radius: 5px;
                                 font-family: inherit;
                                 resize: vertical;
-                            " placeholder="Please answer yes or no..."></textarea>
+                            " placeholder="Please answer true or false..."></textarea>
                         </div>
 
                         <div style="margin-bottom: 25px;">
@@ -1221,7 +1355,9 @@ function saveDataToGoogleDrive() {
 
         // Create Excel file to send to Google Drive
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const excelFilename = `experiment_data_${timestamp}.xlsx`;
+        const participantId = gameData.participantId || 'unknown_participant';
+        const safeParticipantId = participantId.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const excelFilename = `experiment_data_${safeParticipantId}_${timestamp}.xlsx`;
 
         sendExcelToGoogleDrive(experimentData, questionnaireArray, excelFilename);
 
@@ -1309,13 +1445,16 @@ function getInstructionsForExperiment(experimentType) {
             return `
                 <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
                     <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
-                        <h2 style="color: #333; margin-bottom: 30px;">Game 1</h2>
-                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                                In this practice, you are the traveler <span style="display: inline-block; width: 20px; height: 20px; background-color: red; border-radius: 50%; vertical-align: middle; margin: 0 4px;"></span>, and there will be one restaurant <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span> on the map. Navigate to the restaurant (using ↑ ↓ ← →) as quickly as possible using the shortest path.
-                            </p>
+                        <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Game 1</h2>
+                        <h3 style="color: #000; margin-bottom: 20px; font-size: 24px;">Before we begin, let's practice a few rounds!</h3>
+                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 28px; margin-bottom: 30px;">
+                            <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
+                                <li>You are the traveler <span style="display: inline-block; width: 20px; height: 20px; background-color: red; border-radius: 50%; vertical-align: middle; margin: 0 4px;"></span>.</li>
+                                <li>There is one restaurant <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span> on the map.</li>
+                                <li>Use the arrow keys (↑↓←→) to reach a restaurant.</li>
+                            </ul>
                         </div>
-                        <p style="font-size: 20px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+                        <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
                     </div>
                 </div>
             `;
@@ -1323,16 +1462,19 @@ function getInstructionsForExperiment(experimentType) {
             return `
                 <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
                     <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
-                        <h2 style="color: #333; margin-bottom: 30px;">Game 2</h2>
-                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                                Good job!
+                        <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Game 2</h2>
+                        <h3 style="color: #000; margin-bottom: 20px; font-size: 24px;">Great job!</h3>
+                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 28px; margin-bottom: 30px;">
+                            <p style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left;">
+                                Now there will be several identical restaurants on the map.
                             </p>
-                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                                Let's continue. Now, there will be several identical restaurants <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span> on the map. Note that some restaurants are already open before you start. During the game, other restaurants may open and appear on the map. All restaurants are identical, and your goal is to navigate to one of them as quickly as possible using the shortest path.
-                            </p>
+                            <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
+                                <li>Each round, you can <strong>win</strong> by getting to one of the restaurants.</li>
+                                <li>Note that some restaurants are already open when the round starts. Others may appear later.</li>
+                                <li>For each round that you win, you earn an additional 10 cents.</li>
+                            </ul>
                         </div>
-                        <p style="font-size: 20px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+                        <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
                     </div>
                 </div>
             `;
@@ -1340,19 +1482,19 @@ function getInstructionsForExperiment(experimentType) {
             return `
                 <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
                     <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
-                        <h2 style="color: #333; margin-bottom: 30px;">Game 3</h2>
-                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                                Good job! Now, you will be playing with another player!
+                        <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Game 3</h2>
+                        <h3 style="color: #000; margin-bottom: 20px; font-size: 24px;">Well done!</h3>
+                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 28px; margin-bottom: 30px;">
+                            <p style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left;">
+                                Let's continue. In this new game, you will collaborate with another player.
                             </p>
-                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                                In this new game, there are only tables for two at these restaurants <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span>, so you and another player have to go together in order to eat. You can also cross paths or touch sometimes on your way to your destination, and that's okay too!
-                            </p>
-                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                                Let's practice first!
-                            </p>
+                            <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
+                                <li>Each round, you can <strong> win </strong> if both of you go to the <strong> same </strong> restaurant.</li>
+                                <li>You lose the round if you end up at different restaurants.</li>
+                                <li>For each round that you win, you earn an additional 10 cents.</li>
+                            </ul>
                         </div>
-                        <p style="font-size: 20px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+                        <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
                     </div>
                 </div>
             `;
@@ -1360,21 +1502,25 @@ function getInstructionsForExperiment(experimentType) {
             return `
                 <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
                     <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
-                        <h2 style="color: #333; margin-bottom: 30px;">Game 4</h2>
-                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                                Good job! Now, let's start the final game.
+                        <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Game 4</h2>
+                        <h3 style="color: #000; margin-bottom: 20px; font-size: 24px;">Good job!</h3>
+                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 28px; margin-bottom: 30px;">
+                            <p style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left;">
+                                Now, let's start the final game! You will collaborate with the same player as before.
                             </p>
-                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                                You will still be playing the same player in the previous game. But now, there may be several identical restaurants <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span> on the map. Note that some restaurants are already open before you start. During the game, other restaurants may open and appear on the map. All restaurants are identical, but you and the other player need to navigate to one of them together as quickly as possible using the shortest path.
-                            </p>
+                            <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
+                                <li>Each round, you can <strong> win </strong> if both of you go to the <strong> same </strong> restaurant.</li>
+                                <li>You lose the round if you end up at different restaurants.</li>
+                                <li> <strong> Note that some restaurants are already open when the round starts. Others may appear later.</strong></li>
+                                <li>For each round that you win, you earn an additional 10 cents.</li>
+                            </ul>
                         </div>
-                        <p style="font-size: 20px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+                        <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
                     </div>
                 </div>
             `;
         default:
-            return '<p style="font-size:30px;">Welcome to the task. Press space bar to begin.</p>';
+            return '<p style="font-size: 36px; line-height: 1.4;">Welcome to the task. Press space bar to begin.</p>';
     }
 }
 
@@ -1463,19 +1609,18 @@ function showWaitingForPartnerStage(stage) {
                 }
             }
 
+            // Initialize socket if not already done
+            if (typeof window.NetworkingHumanHuman !== 'undefined' && window.NetworkingHumanHuman.initializeSocket) {
+                window.NetworkingHumanHuman.initializeSocket();
+            }
+
             // Access the global joinMultiplayerRoom function if available
-            if (typeof window.joinMultiplayerRoom === 'function') {
-                if (window.joinMultiplayerRoom()) {
-                    updateWaitingStatus('Looking for another participant...');
-                } else {
-                    updateWaitingStatus('Connection failed. Please refresh the page.');
-                }
+            if (typeof window.NetworkingHumanHuman !== 'undefined' && window.NetworkingHumanHuman.joinMultiplayerRoom) {
+                updateWaitingStatus('Looking for another player...');
+                window.NetworkingHumanHuman.joinMultiplayerRoom();
             } else if (typeof joinMultiplayerRoom === 'function') {
-                if (joinMultiplayerRoom()) {
-                    updateWaitingStatus('Looking for another participant...');
-                } else {
-                    updateWaitingStatus('Connection failed. Please refresh the page.');
-                }
+                updateWaitingStatus('Looking for another player...');
+                joinMultiplayerRoom();
             } else {
                 console.warn('joinMultiplayerRoom function not available');
                 updateWaitingStatus('Connection failed. Please refresh the page.');
@@ -1569,8 +1714,85 @@ function updateWaitingStatus(message) {
     }
 }
 
+/**
+ * Show connection lost message and provide reconnection option
+ */
+function showConnectionLostMessage() {
+    const messagesEl = document.getElementById('trialMessages');
+    if (messagesEl) {
+        messagesEl.innerHTML = `
+            <div style="color: #dc3545; padding: 10px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px;">
+                <strong>Connection Lost</strong><br>
+                Your connection to the server has been lost.
+                <div style="margin-top: 10px;">
+                    <button onclick="attemptReconnection()" style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 10px;">
+                        Reconnect
+                    </button>
+                    <button onclick="location.reload()" style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                        Refresh Page
+                    </button>
+                </div>
+            </div>
+        `;
+    } else {
+        // Fallback if trialMessages element doesn't exist
+        console.warn('Connection lost but no trialMessages element found');
+        if (confirm('Connection lost. Would you like to reconnect?')) {
+            attemptReconnection();
+        }
+    }
+}
+/**
+ * Show "Game is ready" message and wait for space bar to start
+ */
+function showGameReadyMessage() {
+    const container = document.getElementById('container');
+    container.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+            <div style="max-width: 600px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
+                <h1 style="color: #28a745; margin-bottom: 30px;">✅ Game is Ready!</h1>
 
+                <div style="margin: 40px 0;">
+                    <div style="width: 80px; height: 80px; background-color: #28a745; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="white"/>
+                        </svg>
+                    </div>
+                </div>
 
+                <div style="font-size: 20px; color: #333; margin-bottom: 20px;">
+                    <p><strong>Partner found and connection established!</strong></p>
+                    <p>The game is ready to begin.</p>
+                </div>
+
+                <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                    <p style="margin: 0; font-size: 16px; color: #155724;">
+                        <strong>Press the space bar to start the game.</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add event listener for space bar to continue
+    function handleSpacebar(event) {
+        if (event.code === 'Space' || event.key === ' ') {
+            event.preventDefault();
+            document.removeEventListener('keydown', handleSpacebar);
+
+            // Send player_ready event to server
+            if (socket) {
+                console.log('Sending player_ready event from showGameReadyMessage');
+                socket.emit('player_ready', {});
+            }
+
+            nextStage();
+        }
+    }
+
+    document.addEventListener('keydown', handleSpacebar);
+    document.body.focus();
+}
 
 // =================================================================================================
 // MAKE FUNCTIONS GLOBALLY AVAILABLE FOR NON-MODULE SCRIPTS
@@ -1580,13 +1802,15 @@ function updateWaitingStatus(message) {
 window.createTimelineStages = createTimelineStages;
 
 // Make other important functions available globally
+window.showCompletionStage = showCompletionStage;
 window.showQuestionnaireStage = showQuestionnaireStage;
 window.showGameFeedbackStage = showGameFeedbackStage;
 window.showEndExperimentInfoStage = showEndExperimentInfoStage;
 window.showProlificRedirectStage = showProlificRedirectStage;
 window.showWaitingForPartnerStage = showWaitingForPartnerStage;
 window.updateWaitingStatus = updateWaitingStatus;
-
+window.showGameReadyMessage = showGameReadyMessage;
+window.showConnectionLostMessage = showConnectionLostMessage;
 window.exportExperimentData = exportExperimentData;
 
 // Make timeline navigation functions available globally
@@ -1900,4 +2124,14 @@ function createTrialFeedbackOverlay(canvasContainer, success, messageType, durat
     }
 
     return overlay;
+}
+
+/**
+ * Show movement instructions (restore them after waiting phase)
+ */
+function showMovementInstructions() {
+    var movementInstructions = document.querySelector('p[style*="font-size: 20px"]');
+    if (movementInstructions && movementInstructions.textContent.includes('Press ↑ ↓ ← → to move')) {
+        movementInstructions.style.display = 'block';
+    }
 }

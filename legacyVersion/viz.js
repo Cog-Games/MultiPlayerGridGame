@@ -63,7 +63,7 @@ function drawGrid(c, currentGoals = null){
     }
 
     // Second pass: draw players with overlap detection
-    if (player1Pos && player2Pos && player2Pos.length === 2) {
+    if (player1Pos && player2Pos) {
         // Check if players are in the same position
         if (player1Pos[0] === player2Pos[0] && player1Pos[1] === player2Pos[1]) {
             // Draw overlapping circles
@@ -75,7 +75,7 @@ function drawGrid(c, currentGoals = null){
             drawCircle(context, "orange", 1/3 * EXPSETTINGS.padding,
                 player2Pos[1], player2Pos[0], 0, 2 * Math.PI);
         }
-    } else if (player1Pos && (!player2Pos || player2Pos.length !== 2)) {
+        } else if (player1Pos && !player2Pos) {
         // Single player case (1P1G, 1P2G) - draw player normally
         // Goals will be drawn in the third pass as background squares
         drawCircle(context, COLORPOOL.player, 1/3 * EXPSETTINGS.padding,
@@ -296,6 +296,7 @@ function updateGameDisplay() {
  */
 function createGameCanvas() {
     var canvas = document.createElement('canvas');
+    canvas.id = 'gameCanvas'; // Set the ID so it can be found later
     canvas.width = WINSETTING.w;
     canvas.height = WINSETTING.h;
     canvas.style.border = '2px solid #333';
@@ -369,15 +370,15 @@ function nodeGameUpdateGameDisplay() {
         if (window.RLAgent && window.RLAgent.precalculatePolicyForGoalsAsync && gameData.currentGoals && gameData.currentGoals.length > 0) {
             // Check if this is a new goal presentation (3 goals instead of 2) and hasn't been pre-calculated yet
             if (gameData.currentGoals.length === 3 && !window.newGoalPreCalculated) {
-                console.log('⚡ New goal visually rendered on map, starting async pre-calculation:', gameData.currentGoals);
+                // console.log('⚡ New goal visually rendered on map, starting async pre-calculation:', gameData.currentGoals);
                 // Use async function to ensure goal is visible before pre-calculation starts
                 // This prevents lag in goal presentation while still pre-calculating for faster AI response
                 window.RLAgent.precalculatePolicyForGoalsAsync(gameData.currentGoals, (success) => {
                     if (success) {
                         window.newGoalPreCalculated = true; // Mark as pre-calculated
-                        console.log('✅ Background pre-calculation completed - AI ready to act');
+                        // console.log('✅ Background pre-calculation completed - AI ready to act');
                     } else {
-                        console.warn('⚠️ Background pre-calculation failed');
+                        // console.warn('⚠️ Background pre-calculation failed');
                     }
                 }, gameData.currentExperiment);
             }
@@ -390,6 +391,7 @@ function nodeGameUpdateGameDisplay() {
  */
 function nodeGameCreateGameCanvas() {
     var canvas = document.createElement('canvas');
+    canvas.id = 'gameCanvas'; // Set the ID so it can be found later
     canvas.width = WINSETTING.w;
     canvas.height = WINSETTING.h;
     canvas.style.border = '2px solid #333';
@@ -632,3 +634,10 @@ function drawOverlappingCirclesHumanHuman(ctx, colPos, rowPos) {
     ctx.fill();
     ctx.stroke();
 }
+
+// Make visualization functions globally accessible
+window.createGameCanvas = createGameCanvas;
+window.nodeGameCreateGameCanvas = nodeGameCreateGameCanvas;
+window.drawGrid = drawGrid;
+window.updateGameDisplay = updateGameDisplay;
+window.nodeGameUpdateGameDisplay = nodeGameUpdateGameDisplay;

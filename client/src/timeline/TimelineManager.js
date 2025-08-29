@@ -1028,9 +1028,10 @@ export class TimelineManager {
       return false;
     }
 
-    // Check if we've reached the configured number of trials
-    if (trialIndex >= CONFIG.game.successThreshold.maxTrials - 1) {
-      console.log(`Ending ${experimentType} experiment: Completed ${CONFIG.game.successThreshold.maxTrials} trials`);
+    // Check if we've reached the configured number of trials for this specific experiment
+    const maxTrials = CONFIG.game.experiments.numTrials[experimentType] || CONFIG.game.successThreshold.maxTrials;
+    if (trialIndex >= maxTrials - 1) {
+      console.log(`Ending ${experimentType} experiment: Completed ${maxTrials} trials`);
       return false;
     }
 
