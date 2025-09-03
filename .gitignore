@@ -71,4 +71,4 @@ temp/
 *.bak
 
 # Export data files
-experiment-data-*.json.env.example
+experiment-data-*.json
