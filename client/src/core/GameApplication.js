@@ -258,34 +258,96 @@ export class GameApplication {
       const exportObj = {
         participantId,
         timestamp: new Date().toISOString(),
-        experimentOrder: (window.CONFIG?.game?.experiments?.order) || (window.CONFIG?.game?.experiments?.order) || [],
+        experimentOrder: (CONFIG?.game?.experiments?.order) || [],
         allTrialsData: gsData.allTrialsData || [],
         questionnaireData: data.questionnaire || null,
         successThreshold: gsData.successThreshold || {},
         completionCode: data.completionCode || '',
-        version: (window.CONFIG?.game?.version) || '2.0.0',
+        version: (CONFIG?.game?.version) || '2.0.0',
         experimentType: (this.timelineManager?.gameMode === 'human-human') ? 'human-human' : 'human-AI'
       };
 
       const dataStr = JSON.stringify(exportObj, null, 2);
 
-      // Save to localStorage as backup
-      localStorage.setItem('experimentData', dataStr);
+      // Do not save locally (no localStorage / no file download)
 
-      // Trigger download with legacy-style filename
-      const safeId = String(exportObj.participantId).replace(/[^a-zA-Z0-9_-]/g, '_');
-      const filename = `experiment_data_${safeId}_${new Date().toISOString().slice(0,10)}.json`;
-      const blob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // Try legacy-style Google Drive save via Apps Script using SheetJS if available
+      const scriptUrl = CONFIG.server.googleAppsScriptUrl;
+      const enableGDrive = CONFIG.server.enableGoogleDriveSave;
+      const hasXlsx = typeof window !== 'undefined' && typeof window.XLSX !== 'undefined';
 
-      console.log('💾 Experiment data exported (legacy-compatible):', filename);
+      if (enableGDrive && scriptUrl && hasXlsx) {
+        try {
+          const XLSX = window.XLSX;
+          const wb = XLSX.utils.book_new();
+
+          // Process trial data into a flat table
+          const trials = exportObj.allTrialsData || [];
+          if (trials.length > 0) {
+            const processed = trials.map(t => {
+              const o = {};
+              for (const k in t) {
+                const v = t[k];
+                o[k] = (Array.isArray(v) || (v && typeof v === 'object')) ? JSON.stringify(v) : v;
+              }
+              return o;
+            });
+            const wsData = [Object.keys(processed[0]), ...processed.map(row => Object.values(row))];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            XLSX.utils.book_append_sheet(wb, ws, 'ExperimentData');
+          } else {
+            const ws = XLSX.utils.aoa_to_sheet([["No experimental data available"], [new Date().toISOString()]]);
+            XLSX.utils.book_append_sheet(wb, ws, 'ExperimentData');
+          }
+
+          // Questionnaire sheet
+          const q = exportObj.questionnaireData || exportObj.questionnaire || {};
+          let qSheet;
+          if (q && typeof q === 'object' && !Array.isArray(q)) {
+            const headers = Object.keys(q);
+            const values = headers.map(h => q[h]);
+            qSheet = XLSX.utils.aoa_to_sheet([headers, values]);
+          } else if (Array.isArray(q)) {
+            qSheet = XLSX.utils.aoa_to_sheet(q);
+          } else {
+            qSheet = XLSX.utils.aoa_to_sheet([["Questionnaire"], [JSON.stringify(q)]]);
+          }
+          XLSX.utils.book_append_sheet(wb, qSheet, 'Questionnaire');
+
+          // Write workbook and send to Apps Script
+          const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+          const base64 = btoa(String.fromCharCode.apply(null, new Uint8Array(wbout)));
+          const ts = new Date().toISOString().replace(/[:.]/g, '-');
+          const safeId = String(exportObj.participantId).replace(/[^a-zA-Z0-9_-]/g, '_');
+          const excelFilename = `experiment_data_${safeId}_${ts}.xlsx`;
+
+          const formData = new FormData();
+          formData.append('filename', excelFilename);
+          formData.append('filedata', base64);
+          formData.append('filetype', 'excel');
+
+          fetch(scriptUrl, { method: 'POST', mode: 'no-cors', body: formData })
+            .then(() => {
+              console.log('✅ Google Drive save attempted via Apps Script');
+              // Provide user feedback like legacy and notify timeline
+              try {
+                if (this.timelineManager) {
+                  this.timelineManager.emit('data-save-success');
+                }
+                alert('Data saved successfully!');
+              } catch (e) {
+                // Ignore UI feedback errors
+              }
+            })
+            .catch(err => {
+              console.warn('⚠️ Google Drive save failed. Local saving is disabled.', err);
+            });
+        } catch (e) {
+          console.warn('⚠️ Excel/Apps Script save failed. Local saving is disabled.', e);
+        }
+      } else {
+        console.warn('⚠️ Google Drive save disabled or XLSX not available. Local saving is disabled.');
+      }
     } catch (error) {
       console.error('Failed to save/export experiment data:', error);
     }

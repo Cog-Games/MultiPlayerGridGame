@@ -348,16 +348,8 @@ export class ExperimentManager {
   }
 
   exportExperimentData(data) {
-    // Create downloadable JSON file
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `experiment-data-${Date.now()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // Local file export removed per requirement; data should be saved via timeline flow
+    console.log('Export suppressed: data saving handled by timeline (cloud only).');
   }
 
   // Multiplayer experiment support

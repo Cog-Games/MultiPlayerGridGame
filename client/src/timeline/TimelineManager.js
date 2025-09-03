@@ -869,7 +869,7 @@ export class TimelineManager {
           </div>
 
           <div style="margin-bottom: 30px;">
-            <div style="display: inline-block; margin: 10px;">📊 Saving your data...</div>
+            <div id="saving-status" style="display: inline-block; margin: 10px; color: #666;">📊 Saving your data...</div>
           </div>
 
           <button id="continueBtn" style="background: #007bff; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 5px; cursor: pointer;">
@@ -885,6 +885,20 @@ export class TimelineManager {
     this.experimentData.endTime = new Date().toISOString();
 
     this.emit('save-data', this.experimentData);
+
+    // Update UI when data save succeeds (legacy-style feedback)
+    const handleSaved = () => {
+      const el = document.getElementById('saving-status');
+      if (el) {
+        el.textContent = '✅ Data saved successfully!';
+        el.style.color = '#28a745';
+      }
+      // Remove handler after firing once
+      this.off('data-save-success', handleSaved);
+    };
+    // Ensure single listener
+    this.eventHandlers.delete('data-save-success');
+    this.on('data-save-success', handleSaved);
 
     document.getElementById('continueBtn').addEventListener('click', () => {
       console.log('💾 Data saving initiated');

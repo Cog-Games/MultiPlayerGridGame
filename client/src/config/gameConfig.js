@@ -16,7 +16,15 @@ export const CONFIG = {
   server: {
     url: getEnvVar('VITE_SERVER_URL', 'http://localhost:3001'),
     reconnectAttempts: 3,
-    reconnectDelay: 1000
+    reconnectDelay: 1000,
+    // Optional: Google Apps Script endpoint for saving data to Google Drive (legacy-compatible)
+    // Example: 'https://script.google.com/macros/s/AKfycb.../exec'
+    // Default to the legacy Apps Script endpoint; override via VITE_GOOGLE_APPS_SCRIPT_URL
+    googleAppsScriptUrl: getEnvVar(
+      'VITE_GOOGLE_APPS_SCRIPT_URL',
+      'https://script.google.com/macros/s/AKfycbyfQ-XKsoFbmQZGM7c741rEXh2ZUpVK-uUIu9ycooXKnaxM5-hRSzIUhQ-uWZ668Qql/exec'
+    ),
+    enableGoogleDriveSave: getEnvVar('VITE_ENABLE_GOOGLE_DRIVE_SAVE', 'true') === 'true'
   },
 
   // Game settings (from original NODEGAME_CONFIG)
@@ -50,8 +58,8 @@ export const CONFIG = {
       numTrials: {
         '1P1G': 3,
         '1P2G': 12,
-        '2P2G': 2,
-        '2P3G': 2
+        '2P2G': 1,
+        '2P3G': 1
       }
     },
 
