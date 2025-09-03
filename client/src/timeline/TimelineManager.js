@@ -788,68 +788,186 @@ export class TimelineManager {
   }
 
   showQuestionnaireStage() {
+    // Match legacy two-page questionnaire exactly
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-        <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 700px;">
-          <h2 style="color: #333; text-align: center; margin-bottom: 30px;">📝 Post-Game Questionnaire</h2>
+        <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; width: 100%;">
+          <h2 style="color: #333; margin-bottom: 30px; text-align: center;">Post-Experiment Questionnaire</h2>
 
           <form id="questionnaireForm">
-            <div style="margin-bottom: 25px;">
-              <label style="display: block; margin-bottom: 8px; font-weight: bold;">
-                How challenging did you find the game overall? (1 = Very Easy, 5 = Very Hard)
-              </label>
-              <div style="display: flex; gap: 15px;">
-                ${[1,2,3,4,5].map(n => `
-                  <label style="display: flex; flex-direction: column; align-items: center;">
-                    <input type="radio" name="difficulty" value="${n}" required>
-                    <span style="margin-top: 5px;">${n}</span>
-                  </label>
-                `).join('')}
+            <div id="questionnairePage1">
+              <h3 style="color: #666; margin-bottom: 20px;">Page 1 of 2</h3>
+
+              <div style="margin-bottom: 25px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
+                  Do you think the other player is a person or an AI?
+                </label>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  ${[
+                    'Definitely a person',
+                    'Probably a person',
+                    'Not sure',
+                    'Probably an AI',
+                    'Definitely an AI'
+                  ].map(v => `
+                    <label style=\"display: flex; align-items: center; cursor: pointer;\">
+                      <input type=\"radio\" name=\"ai_detection\" value=\"${v}\" required style=\"margin-right: 10px;\">${v}
+                    </label>
+                  `).join('')}
+                </div>
+              </div>
+
+              <div style="margin-bottom: 25px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
+                  To what extent do you think the other player was a good collaborator?
+                </label>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  ${[
+                    'Very poor collaborator',
+                    'Poor collaborator',
+                    'Neutral',
+                    'Good collaborator',
+                    'Very good collaborator'
+                  ].map(v => `
+                    <label style=\"display: flex; align-items: center; cursor: pointer;\">
+                      <input type=\"radio\" name=\"collaboration_rating\" value=\"${v}\" required style=\"margin-right: 10px;\">${v}
+                    </label>
+                  `).join('')}
+                </div>
+              </div>
+
+              <div style="margin-bottom: 25px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
+                  What is the color of the "Next Page" button in this survey?
+                </label>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  ${[
+                    'Definitely blue',
+                    'Probably blue',
+                    'Not sure',
+                    'Probably red',
+                    'Definitely red'
+                  ].map(v => `
+                    <label style=\"display: flex; align-items: center; cursor: pointer;\">
+                      <input type=\"radio\" name=\"attention_check\" value=\"${v}\" required style=\"margin-right: 10px;\">${v}
+                    </label>
+                  `).join('')}
+                </div>
+              </div>
+
+              <div style="margin-bottom: 25px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
+                  Will you play with the other player again?
+                </label>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  ${[
+                    'Definitely not play again',
+                    'Probably not play again',
+                    'Not sure',
+                    'Probably play again',
+                    'Definitely play again'
+                  ].map(v => `
+                    <label style=\"display: flex; align-items: center; cursor: pointer;\">
+                      <input type=\"radio\" name=\"play_again\" value=\"${v}\" required style=\"margin-right: 10px;\">${v}
+                    </label>
+                  `).join('')}
+                </div>
+              </div>
+
+              <div style="text-align: center; margin-top: 30px;">
+                <button type="button" id="nextPageBtn" style="
+                  background: #007bff; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; cursor: pointer;">Next Page</button>
               </div>
             </div>
 
-            <div style="margin-bottom: 25px;">
-              <label style="display: block; margin-bottom: 8px; font-weight: bold;">
-                How much did you enjoy playing the game? (1 = Not at all, 5 = Very much)
-              </label>
-              <div style="display: flex; gap: 15px;">
-                ${[1,2,3,4,5].map(n => `
-                  <label style="display: flex; flex-direction: column; align-items: center;">
-                    <input type="radio" name="enjoyment" value="${n}" required>
-                    <span style="margin-top: 5px;">${n}</span>
-                  </label>
-                `).join('')}
+            <div id="questionnairePage2" style="display: none;">
+              <h3 style="color: #666; margin-bottom: 20px;">Page 2 of 2</h3>
+
+              <div style="margin-bottom: 25px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
+                  Did you use any strategy in the game? If yes, what was it?
+                </label>
+                <textarea name="strategy" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit; resize: vertical;" placeholder="Please describe your strategy..."></textarea>
               </div>
-            </div>
 
-            <div style="margin-bottom: 25px;">
-              <label style="display: block; margin-bottom: 8px; font-weight: bold;">
-                Do you have any comments or feedback about the game?
-              </label>
-              <textarea name="comments" style="width: 100%; height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; resize: vertical;"></textarea>
-            </div>
+              <div style="margin-bottom: 25px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
+                  Some people have cats as their pets, true or false?
+                </label>
+                <textarea name="cat_question" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit; resize: vertical;" placeholder="Please answer true or false..."></textarea>
+              </div>
 
-            <div style="text-align: center;">
-              <button type="submit" style="background: #28a745; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 5px; cursor: pointer;">
-                Submit Questionnaire
-              </button>
+              <div style="margin-bottom: 25px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
+                  What do you think the purpose of this experiment is?
+                </label>
+                <textarea name="purpose" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit; resize: vertical;" placeholder="Please share your thoughts..."></textarea>
+              </div>
+
+              <div style="margin-bottom: 25px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
+                  Do you have any questions or comments?
+                </label>
+                <textarea name="comments" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit; resize: vertical;" placeholder="Any additional feedback..."></textarea>
+              </div>
+
+              <div style="text-align: center; margin-top: 30px;">
+                <button type="button" id="prevPageBtn" style="background: #6c757d; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; cursor: pointer; margin-right: 10px;">Previous Page</button>
+                <button type="submit" id="submitBtn" style="background: #28a745; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; cursor: pointer;">Submit</button>
+              </div>
             </div>
           </form>
         </div>
       </div>
     `;
 
+    // Navigation and validation like legacy
+    const nextBtn = document.getElementById('nextPageBtn');
+    const prevBtn = document.getElementById('prevPageBtn');
+    const page1 = document.getElementById('questionnairePage1');
+    const page2 = document.getElementById('questionnairePage2');
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        const required = ['ai_detection', 'collaboration_rating', 'attention_check', 'play_again'];
+        let valid = true;
+        required.forEach((name) => {
+          const el = document.querySelector(`input[name="${name}"]:checked`);
+          if (!el) {
+            valid = false;
+            const any = document.querySelector(`input[name="${name}"]`);
+            if (any) {
+              const group = any.closest('div').parentElement;
+              group.style.border = '2px solid #dc3545';
+              group.style.borderRadius = '5px';
+              group.style.padding = '10px';
+            }
+          }
+        });
+        if (valid) {
+          page1.style.display = 'none';
+          page2.style.display = 'block';
+        } else {
+          alert('Please answer all required questions before proceeding.');
+        }
+      });
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        page2.style.display = 'none';
+        page1.style.display = 'block';
+      });
+    }
+
     document.getElementById('questionnaireForm').addEventListener('submit', (event) => {
       event.preventDefault();
-
       const formData = new FormData(event.target);
-      this.experimentData.questionnaire = {
-        difficulty: parseInt(formData.get('difficulty')),
-        enjoyment: parseInt(formData.get('enjoyment')),
-        comments: formData.get('comments') || '',
-        completedTime: new Date().toISOString()
-      };
-
+      const answers = {};
+      for (const [k, v] of formData.entries()) {
+        answers[k] = v;
+      }
+      this.experimentData.questionnaire = answers;
       console.log('📝 Questionnaire completed');
       this.nextStage();
     });

@@ -314,11 +314,21 @@ export class GameApplication {
           }
 
           // Meta sheet
+          // Determine partner agent type summary for meta
+          const p2Type = (CONFIG?.game?.players?.player2?.type) || '';
+          const partnerAgentType = (function(){
+            if (p2Type === 'human') return 'human';
+            if (p2Type === 'gpt') return 'gpt';
+            if (p2Type === 'ai') return (CONFIG?.game?.agent?.synchronizedMoves) ? 'joint-rl' : 'individual-rl';
+            return p2Type || 'unknown';
+          })();
+
           const metaRows = [
             ['participantId', exportObj.participantId],
             ['roomId', exportObj.roomId || ''],
             ['experimentOrder', JSON.stringify(exportObj.experimentOrder || [])],
             ['experimentType', exportObj.experimentType],
+            ['partnerAgentType', partnerAgentType],
             ['version', exportObj.version],
             ['timestamp', exportObj.timestamp]
           ];

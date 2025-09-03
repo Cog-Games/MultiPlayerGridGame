@@ -28,6 +28,7 @@ export class GameStateManager {
     this.trialData = {
       trialIndex: 0,
       experimentType: null,
+      partnerAgentType: null,
       player1Trajectory: [],
       player2Trajectory: [],
       player1Actions: [],
@@ -71,6 +72,7 @@ export class GameStateManager {
   initializeTrial(trialIndex, experimentType, design) {
     this.trialData.trialIndex = trialIndex;
     this.trialData.experimentType = experimentType;
+    this.trialData.partnerAgentType = this.getPartnerAgentType(experimentType);
     this.trialData.trialStartTime = Date.now();
     this.gameStartTime = Date.now();
     this.stepCount = 0;
@@ -115,6 +117,7 @@ export class GameStateManager {
         `🗺️ Starting ${experimentType} trial ${trialIndex}: new-goal condition =`,
         this.trialData.distanceCondition
       );
+      console.log(`🤝 Partner agent type: ${this.trialData.partnerAgentType}`);
     }
 
     // Set up grid matrix
@@ -457,6 +460,22 @@ export class GameStateManager {
   }
 
   // Distance condition helpers
+  getPartnerAgentType(experimentType) {
+    // Determine partner agent description for recording/export
+    try {
+      if (!String(experimentType || '').includes('2P')) return 'none';
+      const p2 = CONFIG?.game?.players?.player2?.type;
+      if (p2 === 'human') return 'human';
+      if (p2 === 'gpt') return 'gpt';
+      if (p2 === 'ai') {
+        const joint = !!(CONFIG?.game?.agent?.synchronizedMoves);
+        return joint ? 'joint-rl' : 'individual-rl';
+      }
+      return String(p2 || 'unknown');
+    } catch (_) {
+      return 'unknown';
+    }
+  }
   getRandomDistanceConditionFor2P3G(trialIndex) {
     // Use or create a balanced sequence for the experiment
     const key = '2P3G';

@@ -64,8 +64,8 @@ export const CONFIG = {
       numTrials: {
         '1P1G': 1,
         '1P2G': 4,
-        '2P2G': 2,
-        '2P3G': 4
+        '2P2G': 1,
+        '2P3G': 1
       }
     },
 
