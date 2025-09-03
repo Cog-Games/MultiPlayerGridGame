@@ -15,8 +15,8 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"]
+    origin: '*',
+    methods: ['GET', 'POST']
   }
 });
 
@@ -130,6 +130,23 @@ app.get('/api/maps/:experimentType', (req, res) => {
   } catch (error) {
     console.error('Error reading map file:', error);
     res.status(500).json({ error: 'Failed to read map file' });
+  }
+});
+
+// Serve client static files (single-service deployment)
+const clientDir = path.join(__dirname, '..', 'client');
+app.use(express.static(clientDir));
+
+// Fallback to index.html for SPA routes (exclude API/config/socket.io)
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/config') || req.path.startsWith('/socket.io')) {
+    return next();
+  }
+  const indexPath = path.join(clientDir, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).send('Client not found');
   }
 });
 

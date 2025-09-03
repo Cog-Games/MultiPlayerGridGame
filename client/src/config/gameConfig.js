@@ -11,10 +11,15 @@ const getEnvVar = (key, defaultValue) => {
   }
 };
 
+const defaultServerUrl = (typeof window !== 'undefined' && window.location && window.location.origin)
+  ? window.location.origin
+  : 'http://localhost:3001';
+
 export const CONFIG = {
   // Server configuration
   server: {
-    url: getEnvVar('VITE_SERVER_URL', 'http://localhost:3001'),
+    // Point to same-origin server by default (single-service deploy)
+    url: getEnvVar('VITE_SERVER_URL', defaultServerUrl),
     reconnectAttempts: 3,
     reconnectDelay: 1000,
     // Optional: Google Apps Script endpoint for saving data to Google Drive (legacy-compatible)
