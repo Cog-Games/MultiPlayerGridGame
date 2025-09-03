@@ -1,5 +1,6 @@
 import { CONFIG } from '../config/gameConfig.js';
 import { RLAgent } from '../ai/RLAgent.js';
+import { GptAgentClient } from '../ai/GptAgentClient.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
 import { mapLoader } from '../utils/MapLoader.js';
 
@@ -9,6 +10,7 @@ export class ExperimentManager {
     this.uiManager = uiManager;
     this.timelineManager = timelineManager;
     this.rlAgent = new RLAgent();
+    this.gptClient = new GptAgentClient();
 
     this.currentExperimentSequence = [];
     this.currentExperimentIndex = 0;
@@ -145,8 +147,15 @@ export class ExperimentManager {
 
   runTrial2P2G() {
     // Two players, two goals - check if AI or human player 2
-    if (CONFIG.game.players.player2.type === 'ai') {
-      this.setupAIMovement();
+    if (CONFIG.game.players.player2.type === 'ai' || CONFIG.game.players.player2.type === 'gpt') {
+      if (CONFIG.game.agent.synchronizedMoves) {
+        console.log('2P2G: Synchronized human-AI moves enabled');
+        // In synchronized mode, we do not set up the legacy delayed AI listener
+        // But we still enable independent AI movement once human reaches a goal
+        this.setupIndependentAIAfterHumanGoal();
+      } else {
+        this.setupAIMovement();
+      }
     } else {
       // Human-human mode - no AI movement setup needed
       console.log('2P2G: Human-human mode - waiting for network player actions');
@@ -155,8 +164,13 @@ export class ExperimentManager {
 
   runTrial2P3G() {
     // Two players, three goals - check if AI or human player 2
-    if (CONFIG.game.players.player2.type === 'ai') {
-      this.setupAIMovement();
+    if (CONFIG.game.players.player2.type === 'ai' || CONFIG.game.players.player2.type === 'gpt') {
+      if (CONFIG.game.agent.synchronizedMoves) {
+        console.log('2P3G: Synchronized human-AI moves enabled');
+        this.setupIndependentAIAfterHumanGoal();
+      } else {
+        this.setupAIMovement();
+      }
     } else {
       // Human-human mode - no AI movement setup needed
       console.log('2P3G: Human-human mode - waiting for network player actions');
@@ -164,9 +178,71 @@ export class ExperimentManager {
     this.setupNewGoalCheck2P3G();
   }
 
+  // In both sync and legacy modes, when human reaches a goal, start independent AI movement
+  setupIndependentAIAfterHumanGoal() {
+    let player1AtGoal = false;
+    const checkPlayerGoal = setInterval(() => {
+      const gameState = this.gameStateManager.getCurrentState();
+      if (!gameState.player1 || !gameState.player2) return;
+
+      const currentPlayer1AtGoal = GameHelpers.isGoalReached(gameState.player1, gameState.currentGoals);
+
+      if (!player1AtGoal && currentPlayer1AtGoal) {
+        player1AtGoal = true;
+        this.startIndependentAIMovement();
+      }
+    }, 100);
+
+    // Store interval for cleanup
+    this.gameLoopInterval = checkPlayerGoal;
+  }
+
+  // Handle synchronized move: apply human + AI/GPT moves together, then redraw once
+  async handleSynchronizedMove(humanDirection) {
+    // Only active when player2 is AI/GPT
+    const p2Type = CONFIG.game.players.player2.type;
+    if (!(p2Type === 'ai' || p2Type === 'gpt')) return;
+
+    const gameState = this.gameStateManager.getCurrentState();
+    if (!gameState.player1 || !gameState.player2) return;
+
+    // Generate AI/GPT direction
+    let aiDirection = null;
+    if (p2Type === 'gpt') {
+      try {
+        aiDirection = await this.gptClient.getNextAction({
+          ...gameState,
+          trialData: this.gameStateManager.getCurrentTrialData()
+        });
+      } catch (e) {
+        console.warn('GPT agent request failed during synchronized move; falling back to RL:', e?.message || e);
+      }
+    }
+    if (!aiDirection) {
+      if (!this.rlAgent) return; // If RL disabled (human-human), nothing to do
+      const aiAction = this.rlAgent.getAIAction(
+        gameState.gridMatrix,
+        gameState.player2,
+        gameState.currentGoals,
+        gameState.player1
+      );
+      aiDirection = this.actionToDirection(aiAction);
+    }
+
+    // Apply both moves before a single redraw
+    // Human is player 1; AI/GPT is player 2
+    const syncResult = this.gameStateManager.processSynchronizedMoves(humanDirection, aiDirection);
+
+    // Redraw once with both positions updated
+    this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+
+    if (syncResult?.trialComplete) {
+      this.handleTrialComplete(syncResult);
+    }
+  }
+
   setupAIMovement() {
-    // Skip AI movement setup if no AI agent available
-    if (!this.rlAgent) return;
+    // Proceed for both RL and GPT-based AI
 
     const aiMoveDelay = CONFIG.game.agent.delay;
     let player1AtGoal = false;
@@ -183,6 +259,7 @@ export class ExperimentManager {
       }
 
       setTimeout(() => {
+        // Fire and forget; makeAIMove may be async (GPT)
         this.makeAIMove();
       }, aiMoveDelay);
     });
@@ -205,29 +282,42 @@ export class ExperimentManager {
     this.gameLoopInterval = checkPlayerGoal;
   }
 
-  makeAIMove() {
+  async makeAIMove() {
     const gameState = this.gameStateManager.getCurrentState();
-    if (!gameState.player2 || !gameState.currentGoals || !this.rlAgent) return;
+    if (!gameState.player2 || !gameState.currentGoals) return;
 
     // Don't move if AI is already at a goal
     if (GameHelpers.isGoalReached(gameState.player2, gameState.currentGoals)) {
       return;
     }
 
-    // Get AI action
-    const aiAction = this.rlAgent.getAIAction(
-      gameState.gridMatrix,
-      gameState.player2,
-      gameState.currentGoals,
-      gameState.player1
-    );
-
-    if (aiAction[0] === 0 && aiAction[1] === 0) {
-      return; // No movement
+    // Decide action depending on agent type
+    let direction = null;
+    const p2Type = CONFIG.game.players.player2.type;
+    if (p2Type === 'gpt') {
+      try {
+        direction = await this.gptClient.getNextAction({
+          ...gameState,
+          trialData: this.gameStateManager.getCurrentTrialData()
+        });
+      } catch (err) {
+        console.warn('GPT agent failed, falling back to RL. Reason:', err?.message || err);
+      }
     }
 
-    // Convert action to direction string
-    const direction = this.actionToDirection(aiAction);
+    if (!direction) {
+      if (!this.rlAgent) return; // No RL fallback in human-human
+      const aiAction = this.rlAgent.getAIAction(
+        gameState.gridMatrix,
+        gameState.player2,
+        gameState.currentGoals,
+        gameState.player1
+      );
+      if (aiAction[0] === 0 && aiAction[1] === 0) {
+        return; // No movement
+      }
+      direction = this.actionToDirection(aiAction);
+    }
     if (direction) {
       const moveResult = this.gameStateManager.processPlayerMove(2, direction);
       this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
@@ -256,6 +346,7 @@ export class ExperimentManager {
         return;
       }
 
+      // Fire and forget; makeAIMove may be async
       this.makeAIMove();
     }, CONFIG.game.agent.independentDelay);
   }

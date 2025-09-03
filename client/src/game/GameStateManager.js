@@ -214,6 +214,69 @@ export class GameStateManager {
     }
   }
 
+  // Apply human (player 1) and AI/GPT (player 2) moves in a single synchronized step
+  processSynchronizedMoves(humanDirection, aiDirection) {
+    if (this.isMoving) {
+      return { success: false, reason: 'already_moving' };
+    }
+
+    this.isMoving = true;
+
+    try {
+      const results = { success: true, trialComplete: false };
+
+      // Prepare player references
+      const p1 = this.currentState.player1;
+      const p2 = this.currentState.player2;
+
+      // Movements (may be null)
+      const move1 = humanDirection ? DIRECTIONS[`arrow${humanDirection}`]?.movement : null;
+      const move2 = aiDirection ? DIRECTIONS[`arrow${aiDirection}`]?.movement : null;
+
+      // Record reaction time once for the step
+      const reactionTime = Date.now() - this.gameStartTime;
+
+      // Compute next positions safely
+      let next1 = p1;
+      if (p1 && move1 && !GameHelpers.isGoalReached(p1, this.currentState.currentGoals)) {
+        this.recordPlayerMove(1, move1, reactionTime);
+        const real1 = GameHelpers.isValidMove(this.currentState.gridMatrix, p1, move1);
+        next1 = GameHelpers.transition(p1, real1);
+      }
+
+      let next2 = p2;
+      if (p2 && move2 && !GameHelpers.isGoalReached(p2, this.currentState.currentGoals)) {
+        this.recordPlayerMove(2, move2, reactionTime);
+        const real2 = GameHelpers.isValidMove(this.currentState.gridMatrix, p2, move2);
+        next2 = GameHelpers.transition(p2, real2);
+      }
+
+      // Update grid: clear old positions then set new ones
+      if (p1 && next1 && (next1 !== p1)) {
+        this.updatePlayerPosition(1, p1, next1);
+      }
+      if (p2 && next2 && (next2 !== p2)) {
+        this.updatePlayerPosition(2, p2, next2);
+      }
+
+      // Detect goals after movement
+      if (p1 && move1) this.detectAndRecordGoals(1, move1);
+      if (p2 && move2) this.detectAndRecordGoals(2, move2);
+
+      // Increment step count once for the synchronized step
+      this.stepCount++;
+
+      // Check completion
+      results.trialComplete = this.checkTrialCompletion();
+      results.newPositions = { player1: next1, player2: next2 };
+      return results;
+    } finally {
+      setTimeout(() => {
+        this.isMoving = false;
+      }, 100);
+    }
+  }
+
   updatePlayerPosition(playerIndex, oldPos, newPos) {
     const objectType = playerIndex === 1 ? GAME_OBJECTS.player : GAME_OBJECTS.ai_player;
 

@@ -47,7 +47,7 @@ export const CONFIG = {
         description: 'Human player (you)'
       },
       player2: {
-        type: 'human', // Can be 'ai' or 'human'
+        type: 'gpt', // Can be 'ai' or 'human'
         color: 'orange',
         description: 'AI agent or human partner'
       }
@@ -63,7 +63,7 @@ export const CONFIG = {
       numTrials: {
         '1P1G': 1,
         '1P2G': 1,
-        '2P2G': 1,
+        '2P2G': 2,
         '2P3G': 1
       }
     },
@@ -85,7 +85,7 @@ export const CONFIG = {
       fixationDuration: 1000,
       newGoalMessageDuration: 0,
       // Minimum and maximum time to wait for partner (ms)
-      waitingForPartnerMinDuration: 5000,
+      waitingForPartnerMinDuration: 3000,
       waitingForPartnerMaxDuration: 15000
     },
 
@@ -93,7 +93,22 @@ export const CONFIG = {
     agent: {
       type: 'joint',
       delay: 500,
-      independentDelay: 300
+      independentDelay: 300,
+      // When true, AI/GPT moves are synchronized with the human input
+      // i.e., on each human key press, AI/GPT generates a move and both apply before a single redraw
+      synchronizedMoves: true,
+      // Optional GPT agent client defaults (non-sensitive)
+      gpt: {
+        // If set, forwarded to server; server may override model
+        model: '',
+        temperature: 0,
+        // Include past trajectories in GPT prompt
+        memory: {
+          enabled: true,
+          // Limit steps appended to prompt per player to control token usage
+          maxSteps: 50
+        }
+      }
     }
   },
 
@@ -190,7 +205,7 @@ export const DIRECTIONS = {
 // Export utility functions
 export const GameConfigUtils = {
   setPlayerType(playerIndex, type) {
-    if (type === 'ai' || type === 'human') {
+    if (type === 'ai' || type === 'gpt' || type === 'human') {
       CONFIG.game.players[`player${playerIndex}`].type = type;
     }
   },
@@ -200,7 +215,8 @@ export const GameConfigUtils = {
   },
 
   isHumanAIMode() {
-    return CONFIG.game.players.player2.type === 'ai';
+    const t = CONFIG.game.players.player2.type;
+    return t === 'ai' || t === 'gpt';
   },
 
   isHumanHumanMode() {

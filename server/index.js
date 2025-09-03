@@ -7,9 +7,39 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { GameRoomManager } from './gameRoomManager.js';
 import { GameEventHandler } from './gameEventHandler.js';
+import { decideGptAction, getGptConfigInfo } from './ai/gptAgent.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Lightweight .env loader (no external dependency)
+// Loads key=value pairs from root .env if present and not already set
+function loadEnvFromDotFile() {
+  try {
+    const envPath = path.join(__dirname, '..', '.env');
+    if (!fs.existsSync(envPath)) return;
+    const content = fs.readFileSync(envPath, 'utf8');
+    content.split(/\r?\n/).forEach(line => {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) return;
+      const idx = trimmed.indexOf('=');
+      if (idx === -1) return;
+      const key = trimmed.slice(0, idx).trim();
+      let value = trimmed.slice(idx + 1).trim();
+      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+      if (!(key in process.env)) {
+        process.env[key] = value;
+      }
+    });
+    console.log('[env] Loaded .env file');
+  } catch (e) {
+    console.warn('[env] Failed to load .env:', e?.message || e);
+  }
+}
+
+loadEnvFromDotFile();
 
 const app = express();
 const server = createServer(app);
@@ -130,6 +160,33 @@ app.get('/api/maps/:experimentType', (req, res) => {
   } catch (error) {
     console.error('Error reading map file:', error);
     res.status(500).json({ error: 'Failed to read map file' });
+  }
+});
+
+// GPT agent endpoints
+app.get('/api/ai/gpt/config', (req, res) => {
+  try {
+    res.json(getGptConfigInfo());
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to read GPT config' });
+  }
+});
+
+app.post('/api/ai/gpt/action', async (req, res) => {
+  try {
+    const { guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory } = req.body || {};
+
+    if (!Array.isArray(matrix) || matrix.length === 0) {
+      return res.status(400).json({ error: 'Invalid matrix' });
+    }
+    if (!currentPlayer || !Array.isArray(currentPlayer.pos)) {
+      return res.status(400).json({ error: 'Invalid currentPlayer' });
+    }
+    const action = await decideGptAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory });
+    res.json({ action });
+  } catch (err) {
+    console.error('GPT action error:', err);
+    res.status(500).json({ error: 'Failed to get GPT action', detail: String(err?.message || err) });
   }
 });
 

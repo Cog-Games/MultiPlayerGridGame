@@ -26,6 +26,12 @@ export class GameApplication {
     // Check URL parameters for timeline preference
     const urlParams = new URLSearchParams(window.location.search);
     this.useTimelineFlow = urlParams.get('timeline') !== 'false' && useTimeline;
+    const aiParam = urlParams.get('ai');
+    if (aiParam === 'gpt') {
+      CONFIG.game.players.player2.type = 'gpt';
+    } else if (aiParam === 'ai') {
+      CONFIG.game.players.player2.type = 'ai';
+    }
 
     console.log(`Starting application with timeline flow: ${this.useTimelineFlow}`);
 
@@ -105,8 +111,10 @@ export class GameApplication {
     const urlParams = new URLSearchParams(window.location.search);
     const skipNetwork = urlParams.get('skipNetwork') === 'true';
 
-    // Always default to AI locally; set up multiplayer handlers so 2P phases can attempt human-human and fallback
-    CONFIG.game.players.player2.type = 'ai';
+    // Default to AI locally unless explicitly set to 'gpt' or 'human'
+    if (!['gpt', 'human'].includes(CONFIG.game.players.player2.type)) {
+      CONFIG.game.players.player2.type = 'ai';
+    }
     this.uiManager.setPlayerInfo(0, 'human-ai');
 
     if (!skipNetwork) {
@@ -543,8 +551,22 @@ export class GameApplication {
     });
 
     // Game actions
-    this.uiManager.on('player-move', (direction) => {
-      this.handlePlayerMove(direction);
+    this.uiManager.on('player-move', async (direction) => {
+      // If player2 is AI/GPT and synchronized moves are enabled, delegate to ExperimentManager
+      const p2Type = CONFIG.game?.players?.player2?.type;
+      const sync = CONFIG.game?.agent?.synchronizedMoves;
+      const isAIPartner = p2Type === 'ai' || p2Type === 'gpt';
+
+      if (isAIPartner && sync && this.experimentManager?.handleSynchronizedMove) {
+        try {
+          await this.experimentManager.handleSynchronizedMove(direction);
+        } catch (e) {
+          console.warn('Synchronized move failed, falling back to local move:', e?.message || e);
+          this.handlePlayerMove(direction);
+        }
+      } else {
+        this.handlePlayerMove(direction);
+      }
     });
 
     // Experiment controls
