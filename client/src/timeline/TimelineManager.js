@@ -404,13 +404,13 @@ export class TimelineManager {
   }
 
   showWaitingForPartnerStage(experimentType, experimentIndex) {
-    const humanHuman = this.isHumanHumanMode();
     const minWaitMs = (CONFIG?.game?.timing?.waitingForPartnerDuration) || 5000;
     const readyAt = Date.now() + minWaitMs;
+    let partnerFound = false;
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
         <div id="waiting-room" style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 600px; text-align: center;">
-          <h2 style="color: #333; margin-bottom: 30px;">${humanHuman ? 'Finding another player ...' : 'Connecting to partner ...'}</h2>
+          <h2 style="color: #333; margin-bottom: 30px;">Finding another player ...</h2>
 
           <div style="margin-bottom: 30px;">
             <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
@@ -422,11 +422,7 @@ export class TimelineManager {
             This may take a few moments.
           </p>
 
-          ${humanHuman ? `
-            <div id="cancelButtonContainer" style="margin-top: 10px;">
-              <button id="cancel-wait-btn" style="background: #6c757d; color: white; border: none; padding: 8px 16px; font-size: 14px; border-radius: 5px; cursor: pointer;">Cancel and Exit</button>
-            </div>
-          ` : ''}
+
         </div>
       </div>
 
@@ -438,12 +434,16 @@ export class TimelineManager {
       </style>
     `;
 
-    // Add spacebar skip option for testing
+    // Add spacebar skip option for testing (only allowed after minimum wait window)
     const handleSkipWaiting = (event) => {
       if (event.code === 'Space' || event.key === ' ') {
         event.preventDefault();
+        // Only allow skip after minimum wait time has elapsed
+        if (Date.now() < readyAt) {
+          return;
+        }
         document.removeEventListener('keydown', handleSkipWaiting);
-        console.log('⏭️ Skipping multiplayer waiting - continuing with AI partner');
+        console.log('⏭️ Skipping multiplayer waiting after min wait - continuing with AI partner');
 
         // Convert to AI mode and continue
         CONFIG.game.players.player2.type = 'ai';
@@ -452,9 +452,9 @@ export class TimelineManager {
     };
     document.addEventListener('keydown', handleSkipWaiting);
 
-    if (humanHuman) {
-      // Emit event to start multiplayer connection
-      this.emit('waiting-for-partner', { experimentType, experimentIndex });
+    // Always attempt real partner connection for 2P phases; fallback to AI if none found in time
+    // Emit event to start multiplayer connection (GameApplication decides whether to join real or mock)
+    this.emit('waiting-for-partner', { experimentType, experimentIndex });
 
       // Optional cancel button behavior
       const cancelBtn = document.getElementById('cancel-wait-btn');
@@ -468,6 +468,9 @@ export class TimelineManager {
       // When partner connects, advance to the Ready stage
       const partnerConnectedHandler = () => {
         console.log('👥 Partner connected - will advance after minimum waiting time');
+        // Mark timeline as human-human for upcoming match stage
+        this.gameMode = 'human-human';
+        partnerFound = true;
         document.removeEventListener('keydown', handleSkipWaiting);
         this.off('partner-connected', partnerConnectedHandler);
         const delay = Math.max(0, readyAt - Date.now());
@@ -477,15 +480,17 @@ export class TimelineManager {
       // Ensure single handler for this stage
       this.eventHandlers.delete('partner-connected');
       this.on('partner-connected', partnerConnectedHandler);
-    } else {
-      // Human-AI mode: simulate waiting for configured minimum duration
-      const waitMs = CONFIG.game.timing.waitingForPartnerDuration || 5000;
-      console.log(`🕐 Simulating partner matching for ${waitMs}ms (AI mode)`);
-      setTimeout(() => {
+    // Fallback after minimum wait if no partner connected
+    setTimeout(() => {
+      if (!partnerFound) {
+        console.log('⌛ No partner found in time - falling back to AI mode');
+        CONFIG.game.players.player2.type = 'ai';
+        // Mark timeline as human-ai for match stage logic
+        this.gameMode = 'human-ai';
         document.removeEventListener('keydown', handleSkipWaiting);
         this.nextStage();
-      }, waitMs);
-    }
+      }
+    }, minWaitMs);
   }
 
   showReadyToPlayStage(experimentType, experimentIndex) {

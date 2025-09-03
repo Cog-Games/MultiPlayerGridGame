@@ -76,7 +76,7 @@ export class GameApplication {
     const urlParams = new URLSearchParams(window.location.search);
     const skipNetwork = urlParams.get('skipNetwork') === 'true';
 
-    if (mode === 'human-human' && !skipNetwork) {
+    if (!skipNetwork) {
       try {
         this.networkManager = new NetworkManager();
         await this.networkManager.connect();
@@ -87,7 +87,7 @@ export class GameApplication {
         console.log('💡 You can test timeline with mock multiplayer using: ?skipNetwork=true');
         this.networkManager = null;
       }
-    } else if (skipNetwork) {
+    } else {
       console.log('⚠️ Network connection skipped for testing');
       this.networkManager = null;
     }
@@ -105,20 +105,18 @@ export class GameApplication {
     const urlParams = new URLSearchParams(window.location.search);
     const skipNetwork = urlParams.get('skipNetwork') === 'true';
 
-    // Configure game mode
-    if (mode === 'human-human') {
-      CONFIG.game.players.player2.type = 'human';
+    // Always default to AI locally; set up multiplayer handlers so 2P phases can attempt human-human and fallback
+    CONFIG.game.players.player2.type = 'ai';
+    this.uiManager.setPlayerInfo(0, 'human-ai');
 
-      if (!skipNetwork && this.networkManager) {
-        console.log('🌐 Setting up real multiplayer timeline integration');
+    if (!skipNetwork) {
+      if (this.networkManager && this.networkManager.isConnected) {
+        console.log('🌐 Enabling real multiplayer integration for collaboration phases');
         this.setupMultiplayerTimelineIntegration(experimentType, roomId);
       } else {
         console.log('🤖 Using mock multiplayer for timeline (server not available or skipped)');
         this.setupMockMultiplayerForTimeline();
       }
-    } else {
-      CONFIG.game.players.player2.type = 'ai';
-      this.uiManager.setPlayerInfo(0, 'human-ai');
     }
 
     // Start the complete timeline flow
