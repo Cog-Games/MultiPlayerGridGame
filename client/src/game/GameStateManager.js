@@ -9,6 +9,7 @@ export class GameStateManager {
     this.isMoving = false;
     this.gameStartTime = 0;
     this.stepCount = 0;
+    this.conditionSequences = {}; // Balanced condition sequences per experiment
 
     this.reset();
   }
@@ -64,6 +65,7 @@ export class GameStateManager {
 
     this.stepCount = 0;
     this.isMoving = false;
+    this.conditionSequences = {};
   }
 
   initializeTrial(trialIndex, experimentType, design) {
@@ -100,11 +102,19 @@ export class GameStateManager {
     this.trialData.isNewGoalCloserToPlayer2 = null;
     this.trialData.collaborationSucceeded = undefined;
 
-    // Add distance condition for 2P3G and 1P2G trials
+    // Add distance condition for 2P3G and 1P2G trials (balanced sequence)
     if (experimentType === '2P3G') {
       this.trialData.distanceCondition = this.getRandomDistanceConditionFor2P3G(trialIndex);
     } else if (experimentType === '1P2G') {
       this.trialData.distanceCondition = this.getRandomDistanceConditionFor1P2G(trialIndex);
+    }
+
+    // Log current new-goal condition when map starts (for debugging/recording)
+    if (experimentType === '1P2G' || experimentType === '2P3G') {
+      console.log(
+        `🗺️ Starting ${experimentType} trial ${trialIndex}: new-goal condition =`,
+        this.trialData.distanceCondition
+      );
     }
 
     // Set up grid matrix
@@ -153,6 +163,32 @@ export class GameStateManager {
       const [row, col] = design.target2;
       this.currentState.gridMatrix[row][col] = GAME_OBJECTS.goal;
       this.currentState.currentGoals.push([row, col]);
+    }
+  }
+
+  // Safely add a new goal to the internal state and grid
+  addGoal(position) {
+    if (!position || position.length < 2) return;
+    const [row, col] = position;
+    if (!this.currentState || !this.currentState.gridMatrix) return;
+    // Bounds check
+    if (row < 0 || row >= this.currentState.gridMatrix.length) return;
+    if (col < 0 || col >= this.currentState.gridMatrix[0].length) return;
+    // Do not add duplicate
+    if (this.currentState.currentGoals.some(g => g[0] === row && g[1] === col)) return;
+    this.currentState.gridMatrix[row][col] = GAME_OBJECTS.goal;
+    this.currentState.currentGoals.push([row, col]);
+  }
+
+  // Record trial metadata for a newly presented goal
+  markNewGoalPresented(position, conditionType, extra = {}) {
+    if (!this.trialData) return;
+    this.trialData.newGoalPresented = true;
+    this.trialData.newGoalPresentedTime = this.stepCount;
+    this.trialData.newGoalPosition = position ? [...position] : null;
+    this.trialData.newGoalConditionType = conditionType || this.trialData.distanceCondition || null;
+    if (typeof extra.isNewGoalCloserToPlayer2 === 'boolean') {
+      this.trialData.isNewGoalCloserToPlayer2 = extra.isNewGoalCloserToPlayer2;
     }
   }
 
@@ -422,23 +458,67 @@ export class GameStateManager {
 
   // Distance condition helpers
   getRandomDistanceConditionFor2P3G(trialIndex) {
-    if (trialIndex >= CONFIG.game.successThreshold.randomSamplingAfterTrial) {
-      const conditions = Object.values(CONFIG.twoP3G.distanceConditions);
-      return conditions[Math.floor(Math.random() * conditions.length)];
-    } else {
-      // Use predefined sequence (would need to be implemented)
-      return CONFIG.twoP3G.distanceConditions.CLOSER_TO_PLAYER2;
+    // Use or create a balanced sequence for the experiment
+    const key = '2P3G';
+    const numTrials = (CONFIG.game.experiments?.numTrials?.[key]) || 12;
+    if (!this.conditionSequences[key]) {
+      this.conditionSequences[key] = this.generateBalancedConditionSequence(
+        Object.values(CONFIG.twoP3G.distanceConditions),
+        numTrials
+      );
+      console.log(`🎲 Generated balanced condition sequence for ${key}:`, this.conditionSequences[key]);
     }
+    const seq = this.conditionSequences[key];
+    return seq[trialIndex % seq.length];
   }
 
   getRandomDistanceConditionFor1P2G(trialIndex) {
-    if (trialIndex >= CONFIG.game.successThreshold.randomSamplingAfterTrial) {
-      const conditions = Object.values(CONFIG.oneP2G.distanceConditions);
-      return conditions[Math.floor(Math.random() * conditions.length)];
-    } else {
-      // Use predefined sequence (would need to be implemented)
-      return CONFIG.oneP2G.distanceConditions.CLOSER_TO_PLAYER1;
+    const key = '1P2G';
+    const numTrials = (CONFIG.game.experiments?.numTrials?.[key]) || 12;
+    if (!this.conditionSequences[key]) {
+      this.conditionSequences[key] = this.generateBalancedConditionSequence(
+        Object.values(CONFIG.oneP2G.distanceConditions),
+        numTrials
+      );
+      console.log(`🎲 Generated balanced condition sequence for ${key}:`, this.conditionSequences[key]);
     }
+    const seq = this.conditionSequences[key];
+    return seq[trialIndex % seq.length];
+  }
+
+  // Create a balanced randomized sequence from a set of conditions
+  generateBalancedConditionSequence(conditions, numTrials) {
+    if (!Array.isArray(conditions) || conditions.length === 0 || numTrials <= 0) {
+      return [];
+    }
+    const n = conditions.length;
+    const per = Math.floor(numTrials / n);
+    let rem = numTrials % n;
+
+    const seq = [];
+    // Equal representation
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < per; j++) seq.push(conditions[i]);
+    }
+    // Distribute remainder starting from random offset to avoid bias
+    let idxOrder = [...Array(n).keys()];
+    // Fisher-Yates shuffle index order
+    for (let i = idxOrder.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [idxOrder[i], idxOrder[j]] = [idxOrder[j], idxOrder[i]];
+    }
+    let k = 0;
+    while (rem > 0) {
+      seq.push(conditions[idxOrder[k % n]]);
+      k++;
+      rem--;
+    }
+    // Final shuffle
+    for (let i = seq.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [seq[i], seq[j]] = [seq[j], seq[i]];
+    }
+    return seq;
   }
 
   // State synchronization for multiplayer

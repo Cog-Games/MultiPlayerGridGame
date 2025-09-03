@@ -59,8 +59,6 @@ function buildPrompt({ matrix, currentPlayer, goals, memory }) {
     'right = [0, 1]',
     'up = [-1, 0]',
     'down = [1, 0]',
-    'You are the player 2.',
-    '',
   ];
 
   // Append recent trajectories if provided and enabled
@@ -74,7 +72,7 @@ function buildPrompt({ matrix, currentPlayer, goals, memory }) {
     lines.push('');
   }
 
-  lines.push('Given the above information, choose the best move. Reply only with with just one action: up | down | left | right');
+  lines.push( 'You are the player 2.', 'Given the above information, choose the best move. Reply only with with just one action: up | down | left | right');
 
   return lines.join('\n');
 }

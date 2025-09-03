@@ -55,16 +55,17 @@ export const CONFIG = {
 
     // Experiment configuration
     experiments: {
-      order: ['2P2G', '2P3G'], // Default experiment order
+      // order: ['1P2G'], // Default experiment order
+      // order: ['2P2G', '2P3G'], // Default experiment order
       // order: ['2P3G'], // Default experiment order
       // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Default experiment order
-      // order: [ '2P3G'], // Default experiment order
+      order: [ '2P3G'], // Default experiment order
 
       numTrials: {
         '1P1G': 1,
-        '1P2G': 1,
+        '1P2G': 4,
         '2P2G': 2,
-        '2P3G': 1
+        '2P3G': 4
       }
     },
 

@@ -606,8 +606,6 @@ export class TimelineManager {
         <div style="text-align: center;">
           <div id="fixation-canvas-container"></div>
           <div style="margin-top: 20px; font-size: 14px; color: #666;">
-            <p>Fixation stage - auto-advancing in ${CONFIG.game.timing.fixationDuration/1000} seconds</p>
-            <p style="font-size: 12px;">Or press SPACE to skip</p>
           </div>
         </div>
       </div>

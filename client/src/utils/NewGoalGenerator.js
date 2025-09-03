@@ -48,6 +48,123 @@ export class NewGoalGenerator {
     return sequence;
   }
 
+  // 1P2G: generate a second goal based on distance condition relative to player1 and first goal
+  static generateNewGoal1P2G(player1Pos, firstGoal, existingGoals, distanceCondition) {
+    if (!player1Pos || !firstGoal) return null;
+
+    // Do not add if condition is no-new-goal
+    const oneCfg = CONFIG.oneP2G;
+    if (!oneCfg || distanceCondition === oneCfg?.distanceConditions?.NO_NEW_GOAL) {
+      return null;
+    }
+
+    const player1DistanceToFirst = GameHelpers.calculateGridDistance(player1Pos, firstGoal);
+    const matrixSize = CONFIG.game.matrixSize;
+
+    // Constraints
+    const minDistFromHuman = oneCfg.goalConstraints?.minDistanceFromHuman ?? 1;
+    const maxDistFromHuman = oneCfg.goalConstraints?.maxDistanceFromHuman ?? Infinity;
+    const minDistBetweenGoals = oneCfg.goalConstraints?.minDistanceBetweenGoals ?? 2;
+
+    const closerThreshold = oneCfg.distanceConstraint?.closerThreshold ?? 1;
+    const fartherThreshold = oneCfg.distanceConstraint?.fartherThreshold ?? 1;
+    const allowEqual = !!oneCfg.distanceConstraint?.allowEqualDistance;
+    const equalTolerance = Number.isFinite(oneCfg.distanceConstraint?.equalTolerance) ? oneCfg.distanceConstraint.equalTolerance : 0;
+
+    const isOccupied = (row, col) => {
+      // Check existing goals
+      if (Array.isArray(existingGoals)) {
+        for (const g of existingGoals) {
+          if (g[0] === row && g[1] === col) return true;
+        }
+      }
+      // Check player position
+      if (player1Pos[0] === row && player1Pos[1] === col) return true;
+      return false;
+    };
+
+    const meetsDistanceCondition = (distNew) => {
+      switch (distanceCondition) {
+        case oneCfg.distanceConditions?.CLOSER_TO_PLAYER1:
+          return distNew <= player1DistanceToFirst - closerThreshold;
+        case oneCfg.distanceConditions?.FARTHER_TO_PLAYER1:
+          return distNew >= player1DistanceToFirst + fartherThreshold;
+        case oneCfg.distanceConditions?.EQUAL_TO_PLAYER1:
+          return allowEqual && Math.abs(distNew - player1DistanceToFirst) <= equalTolerance;
+        default:
+          return false;
+      }
+    };
+
+    const validPositions = [];
+    for (let row = 0; row < matrixSize; row++) {
+      for (let col = 0; col < matrixSize; col++) {
+        if (isOccupied(row, col)) continue;
+
+        const candidate = [row, col];
+        const dHuman = GameHelpers.calculateGridDistance(player1Pos, candidate);
+        if (dHuman < minDistFromHuman || dHuman > maxDistFromHuman) continue;
+
+        const dBetween = GameHelpers.calculateGridDistance(firstGoal, candidate);
+        if (dBetween < minDistBetweenGoals) continue;
+
+        if (meetsDistanceCondition(dHuman)) {
+          validPositions.push(candidate);
+        }
+      }
+    }
+
+    if (validPositions.length === 0) {
+      // Relaxed criteria: only enforce occupancy and basic distance from human
+      for (let row = 0; row < matrixSize; row++) {
+        for (let col = 0; col < matrixSize; col++) {
+          if (isOccupied(row, col)) continue;
+          const candidate = [row, col];
+          const dHuman = GameHelpers.calculateGridDistance(player1Pos, candidate);
+          if (dHuman >= 1 && dHuman <= Math.max(10, maxDistFromHuman)) {
+            validPositions.push(candidate);
+          }
+        }
+      }
+    }
+
+    if (validPositions.length === 0) return null;
+    const selected = validPositions[Math.floor(Math.random() * validPositions.length)];
+    return {
+      position: selected,
+      conditionType: distanceCondition,
+      distanceToPlayer1: GameHelpers.calculateGridDistance(player1Pos, selected)
+    };
+  }
+
+  // 1P2G: check whether to present a new goal during play
+  static checkNewGoalPresentation1P2G(gameState, trialData, distanceCondition) {
+    if (!gameState || !trialData) return null;
+
+    // Only when we have exactly 2 goals (we are adding the third)
+    if (!gameState.currentGoals || gameState.currentGoals.length !== 2) return null;
+
+    if (trialData.newGoalPresented) return null;
+
+    // Need a current inferred goal and to pass the minimum step threshold
+    const minSteps = CONFIG.oneP2G?.minStepsBeforeNewGoal ?? 0;
+    // trialData may not track steps; ExperimentManager will gate by step count
+
+    const history = trialData.player1CurrentGoal;
+    const latest = Array.isArray(history) && history.length > 0 ? history[history.length - 1] : null;
+    if (latest === null) return null;
+
+    const firstGoal = gameState.currentGoals[0];
+    const result = this.generateNewGoal1P2G(gameState.player1, firstGoal, gameState.currentGoals, distanceCondition);
+    if (!result) return null;
+
+    return {
+      position: result.position,
+      conditionType: result.conditionType,
+      distanceToPlayer1: result.distanceToPlayer1
+    };
+  }
+
   // Generate new goal based on distance condition (main function from legacy)
   static generateNewGoal(player2Pos, player1Pos, oldGoals, sharedGoalIndex, distanceCondition) {
     // Check if no new goal should be generated

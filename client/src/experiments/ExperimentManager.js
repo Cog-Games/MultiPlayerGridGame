@@ -1,7 +1,8 @@
-import { CONFIG } from '../config/gameConfig.js';
+import { CONFIG, GAME_OBJECTS } from '../config/gameConfig.js';
 import { RLAgent } from '../ai/RLAgent.js';
 import { GptAgentClient } from '../ai/GptAgentClient.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
+import { NewGoalGenerator } from '../utils/NewGoalGenerator.js';
 import { mapLoader } from '../utils/MapLoader.js';
 
 export class ExperimentManager {
@@ -18,6 +19,7 @@ export class ExperimentManager {
     this.isRunning = false;
     this.gameLoopInterval = null;
     this.aiMoveInterval = null;
+    this.newGoalIntervalId = null;
 
     // Initialize map data with MapLoader
     this.mapLoader = mapLoader;
@@ -352,13 +354,103 @@ export class ExperimentManager {
   }
 
   setupNewGoalCheck1P2G() {
-    // Implementation for 1P2G new goal logic would go here
-    // This is simplified for the refactor
+    // Present new goal for 1P2G after player shows intent to a goal (legacy-inspired)
+    const checkInterval = 100;
+    // Clear any existing new-goal interval first
+    if (this.newGoalIntervalId) {
+      clearInterval(this.newGoalIntervalId);
+      this.newGoalIntervalId = null;
+    }
+
+    const intervalId = setInterval(() => {
+      // Use live internal references to avoid mutating getter copies
+      const state = this.gameStateManager.currentState;
+      const trial = this.gameStateManager.trialData;
+
+      if (!state || !trial) return;
+      if (trial.newGoalPresented) return;
+      if (state.experimentType !== '1P2G') return;
+
+      // Require exactly 2 goals before adding the third
+      if (!state.currentGoals || state.currentGoals.length !== 2) return;
+
+      // Ensure minimum steps before presenting
+      if (this.gameStateManager.stepCount < (CONFIG.oneP2G?.minStepsBeforeNewGoal ?? 0)) return;
+
+      const distanceCondition = trial.distanceCondition || CONFIG.oneP2G.distanceConditions.CLOSER_TO_PLAYER1;
+      const result = NewGoalGenerator.checkNewGoalPresentation1P2G(
+        this.gameStateManager.getCurrentState(), // safe read-only snapshot
+        this.gameStateManager.getCurrentTrialData(),
+        distanceCondition
+      );
+      if (!result) return;
+
+      // Apply changes to internal state via GameStateManager APIs
+      this.gameStateManager.addGoal(result.position);
+      this.gameStateManager.markNewGoalPresented(result.position, distanceCondition, {});
+
+      // Reset RL pre-calculation if available
+      if (this.rlAgent && typeof this.rlAgent.resetNewGoalPreCalculationFlag === 'function') {
+        this.rlAgent.resetNewGoalPreCalculationFlag();
+      }
+
+      // Redraw
+      this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+    }, checkInterval);
+
+    // Track interval for cleanup
+    this.newGoalIntervalId = intervalId;
   }
 
   setupNewGoalCheck2P3G() {
-    // Implementation for 2P3G new goal logic would go here
-    // This is simplified for the refactor
+    // Present third goal when both players first reveal same goal
+    const checkInterval = 100;
+    // Clear any existing new-goal interval first
+    if (this.newGoalIntervalId) {
+      clearInterval(this.newGoalIntervalId);
+      this.newGoalIntervalId = null;
+    }
+
+    const intervalId = setInterval(() => {
+      // Use live internal references to avoid mutating getter copies
+      const state = this.gameStateManager.currentState;
+      const trial = this.gameStateManager.trialData;
+      if (!state || !trial) return;
+      if (trial.newGoalPresented) return;
+      if (state.experimentType !== '2P3G') return;
+
+      // Ensure we currently have exactly two goals (third will be added)
+      if (!state.currentGoals || state.currentGoals.length < 2) return;
+
+      // Ensure both players exist
+      if (!state.player1 || !state.player2) return;
+
+      const distanceCondition = trial.distanceCondition || CONFIG.twoP3G.distanceConditions.CLOSER_TO_PLAYER2;
+      const gen = NewGoalGenerator.checkNewGoalPresentation2P3G(
+        this.gameStateManager.getCurrentState(),
+        this.gameStateManager.getCurrentTrialData(),
+        distanceCondition
+      );
+      if (!gen) return;
+
+      // Apply changes to internal state via GameStateManager APIs
+      this.gameStateManager.addGoal(gen.position);
+      const closerInfo = (typeof gen.distanceToPlayer2 === 'number' && typeof gen.distanceToPlayer1 === 'number')
+        ? { isNewGoalCloserToPlayer2: gen.distanceToPlayer2 < gen.distanceToPlayer1 }
+        : {};
+      this.gameStateManager.markNewGoalPresented(gen.position, distanceCondition, closerInfo);
+
+      // Reset RL pre-calculation if available
+      if (this.rlAgent && typeof this.rlAgent.resetNewGoalPreCalculationFlag === 'function') {
+        this.rlAgent.resetNewGoalPreCalculationFlag();
+      }
+
+      // Redraw
+      this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+    }, checkInterval);
+
+    // Track interval for cleanup
+    this.newGoalIntervalId = intervalId;
   }
 
   actionToDirection(action) {
@@ -520,6 +612,11 @@ export class ExperimentManager {
     if (this.aiMoveInterval) {
       clearInterval(this.aiMoveInterval);
       this.aiMoveInterval = null;
+    }
+
+    if (this.newGoalIntervalId) {
+      clearInterval(this.newGoalIntervalId);
+      this.newGoalIntervalId = null;
     }
 
     if (this.gameTimeoutId) {
