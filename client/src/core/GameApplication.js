@@ -17,6 +17,7 @@ export class GameApplication {
     this.playerIndex = 0; // 0 = red player, 1 = orange player
     this.gameConfig = null; // Store game configuration from server
     this.useTimelineFlow = true; // Enable timeline flow by default
+    this.currentRoomId = null; // Track active multiplayer room ID for export
   }
 
   async start(options = {}) {
@@ -254,6 +255,9 @@ export class GameApplication {
         participantId = params.get('PROLIFIC_PID') || params.get('prolific_pid') || `participant_${Date.now()}`;
       }
 
+      // Determine room id (from runtime or payload)
+      const roomId = this.currentRoomId || data.roomId || null;
+
       // Legacy-compatible export object
       const exportObj = {
         participantId,
@@ -264,7 +268,8 @@ export class GameApplication {
         successThreshold: gsData.successThreshold || {},
         completionCode: data.completionCode || '',
         version: (CONFIG?.game?.version) || '2.0.0',
-        experimentType: (this.timelineManager?.gameMode === 'human-human') ? 'human-human' : 'human-AI'
+        experimentType: (this.timelineManager?.gameMode === 'human-human') ? 'human-human' : 'human-AI',
+        roomId
       };
 
       const dataStr = JSON.stringify(exportObj, null, 2);
@@ -281,7 +286,7 @@ export class GameApplication {
           const XLSX = window.XLSX;
           const wb = XLSX.utils.book_new();
 
-          // Process trial data into a flat table
+          // Process trial data into a flat table (include roomId as an extra column)
           const trials = exportObj.allTrialsData || [];
           if (trials.length > 0) {
             const processed = trials.map(t => {
@@ -290,6 +295,8 @@ export class GameApplication {
                 const v = t[k];
                 o[k] = (Array.isArray(v) || (v && typeof v === 'object')) ? JSON.stringify(v) : v;
               }
+              // Add roomId column to each row
+              o.roomId = exportObj.roomId || '';
               return o;
             });
             const wsData = [Object.keys(processed[0]), ...processed.map(row => Object.values(row))];
@@ -299,6 +306,18 @@ export class GameApplication {
             const ws = XLSX.utils.aoa_to_sheet([["No experimental data available"], [new Date().toISOString()]]);
             XLSX.utils.book_append_sheet(wb, ws, 'ExperimentData');
           }
+
+          // Meta sheet
+          const metaRows = [
+            ['participantId', exportObj.participantId],
+            ['roomId', exportObj.roomId || ''],
+            ['experimentOrder', JSON.stringify(exportObj.experimentOrder || [])],
+            ['experimentType', exportObj.experimentType],
+            ['version', exportObj.version],
+            ['timestamp', exportObj.timestamp]
+          ];
+          const metaSheet = XLSX.utils.aoa_to_sheet(metaRows);
+          XLSX.utils.book_append_sheet(wb, metaSheet, 'Meta');
 
           // Questionnaire sheet
           const q = exportObj.questionnaireData || exportObj.questionnaire || {};
@@ -319,7 +338,8 @@ export class GameApplication {
           const base64 = btoa(String.fromCharCode.apply(null, new Uint8Array(wbout)));
           const ts = new Date().toISOString().replace(/[:.]/g, '-');
           const safeId = String(exportObj.participantId).replace(/[^a-zA-Z0-9_-]/g, '_');
-          const excelFilename = `experiment_data_${safeId}_${ts}.xlsx`;
+          const safeRoom = String(exportObj.roomId || 'no-room').replace(/[^a-zA-Z0-9_-]/g, '_');
+          const excelFilename = `experiment_data_${safeId}_room_${safeRoom}_${ts}.xlsx`;
 
           const formData = new FormData();
           formData.append('filename', excelFilename);
@@ -399,6 +419,9 @@ export class GameApplication {
     // Room events
     this.networkManager.on('room-joined', (data) => {
       console.log('Room joined:', data);
+      if (data && data.roomId) {
+        this.currentRoomId = data.roomId;
+      }
 
       if (this.useTimelineFlow && this.timelineManager) {
         // Notify timeline that we have a partner

@@ -119,7 +119,7 @@ export class TimelineManager {
       console.log(`🔍 Experiment ${experimentType}: isMultiplayer=${isMultiplayer}`);
 
       if (isMultiplayer) {
-        console.log(`➕ Adding waiting + ready + match-play stages for ${experimentType}`);
+        console.log(`➕ Adding waiting + match-play stages for ${experimentType}`);
         // Stage 1: Waiting for partner (spinner + status)
         this.stages.push({
           type: 'waiting_for_partner',
@@ -127,14 +127,7 @@ export class TimelineManager {
           experimentIndex: expIndex,
           handler: () => this.showWaitingForPartnerStage(experimentType, expIndex)
         });
-        // Stage 2: Ready to play (after partner connected or simulated)
-        this.stages.push({
-          type: 'ready_to_play',
-          experimentType: experimentType,
-          experimentIndex: expIndex,
-          handler: () => this.showReadyToPlayStage(experimentType, expIndex)
-        });
-        // Stage 3: Match play gate (Game is Ready! press space)
+        // Stage 2: Match play gate (Game is Ready! press space)
         this.stages.push({
           type: 'match_play',
           experimentType: experimentType,
@@ -412,6 +405,8 @@ export class TimelineManager {
 
   showWaitingForPartnerStage(experimentType, experimentIndex) {
     const humanHuman = this.isHumanHumanMode();
+    const minWaitMs = (CONFIG?.game?.timing?.waitingForPartnerDuration) || 5000;
+    const readyAt = Date.now() + minWaitMs;
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
         <div id="waiting-room" style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 600px; text-align: center;">
@@ -427,9 +422,6 @@ export class TimelineManager {
             This may take a few moments.
           </p>
 
-          <div style="margin-top: 20px; font-size: 12px; color: #666;">
-            <p>For testing: Press <strong>SPACE</strong> to skip waiting and continue with AI partner</p>
-          </div>
           ${humanHuman ? `
             <div id="cancelButtonContainer" style="margin-top: 10px;">
               <button id="cancel-wait-btn" style="background: #6c757d; color: white; border: none; padding: 8px 16px; font-size: 14px; border-radius: 5px; cursor: pointer;">Cancel and Exit</button>
@@ -475,18 +467,19 @@ export class TimelineManager {
 
       // When partner connects, advance to the Ready stage
       const partnerConnectedHandler = () => {
-        console.log('👥 Partner connected - advancing to Ready to Play stage');
+        console.log('👥 Partner connected - will advance after minimum waiting time');
         document.removeEventListener('keydown', handleSkipWaiting);
         this.off('partner-connected', partnerConnectedHandler);
-        this.nextStage();
+        const delay = Math.max(0, readyAt - Date.now());
+        setTimeout(() => this.nextStage(), delay);
       };
 
       // Ensure single handler for this stage
       this.eventHandlers.delete('partner-connected');
       this.on('partner-connected', partnerConnectedHandler);
     } else {
-      // Human-AI mode: simulate waiting, then proceed
-      const waitMs = CONFIG.game.timing.waitingForPartnerDuration || 1000;
+      // Human-AI mode: simulate waiting for configured minimum duration
+      const waitMs = CONFIG.game.timing.waitingForPartnerDuration || 5000;
       console.log(`🕐 Simulating partner matching for ${waitMs}ms (AI mode)`);
       setTimeout(() => {
         document.removeEventListener('keydown', handleSkipWaiting);
@@ -548,8 +541,8 @@ export class TimelineManager {
         <div style="max-width: 600px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
           <h1 style="color: #28a745; margin-bottom: 30px;">✅ Game is Ready!</h1>
           <div style="font-size: 20px; color: #333; margin-bottom: 20px;">
-            <p><strong>${this.isHumanHumanMode() ? 'Both players are ready!' : 'Partner found and connection established!'}</strong></p>
-            <p>The game is ready to begin.</p>
+            <p><strong>${this.isHumanHumanMode() ? 'Partner found!' : 'Partner found and connection established!'}</strong></p>
+            <p>${this.isHumanHumanMode() ? 'Press SPACE to start. Both players must press SPACE to begin.' : 'Press SPACE to start.'}</p>
           </div>
           <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
             <p style="margin: 0; font-size: 16px; color: #155724;"><strong>Press the space bar to start the game.</strong></p>

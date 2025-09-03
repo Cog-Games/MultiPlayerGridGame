@@ -84,7 +84,8 @@ export const CONFIG = {
       preTrialDisplayDuration: 2000,
       fixationDuration: 1000,
       newGoalMessageDuration: 0,
-      waitingForPartnerDuration: 1000
+      // Minimum time to show the "Finding another player" screen (ms)
+      waitingForPartnerDuration: 5000
     },
 
     // AI agent settings
