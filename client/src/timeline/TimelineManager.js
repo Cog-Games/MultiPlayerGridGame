@@ -404,7 +404,10 @@ export class TimelineManager {
   }
 
   showWaitingForPartnerStage(experimentType, experimentIndex) {
-    const minWaitMs = (CONFIG?.game?.timing?.waitingForPartnerDuration) || 5000;
+    // Configurable min/max wait windows (fallback to legacy single value)
+    const minWaitMs = (CONFIG?.game?.timing?.waitingForPartnerMinDuration)
+      || (CONFIG?.game?.timing?.waitingForPartnerDuration) || 5000;
+    const maxWaitMs = (CONFIG?.game?.timing?.waitingForPartnerMaxDuration) || 15000;
     const readyAt = Date.now() + minWaitMs;
     let partnerFound = false;
     this.container.innerHTML = `
@@ -465,32 +468,38 @@ export class TimelineManager {
         };
       }
 
-      // When partner connects, advance to the Ready stage
-      const partnerConnectedHandler = () => {
-        console.log('👥 Partner connected - will advance after minimum waiting time');
+      // When partner connects, advance to the match stage after minimum wait
+      const partnerConnectedHandler = (payload) => {
+        console.log('👥 Partner connected - will advance after minimum waiting time', payload);
         // Mark timeline as human-human for upcoming match stage
         this.gameMode = 'human-human';
         partnerFound = true;
         document.removeEventListener('keydown', handleSkipWaiting);
         this.off('partner-connected', partnerConnectedHandler);
-        const delay = Math.max(0, readyAt - Date.now());
+        // If server provided a synchronized timestamp, align both clients to it
+        let targetAt = readyAt;
+        if (payload && payload.connectedAt) {
+          const serverTarget = payload.connectedAt + minWaitMs;
+          targetAt = Math.max(targetAt, serverTarget);
+        }
+        const delay = Math.max(0, targetAt - Date.now());
         setTimeout(() => this.nextStage(), delay);
       };
 
       // Ensure single handler for this stage
       this.eventHandlers.delete('partner-connected');
       this.on('partner-connected', partnerConnectedHandler);
-    // Fallback after minimum wait if no partner connected
+    // Fallback after maximum wait if no partner connected
     setTimeout(() => {
       if (!partnerFound) {
-        console.log('⌛ No partner found in time - falling back to AI mode');
+        console.log(`⌛ No partner found after ${maxWaitMs}ms - falling back to AI mode`);
         CONFIG.game.players.player2.type = 'ai';
         // Mark timeline as human-ai for match stage logic
         this.gameMode = 'human-ai';
         document.removeEventListener('keydown', handleSkipWaiting);
         this.nextStage();
       }
-    }, minWaitMs);
+    }, maxWaitMs);
   }
 
   showReadyToPlayStage(experimentType, experimentIndex) {

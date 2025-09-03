@@ -70,6 +70,7 @@ export class NetworkManager {
     const events = [
       'room-joined',
       'player-joined',
+      'room-full',
       'player-disconnected',
       'player-ready-status',
       'match-play-ready-status',

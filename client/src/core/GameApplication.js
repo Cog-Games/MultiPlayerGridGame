@@ -421,10 +421,10 @@ export class GameApplication {
         this.currentRoomId = data.roomId;
       }
 
-      if (this.useTimelineFlow && this.timelineManager) {
-        // Notify timeline that we have a partner
-        this.timelineManager.emit('partner-connected', data);
-      } else {
+      // Do NOT emit 'partner-connected' here — this fires even when alone.
+      // Wait for 'player-joined' event (emitted to others) to signal a partner is present.
+
+      if (!this.useTimelineFlow) {
         // Legacy flow
         this.uiManager.updateLobbyInfo(data);
       }
@@ -434,11 +434,19 @@ export class GameApplication {
       console.log('Player joined:', data);
 
       if (this.useTimelineFlow && this.timelineManager) {
-        // Notify timeline about player changes
+        // Notify timeline about partner presence for the other player
         this.timelineManager.emit('partner-connected', data);
       } else {
         // Legacy flow
         this.uiManager.updatePlayerList(data.players);
+      }
+    });
+
+    // When room becomes full, notify both players with a synchronized timestamp
+    this.networkManager.on('room-full', (data) => {
+      console.log('Room is full - both players connected:', data);
+      if (this.useTimelineFlow && this.timelineManager) {
+        this.timelineManager.emit('partner-connected', data);
       }
     });
 

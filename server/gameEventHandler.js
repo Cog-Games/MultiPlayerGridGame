@@ -25,6 +25,15 @@ export class GameEventHandler {
           players: room.players
         });
 
+        // If room is now full, notify both players with a synchronized timestamp
+        if (room.players.length === room.maxPlayers) {
+          io.to(room.id).emit('room-full', {
+            roomId: room.id,
+            players: room.players,
+            connectedAt: Date.now()
+          });
+        }
+
         console.log(`Player ${socket.id} joined room ${room.id}`);
       } catch (error) {
         socket.emit('error', { message: error.message });
