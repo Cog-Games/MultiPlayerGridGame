@@ -8,7 +8,6 @@ dist/
 build/
 
 # Environment variables
-.env
 .env.local
 .env.production
 
@@ -71,4 +70,5 @@ temp/
 *.bak
 
 # Export data files
-experiment-data-*.json
+experiment-data-*.json.env.example
+.evn.example
