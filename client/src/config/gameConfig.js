@@ -47,7 +47,7 @@ export const CONFIG = {
         description: 'Human player (you)'
       },
       player2: {
-        type: 'gpt', // Can be 'ai' or 'human'
+        type: 'human', // Can be 'ai' or 'human'
         color: 'orange',
         description: 'AI agent or human partner'
       }
@@ -63,9 +63,9 @@ export const CONFIG = {
 
       numTrials: {
         '1P1G': 1,
-        '1P2G': 4,
-        '2P2G': 1,
-        '2P3G': 1
+        '1P2G': 3,
+        '2P2G': 3,
+        '2P3G': 3
       }
     },
 
