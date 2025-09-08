@@ -467,10 +467,9 @@ export class GameStateManager {
       const p2 = CONFIG?.game?.players?.player2?.type;
       if (p2 === 'human') return 'human';
       if (p2 === 'gpt') return 'gpt';
-      if (p2 === 'ai') {
-        const joint = !!(CONFIG?.game?.agent?.synchronizedMoves);
-        return joint ? 'joint-rl' : 'individual-rl';
-      }
+      if (p2 === 'rl_joint') return 'joint-rl';
+      if (p2 === 'rl_individual') return 'individual-rl';
+      if (p2 === 'ai') return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl'; // legacy safety
       return String(p2 || 'unknown');
     } catch (_) {
       return 'unknown';

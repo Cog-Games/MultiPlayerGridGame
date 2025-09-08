@@ -47,9 +47,11 @@ export const CONFIG = {
         description: 'Human player (you)'
       },
       player2: {
-        type: 'human', // Can be 'ai' or 'human'
+        // Types: 'human' | 'gpt' | 'rl_individual' | 'rl_joint'
+        // Legacy alias 'ai' is treated as 'rl_joint'
+        type: 'human',
         color: 'orange',
-        description: 'AI agent or human partner'
+        description: 'Human, GPT, or RL partner'
       }
     },
 
@@ -87,12 +89,13 @@ export const CONFIG = {
       newGoalMessageDuration: 0,
       // Minimum and maximum time to wait for partner (ms)
       waitingForPartnerMinDuration: 3000,
-      waitingForPartnerMaxDuration: 15000
+      waitingForPartnerMaxDuration: 5000
     },
 
     // AI agent settings
     agent: {
-      type: 'joint',
+      // RL mode for player2 when using RL: 'individual' or 'joint'
+      type: 'individual',
       delay: 500,
       independentDelay: 300,
       // When true, AI/GPT moves are synchronized with the human input
@@ -182,7 +185,10 @@ export const CONFIG = {
     roomTimeout: 300000,
     reconnectAttempts: 3,
     syncInterval: 100,
-    moveTimeout: 10000
+    moveTimeout: 10000,
+    // Fallback AI partner type when human-human matching fails
+    // Allowed: 'gpt' | 'rl_individual' | 'rl_joint'
+    fallbackAIType: 'gpt'
   }
 };
 
@@ -206,8 +212,16 @@ export const DIRECTIONS = {
 // Export utility functions
 export const GameConfigUtils = {
   setPlayerType(playerIndex, type) {
-    if (type === 'ai' || type === 'gpt' || type === 'human') {
-      CONFIG.game.players[`player${playerIndex}`].type = type;
+    // Normalize legacy alias
+    const normalized = (type === 'ai') ? 'rl_joint' : type;
+    const allowed = ['human', 'gpt', 'rl_individual', 'rl_joint'];
+    if (!allowed.includes(normalized)) return;
+    CONFIG.game.players[`player${playerIndex}`].type = normalized;
+
+    // Keep RL agent mode consistent when setting player2 to RL types
+    if (playerIndex === 2) {
+      if (normalized === 'rl_joint') CONFIG.game.agent.type = 'joint';
+      if (normalized === 'rl_individual') CONFIG.game.agent.type = 'individual';
     }
   },
 
@@ -217,7 +231,7 @@ export const GameConfigUtils = {
 
   isHumanAIMode() {
     const t = CONFIG.game.players.player2.type;
-    return t === 'ai' || t === 'gpt';
+    return t !== 'human';
   },
 
   isHumanHumanMode() {

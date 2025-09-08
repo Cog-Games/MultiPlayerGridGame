@@ -456,7 +456,8 @@ export class TimelineManager {
         if (Date.now() < readyAt) return; // enforce minimum wait
         document.removeEventListener('keydown', handleSkipWaiting);
         console.log('⏭️ Skipping multiplayer waiting after min wait - continuing with AI partner');
-        CONFIG.game.players.player2.type = 'ai';
+        const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
+        GameConfigUtils.setPlayerType(2, fallbackType);
         this.nextStage();
       }
     };
@@ -498,7 +499,8 @@ export class TimelineManager {
     setTimeout(() => {
       if (!partnerFound) {
         console.log(`⌛ No partner found after ${maxWaitMs}ms - falling back to AI mode`);
-        CONFIG.game.players.player2.type = 'ai';
+        const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
+        GameConfigUtils.setPlayerType(2, fallbackType);
         this.gameMode = 'human-ai';
         document.removeEventListener('keydown', handleSkipWaiting);
         this.nextStage();

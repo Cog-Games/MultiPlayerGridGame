@@ -235,13 +235,32 @@ export class MapLoader {
         return this.createFallbackDesign(experimentType);
       }
 
-      const randomMaps = this.selectRandomMaps(mapData, 1);
-      if (randomMaps.length === 0) {
-        console.error(`No random maps selected for ${experimentType}`);
-        return this.createFallbackDesign(experimentType);
+      // Deterministic selection for multiplayer sync: derive index from room seed + trialIndex
+      try {
+        const keys = Object.keys(mapData);
+        if (keys.length === 0) return this.createFallbackDesign(experimentType);
+        const seed = Number(window.__SESSION_SEED__ || 0);
+        // Simple deterministic hash mixing
+        let h = 2166136261 >>> 0; // FNV-1a basis
+        const str = `${experimentType}|${trialIndex}|${seed}`;
+        for (let i = 0; i < str.length; i++) {
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 16777619);
+        }
+        const idx = Math.abs(h) % keys.length;
+        const key = keys[idx];
+        const arr = mapData[key];
+        if (Array.isArray(arr) && arr.length > 0) {
+          return { ...arr[0] };
+        }
+      } catch (_) {
+        // Fallback to prior random method if any issue
+        const randomMaps = this.selectRandomMaps(mapData, 1);
+        if (randomMaps.length > 0) return randomMaps[0];
       }
 
-      return randomMaps[0];
+      console.error(`No selectable maps for ${experimentType}`);
+      return this.createFallbackDesign(experimentType);
     } else {
       // Use pre-selected map from timeline (this would be handled by TimelineManager)
       console.log(`Using timeline map data for ${experimentType} trial ${trialIndex}`);

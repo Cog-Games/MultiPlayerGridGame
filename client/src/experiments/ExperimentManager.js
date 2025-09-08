@@ -149,7 +149,7 @@ export class ExperimentManager {
 
   runTrial2P2G() {
     // Two players, two goals - check if AI or human player 2
-    if (CONFIG.game.players.player2.type === 'ai' || CONFIG.game.players.player2.type === 'gpt') {
+    if (CONFIG.game.players.player2.type !== 'human') {
       if (CONFIG.game.agent.synchronizedMoves) {
         console.log('2P2G: Synchronized human-AI moves enabled');
         // In synchronized mode, we do not set up the legacy delayed AI listener
@@ -166,7 +166,7 @@ export class ExperimentManager {
 
   runTrial2P3G() {
     // Two players, three goals - check if AI or human player 2
-    if (CONFIG.game.players.player2.type === 'ai' || CONFIG.game.players.player2.type === 'gpt') {
+    if (CONFIG.game.players.player2.type !== 'human') {
       if (CONFIG.game.agent.synchronizedMoves) {
         console.log('2P3G: Synchronized human-AI moves enabled');
         this.setupIndependentAIAfterHumanGoal();
@@ -203,7 +203,7 @@ export class ExperimentManager {
   async handleSynchronizedMove(humanDirection) {
     // Only active when player2 is AI/GPT
     const p2Type = CONFIG.game.players.player2.type;
-    if (!(p2Type === 'ai' || p2Type === 'gpt')) return;
+    if (p2Type === 'human') return;
 
     const gameState = this.gameStateManager.getCurrentState();
     if (!gameState.player1 || !gameState.player2) return;
@@ -221,7 +221,7 @@ export class ExperimentManager {
       }
     }
     if (!aiDirection) {
-      if (!this.rlAgent) return; // If RL disabled (human-human), nothing to do
+      if (!this.rlAgent) return; // Safety
       const aiAction = this.rlAgent.getAIAction(
         gameState.gridMatrix,
         gameState.player2,
@@ -308,7 +308,7 @@ export class ExperimentManager {
     }
 
     if (!direction) {
-      if (!this.rlAgent) return; // No RL fallback in human-human
+      if (!this.rlAgent) return;
       const aiAction = this.rlAgent.getAIAction(
         gameState.gridMatrix,
         gameState.player2,
@@ -412,6 +412,14 @@ export class ExperimentManager {
     }
 
     const intervalId = setInterval(() => {
+      // In human-human mode, only the host (playerIndex 0) should generate the new goal
+      if (CONFIG.game.players.player2.type === 'human') {
+        const isHost = !!this.timelineManager && this.timelineManager.playerIndex === 0;
+        if (!isHost) {
+          return; // Non-host waits for host to broadcast state
+        }
+      }
+
       // Use live internal references to avoid mutating getter copies
       const state = this.gameStateManager.currentState;
       const trial = this.gameStateManager.trialData;
@@ -447,6 +455,16 @@ export class ExperimentManager {
 
       // Redraw
       this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+
+      // Broadcast synchronized state to partner in human-human mode
+      if (CONFIG.game.players.player2.type === 'human') {
+        try {
+          const nm = window.__NETWORK_MANAGER__;
+          if (nm && typeof nm.syncGameState === 'function') {
+            nm.syncGameState(this.gameStateManager.getCurrentState());
+          }
+        } catch (_) { /* ignore */ }
+      }
     }, checkInterval);
 
     // Track interval for cleanup

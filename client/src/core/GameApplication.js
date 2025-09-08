@@ -3,7 +3,7 @@ import { GameStateManager } from '../game/GameStateManager.js';
 import { UIManager } from '../ui/UIManager.js';
 import { ExperimentManager } from '../experiments/ExperimentManager.js';
 import { TimelineManager } from '../timeline/TimelineManager.js';
-import { CONFIG } from '../config/gameConfig.js';
+import { CONFIG, GameConfigUtils } from '../config/gameConfig.js';
 
 export class GameApplication {
   constructor(container) {
@@ -27,10 +27,9 @@ export class GameApplication {
     const urlParams = new URLSearchParams(window.location.search);
     this.useTimelineFlow = urlParams.get('timeline') !== 'false' && useTimeline;
     const aiParam = urlParams.get('ai');
-    if (aiParam === 'gpt') {
-      CONFIG.game.players.player2.type = 'gpt';
-    } else if (aiParam === 'ai') {
-      CONFIG.game.players.player2.type = 'ai';
+    if (aiParam) {
+      // Accept: 'gpt' | 'rl_joint' | 'rl_individual' | legacy 'ai'
+      GameConfigUtils.setPlayerType(2, aiParam);
     }
 
     console.log(`Starting application with timeline flow: ${this.useTimelineFlow}`);
@@ -88,6 +87,7 @@ export class GameApplication {
         await this.networkManager.connect();
         this.setupNetworkEventHandlers();
         console.log('✅ Network manager initialized');
+        try { window.__NETWORK_MANAGER__ = this.networkManager; } catch (_) { /* ignore */ }
       } catch (error) {
         console.warn('⚠️ Failed to initialize network manager:', error.message);
         console.log('💡 You can test timeline with mock multiplayer using: ?skipNetwork=true');
@@ -111,9 +111,9 @@ export class GameApplication {
     const urlParams = new URLSearchParams(window.location.search);
     const skipNetwork = urlParams.get('skipNetwork') === 'true';
 
-    // Default to AI locally unless explicitly set to 'gpt' or 'human'
-    if (!['gpt', 'human'].includes(CONFIG.game.players.player2.type)) {
-      CONFIG.game.players.player2.type = 'ai';
+    // Default to configured fallback AI when not explicitly set
+    if (!['gpt', 'human', 'rl_joint', 'rl_individual'].includes(CONFIG.game.players.player2.type)) {
+      GameConfigUtils.setPlayerType(2, CONFIG.multiplayer.fallbackAIType || 'rl_joint');
     }
     this.uiManager.setPlayerInfo(0, 'human-ai');
 
@@ -319,7 +319,9 @@ export class GameApplication {
           const partnerAgentType = (function(){
             if (p2Type === 'human') return 'human';
             if (p2Type === 'gpt') return 'gpt';
-            if (p2Type === 'ai') return (CONFIG?.game?.agent?.synchronizedMoves) ? 'joint-rl' : 'individual-rl';
+            if (p2Type === 'rl_joint') return 'joint-rl';
+            if (p2Type === 'rl_individual') return 'individual-rl';
+            if (p2Type === 'ai') return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl'; // legacy safety
             return p2Type || 'unknown';
           })();
 
@@ -391,7 +393,7 @@ export class GameApplication {
 
   async startSinglePlayerMode(experimentType) {
     // Configure for human-AI mode
-    CONFIG.game.players.player2.type = 'ai';
+    GameConfigUtils.setPlayerType(2, CONFIG.multiplayer.fallbackAIType || 'rl_joint');
 
     // Set player info for single player (always player 0 - red)
     this.uiManager.setPlayerInfo(0, 'human-ai');
@@ -437,6 +439,17 @@ export class GameApplication {
       console.log('Room joined:', data);
       if (data && data.roomId) {
         this.currentRoomId = data.roomId;
+        // Expose room id and a deterministic session seed for client-side sync logic
+        try {
+          window.__ROOM_ID__ = data.roomId;
+          const seedStr = String(data.roomId || '');
+          let hash = 0;
+          for (let i = 0; i < seedStr.length; i++) {
+            hash = ((hash << 5) - hash) + seedStr.charCodeAt(i);
+            hash |= 0;
+          }
+          window.__SESSION_SEED__ = Math.abs(hash);
+        } catch (_) { /* ignore */ }
       }
 
       // Do NOT emit 'partner-connected' here — this fires even when alone.
@@ -516,6 +529,11 @@ export class GameApplication {
       if (myPlayerConfig) {
         this.playerIndex = myPlayerConfig.playerIndex;
         console.log(`I am player ${this.playerIndex + 1} (${this.playerIndex === 0 ? 'red' : 'orange'})`);
+        // Mark host (playerIndex 0) for client-coordinated actions like new-goal broadcast
+        try {
+          window.__PLAYER_INDEX__ = this.playerIndex;
+          window.__IS_HOST__ = (this.playerIndex === 0);
+        } catch (_) { /* ignore */ }
       }
 
       if (this.useTimelineFlow) {
@@ -538,6 +556,8 @@ export class GameApplication {
     this.networkManager.on('game-state-update', (gameState) => {
       console.log('Game state update:', gameState);
       this.gameStateManager.syncState(gameState);
+      // Redraw UI so both players see the synchronized map immediately
+      this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
     });
 
     // Error handling
@@ -565,7 +585,7 @@ export class GameApplication {
       // If player2 is AI/GPT and synchronized moves are enabled, delegate to ExperimentManager
       const p2Type = CONFIG.game?.players?.player2?.type;
       const sync = CONFIG.game?.agent?.synchronizedMoves;
-      const isAIPartner = p2Type === 'ai' || p2Type === 'gpt';
+      const isAIPartner = p2Type !== 'human';
 
       if (isAIPartner && sync && this.experimentManager?.handleSynchronizedMove) {
         try {

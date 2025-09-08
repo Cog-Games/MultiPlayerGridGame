@@ -1,107 +1,137 @@
-# Stable Grid Game - Modern Architecture
+# Multiple Player Grid Game - Socket.IO
 
-A modern, extensible grid-based collaborative game with support for both human-AI and human-human gameplay modes using Socket.IO.
+A modern grid-based collaborative game supporting both human-AI and human-human gameplay modes. Built with Socket.IO for real-time multiplayer interactions and featuring a dual architecture with both legacy and refactored versions.
 
 ## Features
 
 ### Game Modes
-- **Human-AI Mode**: Single player collaborates with an AI agent using reinforcement learning
-- **Human-Human Mode**: Two players collaborate in real-time over network connection
+- **Human-AI Mode**: Single player collaborates with RL agent
+- **Human-Human Mode**: Two players collaborate in real-time over network
 
 ### Experiment Types
 - **1P1G**: Single player, single goal
-- **1P2G**: Single player, two goals with dynamic goal presentation
-- **2P2G**: Two players, two goals (collaboration required)
-- **2P3G**: Two players, three goals with dynamic goal presentation
+- **1P2G**: Single player, dynamic two-goal system
+- **2P2G**: Two players, two goals (collaboration)
+- **2P3G**: Two players, dynamic three-goal system
 
 ### Key Features
-- Modern ES6+ modular architecture
-- Real-time multiplayer support with Socket.IO
-- Intelligent RL agent for human-AI mode
-- Comprehensive data recording and export
-- Success threshold tracking
-- Visual game rendering with animations
-- Responsive UI with multiple screens
+- Timeline-based experiment flow with legacy compatibility
+- Real-time multiplayer with Socket.IO
+- Reinforcement learning AI agent with policy caching
+- Comprehensive data recording and JSON export
+- Success threshold tracking and adaptive trials
+- Canvas-based game rendering with animations
+- Modular ES6+ architecture
 
 ## Architecture
 
 ```
-├── server/                 # Node.js/Express server
-│   ├── index.js           # Main server entry point
-│   ├── gameRoomManager.js # Room management for multiplayer
-│   └── gameEventHandler.js# Socket.IO event handling
-├── client/                # Frontend application
+├── server/                    # Express/Socket.IO backend
+│   ├── index.js              # Main server with API endpoints
+│   ├── gameRoomManager.js    # Multiplayer room management
+│   ├── gameEventHandler.js   # Socket.IO event processing
+│   └── ai/
+│       └── gptAgent.js       # GPT agent integration
+├── client/                   # Vite frontend application
 │   ├── src/
-│   │   ├── core/          # Core application logic
-│   │   ├── game/          # Game state management
-│   │   ├── ai/            # RL agent implementation
-│   │   ├── ui/            # User interface components
-│   │   ├── network/       # Socket.IO client
-│   │   ├── experiments/   # Experiment management
-│   │   ├── utils/         # Utility functions
-│   │   └── config/        # Configuration
-│   ├── index.html         # Main HTML file
-│   └── main.js           # Application entry point
-└── config/               # Legacy map configurations (preserved)
-    ├── MapsFor1P1G.js
-    ├── MapsFor1P2G.js
-    ├── MapsFor2P2G.js
-    └── MapsFor2P3G.js
+│   │   ├── core/
+│   │   │   └── GameApplication.js    # Main app orchestrator
+│   │   ├── timeline/
+│   │   │   └── TimelineManager.js    # Experiment timeline flow
+│   │   ├── experiments/
+│   │   │   └── ExperimentManager.js  # Trial management
+│   │   ├── game/
+│   │   │   └── GameStateManager.js   # Game state & mechanics
+│   │   ├── network/
+│   │   │   └── NetworkManager.js     # Socket.IO client
+│   │   ├── ui/
+│   │   │   ├── UIManager.js          # UI rendering
+│   │   │   └── GameRenderer.js       # Canvas rendering
+│   │   ├── ai/
+│   │   │   ├── RLAgent.js           # RL agent implementation
+│   │   │   └── GptAgentClient.js    # GPT agent client
+│   │   ├── utils/
+│   │   │   ├── GameHelpers.js       # Game utilities
+│   │   │   ├── MapLoader.js         # Map loading
+│   │   │   └── NewGoalGenerator.js  # Dynamic goals
+│   │   └── config/
+│   │       └── gameConfig.js        # Main configuration
+│   ├── index.html                   # Entry HTML
+│   └── main.js                     # Application entry
+├── config/                          # Map data (API served)
+│   ├── MapsFor1P1G.js
+│   ├── MapsFor1P2G.js
+│   ├── MapsFor2P2G.js
+│   └── MapsFor2P3G.js
+├── legacyVersion/                   # Original implementation
+└── test-*.html                     # Test interfaces
 ```
 
-## Installation & Setup
+## Quick Start
 
-1. **Install dependencies**:
+### Installation
 ```bash
 npm install
 ```
 
-2. **Development mode** (runs both server and client):
+### Development (recommended)
+Starts both server (port 3001) and client (port 3000):
 ```bash
 npm run dev
 ```
 
-3. **Production build**:
+### Production
 ```bash
-npm run build
-npm start
+npm run build    # Build client
+npm start        # Start server
+```
+
+### Individual Services
+```bash
+npm run server:dev    # Server only with nodemon
+npm run client:dev    # Client only with Vite
+npm run preview       # Preview production build
 ```
 
 ## Usage
 
 ### Human-AI Mode (Default)
-- Navigate to `http://localhost:3000`
-- Click "Start Experiment"
-- Use arrow keys (↑ ↓ ← →) to control the red player
-- The orange AI player will collaborate automatically
+1. Open `http://localhost:3000`
+2. Select experiment type or use default
+3. Use arrow keys to control red player
+4. AI controls orange player automatically
 
 ### Human-Human Mode
-- Player 1: Navigate to `http://localhost:3000?mode=human-human`
-- Player 2: Navigate to `http://localhost:3000?mode=human-human`
-- Both players click "Ready to Play" when connected
-- Both players use arrow keys to control their respective characters
+1. **Player 1**: `http://localhost:3000?mode=human-human&experiment=2P2G`
+2. **Player 2**: `http://localhost:3000?mode=human-human&experiment=2P2G`
+3. Both click "Ready to Play" when connected
+4. Both use arrow keys for their respective players
 
-### Custom Experiment Types
-Add experiment type parameter:
-- `http://localhost:3000?experiment=1P1G`
-- `http://localhost:3000?experiment=2P3G`
-- `http://localhost:3000?mode=human-human&experiment=2P2G`
+### URL Parameters
+- `?mode=human-human` - Enable multiplayer mode
+- `?experiment=2P3G` - Set experiment type
+- `?timeline=false` - Use legacy flow instead of timeline
+- `?skipNetwork=true` - Test mode without server connection
+
+### Testing Interfaces
+- `test-timeline-integration.html` - Timeline system testing
+- `test-human-human-sync.html` - Multiplayer synchronization
+- `test-integration.js` - Automated integration tests
 
 ## Configuration
 
-### Game Settings
+### Main Game Config
 Edit `client/src/config/gameConfig.js`:
 
 ```javascript
 export const CONFIG = {
   game: {
-    matrixSize: 15,           // Grid size
+    matrixSize: 15,           // Grid dimensions
     maxGameLength: 50,        // Max steps per trial
     experiments: {
-      order: ['2P2G', '2P3G'], // Experiment sequence
+      order: ['2P2G', '2P3G'], // Sequence order
       numTrials: {
-        '1P1G': 3,
-        '1P2G': 12,
+        '1P1G': 3,             // Trial counts per type
         '2P2G': 12,
         '2P3G': 12
       }
@@ -110,102 +140,172 @@ export const CONFIG = {
       enabled: true,
       consecutiveSuccessesRequired: 5,
       minTrialsBeforeCheck: 12
+    },
+    players: {
+      player1: { color: 'red', type: 'human' },
+      player2: { color: 'orange', type: 'ai' }  // or 'human'
     }
+  },
+  ai: {
+    reactionDelay: 500,       // AI response delay (ms)
+    policyCache: true         // Enable policy caching
   }
 };
 ```
 
-### Server Settings
-Edit `server/index.js`:
+### Map Configuration
+Maps served via API from `/config/` directory:
+- Accessible at `/api/maps/{experimentType}`
+- Format: `{ maps: [{ matrix: [[...]], goals: [...] }] }`
 
-```javascript
-const PORT = process.env.PORT || 3001;
+### Environment Variables
+```bash
+PORT=3001                    # Server port
+NODE_ENV=development         # Environment
 ```
 
-## Data Export
+## Data Recording & Export
 
-- Trial data is automatically exported as JSON at experiment completion
-- Data includes: player trajectories, actions, reaction times, goal detection, collaboration success
-- Files saved as: `experiment-data-[timestamp].json`
+### Automatic Export
+- JSON export at experiment completion
+- Files: `experiment-data-[timestamp].json`
+- Includes trajectories, actions, reaction times, success metrics
+
+### Data Structure
+```javascript
+{
+  participantId: "uuid",
+  experimentType: "2P2G",
+  trials: [{
+    trialNumber: 1,
+    playerTrajectories: { player1: [...], player2: [...] },
+    actions: [{ playerId, action, timestamp, reactionTime }],
+    goalDetection: [...],
+    collaborationSuccess: true,
+    trialDuration: 15.4
+  }]
+}
+```
 
 ## API Endpoints
 
-### Server Health Check
+### Health & Status
 ```
-GET /health
-```
-
-### Room Statistics
-```
-GET /api/rooms
+GET /health              # Server health check
+GET /api/rooms           # Active room statistics
 ```
 
-## Socket.IO Events
+### Map Data
+```
+GET /api/maps/1P1G       # Get maps for experiment type
+GET /api/maps/2P2G       # Returns JSON map configurations
+```
+
+### Configuration Files (Legacy)
+```
+GET /config/MapsFor1P1G.js    # Raw JS map files
+```
+
+## Network Events
 
 ### Client → Server
-- `join-room`: Join or create a game room
-- `player-ready`: Signal ready to start
-- `game-action`: Send player action
-- `sync-game-state`: Synchronize game state
-- `trial-complete`: Signal trial completion
+- `join-room` - Join/create multiplayer room
+- `player-ready` - Signal ready to start game
+- `game-action` - Send player movement/action
+- `sync-game-state` - Request state synchronization
 
 ### Server → Client
-- `room-joined`: Room join confirmation
-- `player-joined`: New player joined room
-- `game-started`: Game initialization
-- `player-action`: Receive player action
-- `game-state-update`: Game state synchronization
+- `room-joined` - Room join confirmation with room info
+- `player-joined` - Notify new player in room
+- `game-started` - Game initialization signal
+- `player-action` - Broadcast player actions
+- `game-state-update` - Synchronized game state
 
-## Legacy Compatibility
+## Game Flow & Timeline System
 
-The refactored version maintains 100% functional compatibility with the original codebase:
+### Timeline Manager (Preferred)
+Modern structured experiment flow with stage management:
+- `waiting-for-partner` - Multiplayer connection phase
+- `all-players-ready` - Game initialization
+- `save-data` - Data recording triggers
+- Automatic progression through experiment stages
 
-- All original experiment types work identically
-- Same data recording format
-- Preserved timing and behavior
-- Original map configurations supported
-- Same success criteria and thresholds
+### Legacy Flow Fallback
+Direct experiment execution via `ExperimentManager`:
+- Enable with `?timeline=false` URL parameter
+- Maintains backward compatibility
 
-### Migration from Legacy
-1. Original files are preserved in the root directory
-2. New architecture in `client/` and `server/` directories
-3. No changes needed to existing data analysis scripts
-4. Configuration can be gradually migrated to new format
+### Player Indexing System
+- **Network/UI Layer**: 0-based (player 0 = red, player 1 = orange)
+- **Game Logic**: 1-based (player 1 = red, player 2 = orange)
+- Automatic conversion in `GameApplication.handlePlayerMove()`
 
 ## Development
 
-### Adding New Experiment Types
-1. Add configuration to `gameConfig.js`
-2. Implement trial logic in `ExperimentManager.js`
-3. Add any specific UI elements in `UIManager.js`
-4. Update map data if needed
+### Architecture Patterns
+1. **Modular Design**: Each component has single responsibility
+2. **Event-Driven**: Timeline and network events drive flow
+3. **State Management**: Centralized in `GameStateManager`
+4. **Dual Compatibility**: Legacy and modern systems coexist
 
-### Extending AI Behavior
-1. Modify `RLAgent.js` for new algorithms
-2. Add configuration options in `gameConfig.js`
-3. Test with existing experiment types for compatibility
+### Adding Features
+```javascript
+// 1. Add to gameConfig.js
+export const CONFIG = {
+  newFeature: { enabled: true, params: {...} }
+};
 
-### Adding New Network Events
-1. Define event in `gameEventHandler.js` (server)
-2. Handle event in `NetworkManager.js` (client)
-3. Update UI components as needed
+// 2. Implement in relevant manager
+class FeatureManager {
+  handleFeature() { /* implementation */ }
+}
 
-## Testing
+// 3. Connect via events
+this.emit('new-feature-event', data);
+```
 
-Run individual components:
-- Server only: `npm run server:dev`
-- Client only: `npm run client:dev`
-- Build test: `npm run build && npm run preview`
+### Testing & Validation
+```bash
+# Automated integration tests
+node test-integration.js
 
-## Performance Considerations
+# Manual testing interfaces
+npm run dev
+# Visit test-*.html files at localhost:3000
 
-- RL agent policies are cached for repeated goal configurations
-- Network messages are throttled to prevent spam
-- Game state synchronization is optimized for minimal bandwidth
-- Canvas rendering is optimized for smooth 60fps gameplay
+# Health checks
+curl http://localhost:3001/health
+curl http://localhost:3001/api/maps/2P2G
+```
 
-## Browser Support
+## Legacy System
 
-- Modern browsers with ES6+ support
-- WebSocket support required for multiplayer mode
-- Canvas 2D rendering support required
+### Preserved Components
+- Original files in `legacyVersion/` directory
+- All original experiment logic maintained
+- Data format compatibility preserved
+- Configuration files serve as API endpoints
+
+### Migration Benefits
+1. **Performance**: Modular loading reduces initial bundle size
+2. **Maintainability**: Clear separation of concerns
+3. **Extensibility**: Timeline system enables complex experiments
+4. **Compatibility**: Zero breaking changes to existing functionality
+
+## Technical Requirements
+
+### Runtime Dependencies
+- **Node.js**: 16+ with ES modules support
+- **Browser**: ES6+ support, WebSocket, Canvas 2D
+- **Network**: Socket.IO for real-time multiplayer
+
+### Performance Optimizations
+- RL agent policy caching for repeated configurations
+- Canvas rendering optimized for 60fps gameplay
+- Network message throttling prevents spam
+- Lazy loading of experiment components
+
+### Browser Compatibility
+- Chrome 88+, Firefox 85+, Safari 14+
+- WebSocket support required for multiplayer
+- Canvas 2D context required for game rendering
