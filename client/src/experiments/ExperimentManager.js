@@ -431,7 +431,7 @@ export class ExperimentManager {
       // Ensure minimum steps before presenting
       if (this.gameStateManager.stepCount < (CONFIG.oneP2G?.minStepsBeforeNewGoal ?? 0)) return;
 
-      const distanceCondition = trial.distanceCondition || CONFIG.oneP2G.distanceConditions.CLOSER_TO_PLAYER1;
+      const distanceCondition = trial.distanceCondition || trial.newGoalConditionType || CONFIG.oneP2G.distanceConditions.CLOSER_TO_PLAYER1;
       const result = NewGoalGenerator.checkNewGoalPresentation1P2G(
         this.gameStateManager.getCurrentState(), // safe read-only snapshot
         this.gameStateManager.getCurrentTrialData(),
@@ -487,7 +487,7 @@ export class ExperimentManager {
       // Ensure both players exist
       if (!state.player1 || !state.player2) return;
 
-      const distanceCondition = trial.distanceCondition || CONFIG.twoP3G.distanceConditions.CLOSER_TO_PLAYER2;
+      const distanceCondition = trial.distanceCondition || trial.newGoalConditionType || CONFIG.twoP3G.distanceConditions.CLOSER_TO_PLAYER2;
       const gen = NewGoalGenerator.checkNewGoalPresentation2P3G(
         this.gameStateManager.getCurrentState(),
         this.gameStateManager.getCurrentTrialData(),

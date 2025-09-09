@@ -29,6 +29,7 @@ export class GameStateManager {
       trialIndex: 0,
       experimentType: null,
       partnerAgentType: null,
+      distanceCondition: null,
       // GPT error logging per move
       gptErrorEvents: [],
       player1Trajectory: [],
@@ -103,15 +104,31 @@ export class GameStateManager {
     this.trialData.newGoalPresentedTime = null;
     this.trialData.newGoalPosition = null;
     this.trialData.newGoalConditionType = null;
+    this.trialData.distanceCondition = null; // ensure no carry-over between trials
     this.trialData.newGoalPresented = false;
     this.trialData.isNewGoalCloserToPlayer2 = null;
     this.trialData.collaborationSucceeded = undefined;
 
-    // Add distance condition for 2P3G and 1P2G trials (balanced sequence)
+    // Add distance condition for trials (balanced sequence)
     if (experimentType === '2P3G') {
-      this.trialData.distanceCondition = this.getRandomDistanceConditionFor2P3G(trialIndex);
+      const cond = this.getRandomDistanceConditionFor2P3G(trialIndex);
+      this.trialData.newGoalConditionType = cond;
+      this.trialData.distanceCondition = cond; // legacy naming for saving
+      this.currentState.newGoalConditionType = cond;
+      this.currentState.distanceCondition = cond;
     } else if (experimentType === '1P2G') {
-      this.trialData.distanceCondition = this.getRandomDistanceConditionFor1P2G(trialIndex);
+      const cond = this.getRandomDistanceConditionFor1P2G(trialIndex);
+      this.trialData.newGoalConditionType = cond;
+      this.trialData.distanceCondition = cond; // legacy naming for saving
+      this.currentState.newGoalConditionType = cond;
+      this.currentState.distanceCondition = cond;
+    } else if (experimentType === '2P2G') {
+      // Explicitly tag no_new_goal for 2P2G to keep both players consistent
+      const noNew = CONFIG?.twoP3G?.distanceConditions?.NO_NEW_GOAL || 'no_new_goal';
+      this.trialData.newGoalConditionType = noNew;
+      this.trialData.distanceCondition = noNew;
+      this.currentState.newGoalConditionType = noNew;
+      this.currentState.distanceCondition = noNew;
     }
 
     // Log current new-goal condition when map starts (for debugging/recording)
@@ -214,7 +231,14 @@ export class GameStateManager {
     this.trialData.newGoalPresented = true;
     this.trialData.newGoalPresentedTime = this.stepCount;
     this.trialData.newGoalPosition = position ? [...position] : null;
-    this.trialData.newGoalConditionType = conditionType || this.trialData.distanceCondition || null;
+    const cond = conditionType || this.trialData.newGoalConditionType || this.trialData.distanceCondition || null;
+    this.trialData.newGoalConditionType = cond;
+    this.trialData.distanceCondition = cond; // keep legacy field in sync
+    // Mirror in state for network sync visibility
+    if (this.currentState) {
+      this.currentState.newGoalConditionType = cond;
+      this.currentState.distanceCondition = cond;
+    }
     if (typeof extra.isNewGoalCloserToPlayer2 === 'boolean') {
       this.trialData.isNewGoalCloserToPlayer2 = extra.isNewGoalCloserToPlayer2;
     }
@@ -500,14 +524,57 @@ export class GameStateManager {
       return 'unknown';
     }
   }
+  // Seeded PRNG utils for deterministic sequences in human-human mode
+  getSessionSeedInt() {
+    try {
+      if (typeof window !== 'undefined' && Number.isInteger(window.__SESSION_SEED__)) {
+        return window.__SESSION_SEED__;
+      }
+    } catch (_) { /* ignore */ }
+    return null;
+  }
+
+  seededShuffle(array, seed) {
+    if (!Array.isArray(array) || array.length <= 1) return array;
+    if (!Number.isInteger(seed)) return this.randomShuffle(array);
+    const out = array.slice();
+    // LCG parameters (Numerical Recipes)
+    let state = (seed >>> 0) || 1;
+    const m = 0x100000000; // 2^32
+    const a = 1664525;
+    const c = 1013904223;
+    const rand = () => {
+      state = (Math.imul(a, state) + c) >>> 0;
+      return state / m;
+    };
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+    return out;
+  }
+
+  randomShuffle(array) {
+    const out = array.slice();
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+    return out;
+  }
+
   getRandomDistanceConditionFor2P3G(trialIndex) {
     // Use or create a balanced sequence for the experiment
     const key = '2P3G';
     const numTrials = (CONFIG.game.experiments?.numTrials?.[key]) || 12;
     if (!this.conditionSequences[key]) {
+      // If human-human mode, use a shared seed so both clients get identical sequences
+      const isHumanHuman = (CONFIG?.game?.players?.player2?.type === 'human');
+      const seed = isHumanHuman ? (this.getSessionSeedInt() ?? null) : null;
       this.conditionSequences[key] = this.generateBalancedConditionSequence(
         Object.values(CONFIG.twoP3G.distanceConditions),
-        numTrials
+        numTrials,
+        seed
       );
       console.log(`🎲 Generated balanced condition sequence for ${key}:`, this.conditionSequences[key]);
     }
@@ -530,7 +597,7 @@ export class GameStateManager {
   }
 
   // Create a balanced randomized sequence from a set of conditions
-  generateBalancedConditionSequence(conditions, numTrials) {
+  generateBalancedConditionSequence(conditions, numTrials, seed = null) {
     if (!Array.isArray(conditions) || conditions.length === 0 || numTrials <= 0) {
       return [];
     }
@@ -543,29 +610,50 @@ export class GameStateManager {
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < per; j++) seq.push(conditions[i]);
     }
-    // Distribute remainder starting from random offset to avoid bias
+    // Distribute remainder using deterministic or random order
     let idxOrder = [...Array(n).keys()];
-    // Fisher-Yates shuffle index order
-    for (let i = idxOrder.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [idxOrder[i], idxOrder[j]] = [idxOrder[j], idxOrder[i]];
-    }
+    idxOrder = (Number.isInteger(seed)) ? this.seededShuffle(idxOrder, seed) : this.randomShuffle(idxOrder);
     let k = 0;
     while (rem > 0) {
       seq.push(conditions[idxOrder[k % n]]);
       k++;
       rem--;
     }
-    // Final shuffle
-    for (let i = seq.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [seq[i], seq[j]] = [seq[j], seq[i]];
-    }
-    return seq;
+    // Final shuffle (deterministic if seed provided)
+    const final = (Number.isInteger(seed)) ? this.seededShuffle(seq, seed ^ 0x9E3779B9) : this.randomShuffle(seq);
+    return final;
   }
 
   // State synchronization for multiplayer
   syncState(remoteState) {
+    // Before merging, detect if a new goal was added remotely so we can mirror trial flags
+    try {
+      const localGoals = Array.isArray(this.currentState?.currentGoals) ? this.currentState.currentGoals : [];
+      const remoteGoals = Array.isArray(remoteState?.currentGoals) ? remoteState.currentGoals : null;
+
+      if (
+        remoteGoals &&
+        Array.isArray(remoteGoals) &&
+        Array.isArray(localGoals) &&
+        remoteGoals.length > localGoals.length &&
+        // Only for 2P3G trials where third goal can appear
+        (this.currentState?.experimentType === '2P3G' || remoteState?.experimentType === '2P3G') &&
+        this.trialData && this.trialData.newGoalPresented === false
+      ) {
+        // Find the newly added goal position present in remote but not in local
+        const isSamePos = (a, b) => Array.isArray(a) && Array.isArray(b) && a[0] === b[0] && a[1] === b[1];
+        const newOnRemote = remoteGoals.find(rg => !localGoals.some(lg => isSamePos(lg, rg)));
+        if (Array.isArray(newOnRemote) && newOnRemote.length === 2) {
+          // Mark as presented using remote state's legacy condition field when available
+          const cond = (remoteState && (remoteState.distanceCondition || remoteState.newGoalConditionType))
+            || this.trialData.distanceCondition || this.trialData.newGoalConditionType || null;
+          this.markNewGoalPresented([...newOnRemote], cond, {});
+        }
+      }
+    } catch (_) {
+      // Swallow sync inference errors to avoid destabilizing gameplay
+    }
+
     // Merge remote state with local state
     this.currentState = { ...this.currentState, ...remoteState };
   }

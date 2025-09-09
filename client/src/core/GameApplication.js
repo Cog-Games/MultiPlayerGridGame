@@ -295,17 +295,54 @@ export class GameApplication {
           // Process trial data into a flat table (include roomId as an extra column)
           const trials = exportObj.allTrialsData || [];
           if (trials.length > 0) {
+            // Normalize rows to a stable header set to prevent column mismatches
             const processed = trials.map(t => {
               const o = {};
               for (const k in t) {
                 const v = t[k];
+                // Flatten arrays/objects for Excel cells
                 o[k] = (Array.isArray(v) || (v && typeof v === 'object')) ? JSON.stringify(v) : v;
               }
-              // Add roomId column to each row
+              // Add roomId column to each row (explicit)
               o.roomId = exportObj.roomId || '';
+              // Add participantId per row for easier analysis join
+              o.participantId = exportObj.participantId;
+              // Legacy naming: prefer distanceCondition in exports
+              if (o.newGoalConditionType && !o.distanceCondition) {
+                o.distanceCondition = o.newGoalConditionType;
+              }
+              // Drop non-legacy alias from export to avoid confusion
+              delete o.newGoalConditionType;
               return o;
             });
-            const wsData = [Object.keys(processed[0]), ...processed.map(row => Object.values(row))];
+
+            // Build a stable union of all keys across rows
+            const headerSet = new Set();
+            processed.forEach(row => Object.keys(row).forEach(k => headerSet.add(k)));
+
+            // Prefer a sensible column order for readability; include common fields first if present
+            const preferredOrder = [
+              'trialIndex', 'experimentType', 'partnerAgentType', 'collaborationSucceeded',
+              'player1GoalReachedStep', 'player2GoalReachedStep',
+              'newGoalPresented', 'newGoalPosition', 'distanceCondition', 'isNewGoalCloserToPlayer2',
+              'trialStartTime', 'gptErrorEvents', 'participantId',
+              'player1Trajectory', 'player2Trajectory', 'player1Actions', 'player2Actions', 'player1RT',
+              'player1CurrentGoal', 'player2CurrentGoal', 'player1FirstDetectedGoal', 'player2FirstDetectedGoal',
+              'player1FinalReachedGoal', 'player2FinalReachedGoal', 'firstDetectedSharedGoal',
+              'roomId'
+            ];
+            const headers = [];
+            // Add preferred keys that exist
+            preferredOrder.forEach(k => { if (headerSet.has(k)) { headers.push(k); headerSet.delete(k); } });
+            // Append any remaining keys in alphabetical order for determinism
+            headers.push(...Array.from(headerSet).sort());
+
+            // Map row values by header order to avoid misaligned columns
+            const wsData = [
+              headers,
+              ...processed.map(row => headers.map(h => (h in row) ? row[h] : ''))
+            ];
+
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             XLSX.utils.book_append_sheet(wb, ws, 'ExperimentData');
           } else {
