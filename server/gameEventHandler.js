@@ -111,6 +111,15 @@ export class GameEventHandler {
       const room = this.roomManager.getPlayerRoom(socket.id);
       if (room) {
         this.roomManager.setRoomStatus(room.id, 'finished');
+        // Reset readiness flags so next game requires both players to press again
+        try {
+          if (Array.isArray(room.players)) {
+            room.players.forEach(p => {
+              p.isReady = false;
+              p.isMatchReady = false;
+            });
+          }
+        } catch (_) { /* noop */ }
         io.to(room.id).emit('experiment-completed', {
           playerId: socket.id,
           experimentData
@@ -160,5 +169,15 @@ export class GameEventHandler {
 
     io.to(room.id).emit('game-started', gameConfig);
     console.log(`Game started in room ${room.id}`);
+
+    // Prepare for potential next game: reset readiness flags
+    try {
+      if (Array.isArray(room.players)) {
+        room.players.forEach(p => {
+          p.isReady = false;
+          p.isMatchReady = false;
+        });
+      }
+    } catch (_) { /* noop */ }
   }
 }

@@ -38,7 +38,7 @@ export const CONFIG = {
     version: '2.0.0',
     prolificCompletionCode: getEnvVar('VITE_PROLIFIC_COMPLETION_CODE', 'CBBOSCQO'),
     matrixSize: 15,
-    maxGameLength: 50,
+    maxGameLength: 40,
 
     // Player configuration
     players: {
@@ -60,14 +60,15 @@ export const CONFIG = {
     experiments: {
       // order: ['1P2G'],
       // order: [ '2P3G'],
+      order: ['1P2G','2P3G'],
       // order: ['2P2G', '2P3G'],
-      order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
+      // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
-        '1P1G': 2,
-        '1P2G': 8,
-        '2P2G': 4,
-        '2P3G': 8
+        '1P1G': 3,
+        '1P2G': 12,
+        '2P2G': 8,
+        '2P3G': 12
       }
     },
 
@@ -88,8 +89,8 @@ export const CONFIG = {
       fixationDuration: 1000,
       newGoalMessageDuration: 0,
       // Minimum and maximum time to wait for partner (ms)
-      waitingForPartnerMinDuration: 3000,
-      waitingForPartnerMaxDuration: 5000
+      waitingForPartnerMinDuration: 9 * 1000,
+      waitingForPartnerMaxDuration: 120 * 1000
     },
 
     // AI agent settings

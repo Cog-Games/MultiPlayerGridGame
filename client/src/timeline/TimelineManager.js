@@ -10,6 +10,8 @@ export class TimelineManager {
     this.stages = [];
     this.currentStageIndex = 0;
     this.mapData = {};
+    // Track whether we've already shown the partner-finding stage
+    this.hasShownPartnerFindingStage = false;
     this.experimentData = {
       participantId: this.getParticipantId(),
       startTime: new Date().toISOString(),
@@ -119,21 +121,36 @@ export class TimelineManager {
       console.log(`🔍 Experiment ${experimentType}: isMultiplayer=${isMultiplayer}`);
 
       if (isMultiplayer) {
-        console.log(`➕ Adding waiting + match-play stages for ${experimentType}`);
-        // Stage 1: Waiting for partner (spinner + status)
-        this.stages.push({
-          type: 'waiting_for_partner',
-          experimentType: experimentType,
-          experimentIndex: expIndex,
-          handler: () => this.showWaitingForPartnerStage(experimentType, expIndex)
-        });
-        // Stage 2: Match play gate (Game is Ready! press space)
-        this.stages.push({
-          type: 'match_play',
-          experimentType: experimentType,
-          experimentIndex: expIndex,
-          handler: () => this.showMatchPlayStage(experimentType, expIndex)
-        });
+        // Only show the partner-finding (waiting) stage once across all 2P games
+        if (!this.hasShownPartnerFindingStage) {
+          console.log(`➕ Adding waiting + match-play stages for ${experimentType}`);
+          // Stage 1: Waiting for partner (spinner + status)
+          this.stages.push({
+            type: 'waiting_for_partner',
+            experimentType: experimentType,
+            experimentIndex: expIndex,
+            handler: () => this.showWaitingForPartnerStage(experimentType, expIndex)
+          });
+          // Stage 2: Match play gate (Game is Ready! press space)
+          this.stages.push({
+            type: 'match_play',
+            experimentType: experimentType,
+            experimentIndex: expIndex,
+            showPartnerFoundMessage: true,
+            handler: () => this.showMatchPlayStage(experimentType, expIndex)
+          });
+          this.hasShownPartnerFindingStage = true;
+        } else {
+          console.log(`➕ Skipping waiting stage for ${experimentType}; adding match-play only`);
+          // Only add the match play gate for subsequent 2P experiments
+          this.stages.push({
+            type: 'match_play',
+            experimentType: experimentType,
+            experimentIndex: expIndex,
+            showPartnerFoundMessage: false,
+            handler: () => this.showMatchPlayStage(experimentType, expIndex)
+          });
+        }
       }
 
       // Add trial stages (fixation -> trial -> feedback sequence)
@@ -556,17 +573,25 @@ export class TimelineManager {
 
   showMatchPlayStage(experimentType, experimentIndex) {
     // Unified match play gate (Game is Ready!); requires BOTH players to press SPACE to proceed
+    const currentStage = this.stages[this.currentStageIndex] || {};
+    const showPartnerMsg = currentStage.showPartnerFoundMessage !== false; // default true unless explicitly false
+    const partnerMsgHtml = showPartnerMsg
+      ? `<p><strong>${this.isHumanHumanMode() ? 'Another player found!' : 'Another player found and connection established!'}</strong></p>`
+      : '';
+
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
         <div style="max-width: 600px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
           <h1 style="color: #28a745; margin-bottom: 30px;">✅ Game is Ready!</h1>
           <div style="font-size: 20px; color: #333; margin-bottom: 20px;">
-            <p><strong>${this.isHumanHumanMode() ? 'Partner found!' : 'Partner found and connection established!'}</strong></p>
-            <p>${this.isHumanHumanMode() ? 'Press SPACE to start. Both players must press SPACE to begin.' : 'Press SPACE to start.'}</p>
-          </div>
-          <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-            <p style="margin: 0; font-size: 16px; color: #155724;"><strong>Press the space bar to start the game.</strong></p>
-          </div>
+            ${partnerMsgHtml}
+            <p style="margin-top: 10px; font-size: 20px;">
+              You are ${this.playerIndex === 0 ? 'Player 1 (Red)' : 'Player 2 (Orange)'}
+              <span style="display:inline-block; width: 14px; height: 14px; background-color: ${this.playerIndex === 0 ? CONFIG.visual.colors.player1 : CONFIG.visual.colors.player2}; border-radius: 50%; vertical-align: middle; margin-left: 6px;"></span>
+            </p>
+            <p>Press SPACE to start the game!</p>
+            <p style="font-size: 14px;">${this.isHumanHumanMode() ? 'Both players must press SPACE to begin.' : ''}</p>
+
           <div id="match-status" style="font-size: 14px; color: #666; display: none;">Waiting for the other player to press space...</div>
         </div>
       </div>
@@ -655,7 +680,7 @@ export class TimelineManager {
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
         <div style="text-align: center; max-width: 800px; width: 100%;">
-          <h3 style="margin-bottom: 20px;">Game ${experimentIndex + 1} - Trial ${trialIndex + 1}</h3>
+          <h3 style="margin-bottom: 20px;">Game ${experimentIndex + 1}</h3>
           <div id="game-canvas-container" style="margin: 0 auto; position: relative; display: flex; justify-content: center;">
             <!-- Game canvas will be inserted here by ExperimentManager -->
           </div>
@@ -751,42 +776,122 @@ export class TimelineManager {
   }
 
   showGameFeedbackStage() {
-    // Calculate overall performance
-    const totalTrials = Object.values(this.experimentData.experiments)
-      .flat().length;
-    const successfulTrials = Object.values(this.experimentData.experiments)
-      .flat().filter(trial => trial.success).length;
-    const successRate = totalTrials > 0 ? Math.round((successfulTrials / totalTrials) * 100) : 0;
+    // Build legacy-compatible metrics based on collected trial results
+    const allResults = Object.values(this.experimentData.experiments).flat();
+    const trials = allResults.map(r => r?.trialData || r).filter(Boolean);
 
+    const totalTrials = trials.length;
+
+    // Total time in minutes between first trial start and last trial end
+    let totalTimeMinutes = 0;
+    if (trials.length > 0) {
+      const firstStart = Math.min(...trials.map(t => Number(t.trialStartTime || 0) || 0));
+      const lastEnd = Math.max(...trials.map(t => Number(t.endTime || t.trialEndTime || 0) || 0));
+      const totalMs = Math.max(0, lastEnd - firstStart);
+      totalTimeMinutes = Math.round(totalMs / (1000 * 60));
+    }
+
+    const hasCollaborationTrials = trials.some(t => String(t.experimentType || '').includes('2P'));
+    const hasSinglePlayerTrials = trials.some(t => String(t.experimentType || '').includes('1P'));
+
+    // Single-player success: t.completed === true
+    let singlePlayerSuccessRate = 0;
+    if (hasSinglePlayerTrials) {
+      const sp = trials.filter(t => String(t.experimentType || '').includes('1P'));
+      const spSuccess = sp.filter(t => t.completed === true).length;
+      singlePlayerSuccessRate = sp.length > 0 ? Math.round((spSuccess / sp.length) * 100) : 0;
+    }
+
+    // Collaboration success: t.collaborationSucceeded === true
+    let collaborationSuccessRate = 0;
+    if (hasCollaborationTrials) {
+      const cp = trials.filter(t => String(t.experimentType || '').includes('2P'));
+      const cpSuccess = cp.filter(t => t.collaborationSucceeded === true).length;
+      collaborationSuccessRate = cp.length > 0 ? Math.round((cpSuccess / cp.length) * 100) : 0;
+    }
+
+    // Render legacy UI and content
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-        <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 600px; text-align: center;">
-          <h2 style="color: #333; margin-bottom: 30px;">🎮 Game Performance</h2>
+        <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 700px; width: 100%; text-align: center;">
+          <h2 style="color: #333; margin-bottom: 30px;">🎮 Game Performance Summary</h2>
 
-          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-            <h3 style="margin-bottom: 20px;">Your Results:</h3>
-            <p><strong>Total Trials:</strong> ${totalTrials}</p>
-            <p><strong>Successful Trials:</strong> ${successfulTrials}</p>
-            <p><strong>Success Rate:</strong> ${successRate}%</p>
+          <div style="background: #f8f9fa; border-radius: 8px; padding: 30px; margin-bottom: 30px;">
+            <h3 style="color: #666; margin-bottom: 20px;">Your Results</h3>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
+              <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff;">
+                <h4 style="color: #007bff; margin-bottom: 10px; font-size: 18px;">📊 Total Trials</h4>
+                <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${totalTrials}</p>
+              </div>
+
+              <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745;">
+                <h4 style="color: #28a745; margin-bottom: 10px; font-size: 18px;">⏱️ Total Time</h4>
+                <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${totalTimeMinutes} min</p>
+              </div>
+
+              ${hasSinglePlayerTrials ? `
+                <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                  <h4 style="color: #ffc107; margin-bottom: 10px; font-size: 18px;">🎯 Single Player Success</h4>
+                  <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${singlePlayerSuccessRate}%</p>
+                  <p style=\"font-size: 14px; color: #666; margin: 5px 0 0 0;\">(${trials.filter(t => String(t.experimentType || '').includes('1P')).length} single player trials)</p>
+                </div>
+              ` : ''}
+
+              ${hasCollaborationTrials ? `
+                <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #dc3545;">
+                  <h4 style="color: #dc3545; margin-bottom: 10px; font-size: 18px;">🤝 Collaboration Success</h4>
+                  <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${collaborationSuccessRate}%</p>
+                  <p style=\"font-size: 14px; color: #666; margin: 5px 0 0 0;\">(${trials.filter(t => String(t.experimentType || '').includes('2P')).length} collaboration trials)</p>
+                </div>
+              ` : ''}
+            </div>
           </div>
 
-          <p style="font-size: 16px; margin-bottom: 30px;">
-            ${successRate >= 70 ?
-              '🌟 Excellent performance! You\'ve earned a bonus.' :
-              '👍 Good effort! Thanks for participating.'}
-          </p>
+          <div style="background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px; padding: 25px; margin-bottom: 30px;">
+            <h3 style="color: #28a745; margin-bottom: 15px;">📝 Almost Done!</h3>
+            <p style="font-size: 18px; color: #333; margin-bottom: 15px;">
+              Thank you for completing the game trials!
+            </p>
+            <p style="font-size: 16px; color: #666; margin-bottom: 0;">
+              To finish the experiment, we kindly ask you to fill out a short questionnaire about your experience.
+              This will help us understand your thoughts and improve our research.
+            </p>
+          </div>
 
-          <button id="continueBtn" style="background: #007bff; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 5px; cursor: pointer;">
-            Continue to Questionnaire
-          </button>
+          <div style="text-align: center;">
+            <button id="continueToQuestionnaireBtn" style="
+              background: #28a745;
+              color: white;
+              border: none;
+              padding: 15px 30px;
+              font-size: 18px;
+              border-radius: 8px;
+              cursor: pointer;
+              box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+              transition: all 0.3s ease;
+            " onmouseover="this.style.background='#218838'" onmouseout="this.style.background='#28a745'">
+              📋 Continue to Questionnaire
+            </button>
+          </div>
         </div>
       </div>
     `;
 
-    document.getElementById('continueBtn').addEventListener('click', () => {
-      console.log('📊 Game feedback completed');
-      this.nextStage();
-    });
+    // Ensure questionnaire stage exists (legacy-compatible safeguard)
+    const hasQuestionnaireStage = this.stages.some(s => s.type === 'questionnaire');
+    if (!hasQuestionnaireStage) {
+      this.stages.push({ type: 'questionnaire', handler: () => this.showQuestionnaireStage() });
+    }
+
+    // Proceed on button click
+    const btn = document.getElementById('continueToQuestionnaireBtn');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        console.log('🎮 Game Feedback Stage: Continue button clicked');
+        this.nextStage();
+      });
+    }
   }
 
   showQuestionnaireStage() {
@@ -1014,6 +1119,18 @@ export class TimelineManager {
     this.experimentData.endTime = new Date().toISOString();
 
     this.emit('save-data', this.experimentData);
+    // If external saving is enabled, disable Continue until save succeeds
+    const continueBtn = document.getElementById('continueBtn');
+    try {
+      if (CONFIG?.server?.enableGoogleDriveSave && continueBtn) {
+        continueBtn.disabled = true;
+        continueBtn.style.opacity = '0.6';
+        continueBtn.style.cursor = 'not-allowed';
+        continueBtn.textContent = 'Saving...';
+      }
+    } catch (e) {
+      // Fail open if config inaccessible
+    }
 
     // Update UI when data save succeeds (legacy-style feedback)
     const handleSaved = () => {
@@ -1021,6 +1138,12 @@ export class TimelineManager {
       if (el) {
         el.textContent = '✅ Data saved successfully!';
         el.style.color = '#28a745';
+      }
+      if (continueBtn) {
+        continueBtn.disabled = false;
+        continueBtn.style.opacity = '1';
+        continueBtn.style.cursor = 'pointer';
+        continueBtn.textContent = 'Continue';
       }
       // Remove handler after firing once
       this.off('data-save-success', handleSaved);
@@ -1031,6 +1154,10 @@ export class TimelineManager {
 
     document.getElementById('continueBtn').addEventListener('click', () => {
       console.log('💾 Data saving initiated');
+      if (continueBtn && continueBtn.disabled) {
+        console.log('⏳ Waiting for data-save success before continuing');
+        return;
+      }
       this.nextStage();
     });
   }

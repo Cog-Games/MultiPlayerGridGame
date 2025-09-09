@@ -455,6 +455,19 @@ export class GameApplication {
       // Do NOT emit 'partner-connected' here — this fires even when alone.
       // Wait for 'player-joined' event (emitted to others) to signal a partner is present.
 
+      // Set preliminary playerIndex as soon as possible for UI/timeline (before game-started)
+      // Prefer server-provided host flag when available
+      try {
+        if (typeof data.isHost === 'boolean') {
+          this.playerIndex = data.isHost ? 0 : 1;
+        }
+        // Propagate to UI and timeline so color labels render correctly in early stages
+        if (this.useTimelineFlow) {
+          this.uiManager.setPlayerInfo(this.playerIndex, data.gameMode || 'human-human');
+          if (this.timelineManager) this.timelineManager.setPlayerInfo(this.playerIndex, data.gameMode || 'human-human');
+        }
+      } catch (_) { /* ignore */ }
+
       if (!this.useTimelineFlow) {
         // Legacy flow
         this.uiManager.updateLobbyInfo(data);
@@ -476,6 +489,18 @@ export class GameApplication {
     // When room becomes full, notify both players with a synchronized timestamp
     this.networkManager.on('room-full', (data) => {
       console.log('Room is full - both players connected:', data);
+      // Derive player index from player list and my socket id to update UI promptly
+      try {
+        const myId = this.networkManager?.socket?.id;
+        const idx = Array.isArray(data?.players) ? data.players.findIndex(p => p.id === myId) : -1;
+        if (idx === 0 || idx === 1) {
+          this.playerIndex = idx;
+          if (this.useTimelineFlow) {
+            this.uiManager.setPlayerInfo(this.playerIndex, data.gameMode || 'human-human');
+            if (this.timelineManager) this.timelineManager.setPlayerInfo(this.playerIndex, data.gameMode || 'human-human');
+          }
+        }
+      } catch (_) { /* ignore */ }
       if (this.useTimelineFlow && this.timelineManager) {
         this.timelineManager.emit('partner-connected', data);
       }

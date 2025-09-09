@@ -72,3 +72,6 @@ temp/
 # Export data files
 experiment-data-*.json.env.example
 .evn.example
+
+# data files
+*.xlsx
