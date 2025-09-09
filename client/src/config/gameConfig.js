@@ -50,7 +50,7 @@ export const CONFIG = {
       player2: {
         // Types: 'human' | 'gpt' | 'rl_individual' | 'rl_joint'
         // Legacy alias 'ai' is treated as 'rl_joint'
-        type: 'gpt',
+        type: 'human',
         color: 'orange',
         description: 'Human, GPT, or RL partner'
       }
@@ -58,11 +58,10 @@ export const CONFIG = {
 
     // Experiment configuration
     experiments: {
-      // order: ['1P2G'], // Default experiment order
-      // order: ['2P2G', '2P3G'], // Default experiment order
-      // order: ['2P3G'], // Default experiment order
-      // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Default experiment order
-      order: [ '2P3G'], // Default experiment order
+      // order: ['1P2G'],
+      // order: [ '2P3G'],
+      // order: ['2P2G', '2P3G'],
+      order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
         '1P1G': 2,
