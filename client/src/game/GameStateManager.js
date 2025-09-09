@@ -29,6 +29,8 @@ export class GameStateManager {
       trialIndex: 0,
       experimentType: null,
       partnerAgentType: null,
+      // GPT error logging per move
+      gptErrorEvents: [],
       player1Trajectory: [],
       player2Trajectory: [],
       player1Actions: [],
@@ -84,6 +86,7 @@ export class GameStateManager {
     this.trialData.player1Actions = [];
     this.trialData.player2Actions = [];
     this.trialData.player1RT = [];
+    this.trialData.gptErrorEvents = [];
     this.trialData.player1CurrentGoal = [];
     this.trialData.player2CurrentGoal = [];
 
@@ -126,6 +129,28 @@ export class GameStateManager {
     // Update current state
     this.currentState.experimentType = experimentType;
     this.currentState.trialIndex = trialIndex;
+  }
+
+  // Record a GPT API error event during this trial
+  recordGptErrorEvent({ phase = 'independent', error = '', humanDirection = null, fallback = null, fallbackDirection = null } = {}) {
+    try {
+      const event = {
+        step: this.stepCount,
+        timeMs: Date.now() - (this.gameStartTime || Date.now()),
+        phase, // 'synchronized' | 'independent'
+        error: String(error || ''),
+        humanDirection: humanDirection || null,
+        fallback: fallback || null, // e.g., 'rl'
+        fallbackDirection: fallbackDirection || null
+      };
+      if (Array.isArray(this.trialData.gptErrorEvents)) {
+        this.trialData.gptErrorEvents.push(event);
+      } else {
+        this.trialData.gptErrorEvents = [event];
+      }
+    } catch (_) {
+      // Swallow logging errors to avoid interfering with gameplay
+    }
   }
 
   setupGridMatrix(design, experimentType) {

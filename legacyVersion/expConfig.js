@@ -82,7 +82,7 @@ const NODEGAME_CONFIG = {
     // =================================================================================================
     maxGameLength: 50, // Max steps per trial
     enableProlificRedirect: true, // Set to false for testing without redirect
-    prolificCompletionCode: 'CPPNJJ39', // Prolific completion code
+    prolificCompletionCode: 'CBBOSCQO', // Prolific completion code
 
     // Timing configurations for easy manipulation
     timing: {

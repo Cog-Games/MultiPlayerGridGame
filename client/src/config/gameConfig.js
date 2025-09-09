@@ -36,6 +36,7 @@ export const CONFIG = {
   game: {
     name: 'GridWorldExperiment',
     version: '2.0.0',
+    prolificCompletionCode: getEnvVar('VITE_PROLIFIC_COMPLETION_CODE', 'CBBOSCQO'),
     matrixSize: 15,
     maxGameLength: 50,
 
@@ -49,7 +50,7 @@ export const CONFIG = {
       player2: {
         // Types: 'human' | 'gpt' | 'rl_individual' | 'rl_joint'
         // Legacy alias 'ai' is treated as 'rl_joint'
-        type: 'human',
+        type: 'gpt',
         color: 'orange',
         description: 'Human, GPT, or RL partner'
       }
@@ -64,10 +65,10 @@ export const CONFIG = {
       order: [ '2P3G'], // Default experiment order
 
       numTrials: {
-        '1P1G': 1,
-        '1P2G': 3,
-        '2P2G': 3,
-        '2P3G': 3
+        '1P1G': 2,
+        '1P2G': 8,
+        '2P2G': 4,
+        '2P3G': 8
       }
     },
 
@@ -95,7 +96,7 @@ export const CONFIG = {
     // AI agent settings
     agent: {
       // RL mode for player2 when using RL: 'individual' or 'joint'
-      type: 'individual',
+      type: 'joint',
       delay: 500,
       independentDelay: 300,
       // When true, AI/GPT moves are synchronized with the human input

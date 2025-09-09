@@ -182,8 +182,9 @@ app.post('/api/ai/gpt/action', async (req, res) => {
     if (!currentPlayer || !Array.isArray(currentPlayer.pos)) {
       return res.status(400).json({ error: 'Invalid currentPlayer' });
     }
-    const action = await decideGptAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory });
-    res.json({ action });
+    const result = await decideGptAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory });
+    // result: { action, usage, latencyMs, rate }
+    res.json(result);
   } catch (err) {
     console.error('GPT action error:', err);
     res.status(500).json({ error: 'Failed to get GPT action', detail: String(err?.message || err) });

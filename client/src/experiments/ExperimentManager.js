@@ -150,6 +150,8 @@ export class ExperimentManager {
   runTrial2P2G() {
     // Two players, two goals - check if AI or human player 2
     if (CONFIG.game.players.player2.type !== 'human') {
+      // Log current AI model/config for visibility
+      this.logCurrentAIModel();
       if (CONFIG.game.agent.synchronizedMoves) {
         console.log('2P2G: Synchronized human-AI moves enabled');
         // In synchronized mode, we do not set up the legacy delayed AI listener
@@ -167,6 +169,8 @@ export class ExperimentManager {
   runTrial2P3G() {
     // Two players, three goals - check if AI or human player 2
     if (CONFIG.game.players.player2.type !== 'human') {
+      // Log current AI model/config for visibility
+      this.logCurrentAIModel();
       if (CONFIG.game.agent.synchronizedMoves) {
         console.log('2P3G: Synchronized human-AI moves enabled');
         this.setupIndependentAIAfterHumanGoal();
@@ -178,6 +182,28 @@ export class ExperimentManager {
       console.log('2P3G: Human-human mode - waiting for network player actions');
     }
     this.setupNewGoalCheck2P3G();
+  }
+
+  async logCurrentAIModel() {
+    try {
+      const p2Type = CONFIG?.game?.players?.player2?.type;
+      if (p2Type === 'gpt') {
+        const base = (CONFIG.server.url || '').replace(/\/$/, '');
+        const resp = await fetch(`${base}/api/ai/gpt/config`);
+        if (resp.ok) {
+          const info = await resp.json();
+          const model = info?.model || '(unknown)';
+          console.log(`🤖 AI partner: GPT model = ${model}`);
+        } else {
+          console.log('🤖 AI partner: GPT (failed to read model from server)');
+        }
+      } else if (p2Type === 'rl_joint' || p2Type === 'rl_individual' || p2Type === 'ai') {
+        const mode = CONFIG?.game?.agent?.type || (p2Type === 'rl_joint' ? 'joint' : 'individual');
+        console.log(`🤖 AI partner: RL mode = ${mode}`);
+      }
+    } catch (e) {
+      console.log('🤖 AI partner: failed to log model info:', e?.message || e);
+    }
   }
 
   // In both sync and legacy modes, when human reaches a goal, start independent AI movement
@@ -210,13 +236,16 @@ export class ExperimentManager {
 
     // Generate AI/GPT direction
     let aiDirection = null;
-    if (p2Type === 'gpt') {
+    const isGptAllowed = (gameState.experimentType === '2P2G' || gameState.experimentType === '2P3G');
+    let gptError = null;
+    if (p2Type === 'gpt' && isGptAllowed) {
       try {
         aiDirection = await this.gptClient.getNextAction({
           ...gameState,
           trialData: this.gameStateManager.getCurrentTrialData()
         });
       } catch (e) {
+        gptError = e;
         console.warn('GPT agent request failed during synchronized move; falling back to RL:', e?.message || e);
       }
     }
@@ -229,6 +258,17 @@ export class ExperimentManager {
         gameState.player1
       );
       aiDirection = this.actionToDirection(aiAction);
+
+      // If GPT error occurred, record the event with fallback details
+      if (gptError) {
+        this.gameStateManager.recordGptErrorEvent({
+          phase: 'synchronized',
+          error: gptError?.message || String(gptError),
+          humanDirection,
+          fallback: 'rl',
+          fallbackDirection: aiDirection
+        });
+      }
     }
 
     // Apply both moves before a single redraw
@@ -296,13 +336,16 @@ export class ExperimentManager {
     // Decide action depending on agent type
     let direction = null;
     const p2Type = CONFIG.game.players.player2.type;
-    if (p2Type === 'gpt') {
+    const isGptAllowed = (gameState.experimentType === '2P2G' || gameState.experimentType === '2P3G');
+    let gptError = null;
+    if (p2Type === 'gpt' && isGptAllowed) {
       try {
         direction = await this.gptClient.getNextAction({
           ...gameState,
           trialData: this.gameStateManager.getCurrentTrialData()
         });
       } catch (err) {
+        gptError = err;
         console.warn('GPT agent failed, falling back to RL. Reason:', err?.message || err);
       }
     }
@@ -319,6 +362,17 @@ export class ExperimentManager {
         return; // No movement
       }
       direction = this.actionToDirection(aiAction);
+
+      // If GPT error occurred, record the event with fallback details
+      if (gptError) {
+        this.gameStateManager.recordGptErrorEvent({
+          phase: 'independent',
+          error: gptError?.message || String(gptError),
+          humanDirection: null,
+          fallback: 'rl',
+          fallbackDirection: direction
+        });
+      }
     }
     if (direction) {
       const moveResult = this.gameStateManager.processPlayerMove(2, direction);

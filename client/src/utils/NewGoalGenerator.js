@@ -3,11 +3,11 @@ import { CONFIG } from '../config/gameConfig.js';
 import { GameHelpers } from './GameHelpers.js';
 
 export class NewGoalGenerator {
-  
+
   // Distance conditions for new goal generation (matching legacy)
   static DISTANCE_CONDITIONS = {
     CLOSER_TO_PLAYER2: 'closer_to_player2',
-    CLOSER_TO_PLAYER1: 'closer_to_player1', 
+    CLOSER_TO_PLAYER1: 'closer_to_player1',
     EQUAL_TO_BOTH: 'equal_to_both',
     NO_NEW_GOAL: 'no_new_goal'
   };
@@ -219,23 +219,23 @@ export class NewGoalGenerator {
       }
     }
 
-    console.log('generateNewGoal: Found', validPositions.length, 'valid positions');
-    
+    // console.log('generateNewGoal: Found', validPositions.length, 'valid positions');
+
     if (validPositions.length > 0) {
       const selectedGoalData = validPositions[Math.floor(Math.random() * validPositions.length)];
-      console.log('generateNewGoal: Selected position:', selectedGoalData.position);
+      // console.log('generateNewGoal: Selected position:', selectedGoalData.position);
       return selectedGoalData;
     }
 
     // If no strict matches found, try relaxed constraints
-    console.log('generateNewGoal: No valid goals found with strict constraints, trying relaxed constraints');
+    // console.log('generateNewGoal: No valid goals found with strict constraints, trying relaxed constraints');
     const relaxedValidPositions = this.findRelaxedValidPositions(
       player1Pos, player2Pos, oldGoals, distanceCondition
     );
 
     if (relaxedValidPositions.length > 0) {
       const selectedRelaxedGoalData = relaxedValidPositions[Math.floor(Math.random() * relaxedValidPositions.length)];
-      console.log('generateNewGoal: Selected relaxed position:', selectedRelaxedGoalData.position);
+      // console.log('generateNewGoal: Selected relaxed position:', selectedRelaxedGoalData.position);
       return selectedRelaxedGoalData;
     }
 
@@ -310,7 +310,7 @@ export class NewGoalGenerator {
         if (!this.isPositionOccupied(newGoalPosition, oldGoals, player1Pos, player2Pos)) {
           const distanceToPlayer1 = GameHelpers.calculateGridDistance(player1Pos, newGoalPosition);
           const distanceToPlayer2 = GameHelpers.calculateGridDistance(player2Pos, newGoalPosition);
-          
+
           // Ensure reasonable distances (not too close, not too far)
           if (distanceToPlayer1 >= 2 && distanceToPlayer1 <= 10 &&
               distanceToPlayer2 >= 2 && distanceToPlayer2 <= 10) {
@@ -332,7 +332,7 @@ export class NewGoalGenerator {
   // Check if both players are heading to the same goal (triggers new goal generation)
   static checkNewGoalPresentation2P3G(gameState, trialData, distanceCondition) {
     const { player1, player2, currentGoals } = gameState;
-    
+
     if (!player1 || !player2 || !currentGoals || currentGoals.length < 2) {
       return null;
     }
@@ -349,13 +349,13 @@ export class NewGoalGenerator {
     // Check if both players are heading to the same goal
     if (player1CurrentGoal !== null && player2CurrentGoal !== null &&
         player1CurrentGoal === player2CurrentGoal) {
-      
+
       console.log('=== SHARED GOAL DETECTED ===');
       console.log('Player1 goal:', player1CurrentGoal, 'Player2 goal:', player2CurrentGoal);
-      
+
       // Generate new goal based on distance condition
       const newGoalResult = this.generateNewGoal(
-        player2, player1, currentGoals, 
+        player2, player1, currentGoals,
         player1CurrentGoal, distanceCondition
       );
 
@@ -363,7 +363,7 @@ export class NewGoalGenerator {
         console.log('=== NEW GOAL GENERATED ===');
         console.log('New goal position:', newGoalResult.position);
         console.log('Distance condition:', distanceCondition);
-        
+
         return {
           position: newGoalResult.position,
           conditionType: newGoalResult.conditionType,

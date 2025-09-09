@@ -30,8 +30,8 @@ function findAllCoords(matrix, value) {
   return coords;
 }
 
-function buildPrompt({ matrix, currentPlayer, goals, memory }) {
-  const legend = `Legend: 0=blank, 1=player1, 2=player2, 3=goal`;
+function buildPrompt({ matrix, currentPlayer, goals, memory, guidance /*, relativeInfo */ }) {
+  const legend = `Legend: 0=blank, 1=traveler1, 2=traveler2, 3=restaurant`;
   const matrixStr = formatMatrix(matrix);
   // Derive coordinates for players and goals
   const p1 = findFirstCoord(matrix, 1);
@@ -43,23 +43,32 @@ function buildPrompt({ matrix, currentPlayer, goals, memory }) {
   const goalsStr = goalsList.length ? goalsList.map(g => `(${g[0]}, ${g[1]})`).join('; ') : 'none';
 
   const lines = [
-    'You will play a navigation game in 2d grid world, where two players must coordinate to go to the SAME goal to win.',
-    'Here is the grid map and legend:',
-    'Grid :',
+    'You are playing a navigation game in a 2d grid world with another player where you are hungry travelers need to reach restaurants as quickly as possible.',
+    (typeof guidance === 'string' && guidance.trim().length > 0)
+      ? `Instructions for this game: ${guidance.trim()}`
+      : 'Instructions for this game: Collaborate to choose the same restaurant as the other traveler.',
+    'Here is current grid map and legend:',
+    legend,
+    'Grid:',
     matrixStr,
     '',
-    legend,
+    `Traveler1 at ${p1Str}`,
+    `Traveler2 at ${p2Str}`,
+    `Restaurants: ${goalsStr}`,
+    'You are traveler 2.',
     '',
-    `Player1 at ${p1Str}`,
-    `Player2 at ${p2Str}`,
-    `Goals: ${goalsStr}`,
-    '',
+  ];
+
+  // Intentionally omit relative hints like nearest goal/distance/delta to keep prompt minimal
+
+  lines.push(
     'Actions coordinate deltas:',
     'left = [0, -1]',
     'right = [0, 1]',
     'up = [-1, 0]',
     'down = [1, 0]',
-  ];
+    '',
+  );
 
   // Append recent trajectories if provided and enabled
   if (memory && memory.enabled && memory.trajectories) {
@@ -72,7 +81,7 @@ function buildPrompt({ matrix, currentPlayer, goals, memory }) {
     lines.push('');
   }
 
-  lines.push( 'You are the player 2.', 'Given the above information, choose the best move. Reply only with with just one action: up | down | left | right');
+  lines.push('Given the above information, reply with exactly one action token: up | down | left | right');
 
   return lines.join('\n');
 }
@@ -99,6 +108,7 @@ async function callOpenAIChat(prompt, { model = getDefaultModel(), temperature =
   }
 
   // Use global fetch (Node >= 18)
+  const t0 = Date.now();
   const resp = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -121,8 +131,20 @@ async function callOpenAIChat(prompt, { model = getDefaultModel(), temperature =
   }
 
   const data = await resp.json();
+  const latencyMs = Date.now() - t0;
   const content = data?.choices?.[0]?.message?.content?.trim().toLowerCase() || '';
-  return content;
+  const usage = data?.usage || null; // {prompt_tokens, completion_tokens, total_tokens}
+  const rate = {
+    remainingRequests: resp.headers.get('x-ratelimit-remaining-requests'),
+    remainingTokens: resp.headers.get('x-ratelimit-remaining-tokens'),
+    limitRequests: resp.headers.get('x-ratelimit-limit-requests'),
+    limitTokens: resp.headers.get('x-ratelimit-limit-tokens'),
+    resetRequests: resp.headers.get('x-ratelimit-reset-requests'),
+    resetTokens: resp.headers.get('x-ratelimit-reset-tokens')
+  };
+
+  debugLog('Latency(ms):', latencyMs, 'Usage:', usage, 'Rate:', rate);
+  return { content, usage, latencyMs, rate };
 }
 
 export async function decideGptAction(payload) {
@@ -138,7 +160,8 @@ export async function decideGptAction(payload) {
   debugLog('Matrix:\n' + matrixPreview);
   debugLog('Prompt:\n' + prompt);
 
-  const raw = await callOpenAIChat(prompt, { model, temperature });
+  const result = await callOpenAIChat(prompt, { model, temperature });
+  const raw = (result && typeof result === 'object') ? result.content : result;
 
   // Log raw output
   debugLog('Raw response:', raw);
@@ -157,7 +180,12 @@ export async function decideGptAction(payload) {
   // Log final chosen action
   debugLog('Chosen action:', action);
 
-  return action;
+  return {
+    action,
+    usage: (result && result.usage) || null,
+    latencyMs: (result && result.latencyMs) || null,
+    rate: (result && result.rate) || null
+  };
 }
 
 export function getGptConfigInfo() {

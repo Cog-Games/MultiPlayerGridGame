@@ -1275,7 +1275,7 @@ function redirectToProlific() {
 
         // Redirect to Prolific completion page
         const completionCode = NODEGAME_CONFIG.prolificCompletionCode || 'COMPLETION_CODE';
-        const redirectUrl = `https://app.prolific.co/submissions/complete?cc=${completionCode}`;
+        const redirectUrl = `https://app.prolific.com/submissions/complete?cc=CBBOSCQO`;
 
         console.log('Redirecting to Prolific:', redirectUrl);
         window.location.href = redirectUrl;

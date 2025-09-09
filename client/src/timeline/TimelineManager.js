@@ -1036,7 +1036,8 @@ export class TimelineManager {
   }
 
   showProlificRedirectStage() {
-    const prolificUrl = 'https://app.prolific.co/submissions/complete?cc=' + this.experimentData.completionCode;
+    const code = (CONFIG?.game?.prolificCompletionCode) || this.experimentData.completionCode || 'CBBOSCQO';
+    const prolificUrl = 'https://app.prolific.com/submissions/complete?cc=' + code;
 
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
@@ -1207,7 +1208,7 @@ export class TimelineManager {
   }
 
   generateCompletionCode() {
-    return 'GRID' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
+    return (CONFIG?.game?.prolificCompletionCode) || 'CBBOSCQO';
   }
 
   /**
