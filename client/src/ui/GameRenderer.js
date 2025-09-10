@@ -12,6 +12,7 @@ export class GameRenderer {
 
   createCanvas() {
     this.canvas = document.createElement('canvas');
+    // Initial dimensions will be set responsively
     this.canvas.width = this.canvasSize;
     this.canvas.height = this.canvasSize;
     this.canvas.style.border = '2px solid #333';
@@ -19,7 +20,56 @@ export class GameRenderer {
 
     this.ctx = this.canvas.getContext('2d');
 
+    // Apply responsive sizing on creation
+    try { this.applyResponsiveSizing(); } catch (_) { /* ignore until attached */ }
+
     return this.canvas;
+  }
+
+  // Resize canvas and cell metrics to fit viewport/container while staying square
+  applyResponsiveSizing() {
+    if (!this.canvas) return;
+
+    const gridSize = CONFIG.game.matrixSize;
+    const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) ? window.devicePixelRatio : 1;
+
+    // Determine maximum CSS size available (square) based on viewport and parent container
+    const parent = this.canvas.parentElement;
+    const viewportMin = (typeof window !== 'undefined') ? Math.min(window.innerWidth || 0, window.innerHeight || 0) : this.canvasSize;
+    const parentWidth = parent ? parent.clientWidth : viewportMin;
+
+    // Use 85% of the smaller dimension, but never exceed parent width
+    const targetCssSize = Math.max(200, Math.floor(Math.min(viewportMin * 0.85, parentWidth - 16)));
+
+    // Compute integer cellSize based on padding formula:
+    // total = N*cellSize + (N+1)*padding  => cellSize = (total - (N+1)*padding)/N
+    let proposedCellSize = Math.floor((targetCssSize - (gridSize + 1) * this.padding) / gridSize);
+    proposedCellSize = Math.max(10, proposedCellSize); // enforce a minimum cell size
+
+    // Recompute the exact canvas size that matches integer cellSize
+    const exactCanvasSize = gridSize * proposedCellSize + (gridSize + 1) * this.padding;
+
+    // Update renderer metrics
+    this.cellSize = proposedCellSize;
+    this.effectiveCellSize = this.cellSize + this.padding;
+    this.canvasSize = exactCanvasSize;
+
+    // Set CSS size for layout
+    this.canvas.style.width = `${exactCanvasSize}px`;
+    this.canvas.style.height = `${exactCanvasSize}px`;
+
+    // Set backing store size for crisp rendering on high-DPI displays
+    const backing = Math.floor(exactCanvasSize * dpr);
+    if (this.canvas.width !== backing || this.canvas.height !== backing) {
+      this.canvas.width = backing;
+      this.canvas.height = backing;
+    }
+
+    // Ensure context exists and scale to match CSS pixels
+    if (!this.ctx) this.ctx = this.canvas.getContext('2d');
+    if (this.ctx && typeof this.ctx.setTransform === 'function') {
+      this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
   }
 
   render(canvas, gameState) {
@@ -30,6 +80,9 @@ export class GameRenderer {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.gameState = gameState; // Save game state for player position access
+
+    // Ensure sizing is up-to-date before drawing
+    this.applyResponsiveSizing();
 
     // Draw background with padding (legacy style)
     this.ctx.fillStyle = CONFIG.visual.colors.grid; // Use grid color for background lines

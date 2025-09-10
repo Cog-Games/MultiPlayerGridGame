@@ -18,6 +18,11 @@ export class GameApplication {
     this.gameConfig = null; // Store game configuration from server
     this.useTimelineFlow = true; // Enable timeline flow by default
     this.currentRoomId = null; // Track active multiplayer room ID for export
+
+    // Synchronized human-human turn state
+    this._hhSync = {
+      pendingMoves: { 0: null, 1: null }
+    };
   }
 
   async start(options = {}) {
@@ -712,6 +717,11 @@ export class GameApplication {
       this.gameStateManager.syncState(gameState);
       // Redraw UI so both players see the synchronized map immediately
       this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+      // If using human-human synchronized turns, clear any pending intents after a sync
+      if (CONFIG?.multiplayer?.synchronizedHumanTurns) {
+        this._hhSync.pendingMoves[0] = null;
+        this._hhSync.pendingMoves[1] = null;
+      }
     });
 
     // Error handling
@@ -742,6 +752,20 @@ export class GameApplication {
       const otherType = CONFIG.game?.players?.[otherIdx === 0 ? 'player1' : 'player2']?.type;
       const sync = CONFIG.game?.agent?.synchronizedMoves;
       const isAIPartner = otherType !== 'human';
+
+      // Human-human synchronized turns: intercept and coordinate
+      const hhSyncEnabled = !!(CONFIG?.multiplayer?.synchronizedHumanTurns);
+      const inNetworkedPlay = !!(this.networkManager && this.networkManager.isConnected);
+      const isHumanHuman = !isAIPartner && inNetworkedPlay;
+      if (hhSyncEnabled && isHumanHuman) {
+        try {
+          await this.handleHumanHumanSynchronizedMove(direction);
+        } catch (e) {
+          console.warn('HH sync move failed, falling back to immediate move:', e?.message || e);
+          this.handlePlayerMove(direction);
+        }
+        return;
+      }
 
       if (isAIPartner && sync && this.experimentManager?.handleSynchronizedMove) {
         try {
@@ -827,6 +851,64 @@ export class GameApplication {
           this.handleTrialComplete(moveResult);
         }
       }
+      return;
+    }
+
+    // Human-human synchronized turns: collect partner's proposed move
+    if (action.type === 'proposed-move') {
+      const hhSyncEnabled = !!(CONFIG?.multiplayer?.synchronizedHumanTurns);
+      if (!hhSyncEnabled) return;
+      const isHost = !!(typeof window !== 'undefined' && window.__IS_HOST__);
+      const fromIdx = action.playerIndex;
+      this._hhSync.pendingMoves[fromIdx] = action.direction;
+
+      // Host resolves the turn when both moves are present
+      if (isHost) {
+        this.tryResolveHumanHumanTurn();
+      }
+    }
+  }
+
+  async handleHumanHumanSynchronizedMove(direction) {
+    // Store my proposed move
+    this._hhSync.pendingMoves[this.playerIndex] = direction;
+
+    // Broadcast proposed move to partner
+    if (this.networkManager && this.networkManager.isConnected) {
+      this.networkManager.sendGameAction({
+        type: 'proposed-move',
+        direction,
+        playerIndex: this.playerIndex,
+        timestamp: Date.now()
+      });
+    }
+
+    // If host, attempt to resolve immediately if partner move already arrived
+    const isHost = !!(typeof window !== 'undefined' && window.__IS_HOST__);
+    if (isHost) {
+      this.tryResolveHumanHumanTurn();
+    }
+  }
+
+  tryResolveHumanHumanTurn() {
+    const m0 = this._hhSync.pendingMoves[0];
+    const m1 = this._hhSync.pendingMoves[1];
+    if (!m0 || !m1) return; // Wait for both
+
+    // Apply both moves simultaneously (uses shared synchronized step with stepCount++)
+    const result = this.gameStateManager.processSynchronizedMoves(m0, m1);
+    // Redraw
+    this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+    // Broadcast full state to partner
+    if (this.networkManager && this.networkManager.isConnected) {
+      this.networkManager.syncGameState(this.gameStateManager.getCurrentState());
+    }
+    // Clear pending moves
+    this._hhSync.pendingMoves[0] = null;
+    this._hhSync.pendingMoves[1] = null;
+
+    if (result?.trialComplete) {
+      this.handleTrialComplete(result);
     }
   }
 

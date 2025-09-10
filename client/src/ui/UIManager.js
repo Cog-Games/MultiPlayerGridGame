@@ -11,6 +11,17 @@ export class UIManager {
     this.keyboardHandler = null;
     this.playerIndex = 0; // 0 = red player, 1 = orange player
     this.gameMode = 'human-ai'; // 'human-ai' or 'human-human'
+    this.lastGameState = null;
+    this.handleResize = null;
+  }
+
+  cleanupCanvas() {
+    if (this.handleResize) {
+      window.removeEventListener('resize', this.handleResize);
+      this.handleResize = null;
+    }
+    this.gameCanvas = null;
+    this.lastGameState = null;
   }
 
   // Event system
@@ -51,6 +62,7 @@ export class UIManager {
 
   // Screen management
   showMainScreen() {
+    this.cleanupCanvas();
     this.currentScreen = 'main';
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
@@ -91,6 +103,7 @@ export class UIManager {
   }
 
   showLobbyScreen() {
+    this.cleanupCanvas();
     this.currentScreen = 'lobby';
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
@@ -156,8 +169,29 @@ export class UIManager {
   createGameCanvas() {
     const container = document.getElementById('gameCanvas');
     if (container) {
+      // Cleanup any previous resize handler
+      if (this.handleResize) {
+        window.removeEventListener('resize', this.handleResize);
+        this.handleResize = null;
+      }
+
       this.gameCanvas = this.renderer.createCanvas();
       container.appendChild(this.gameCanvas);
+
+      // Apply initial responsive sizing and re-render if we have state
+      const doResize = () => {
+        this.renderer.applyResponsiveSizing();
+        if (this.lastGameState) {
+          this.renderer.render(this.gameCanvas, this.lastGameState);
+        }
+      };
+
+      // Save and bind handler
+      this.handleResize = () => doResize();
+      window.addEventListener('resize', this.handleResize);
+
+      // Initial call after insertion to ensure correct parent sizes
+      setTimeout(doResize, 0);
     }
   }
 
@@ -219,6 +253,7 @@ export class UIManager {
   // Game display updates
   updateGameDisplay(gameState) {
     if (this.gameCanvas && gameState) {
+      this.lastGameState = gameState;
       this.renderer.render(this.gameCanvas, gameState);
     }
   }
@@ -488,16 +523,15 @@ export class UIManager {
       return;
     }
 
-    // Create canvas element using same parameters as legacy version
-    const canvas = document.createElement('canvas');
-    canvas.id = 'gameCanvas';
+    // Cleanup any previous resize handler
+    if (this.handleResize) {
+      window.removeEventListener('resize', this.handleResize);
+      this.handleResize = null;
+    }
 
-    // Use correct dimensions for current game configuration
-    canvas.width = CONFIG.visual.canvasSize;   // 600px for 15x15 grid
-    canvas.height = CONFIG.visual.canvasSize;  // 600px for 15x15 grid
-    canvas.style.border = '2px solid #333';
-    canvas.style.display = 'block';
-    canvas.style.margin = '20px auto'; // Center horizontally and add vertical spacing
+    // Create responsive canvas using shared renderer
+    const canvas = this.renderer.createCanvas();
+    canvas.id = 'gameCanvas';
 
     // Clear container and add canvas
     container.innerHTML = '';
@@ -505,6 +539,17 @@ export class UIManager {
 
     // Store reference to canvas
     this.gameCanvas = canvas;
+
+    // Apply initial responsive sizing and re-render if we have state
+    const doResize = () => {
+      this.renderer.applyResponsiveSizing();
+      if (this.lastGameState) {
+        this.renderer.render(this.gameCanvas, this.lastGameState);
+      }
+    };
+    this.handleResize = () => doResize();
+    window.addEventListener('resize', this.handleResize);
+    setTimeout(doResize, 0);
 
     // Set up keyboard controls for the game
     this.setupKeyboardControls();

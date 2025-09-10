@@ -187,6 +187,8 @@ export const CONFIG = {
     reconnectAttempts: 3,
     syncInterval: 100,
     moveTimeout: 10000,
+    // Human-human synchronized turns: both players input a move, then both apply together
+    synchronizedHumanTurns: true, // false for free movement
     // Max wait (ms) on the "Game is Ready! Press SPACE" screen for the other
     // human to press space before falling back to AI partner
     matchPlayReadyTimeout: 10000,

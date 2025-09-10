@@ -60,10 +60,10 @@ const eventHandler = new GameEventHandler(roomManager);
 // Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log(`Player connected: ${socket.id}`);
-  
+
   // Handle game events
   eventHandler.handleConnection(socket, io);
-  
+
   socket.on('disconnect', () => {
     console.log(`Player disconnected: ${socket.id}`);
     eventHandler.handleDisconnection(socket, io);
@@ -104,49 +104,49 @@ app.get('/config/MapsFor2P3G.js', (req, res) => {
 // Generic map config endpoint with better error handling
 app.get('/config/:mapFile', (req, res) => {
   const { mapFile } = req.params;
-  
+
   // Validate map file name for security
   if (!/^MapsFor[12]P[123]G\.js$/.test(mapFile)) {
     return res.status(400).json({ error: 'Invalid map file name' });
   }
-  
+
   const configPath = path.join(__dirname, '..', 'config', mapFile);
-  
+
   // Check if file exists
   if (!fs.existsSync(configPath)) {
     return res.status(404).json({ error: 'Map file not found' });
   }
-  
+
   res.sendFile(configPath);
 });
 
 // API endpoint to get parsed map data as JSON
 app.get('/api/maps/:experimentType', (req, res) => {
   const { experimentType } = req.params;
-  
+
   // Map experiment types to config files
   const mapFiles = {
     '1P1G': 'MapsFor1P1G.js',
-    '1P2G': 'MapsFor1P2G.js', 
+    '1P2G': 'MapsFor1P2G.js',
     '2P2G': 'MapsFor2P2G.js',
     '2P3G': 'MapsFor2P3G.js'
   };
-  
+
   const mapFile = mapFiles[experimentType];
   if (!mapFile) {
     return res.status(400).json({ error: 'Invalid experiment type' });
   }
-  
+
   const configPath = path.join(__dirname, '..', 'config', mapFile);
-  
+
   try {
     const fileContent = fs.readFileSync(configPath, 'utf8');
-    
+
     // Extract the map data from the JavaScript file
     const varName = `MapsFor${experimentType}`;
     const regex = new RegExp(`var ${varName} = ({[\\s\\S]*?});`);
     const match = fileContent.match(regex);
-    
+
     if (match) {
       const mapData = JSON.parse(match[1]);
       res.json({
@@ -192,7 +192,10 @@ app.post('/api/ai/gpt/action', async (req, res) => {
 });
 
 // Serve client static files (single-service deployment)
-const clientDir = path.join(__dirname, '..', 'client');
+// In production, serve built files from dist; in dev, serve from client
+const clientDir = fs.existsSync(path.join(__dirname, '..', 'dist'))
+  ? path.join(__dirname, '..', 'dist')
+  : path.join(__dirname, '..', 'client');
 app.use(express.static(clientDir));
 
 // Fallback to index.html for SPA routes (exclude API/config/socket.io)
