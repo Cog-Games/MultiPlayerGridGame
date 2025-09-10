@@ -16,6 +16,13 @@ const defaultServerUrl = (typeof window !== 'undefined' && window.location && wi
   : 'http://localhost:3001';
 
 export const CONFIG = {
+  // Debug / logging configuration
+  debug: {
+    // When true, mutes console.log/info/debug in the browser
+    // Can also be toggled via env var VITE_DISABLE_DEBUG_LOGS
+    disableConsoleLogs: getEnvVar('VITE_DISABLE_DEBUG_LOGS', 'false') === 'true'
+  },
+
   // Server configuration
   server: {
     // Point to same-origin server by default (single-service deploy)
@@ -59,16 +66,16 @@ export const CONFIG = {
     // Experiment configuration
     experiments: {
       // order: ['1P2G'],
-      // order: [ '2P3G'],
+      order: [ '2P3G'],
       // order: ['1P2G','2P3G'],
       // order: ['2P2G', '2P3G'],
-      order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
+      // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
         '1P1G': 2, // 3
         '1P2G': 4, // 12
         '2P2G': 2, // 8
-        '2P3G': 4, // 12
+        '2P3G': 1, // 12
       }
     },
 
@@ -89,8 +96,8 @@ export const CONFIG = {
       fixationDuration: 1000,
       newGoalMessageDuration: 0,
       // Minimum and maximum time to wait for partner (ms)
-      waitingForPartnerMinDuration: 9 * 1000,
-      waitingForPartnerMaxDuration: 10 * 1000
+      waitingForPartnerMinDuration: 5 * 1000,
+      waitingForPartnerMaxDuration: 6 * 1000
     },
 
     // AI agent settings
@@ -214,6 +221,24 @@ export const DIRECTIONS = {
   arrowleft: { movement: [0, -1], name: 'left' },
   arrowright: { movement: [0, 1], name: 'right' }
 };
+
+// Apply debug logging configuration by silencing non-error console output if requested
+(() => {
+  try {
+    const silent = CONFIG?.debug?.disableConsoleLogs;
+    if (silent) {
+      const noop = () => {};
+      // Preserve warnings and errors, silence info/debug/log
+      if (typeof console !== 'undefined') {
+        console.log = noop;
+        console.info = noop;
+        console.debug = noop;
+      }
+    }
+  } catch (_) {
+    // Do nothing if configuration not yet available
+  }
+})();
 
 // Export utility functions
 export const GameConfigUtils = {

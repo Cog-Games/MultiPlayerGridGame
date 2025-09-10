@@ -1130,14 +1130,8 @@ export class TimelineManager {
             Thank you for participating in our study!
           </p>
 
-          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-            <p style="font-weight: bold; margin-bottom: 10px;">Your completion code is:</p>
-            <div style="background: white; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 24px; letter-spacing: 2px; border: 2px solid #007bff;">
-              ${completionCode}
-            </div>
-            <p style="margin-top: 10px; font-size: 14px; color: #666;">
-              Please copy this code and submit it to complete your participation.
-            </p>
+          <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ffeeba; color: #856404;">
+            We are saving your data now. Your completion code will be shown after your data has been saved successfully.
           </div>
 
           <div style="margin-bottom: 30px;">
@@ -1170,7 +1164,25 @@ export class TimelineManager {
       // Fail open if config inaccessible
     }
 
-    // Update UI when data save succeeds (legacy-style feedback)
+    // Safety: If save takes too long or fails silently, allow manual continue after a grace period
+    try {
+      if (CONFIG?.server?.enableGoogleDriveSave) {
+        setTimeout(() => {
+          const el = document.getElementById('saving-status');
+          const btn = document.getElementById('continueBtn');
+          if (el && btn && btn.disabled) {
+            el.textContent = '⚠️ Save taking longer than expected. You may continue.';
+            el.style.color = '#dc3545';
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+            btn.textContent = 'Continue';
+          }
+        }, 15000);
+      }
+    } catch (_) { /* noop */ }
+
+    // Update UI when data save succeeds (legacy-style: auto-advance)
     const handleSaved = () => {
       const el = document.getElementById('saving-status');
       if (el) {
@@ -1183,8 +1195,9 @@ export class TimelineManager {
         continueBtn.style.cursor = 'pointer';
         continueBtn.textContent = 'Continue';
       }
-      // Remove handler after firing once
+      // Remove handler and move to next stage automatically
       this.off('data-save-success', handleSaved);
+      this.nextStage();
     };
     // Ensure single listener
     this.eventHandlers.delete('data-save-success');
@@ -1202,43 +1215,64 @@ export class TimelineManager {
 
   showProlificRedirectStage() {
     const code = (CONFIG?.game?.prolificCompletionCode) || this.experimentData.completionCode || 'CBBOSCQO';
-    const prolificUrl = 'https://app.prolific.com/submissions/complete?cc=' + code;
 
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-        <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 500px; text-align: center;">
-          <h2 style="color: #333; margin-bottom: 30px;">🔗 Redirecting to Prolific</h2>
+        <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 600px; text-align: center;">
+          <h2 style="color: #333; margin-bottom: 20px;">🎉 Experiment Complete!</h2>
+          <p style="font-size: 16px; margin-bottom: 12px;">Thank you for completing the experiment!</p>
+          <p style="font-size: 14px; color: #666; margin-bottom: 20px;">Please copy the code below and submit it in Prolific.</p>
 
-          <p style="font-size: 16px; margin-bottom: 30px;">
-            You will be automatically redirected to Prolific to complete your submission.
-          </p>
-
-          <div style="margin-bottom: 30px;">
-            <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+          <div style="background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="color: #28a745; margin-bottom: 10px;">Your Completion Code</h3>
+            <div style="background: white; border: 2px dashed #28a745; border-radius: 5px; padding: 15px; margin: 10px 0;">
+              <p id="completionCodeText" style="font-size: 24px; font-weight: bold; color: #28a745; margin: 0; font-family: monospace; letter-spacing: 2px;">${code}</p>
+            </div>
+            <p style="font-size: 14px; color: #666; margin: 10px 0 0 0;">Copy this code now to complete your submission in Prolific.</p>
+            <div style="margin-top: 12px;">
+              <button id="copyCodeBtn" style="background: #007bff; color: white; border: none; padding: 10px 16px; font-size: 14px; border-radius: 5px; cursor: pointer;">Copy Code</button>
+              <span id="copyStatus" style="margin-left: 10px; font-size: 14px; color: #28a745; display: none;">Copied!</span>
+            </div>
           </div>
-
-          <p style="font-size: 14px; color: #666; margin-bottom: 20px;">
-            If you are not redirected automatically, please click the button below:
-          </p>
-
-          <a href="${prolificUrl}" style="display: inline-block; background: #007bff; color: white; text-decoration: none; padding: 15px 30px; font-size: 18px; border-radius: 5px;">
-            Complete Submission
-          </a>
         </div>
       </div>
-
-      <style>
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      </style>
     `;
 
-    // Auto-redirect after 3 seconds
-    setTimeout(() => {
-      window.location.href = prolificUrl;
-    }, 3000);
+    // Wire up Copy button with clipboard API (with fallback)
+    try {
+      const copyBtn = document.getElementById('copyCodeBtn');
+      const codeEl = document.getElementById('completionCodeText');
+      const statusEl = document.getElementById('copyStatus');
+      if (copyBtn && codeEl) {
+        copyBtn.addEventListener('click', async () => {
+          const text = (codeEl.textContent || '').trim();
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              await navigator.clipboard.writeText(text);
+            } else {
+              const tmp = document.createElement('textarea');
+              tmp.value = text;
+              document.body.appendChild(tmp);
+              tmp.select();
+              document.execCommand('copy');
+              document.body.removeChild(tmp);
+            }
+            if (statusEl) {
+              statusEl.style.display = 'inline';
+              copyBtn.textContent = 'Copied!';
+              copyBtn.style.background = '#28a745';
+              setTimeout(() => {
+                statusEl.style.display = 'none';
+                copyBtn.textContent = 'Copy Code';
+                copyBtn.style.background = '#007bff';
+              }, 2000);
+            }
+          } catch (e) {
+            console.warn('Copy failed:', e);
+          }
+        });
+      }
+    } catch (_) { /* noop */ }
   }
 
   /**

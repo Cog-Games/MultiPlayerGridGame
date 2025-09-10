@@ -152,6 +152,13 @@ export class ExperimentManager {
   }
 
   async startNextTrial(experimentType) {
+    // Safety check for undefined experimentType
+    if (!experimentType) {
+      console.error('startNextTrial called with undefined experimentType');
+      this.completeAllExperiments();
+      return;
+    }
+
     const maxTrials = CONFIG.game.experiments.numTrials[experimentType] || 12;
 
     // Check if experiment should end early due to success threshold
@@ -789,8 +796,21 @@ export class ExperimentManager {
     // Move to next trial after delay
     setTimeout(() => {
       this.currentTrialIndex++;
+
+      // Check if we still have experiments to run
+      if (this.currentExperimentIndex >= this.currentExperimentSequence.length) {
+        console.log('All experiments completed during timeout');
+        this.completeAllExperiments();
+        return;
+      }
+
       const currentExperiment = this.currentExperimentSequence[this.currentExperimentIndex];
-      this.startNextTrial(currentExperiment);
+      if (currentExperiment) {
+        this.startNextTrial(currentExperiment);
+      } else {
+        console.error('No current experiment found, completing all experiments');
+        this.completeAllExperiments();
+      }
     }, CONFIG.game.timing.trialToFeedbackDelay + CONFIG.game.timing.feedbackDisplayDuration);
   }
 
@@ -805,6 +825,12 @@ export class ExperimentManager {
   }
 
   completeAllExperiments() {
+    // Prevent multiple calls to completeAllExperiments
+    if (!this.isRunning) {
+      console.log('Experiments already completed, ignoring duplicate call');
+      return;
+    }
+
     console.log('All experiments completed');
     this.isRunning = false;
 
@@ -845,6 +871,12 @@ export class ExperimentManager {
   }
 
   async getTrialDesign(experimentType, trialIndex) {
+    // Safety check for undefined experimentType
+    if (!experimentType) {
+      console.error('getTrialDesign called with undefined experimentType');
+      return null;
+    }
+
     console.log(`🗺️ Loading trial design for ${experimentType} trial ${trialIndex}`);
 
     // Ensure map data is loaded
@@ -1112,9 +1144,13 @@ export class ExperimentManager {
   }
 
   resume() {
-    if (this.isRunning) {
+    if (this.isRunning && this.currentExperimentIndex < this.currentExperimentSequence.length) {
       const currentExperiment = this.currentExperimentSequence[this.currentExperimentIndex];
-      this.startTrialExecution(currentExperiment);
+      if (currentExperiment) {
+        this.startTrialExecution(currentExperiment);
+      } else {
+        console.error('No current experiment found during resume');
+      }
     }
   }
 }
