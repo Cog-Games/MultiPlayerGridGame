@@ -76,8 +76,6 @@ export class GptAgentClient {
     };
 
     const url = `${this.baseUrl.replace(/\/$/, '')}/api/ai/gpt/action`;
-    console.log(`[DEBUG] GPT Client making request to: ${url}`);
-    console.log(`[DEBUG] GPT Client payload:`, payload);
     const resp = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -99,13 +97,6 @@ export class GptAgentClient {
         }
       }
     } catch (_) { /* ignore */ }
-    try {
-      if (data && data.usage) {
-        const u = data.usage;
-        const latency = (typeof data.latencyMs === 'number') ? `${data.latencyMs}ms` : 'n/a';
-        console.log(`GPT usage: prompt=${u.prompt_tokens ?? 'n/a'}, completion=${u.completion_tokens ?? 'n/a'}, total=${u.total_tokens ?? 'n/a'}, latency=${latency}`);
-      }
-    } catch (_) { /* ignore logging errors */ }
     return data?.action || null;
   }
 }

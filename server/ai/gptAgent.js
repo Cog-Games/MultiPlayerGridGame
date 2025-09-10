@@ -93,17 +93,6 @@ function getDefaultModel() {
   return process.env.GPT_MODEL || 'gpt-4o-mini';
 }
 
-function isDebugEnabled() {
-  const v = String(process.env.GPT_DEBUG || '').trim().toLowerCase();
-  return v === '1' || v === 'true' || v === 'yes' || v === 'on';
-}
-
-function debugLog(...args) {
-  if (isDebugEnabled()) {
-    try { console.log('[GPT]', ...args); } catch (_) {}
-  }
-}
-
 async function callOpenAIChat(prompt, { model = getDefaultModel(), temperature = 0 } = {}) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -146,7 +135,6 @@ async function callOpenAIChat(prompt, { model = getDefaultModel(), temperature =
     resetTokens: resp.headers.get('x-ratelimit-reset-tokens')
   };
 
-  debugLog('Latency(ms):', latencyMs, 'Usage:', usage, 'Rate:', rate);
   return { content, usage, latencyMs, rate };
 }
 
@@ -155,21 +143,10 @@ export async function decideGptAction(payload) {
   const model = payload?.model || getDefaultModel();
   const temperature = typeof payload?.temperature === 'number' ? payload.temperature : 0;
 
-  // Log input summary (gated by env flag)
-  const matrixPreview = Array.isArray(payload?.matrix) ? formatMatrix(payload.matrix) : '(invalid matrix)';
-  debugLog('Request model:', model, 'temp:', temperature);
-  debugLog('Guidance:', payload?.guidance || '(none)');
-  debugLog('CurrentPlayer:', JSON.stringify(payload?.currentPlayer), 'Goals:', JSON.stringify(payload?.goals));
-  debugLog('Matrix:\n' + matrixPreview);
-  debugLog('Prompt:\n' + prompt);
-  // Always log prompt content for inspection (per request); does not expose secrets
-  try { console.log('[GPT] Model:', model, '\n[GPT] Prompt:\n' + prompt); } catch (_) {}
 
   const result = await callOpenAIChat(prompt, { model, temperature });
   const raw = (result && typeof result === 'object') ? result.content : result;
 
-  // Log raw output
-  debugLog('Raw response:', raw);
 
   // Sanitize to allowed actions only
   const allowed = new Set(['up', 'down', 'left', 'right']);
@@ -182,8 +159,6 @@ export async function decideGptAction(payload) {
   }
   if (!allowed.has(action)) action = 'right';
 
-  // Log final chosen action
-  debugLog('Chosen action:', action);
 
   return {
     action,
