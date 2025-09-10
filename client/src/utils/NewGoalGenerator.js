@@ -184,6 +184,9 @@ export class NewGoalGenerator {
     // Find all valid positions for the new goal based on distance condition
     const validPositions = [];
     const matrixSize = CONFIG.game.matrixSize;
+    const gc = (CONFIG && CONFIG.twoP3G && CONFIG.twoP3G.goalConstraints) || {};
+    const minDistHuman = Number.isFinite(gc.minDistanceFromHuman) ? gc.minDistanceFromHuman : 1;
+    const maxDistHuman = Number.isFinite(gc.maxDistanceFromHuman) ? gc.maxDistanceFromHuman : Infinity;
 
     for (let row = 0; row < matrixSize; row++) {
       for (let col = 0; col < matrixSize; col++) {
@@ -197,6 +200,14 @@ export class NewGoalGenerator {
         const newGoalDistanceToPlayer1 = GameHelpers.calculateGridDistance(player1Pos, newGoalPosition);
         const newGoalDistanceToPlayer2 = GameHelpers.calculateGridDistance(player2Pos, newGoalPosition);
         const newDistanceSum = newGoalDistanceToPlayer1 + newGoalDistanceToPlayer2;
+
+        // Apply goal constraints (distance from humans)
+        if (newGoalDistanceToPlayer1 < minDistHuman || newGoalDistanceToPlayer1 > maxDistHuman) {
+          continue;
+        }
+        if (newGoalDistanceToPlayer2 < minDistHuman || newGoalDistanceToPlayer2 > maxDistHuman) {
+          continue;
+        }
 
         // Check if this position meets the distance condition
         if (this.meetsDistanceCondition(
@@ -272,26 +283,37 @@ export class NewGoalGenerator {
     newDistanceSum,
     oldDistanceSum
   ) {
-    const closerThreshold = 1; // Minimum distance improvement
-    const equalThreshold = 0.1; // Tolerance for "equal" distances
+    // Read thresholds from config to avoid over‑restrictive defaults
+    const dc = (CONFIG && CONFIG.twoP3G && CONFIG.twoP3G.distanceConstraint) || {};
+    const gc = (CONFIG && CONFIG.twoP3G && CONFIG.twoP3G.goalConstraints) || {};
+    const closerThreshold = Number.isFinite(dc.closerThreshold) ? dc.closerThreshold : 1;
+    const allowEqualDistance = Boolean(dc.allowEqualDistance);
+    const maxDistanceIncrease = Number.isFinite(dc.maxDistanceIncrease) ? dc.maxDistanceIncrease : 0; // 0 = do not allow increase by default
+
+    const maintainEqualSum = Boolean(gc.maintainDistanceSum);
+    const equalSumOk = maintainEqualSum
+      ? (newDistanceSum === oldDistanceSum) // Manhattan distances are integers
+      : (newDistanceSum <= (oldDistanceSum + maxDistanceIncrease));
 
     switch (condition) {
-      case this.DISTANCE_CONDITIONS.CLOSER_TO_PLAYER2:
-        // New goal must be closer to Player2 than old goal, with equal total distance sum
-        return newGoalDistanceToPlayer2 < player2DistanceToOldGoal - closerThreshold &&
-               Math.abs(newDistanceSum - oldDistanceSum) < equalThreshold;
-
-      case this.DISTANCE_CONDITIONS.CLOSER_TO_PLAYER1:
-        // New goal must be closer to Player1 than old goal, with equal total distance sum
-        return newGoalDistanceToPlayer1 < player1DistanceToOldGoal - closerThreshold &&
-               Math.abs(newDistanceSum - oldDistanceSum) < equalThreshold;
-
-      case this.DISTANCE_CONDITIONS.EQUAL_TO_BOTH:
-        // New goal must be equidistant from both players and maintain equal total distance sum
+      case this.DISTANCE_CONDITIONS.CLOSER_TO_PLAYER2: {
+        const closerOK = allowEqualDistance
+          ? (newGoalDistanceToPlayer2 <= player2DistanceToOldGoal - closerThreshold)
+          : (newGoalDistanceToPlayer2 < player2DistanceToOldGoal - closerThreshold);
+        return closerOK && equalSumOk;
+      }
+      case this.DISTANCE_CONDITIONS.CLOSER_TO_PLAYER1: {
+        const closerOK = allowEqualDistance
+          ? (newGoalDistanceToPlayer1 <= player1DistanceToOldGoal - closerThreshold)
+          : (newGoalDistanceToPlayer1 < player1DistanceToOldGoal - closerThreshold);
+        return closerOK && equalSumOk;
+      }
+      case this.DISTANCE_CONDITIONS.EQUAL_TO_BOTH: {
         const distanceDifference = Math.abs(newGoalDistanceToPlayer2 - newGoalDistanceToPlayer1);
-        return distanceDifference < equalThreshold && // Equal distance to both players
-               Math.abs(newDistanceSum - oldDistanceSum) < equalThreshold; // Equal sum distance
-
+        // Treat exactly equal (difference 0) as equal; if allowEqualDistance is true, also allow minimal imbalance of 1
+        const equalToBoth = allowEqualDistance ? (distanceDifference <= 1) : (distanceDifference === 0);
+        return equalToBoth && equalSumOk;
+      }
       default:
         return false;
     }
@@ -301,6 +323,10 @@ export class NewGoalGenerator {
   static findRelaxedValidPositions(player1Pos, player2Pos, oldGoals, distanceCondition) {
     const relaxedValidPositions = [];
     const matrixSize = CONFIG.game.matrixSize;
+    const dc = (CONFIG && CONFIG.twoP3G && CONFIG.twoP3G.distanceConstraint) || {};
+    const gc = (CONFIG && CONFIG.twoP3G && CONFIG.twoP3G.goalConstraints) || {};
+    const minD = Number.isFinite(gc.minDistanceFromHuman) ? gc.minDistanceFromHuman : 2;
+    const maxD = Number.isFinite(gc.maxDistanceFromHuman) ? gc.maxDistanceFromHuman : (Number.isFinite(dc.maxDistanceIncrease) ? Math.max(10, 2 + dc.maxDistanceIncrease) : 10);
 
     for (let row = 0; row < matrixSize; row++) {
       for (let col = 0; col < matrixSize; col++) {
@@ -312,8 +338,8 @@ export class NewGoalGenerator {
           const distanceToPlayer2 = GameHelpers.calculateGridDistance(player2Pos, newGoalPosition);
 
           // Ensure reasonable distances (not too close, not too far)
-          if (distanceToPlayer1 >= 2 && distanceToPlayer1 <= 10 &&
-              distanceToPlayer2 >= 2 && distanceToPlayer2 <= 10) {
+          if (distanceToPlayer1 >= minD && distanceToPlayer1 <= maxD &&
+              distanceToPlayer2 >= minD && distanceToPlayer2 <= maxD) {
             relaxedValidPositions.push({
               position: newGoalPosition,
               conditionType: distanceCondition,

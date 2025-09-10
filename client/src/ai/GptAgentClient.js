@@ -45,6 +45,10 @@ export class GptAgentClient {
     const experimentType = state.experimentType;
     const guidance = options.guidance || GptAgentClient.guidanceFor(experimentType);
 
+    // Determine which player the GPT controls; default to player2
+    const aiPlayerNumber = Number(options.aiPlayerNumber) === 1 ? 1 : 2;
+    const aiLabel = aiPlayerNumber === 1 ? 'player1' : 'player2';
+
     const agentCfg = CONFIG?.game?.agent?.gpt || {};
     // Optional trajectories memory
     const trialData = state.trialData || null;
@@ -56,9 +60,9 @@ export class GptAgentClient {
     const payload = {
       guidance,
       matrix: state.gridMatrix,
-      currentPlayer: { label: 'player2', pos: state.player2 },
+      currentPlayer: { label: aiLabel, pos: state[aiLabel] },
       goals: state.currentGoals,
-      relativeInfo: GptAgentClient.buildRelativeInfo(state, 'player2'),
+      relativeInfo: GptAgentClient.buildRelativeInfo(state, aiLabel),
       model: options.model || agentCfg.model || undefined,
       temperature: typeof options.temperature === 'number' ? options.temperature : (typeof agentCfg.temperature === 'number' ? agentCfg.temperature : undefined),
       memory: {
@@ -72,6 +76,8 @@ export class GptAgentClient {
     };
 
     const url = `${this.baseUrl.replace(/\/$/, '')}/api/ai/gpt/action`;
+    console.log(`[DEBUG] GPT Client making request to: ${url}`);
+    console.log(`[DEBUG] GPT Client payload:`, payload);
     const resp = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -83,6 +89,16 @@ export class GptAgentClient {
       throw new Error(`GPT action request failed: ${resp.status} ${text}`);
     }
     const data = await resp.json();
+    // Persist exact model used (ensures recordings use precise GPT type)
+    try {
+      const modelUsed = data && (data.model || data.modelUsed);
+      if (modelUsed) {
+        const current = (CONFIG?.game?.agent?.gpt?.model);
+        if (!current || String(current).trim() !== String(modelUsed).trim()) {
+          CONFIG.game.agent.gpt.model = String(modelUsed).trim();
+        }
+      }
+    } catch (_) { /* ignore */ }
     try {
       if (data && data.usage) {
         const u = data.usage;

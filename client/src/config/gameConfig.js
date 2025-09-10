@@ -59,16 +59,16 @@ export const CONFIG = {
     // Experiment configuration
     experiments: {
       // order: ['1P2G'],
-      // order: [ '2P3G'],
+      order: [ '2P3G'],
       // order: ['1P2G','2P3G'],
       // order: ['2P2G', '2P3G'],
-      order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
+      // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
         '1P1G': 3, // 3
         '1P2G': 12, // 12
         '2P2G': 8, // 8
-        '2P3G': 12, // 12
+        '2P3G': 4, // 12
       }
     },
 
@@ -105,7 +105,7 @@ export const CONFIG = {
       // Optional GPT agent client defaults (non-sensitive)
       gpt: {
         // If set, forwarded to server; server may override model
-        model: '',
+        model: 'gpt-4o-mini',
         temperature: 0,
         // Include past trajectories in GPT prompt
         memory: {
@@ -187,6 +187,9 @@ export const CONFIG = {
     reconnectAttempts: 3,
     syncInterval: 100,
     moveTimeout: 10000,
+    // Max wait (ms) on the "Game is Ready! Press SPACE" screen for the other
+    // human to press space before falling back to AI partner
+    matchPlayReadyTimeout: 10000,
     // Fallback AI partner type when human-human matching fails
     // Allowed: 'gpt' | 'rl_individual' | 'rl_joint'
     fallbackAIType: 'gpt'

@@ -102,6 +102,9 @@ export class GameApplication {
     this.setupUIEventHandlers();
 
     this.isInitialized = true;
+
+    // Proactively fetch and cache GPT model for accurate recording (e.g., partnerFallbackAIType)
+    try { await this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
   }
 
   async startTimelineFlow(mode, experimentType, roomId) {
@@ -245,6 +248,18 @@ export class GameApplication {
       console.log('🎮 All players ready via timeline');
     });
 
+    // Record AI fallback events initiated by the timeline (waiting/match timeouts)
+    this.timelineManager.on('fallback-to-ai', (payload) => {
+      try {
+        const { reason = 'unknown', stage = 'waiting-for-partner', at = Date.now() } = payload || {};
+        // Best-effort: ensure exact GPT model cached before recording
+        try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
+        this.gameStateManager?.recordPartnerFallback?.({ reason, stage, at });
+        // Proactively fetch and persist GPT model so fallback AI type can be exact (e.g., gpt-4o)
+        try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
+      } catch (_) { /* noop */ }
+    });
+
     console.log('📡 Timeline event handlers setup completed');
   }
 
@@ -322,7 +337,11 @@ export class GameApplication {
 
             // Prefer a sensible column order for readability; include common fields first if present
             const preferredOrder = [
-              'trialIndex', 'experimentType', 'partnerAgentType', 'collaborationSucceeded',
+              'trialIndex', 'experimentType', 'partnerAgentType',
+              'humanPlayerIndex', 'aiPlayerIndex',
+              'partnerFallbackOccurred', 'partnerFallbackReason', 'partnerFallbackStage', 'partnerFallbackTime',
+              'partnerFallbackAIType',
+              'collaborationSucceeded',
               'player1GoalReachedStep', 'player2GoalReachedStep',
               'newGoalPresented', 'newGoalPosition', 'distanceCondition', 'isNewGoalCloserToPlayer2',
               'trialStartTime', 'gptErrorEvents', 'participantId',
@@ -354,20 +373,34 @@ export class GameApplication {
           // Determine partner agent type summary for meta
           const p2Type = (CONFIG?.game?.players?.player2?.type) || '';
           const partnerAgentType = (function(){
-            if (p2Type === 'human') return 'human';
-            if (p2Type === 'gpt') return 'gpt';
-            if (p2Type === 'rl_joint') return 'joint-rl';
-            if (p2Type === 'rl_individual') return 'individual-rl';
-            if (p2Type === 'ai') return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl'; // legacy safety
-            return p2Type || 'unknown';
+            const p1Type = (CONFIG?.game?.players?.player1?.type);
+            const p2Type = (CONFIG?.game?.players?.player2?.type);
+            const t = (p1Type !== 'human') ? p1Type : ((p2Type !== 'human') ? p2Type : 'human');
+            if (t === 'human') return 'human';
+            if (t === 'gpt') {
+              const model = (CONFIG?.game?.agent?.gpt?.model);
+              if (model && String(model).trim().length > 0) {
+                return String(model);
+              } else {
+                console.warn('⚠️ GPT model not cached in CONFIG for export, using configured default');
+                return 'gpt-4o'; // matches the configured GPT_MODEL in .env
+              }
+            }
+            if (t === 'rl_joint') return 'joint-rl';
+            if (t === 'rl_individual') return 'individual-rl';
+            if (t === 'ai') return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl'; // legacy safety
+            return t || 'unknown';
           })();
 
+          const fallbackEvents = (gsData && Array.isArray(gsData.fallbackEvents)) ? gsData.fallbackEvents : [];
           const metaRows = [
             ['participantId', exportObj.participantId],
             ['roomId', exportObj.roomId || ''],
             ['experimentOrder', JSON.stringify(exportObj.experimentOrder || [])],
             ['experimentType', exportObj.experimentType],
             ['partnerAgentType', partnerAgentType],
+            ['fallbackEventCount', fallbackEvents.length],
+            ['fallbackEvents', JSON.stringify(fallbackEvents)],
             ['version', exportObj.version],
             ['timestamp', exportObj.timestamp]
           ];
@@ -547,13 +580,72 @@ export class GameApplication {
       console.log('Player disconnected:', data);
 
       if (this.useTimelineFlow) {
-        // Handle disconnection in timeline flow
-        // Could pause timeline or show error
-        console.log('Partner disconnected during timeline flow');
+        // Switch to AI partner and continue via timeline
+        console.log('Partner disconnected during timeline flow - switching to AI');
+        const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
+        // Determine which player index disconnected (0 or 1)
+        let discIdx = null;
+        try {
+          const gs = this.gameConfig; // set on 'game-started'
+          if (gs && Array.isArray(gs.players)) {
+            discIdx = gs.players.findIndex(p => p.id === data?.playerId);
+          }
+        } catch (_) { /* noop */ }
+        // Default to the opposite of me if unknown
+        if (discIdx !== 0 && discIdx !== 1) {
+          discIdx = (this.playerIndex === 0) ? 1 : 0;
+        }
+        const aiPlayerNumber = discIdx + 1;
+        // Update config + managers
+        try {
+          this.experimentManager?.activateAIFallback?.(fallbackType, aiPlayerNumber);
+        } catch (_) { /* noop */ }
+        // Best-effort: ensure exact GPT model cached before recording
+        try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
+        // Record fallback event for export (no UI message)
+        try {
+          this.gameStateManager?.recordPartnerFallback?.({ reason: 'disconnect', stage: 'in-game', at: Date.now() });
+        } catch (_) { /* noop */ }
+        // Post-upgrade in case model resolved after recording
+        try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
+        try {
+          this.uiManager.setPlayerInfo(this.playerIndex, 'human-ai');
+        } catch (_) { /* noop */ }
+        try {
+          if (this.timelineManager) {
+            this.timelineManager.gameMode = 'human-ai';
+            // Nudge current waiting/match stages if applicable
+            this.timelineManager.emit('partner-connected', { connectedAt: Date.now(), players: data?.players || [] });
+            this.timelineManager.emit('all-players-ready', { gameMode: 'human-ai' });
+          }
+        } catch (_) { /* noop */ }
       } else {
         // Legacy flow
         this.uiManager.updatePlayerList(data.players);
-        this.uiManager.showNotification('Partner disconnected');
+        // Switch to AI in legacy mode as well
+        const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
+        let discIdx = null;
+        try {
+          const gs = this.gameConfig;
+          if (gs && Array.isArray(gs.players)) {
+            discIdx = gs.players.findIndex(p => p.id === data?.playerId);
+          }
+        } catch (_) { /* noop */ }
+        if (discIdx !== 0 && discIdx !== 1) {
+          discIdx = (this.playerIndex === 0) ? 1 : 0;
+        }
+        const aiPlayerNumber = discIdx + 1;
+        try {
+          this.experimentManager?.activateAIFallback?.(fallbackType, aiPlayerNumber);
+        } catch (_) { /* noop */ }
+        // Best-effort: ensure exact GPT model cached before recording
+        try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
+        // Record fallback event for export (no UI message)
+        try {
+          this.gameStateManager?.recordPartnerFallback?.({ reason: 'disconnect', stage: 'in-game', at: Date.now() });
+        } catch (_) { /* noop */ }
+        // Post-upgrade in case model resolved after recording
+        try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
       }
     });
 
@@ -645,9 +737,11 @@ export class GameApplication {
     // Game actions
     this.uiManager.on('player-move', async (direction) => {
       // If player2 is AI/GPT and synchronized moves are enabled, delegate to ExperimentManager
-      const p2Type = CONFIG.game?.players?.player2?.type;
+      // Determine if the other player (not me) is AI/GPT
+      const otherIdx = (this.playerIndex === 0) ? 1 : 0;
+      const otherType = CONFIG.game?.players?.[otherIdx === 0 ? 'player1' : 'player2']?.type;
       const sync = CONFIG.game?.agent?.synchronizedMoves;
-      const isAIPartner = p2Type !== 'human';
+      const isAIPartner = otherType !== 'human';
 
       if (isAIPartner && sync && this.experimentManager?.handleSynchronizedMove) {
         try {

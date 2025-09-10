@@ -55,7 +55,10 @@ function buildPrompt({ matrix, currentPlayer, goals, memory, guidance /*, relati
     `Traveler1 at ${p1Str}`,
     `Traveler2 at ${p2Str}`,
     `Restaurants: ${goalsStr}`,
-    'You are traveler 2.',
+    // Identify which traveler the model controls based on the provided label
+    (currentPlayer && currentPlayer.label === 'player1')
+      ? 'You are traveler 1.'
+      : 'You are traveler 2.',
     '',
   ];
 
@@ -76,8 +79,8 @@ function buildPrompt({ matrix, currentPlayer, goals, memory, guidance /*, relati
     const p2t = Array.isArray(memory.trajectories.player2) ? memory.trajectories.player2 : [];
     const fmt = (traj) => traj.map(c => `(${c[0]}, ${c[1]})`).join(' -> ');
     lines.push('Recent trajectories:');
-    lines.push(`Player1: ${fmt(p1t) || 'n/a'}`);
-    lines.push(`Player2: ${fmt(p2t) || 'n/a'}`);
+    lines.push(`Traveler1: ${fmt(p1t) || 'n/a'}`);
+    lines.push(`Traveler2: ${fmt(p2t) || 'n/a'}`);
     lines.push('');
   }
 
@@ -159,6 +162,8 @@ export async function decideGptAction(payload) {
   debugLog('CurrentPlayer:', JSON.stringify(payload?.currentPlayer), 'Goals:', JSON.stringify(payload?.goals));
   debugLog('Matrix:\n' + matrixPreview);
   debugLog('Prompt:\n' + prompt);
+  // Always log prompt content for inspection (per request); does not expose secrets
+  try { console.log('[GPT] Model:', model, '\n[GPT] Prompt:\n' + prompt); } catch (_) {}
 
   const result = await callOpenAIChat(prompt, { model, temperature });
   const raw = (result && typeof result === 'object') ? result.content : result;
@@ -182,6 +187,7 @@ export async function decideGptAction(payload) {
 
   return {
     action,
+    model,
     usage: (result && result.usage) || null,
     latencyMs: (result && result.latencyMs) || null,
     rate: (result && result.rate) || null

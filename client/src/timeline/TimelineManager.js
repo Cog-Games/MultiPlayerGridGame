@@ -475,6 +475,7 @@ export class TimelineManager {
         console.log('⏭️ Skipping multiplayer waiting after min wait - continuing with AI partner');
         const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
         GameConfigUtils.setPlayerType(2, fallbackType);
+        try { this.emit('fallback-to-ai', { reason: 'waiting-skip', stage: 'waiting-for-partner', at: Date.now() }); } catch (_) { /* noop */ }
         this.nextStage();
       }
     };
@@ -520,6 +521,11 @@ export class TimelineManager {
         GameConfigUtils.setPlayerType(2, fallbackType);
         this.gameMode = 'human-ai';
         document.removeEventListener('keydown', handleSkipWaiting);
+        // Notify app to record this fallback event
+        try { this.emit('fallback-to-ai', { reason: 'waiting-timeout', stage: 'waiting-for-partner', at: Date.now() }); } catch (_) { /* noop */ }
+        // Notify ExperimentManager to activate AI fallback
+        console.log(`[DEBUG] Timeline emitting ai-fallback-activated event (waiting timeout)`);
+        this.emit('ai-fallback-activated', { fallbackType, aiPlayerNumber: 2 });
         this.nextStage();
       }
     }, maxWaitMs);
@@ -611,13 +617,45 @@ export class TimelineManager {
           const status = document.getElementById('match-status');
           if (status) status.style.display = 'block';
 
+          // Start a timeout to fall back to AI if the other player
+          // does not press SPACE within the configured threshold
+          const readyTimeoutMs = (CONFIG?.multiplayer?.matchPlayReadyTimeout ?? 10000);
+          let timeoutId = null;
+          const fallbackToAI = () => {
+            try {
+              console.log(`⌛ Match-play wait exceeded (${readyTimeoutMs}ms) - falling back to AI mode`);
+              const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
+              console.log(`[DEBUG] Timeline fallback - fallbackType: ${fallbackType}`);
+              GameConfigUtils.setPlayerType(2, fallbackType);
+              console.log(`[DEBUG] Timeline fallback - After setPlayerType, Player2: ${CONFIG.game.players.player2.type}`);
+              this.gameMode = 'human-ai';
+              // Clean up listener to avoid double-proceed if server emits later
+              this.off('all-players-ready', allReadyHandler);
+
+              // Notify ExperimentManager to activate AI fallback
+              console.log(`[DEBUG] Timeline emitting ai-fallback-activated event`);
+              this.emit('ai-fallback-activated', { fallbackType, aiPlayerNumber: 2 });
+            } catch (_) { /* noop */ }
+            this.nextStage();
+          };
+
           const allReadyHandler = () => {
             this.off('all-players-ready', allReadyHandler);
+            if (timeoutId) {
+              clearTimeout(timeoutId);
+              timeoutId = null;
+            }
             this.nextStage();
           };
           // Ensure single listener
           this.eventHandlers.delete('all-players-ready');
           this.on('all-players-ready', allReadyHandler);
+
+          // Arm the timeout after we start listening for readiness
+          timeoutId = setTimeout(() => {
+            try { this.emit('fallback-to-ai', { reason: 'match-play-timeout', stage: 'match-play', at: Date.now() }); } catch (_) { /* noop */ }
+            fallbackToAI();
+          }, readyTimeoutMs);
         } else {
           this.nextStage();
         }
@@ -667,11 +705,11 @@ export class TimelineManager {
   runTrialStage(experimentType, experimentIndex, trialIndex) {
     console.log(`🎮 Starting trial ${trialIndex} of ${experimentType}`);
 
-    // Determine player color and name for multiplayer games
+    // Determine legend based on actual player index whenever it's a 2P experiment
+    // This stays consistent even if mode switches to human-AI mid-session
     let playerColor = CONFIG.visual.colors.player1; // Default red
     let playerName = 'Player 1 (Red)';
-
-    if (this.gameMode === 'human-human' && experimentType.includes('2P')) {
+    if (experimentType.includes('2P')) {
       playerColor = this.playerIndex === 0 ? CONFIG.visual.colors.player1 : CONFIG.visual.colors.player2;
       playerName = this.playerIndex === 0 ? 'Player 1 (Red)' : 'Player 2 (Orange)';
     }

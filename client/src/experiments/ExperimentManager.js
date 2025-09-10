@@ -1,4 +1,4 @@
-import { CONFIG, GAME_OBJECTS } from '../config/gameConfig.js';
+import { CONFIG, GAME_OBJECTS, GameConfigUtils } from '../config/gameConfig.js';
 import { RLAgent } from '../ai/RLAgent.js';
 import { GptAgentClient } from '../ai/GptAgentClient.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
@@ -20,6 +20,7 @@ export class ExperimentManager {
     this.gameLoopInterval = null;
     this.aiMoveInterval = null;
     this.newGoalIntervalId = null;
+    this.aiPlayerNumber = 2; // 1 or 2; default assume AI is player 2
 
     // Initialize map data with MapLoader
     this.mapLoader = mapLoader;
@@ -30,6 +31,84 @@ export class ExperimentManager {
 
     // Set up timeline event handlers if timeline manager is provided
     this.setupTimelineIntegration();
+  }
+
+  // Enable AI partner dynamically (e.g., when human partner disconnects)
+  activateAIFallback(fallbackType = (CONFIG?.multiplayer?.fallbackAIType || 'rl_joint'), aiPlayerNumber = 2) {
+    try {
+      console.log(`[DEBUG] activateAIFallback called - fallbackType: ${fallbackType}, aiPlayerNumber: ${aiPlayerNumber}`);
+
+      // Update which player is controlled by AI
+      this.aiPlayerNumber = (aiPlayerNumber === 1) ? 1 : 2;
+
+      // Switch config to AI on the correct side and human on the other
+      const humanPlayerNumber = (this.aiPlayerNumber === 1) ? 2 : 1;
+      GameConfigUtils.setPlayerType(this.aiPlayerNumber, fallbackType);
+      GameConfigUtils.setPlayerType(humanPlayerNumber, 'human');
+
+      console.log(`[DEBUG] After setPlayerType - Player1: ${CONFIG.game.players.player1.type}, Player2: ${CONFIG.game.players.player2.type}`);
+
+      // Ensure RL agent exists for fallback when GPT is unavailable
+      if (!this.rlAgent) {
+        this.rlAgent = new RLAgent();
+      }
+
+      // Update current trial's recorded partner agent type
+      try {
+        const td = this.gameStateManager?.trialData;
+        if (td) {
+          if (fallbackType === 'gpt') {
+            const model = CONFIG?.game?.agent?.gpt?.model;
+            td.partnerAgentType = (model && String(model).trim()) ? model : 'gpt';
+            // If model not known yet, attempt to fetch/log and update asynchronously
+            if (!model || !String(model).trim()) {
+              this.logCurrentAIModel?.();
+            }
+          } else if (fallbackType === 'rl_joint') {
+            td.partnerAgentType = 'joint-rl';
+          } else if (fallbackType === 'rl_individual') {
+            td.partnerAgentType = 'individual-rl';
+          } else {
+            td.partnerAgentType = String(fallbackType);
+          }
+          // Record who is human vs AI (0-based for external analysis)
+          td.humanPlayerIndex = (humanPlayerNumber - 1);
+          td.aiPlayerIndex = (this.aiPlayerNumber - 1);
+        }
+      } catch (_) { /* ignore */ }
+
+      // Set up AI movement listeners for the fallback AI
+      if (!CONFIG?.game?.agent?.synchronizedMoves) {
+        console.log('[DEBUG] Setting up AI movement (non-synchronized mode)');
+        this.setupAIMovement();
+      } else {
+        // In synchronized mode, no extra setup needed; AI moves are generated on human input
+        console.log('🤖 AI fallback activated (synchronized moves)');
+        console.log('[DEBUG] Setting up independent AI movement after human goal');
+        // But we still need to set up independent AI movement for when human reaches goal
+        this.setupIndependentAIAfterHumanGoal();
+      }
+
+      // Restart new goal checking for the current experiment type after fallback
+      // This is crucial because the original setup was for human-human mode
+      try {
+        const currentExperimentType = this.gameStateManager?.currentState?.experimentType;
+        if (currentExperimentType === '2P3G') {
+          console.log('[DEBUG] Restarting new goal checking for 2P3G after AI fallback');
+          this.setupNewGoalCheck2P3G();
+        } else if (currentExperimentType === '1P2G') {
+          console.log('[DEBUG] Restarting new goal checking for 1P2G after AI fallback');
+          this.setupNewGoalCheck1P2G();
+        }
+      } catch (restartErr) {
+        console.warn('Failed to restart new goal checking after fallback:', restartErr?.message || restartErr);
+      }
+
+      // Best-effort log model/mode info
+      this.logCurrentAIModel?.();
+    } catch (e) {
+      console.warn('Failed to activate AI fallback:', e?.message || e);
+    }
   }
 
   async startExperiment(experimentType) {
@@ -94,11 +173,21 @@ export class ExperimentManager {
     console.log(`Starting trial ${this.currentTrialIndex + 1}/${maxTrials} for ${experimentType}`);
 
     // Get trial design
-    let design = this.getTrialDesign(experimentType, this.currentTrialIndex);
+    let design = await this.getTrialDesign(experimentType, this.currentTrialIndex);
     if (!design) {
       console.error('Failed to get trial design, using fallback');
       design = GameHelpers.createFallbackDesign(experimentType);
     }
+
+    // If this is a 2P experiment with a GPT partner on either side,
+    // prefetch the exact model so partnerAgentType records it from the start
+    try {
+      const p1Type = CONFIG?.game?.players?.player1?.type;
+      const p2Type = CONFIG?.game?.players?.player2?.type;
+      if (String(experimentType || '').includes('2P') && (p1Type === 'gpt' || p2Type === 'gpt')) {
+        await this.logCurrentAIModel();
+      }
+    } catch (_) { /* noop */ }
 
     // Initialize trial
     this.gameStateManager.initializeTrial(this.currentTrialIndex, experimentType, design);
@@ -149,13 +238,15 @@ export class ExperimentManager {
 
   runTrial2P2G() {
     // Two players, two goals - check if AI or human player 2
-    if (CONFIG.game.players.player2.type !== 'human') {
+    const p1Type = CONFIG.game.players.player1.type;
+    const p2Type = CONFIG.game.players.player2.type;
+    if (p2Type !== 'human' || p1Type !== 'human') {
+      // Determine which side is AI
+      this.aiPlayerNumber = (p2Type !== 'human') ? 2 : 1;
       // Log current AI model/config for visibility
       this.logCurrentAIModel();
       if (CONFIG.game.agent.synchronizedMoves) {
         console.log('2P2G: Synchronized human-AI moves enabled');
-        // In synchronized mode, we do not set up the legacy delayed AI listener
-        // But we still enable independent AI movement once human reaches a goal
         this.setupIndependentAIAfterHumanGoal();
       } else {
         this.setupAIMovement();
@@ -168,7 +259,10 @@ export class ExperimentManager {
 
   runTrial2P3G() {
     // Two players, three goals - check if AI or human player 2
-    if (CONFIG.game.players.player2.type !== 'human') {
+    const p1Type = CONFIG.game.players.player1.type;
+    const p2Type = CONFIG.game.players.player2.type;
+    if (p2Type !== 'human' || p1Type !== 'human') {
+      this.aiPlayerNumber = (p2Type !== 'human') ? 2 : 1;
       // Log current AI model/config for visibility
       this.logCurrentAIModel();
       if (CONFIG.game.agent.synchronizedMoves) {
@@ -194,6 +288,59 @@ export class ExperimentManager {
           const info = await resp.json();
           const model = info?.model || '(unknown)';
           console.log(`🤖 AI partner: GPT model = ${model}`);
+          // Persist model for data recording
+          try {
+            if (model && model !== '(unknown)') {
+              CONFIG.game.agent.gpt.model = model;
+              // Update current trial's partnerAgentType if available
+              const td = this.gameStateManager?.trialData;
+              const st = this.gameStateManager?.currentState;
+              if (td && st && String(st.experimentType || '').includes('2P')) {
+                td.partnerAgentType = model;
+                // If a fallback occurred earlier and the fallback AI type was generic 'gpt',
+                // upgrade it to the exact model string for accurate export
+                if (td.partnerFallbackOccurred) {
+                  if (!td.partnerFallbackAIType || /^gpt$/i.test(String(td.partnerFallbackAIType))) {
+                    td.partnerFallbackAIType = model;
+                  }
+                  // Also update experiment-level fallbackEvents for this trial if present
+                  try {
+                    const exp = this.gameStateManager?.experimentData;
+                    const curIdx = Number.isInteger(st.trialIndex) ? st.trialIndex : null;
+                    if (exp && Array.isArray(exp.fallbackEvents)) {
+                      exp.fallbackEvents.forEach(evt => {
+                        const matchIdx = (curIdx !== null) ? (evt.trialIndex === curIdx) : true;
+                        if (matchIdx && (!evt.aiType || /^gpt$/i.test(String(evt.aiType)))) {
+                          evt.aiType = model;
+                        }
+                      });
+                    }
+                  } catch (_) { /* noop */ }
+                }
+              }
+              // Also sweep existing saved trials to upgrade any generic 'gpt' fallback entries
+              try {
+                const exp = this.gameStateManager?.experimentData;
+                if (exp && Array.isArray(exp.allTrialsData)) {
+                  exp.allTrialsData.forEach(tr => {
+                    if (tr && tr.partnerFallbackOccurred && (!tr.partnerFallbackAIType || /^gpt$/i.test(String(tr.partnerFallbackAIType)))) {
+                      tr.partnerFallbackAIType = model;
+                    }
+                    if (tr && String(tr.partnerAgentType || '').toLowerCase() === 'gpt') {
+                      tr.partnerAgentType = model;
+                    }
+                  });
+                }
+                if (exp && Array.isArray(exp.fallbackEvents)) {
+                  exp.fallbackEvents.forEach(evt => {
+                    if (evt && (!evt.aiType || /^gpt$/i.test(String(evt.aiType)))) {
+                      evt.aiType = model;
+                    }
+                  });
+                }
+              } catch (_) { /* noop */ }
+            }
+          } catch (_) { /* ignore */ }
         } else {
           console.log('🤖 AI partner: GPT (failed to read model from server)');
         }
@@ -208,15 +355,17 @@ export class ExperimentManager {
 
   // In both sync and legacy modes, when human reaches a goal, start independent AI movement
   setupIndependentAIAfterHumanGoal() {
-    let player1AtGoal = false;
+    let humanAtGoal = false;
     const checkPlayerGoal = setInterval(() => {
       const gameState = this.gameStateManager.getCurrentState();
       if (!gameState.player1 || !gameState.player2) return;
 
-      const currentPlayer1AtGoal = GameHelpers.isGoalReached(gameState.player1, gameState.currentGoals);
+      const humanNum = (this.aiPlayerNumber === 1) ? 2 : 1;
+      const humanPos = (humanNum === 1) ? gameState.player1 : gameState.player2;
+      const currentHumanAtGoal = GameHelpers.isGoalReached(humanPos, gameState.currentGoals);
 
-      if (!player1AtGoal && currentPlayer1AtGoal) {
-        player1AtGoal = true;
+      if (!humanAtGoal && currentHumanAtGoal) {
+        humanAtGoal = true;
         this.startIndependentAIMovement();
       }
     }, 100);
@@ -227,23 +376,36 @@ export class ExperimentManager {
 
   // Handle synchronized move: apply human + AI/GPT moves together, then redraw once
   async handleSynchronizedMove(humanDirection) {
-    // Only active when player2 is AI/GPT
+    // Active when either player is AI/GPT
+    const p1Type = CONFIG.game.players.player1.type;
     const p2Type = CONFIG.game.players.player2.type;
-    if (p2Type === 'human') return;
+    if (p1Type === 'human' && p2Type === 'human') return;
 
     const gameState = this.gameStateManager.getCurrentState();
     if (!gameState.player1 || !gameState.player2) return;
+
+    // Determine human/AI mapping
+    const humanPlayerNumber = (this.aiPlayerNumber === 1) ? 2 : 1;
 
     // Generate AI/GPT direction
     let aiDirection = null;
     const isGptAllowed = (gameState.experimentType === '2P2G' || gameState.experimentType === '2P3G');
     let gptError = null;
-    if (p2Type === 'gpt' && isGptAllowed) {
+
+    // Determine which side is AI and its configured type
+    const aiType = (this.aiPlayerNumber === 1)
+      ? CONFIG.game.players.player1.type
+      : CONFIG.game.players.player2.type;
+
+    if (aiType === 'gpt' && isGptAllowed) {
       try {
-        aiDirection = await this.gptClient.getNextAction({
-          ...gameState,
-          trialData: this.gameStateManager.getCurrentTrialData()
-        });
+        aiDirection = await this.gptClient.getNextAction(
+          {
+            ...gameState,
+            trialData: this.gameStateManager.getCurrentTrialData()
+          },
+          { aiPlayerNumber: this.aiPlayerNumber }
+        );
       } catch (e) {
         gptError = e;
         console.warn('GPT agent request failed during synchronized move; falling back to RL:', e?.message || e);
@@ -253,9 +415,9 @@ export class ExperimentManager {
       if (!this.rlAgent) return; // Safety
       const aiAction = this.rlAgent.getAIAction(
         gameState.gridMatrix,
-        gameState.player2,
+        (this.aiPlayerNumber === 1) ? gameState.player1 : gameState.player2,
         gameState.currentGoals,
-        gameState.player1
+        (this.aiPlayerNumber === 1) ? gameState.player2 : gameState.player1
       );
       aiDirection = this.actionToDirection(aiAction);
 
@@ -271,12 +433,28 @@ export class ExperimentManager {
       }
     }
 
-    // Apply both moves before a single redraw
-    // Human is player 1; AI/GPT is player 2
-    const syncResult = this.gameStateManager.processSynchronizedMoves(humanDirection, aiDirection);
+    // Apply both moves before a single redraw, mapped to correct players
+    let syncResult;
+    if (humanPlayerNumber === 1) {
+      syncResult = this.gameStateManager.processSynchronizedMoves(humanDirection, aiDirection);
+    } else {
+      syncResult = this.gameStateManager.processSynchronizedMovesMapped(2, humanDirection, aiDirection);
+    }
 
     // Redraw once with both positions updated
     this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+
+    // If human reached a goal, ensure independent AI movement starts immediately
+    try {
+      const stateAfter = this.gameStateManager.getCurrentState();
+      const humanPos = (humanPlayerNumber === 1) ? stateAfter.player1 : stateAfter.player2;
+      const aiPos = (this.aiPlayerNumber === 1) ? stateAfter.player1 : stateAfter.player2;
+      const humanAtGoal = GameHelpers.isGoalReached(humanPos, stateAfter.currentGoals);
+      const aiAtGoal = GameHelpers.isGoalReached(aiPos, stateAfter.currentGoals);
+      if (humanAtGoal && !aiAtGoal && !this.aiMoveInterval) {
+        this.startIndependentAIMovement();
+      }
+    } catch (_) { /* noop */ }
 
     if (syncResult?.trialComplete) {
       this.handleTrialComplete(syncResult);
@@ -326,37 +504,51 @@ export class ExperimentManager {
 
   async makeAIMove() {
     const gameState = this.gameStateManager.getCurrentState();
-    if (!gameState.player2 || !gameState.currentGoals) return;
+    const aiPos = (this.aiPlayerNumber === 1) ? gameState.player1 : gameState.player2;
+    if (!aiPos || !gameState.currentGoals) return;
 
     // Don't move if AI is already at a goal
-    if (GameHelpers.isGoalReached(gameState.player2, gameState.currentGoals)) {
+    if (GameHelpers.isGoalReached(aiPos, gameState.currentGoals)) {
       return;
     }
 
     // Decide action depending on agent type
     let direction = null;
-    const p2Type = CONFIG.game.players.player2.type;
+    const aiType = (this.aiPlayerNumber === 1)
+      ? CONFIG.game.players.player1.type
+      : CONFIG.game.players.player2.type;
     const isGptAllowed = (gameState.experimentType === '2P2G' || gameState.experimentType === '2P3G');
     let gptError = null;
-    if (p2Type === 'gpt' && isGptAllowed) {
+
+    // Debug logging to help diagnose GPT trigger issues
+    console.log(`[DEBUG] makeAIMove - AI side: P${this.aiPlayerNumber} type: ${aiType}, ExperimentType: ${gameState.experimentType}, GPT allowed: ${isGptAllowed}`);
+
+    if (aiType === 'gpt' && isGptAllowed) {
+      console.log(`[DEBUG] Attempting GPT action...`);
       try {
-        direction = await this.gptClient.getNextAction({
-          ...gameState,
-          trialData: this.gameStateManager.getCurrentTrialData()
-        });
+        direction = await this.gptClient.getNextAction(
+          {
+            ...gameState,
+            trialData: this.gameStateManager.getCurrentTrialData()
+          },
+          { aiPlayerNumber: this.aiPlayerNumber }
+        );
+        console.log(`[DEBUG] GPT returned direction: ${direction}`);
       } catch (err) {
         gptError = err;
         console.warn('GPT agent failed, falling back to RL. Reason:', err?.message || err);
       }
+    } else {
+      console.log(`[DEBUG] Not using GPT - aiType: ${aiType}, isGptAllowed: ${isGptAllowed}`);
     }
 
     if (!direction) {
       if (!this.rlAgent) return;
       const aiAction = this.rlAgent.getAIAction(
         gameState.gridMatrix,
-        gameState.player2,
+        (this.aiPlayerNumber === 1) ? gameState.player1 : gameState.player2,
         gameState.currentGoals,
-        gameState.player1
+        (this.aiPlayerNumber === 1) ? gameState.player2 : gameState.player1
       );
       if (aiAction[0] === 0 && aiAction[1] === 0) {
         return; // No movement
@@ -375,7 +567,7 @@ export class ExperimentManager {
       }
     }
     if (direction) {
-      const moveResult = this.gameStateManager.processPlayerMove(2, direction);
+      const moveResult = this.gameStateManager.processPlayerMove(this.aiPlayerNumber, direction);
       this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
 
       if (moveResult.trialComplete) {
@@ -393,10 +585,11 @@ export class ExperimentManager {
     // Start independent AI movement at slower pace
     this.aiMoveInterval = setInterval(() => {
       const gameState = this.gameStateManager.getCurrentState();
-      if (!gameState.player2) return;
+      const aiPos = (this.aiPlayerNumber === 1) ? gameState.player1 : gameState.player2;
+      if (!aiPos) return;
 
       // Stop if AI reached a goal
-      if (GameHelpers.isGoalReached(gameState.player2, gameState.currentGoals)) {
+      if (GameHelpers.isGoalReached(aiPos, gameState.currentGoals)) {
         clearInterval(this.aiMoveInterval);
         this.aiMoveInterval = null;
         return;
@@ -464,14 +657,28 @@ export class ExperimentManager {
       clearInterval(this.newGoalIntervalId);
       this.newGoalIntervalId = null;
     }
+    // Reset debug logging flag for this setup
+    this._loggedFallbackMode = false;
 
     const intervalId = setInterval(() => {
       // In human-human mode, only the host (playerIndex 0) should generate the new goal
-      if (CONFIG.game.players.player2.type === 'human') {
+      // After fallback to AI, we should continue generating goals (no longer need host restriction)
+      const isCurrentlyHumanHuman = (CONFIG.game.players.player1.type === 'human' && CONFIG.game.players.player2.type === 'human');
+      if (isCurrentlyHumanHuman) {
         const isHost = !!this.timelineManager && this.timelineManager.playerIndex === 0;
         if (!isHost) {
           return; // Non-host waits for host to broadcast state
         }
+      }
+      // After AI fallback, both human-AI combinations should generate goals locally
+
+      // Debug logging for fallback scenarios (only log once per setup)
+      if (!isCurrentlyHumanHuman && !this._loggedFallbackMode) {
+        // This means we're in human-AI mode (either originally or after fallback)
+        const p1Type = CONFIG.game.players.player1.type;
+        const p2Type = CONFIG.game.players.player2.type;
+        console.log(`[DEBUG] New goal check active in human-AI mode: P1=${p1Type}, P2=${p2Type}, aiPlayerNumber=${this.aiPlayerNumber}`);
+        this._loggedFallbackMode = true;
       }
 
       // Use live internal references to avoid mutating getter copies
@@ -488,11 +695,25 @@ export class ExperimentManager {
       if (!state.player1 || !state.player2) return;
 
       const distanceCondition = trial.distanceCondition || trial.newGoalConditionType || CONFIG.twoP3G.distanceConditions.CLOSER_TO_PLAYER2;
-      const gen = NewGoalGenerator.checkNewGoalPresentation2P3G(
+      let gen = NewGoalGenerator.checkNewGoalPresentation2P3G(
         this.gameStateManager.getCurrentState(),
         this.gameStateManager.getCurrentTrialData(),
         distanceCondition
       );
+      // Fallback: if we previously detected a shared goal but missed generation timing,
+      // synthesize the new goal directly from the recorded shared goal index
+      if (!gen && typeof trial.firstDetectedSharedGoal === 'number' && trial.firstDetectedSharedGoal !== null) {
+        try {
+          const direct = NewGoalGenerator.generateNewGoal(
+            state.player2, state.player1, state.currentGoals,
+            trial.firstDetectedSharedGoal, distanceCondition
+          );
+          if (direct && direct.position) {
+            gen = direct;
+          }
+        } catch (_) { /* ignore fallback errors */ }
+      }
+
       if (!gen) return;
 
       // Apply changes to internal state via GameStateManager APIs
@@ -511,7 +732,8 @@ export class ExperimentManager {
       this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
 
       // Broadcast synchronized state to partner in human-human mode
-      if (CONFIG.game.players.player2.type === 'human') {
+      // After AI fallback, no network sync needed since AI is local
+      if (isCurrentlyHumanHuman) {
         try {
           const nm = window.__NETWORK_MANAGER__;
           if (nm && typeof nm.syncGameState === 'function') {
@@ -714,6 +936,13 @@ export class ExperimentManager {
       this.handleTrialFeedback(data);
     });
 
+    // Handle AI fallback activation from timeline
+    this.timelineManager.on('ai-fallback-activated', (data) => {
+      console.log('[DEBUG] ExperimentManager received ai-fallback-activated event:', data);
+      const { fallbackType, aiPlayerNumber } = data;
+      this.activateAIFallback(fallbackType, aiPlayerNumber);
+    });
+
     console.log('✅ Timeline integration setup completed');
   }
 
@@ -826,16 +1055,18 @@ export class ExperimentManager {
     this.clearGameIntervals();
 
     // Determine success based on experiment type
-    let success;
     const currentTrialData = this.gameStateManager.getCurrentTrialData();
     const experimentType = this.gameStateManager.getCurrentState().experimentType;
-
-    if (experimentType.startsWith('1P')) {
-      // Single player experiments - use the success flag
-      success = result.success || result.trialComplete;
+    let success;
+    if (experimentType && experimentType.startsWith('1P')) {
+      // Single player experiments - use result success
+      success = !!(result.success || result.trialComplete);
     } else {
-      // 2P experiments - use collaboration success
-      success = currentTrialData.collaborationSucceeded;
+      // 2P experiments - use collaboration success (coerce to boolean; default false)
+      if (typeof currentTrialData.collaborationSucceeded !== 'boolean') {
+        currentTrialData.collaborationSucceeded = false;
+      }
+      success = currentTrialData.collaborationSucceeded === true;
     }
 
     // Finalize trial data

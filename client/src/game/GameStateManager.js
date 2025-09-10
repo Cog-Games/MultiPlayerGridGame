@@ -52,7 +52,16 @@ export class GameStateManager {
       newGoalConditionType: null,
       newGoalPresented: false,
       isNewGoalCloserToPlayer2: null,
-      collaborationSucceeded: undefined
+      collaborationSucceeded: undefined,
+      // Fallback logging: records when human-human switches to AI
+      partnerFallbackOccurred: false,
+      partnerFallbackReason: null, // 'disconnect' | 'waiting-timeout' | 'match-play-timeout' | 'no-partner-found'
+      partnerFallbackStage: null,  // 'waiting-for-partner' | 'match-play' | 'in-game'
+      partnerFallbackTime: null,
+      partnerFallbackAIType: null, // 'gpt' | 'joint-rl' | 'individual-rl' | etc.
+      // Which side is controlled by human vs AI (0-based index for consistency with app)
+      humanPlayerIndex: null,
+      aiPlayerIndex: null
     };
 
     this.experimentData = {
@@ -64,7 +73,9 @@ export class GameStateManager {
         experimentEndedEarly: false,
         lastSuccessTrial: -1,
         successHistory: []
-      }
+      },
+      // Experiment-level fallback event log
+      fallbackEvents: []
     };
 
     this.stepCount = 0;
@@ -108,6 +119,31 @@ export class GameStateManager {
     this.trialData.newGoalPresented = false;
     this.trialData.isNewGoalCloserToPlayer2 = null;
     this.trialData.collaborationSucceeded = undefined;
+    // Reset fallback flags for new trial
+    this.trialData.partnerFallbackOccurred = false;
+    this.trialData.partnerFallbackReason = null;
+    this.trialData.partnerFallbackStage = null;
+    this.trialData.partnerFallbackTime = null;
+    // Initialize who is human vs AI at trial start (for 2P modes)
+    try {
+      if (String(experimentType || '').includes('2P')) {
+        const t1 = CONFIG?.game?.players?.player1?.type;
+        const t2 = CONFIG?.game?.players?.player2?.type;
+        if (t1 === 'human' && t2 !== 'human') {
+          this.trialData.humanPlayerIndex = 0;
+          this.trialData.aiPlayerIndex = 1;
+        } else if (t2 === 'human' && t1 !== 'human') {
+          this.trialData.humanPlayerIndex = 1;
+          this.trialData.aiPlayerIndex = 0;
+        } else {
+          this.trialData.humanPlayerIndex = null;
+          this.trialData.aiPlayerIndex = null;
+        }
+      } else {
+        this.trialData.humanPlayerIndex = 0;
+        this.trialData.aiPlayerIndex = null;
+      }
+    } catch (_) { /* noop */ }
 
     // Add distance condition for trials (balanced sequence)
     if (experimentType === '2P3G') {
@@ -146,6 +182,52 @@ export class GameStateManager {
     // Update current state
     this.currentState.experimentType = experimentType;
     this.currentState.trialIndex = trialIndex;
+  }
+
+  // Record a human→AI fallback event for the current run (and current trial if any)
+  recordPartnerFallback({ reason = 'disconnect', stage = 'in-game', at = Date.now() } = {}) {
+    try {
+      // Determine AI type at fallback time (either side)
+      let aiTypeDesc = 'unknown';
+      try {
+        const p1 = CONFIG?.game?.players?.player1?.type;
+        const p2 = CONFIG?.game?.players?.player2?.type;
+        const t = (p1 !== 'human') ? p1 : ((p2 !== 'human') ? p2 : 'human');
+        if (t === 'gpt') {
+          const model = CONFIG?.game?.agent?.gpt?.model;
+          if (model && String(model).trim().length > 0) {
+            aiTypeDesc = String(model);
+          } else {
+            console.warn('⚠️ GPT model not cached in CONFIG for fallback recording, using configured default');
+            aiTypeDesc = 'gpt-4o'; // matches the configured GPT_MODEL in .env
+          }
+        } else if (t === 'rl_joint') aiTypeDesc = 'joint-rl';
+        else if (t === 'rl_individual') aiTypeDesc = 'individual-rl';
+        else if (t === 'human') aiTypeDesc = 'human';
+        else if (t === 'ai') aiTypeDesc = (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl';
+        else if (t) aiTypeDesc = String(t);
+      } catch (_) { /* noop */ }
+
+      // Tag current trial if active
+      if (this.trialData) {
+        this.trialData.partnerFallbackOccurred = true;
+        this.trialData.partnerFallbackReason = reason;
+        this.trialData.partnerFallbackStage = stage;
+        this.trialData.partnerFallbackTime = at;
+        this.trialData.partnerFallbackAIType = aiTypeDesc;
+      }
+      // Push experiment-level event
+      if (this.experimentData) {
+        const trialIdx = (this.currentState && Number.isInteger(this.currentState.trialIndex)) ? this.currentState.trialIndex : -1;
+        const experimentType = (this.currentState && this.currentState.experimentType) || null;
+        const evt = { reason, stage, at, trialIndex: trialIdx, experimentType, aiType: aiTypeDesc };
+        if (Array.isArray(this.experimentData.fallbackEvents)) {
+          this.experimentData.fallbackEvents.push(evt);
+        } else {
+          this.experimentData.fallbackEvents = [evt];
+        }
+      }
+    } catch (_) { /* noop */ }
   }
 
   // Record a GPT API error event during this trial
@@ -188,7 +270,7 @@ export class GameStateManager {
     }
 
     // Place player2 for 2P experiments
-    if (experimentType.includes('2P') && design.initAIGrid && design.initAIGrid.length >= 2) {
+    if (experimentType && experimentType.includes('2P') && design.initAIGrid && design.initAIGrid.length >= 2) {
       const [row, col] = design.initAIGrid;
       this.currentState.gridMatrix[row][col] = GAME_OBJECTS.ai_player;
       this.currentState.player2 = [row, col];
@@ -365,6 +447,57 @@ export class GameStateManager {
     }
   }
 
+  // Generalized synchronized move: specify which player is the human (1 or 2)
+  processSynchronizedMovesMapped(humanPlayerNumber, humanDirection, aiDirection) {
+    if (this.isMoving) {
+      return { success: false, reason: 'already_moving' };
+    }
+
+    this.isMoving = true;
+
+    try {
+      const results = { success: true, trialComplete: false };
+
+      const p1 = this.currentState.player1;
+      const p2 = this.currentState.player2;
+
+      const moveHuman = humanDirection ? DIRECTIONS[`arrow${humanDirection}`]?.movement : null;
+      const moveAI = aiDirection ? DIRECTIONS[`arrow${aiDirection}`]?.movement : null;
+
+      // Map to player1/player2 moves
+      const move1 = (humanPlayerNumber === 1) ? moveHuman : moveAI;
+      const move2 = (humanPlayerNumber === 2) ? moveHuman : moveAI;
+
+      const reactionTime = Date.now() - this.gameStartTime;
+
+      let next1 = p1;
+      if (p1 && move1 && !GameHelpers.isGoalReached(p1, this.currentState.currentGoals)) {
+        // Record as player1 move regardless of human/AI
+        this.recordPlayerMove(1, move1, reactionTime);
+        const real1 = GameHelpers.isValidMove(this.currentState.gridMatrix, p1, move1);
+        next1 = GameHelpers.transition(p1, real1);
+      }
+
+      let next2 = p2;
+      if (p2 && move2 && !GameHelpers.isGoalReached(p2, this.currentState.currentGoals)) {
+        this.recordPlayerMove(2, move2, reactionTime);
+        const real2 = GameHelpers.isValidMove(this.currentState.gridMatrix, p2, move2);
+        next2 = GameHelpers.transition(p2, real2);
+      }
+
+      if (p1 && next1 && (next1 !== p1)) this.updatePlayerPosition(1, p1, next1);
+      if (p2 && next2 && (next2 !== p2)) this.updatePlayerPosition(2, p2, next2);
+
+      if (p1 && move1) this.detectAndRecordGoals(1, move1);
+      if (p2 && move2) this.detectAndRecordGoals(2, move2);
+
+      results.trialComplete = this.checkTrialCompletion();
+      return results;
+    } finally {
+      setTimeout(() => { this.isMoving = false; }, 100);
+    }
+  }
+
   updatePlayerPosition(playerIndex, oldPos, newPos) {
     const objectType = playerIndex === 1 ? GAME_OBJECTS.player : GAME_OBJECTS.ai_player;
 
@@ -477,9 +610,49 @@ export class GameStateManager {
   }
 
   finalizeTrial(success) {
-    this.trialData.completed = success;
+    // Ensure collaborationSucceeded is explicitly boolean for 2P experiments
+    try {
+      const is2P = this.currentState && typeof this.currentState.experimentType === 'string' && this.currentState.experimentType.includes('2P');
+      if (is2P && typeof this.trialData.collaborationSucceeded !== 'boolean') {
+        this.trialData.collaborationSucceeded = false;
+      }
+    } catch (_) { /* noop */ }
+
+    this.trialData.completed = !!success;
     this.trialData.endTime = Date.now();
     this.trialData.totalSteps = this.stepCount;
+
+    // Normalize partnerAgentType just before saving to ensure it reflects current AI model/mode
+    try {
+      const is2P = this.currentState && String(this.currentState.experimentType || '').includes('2P');
+      if (is2P) {
+        const recorded = String(this.trialData.partnerAgentType || '').trim();
+        const computed = this.getPartnerAgentType(this.currentState.experimentType);
+        // If computed differs and is non-empty, prefer the computed (ensures exact GPT model string)
+        if (computed && recorded !== computed) {
+          this.trialData.partnerAgentType = computed;
+        }
+        // Upgrade fallback AI type to exact GPT model string if still generic 'gpt'
+        const model = CONFIG?.game?.agent?.gpt?.model;
+        if (this.trialData.partnerFallbackOccurred && model && /^gpt$/i.test(String(this.trialData.partnerFallbackAIType || ''))) {
+          this.trialData.partnerFallbackAIType = model;
+        }
+      }
+    } catch (_) { /* noop */ }
+
+    // Ensure newGoalPosition is recorded if a new goal was presented but position is missing
+    try {
+      if (this.trialData.newGoalPresented && (!this.trialData.newGoalPosition || this.trialData.newGoalPosition.length < 2)) {
+        const goals = Array.isArray(this.currentState?.currentGoals) ? this.currentState.currentGoals : [];
+        if (goals.length >= 3) {
+          // Heuristic: the last goal in the list is the newly added one
+          const last = goals[goals.length - 1];
+          if (Array.isArray(last) && last.length >= 2) {
+            this.trialData.newGoalPosition = [last[0], last[1]];
+          }
+        }
+      }
+    } catch (_) { /* noop */ }
 
     // Add to experiment data
     this.experimentData.allTrialsData.push({ ...this.trialData });
@@ -513,13 +686,28 @@ export class GameStateManager {
     // Determine partner agent description for recording/export
     try {
       if (!String(experimentType || '').includes('2P')) return 'none';
+      const p1 = CONFIG?.game?.players?.player1?.type;
       const p2 = CONFIG?.game?.players?.player2?.type;
-      if (p2 === 'human') return 'human';
-      if (p2 === 'gpt') return 'gpt';
-      if (p2 === 'rl_joint') return 'joint-rl';
-      if (p2 === 'rl_individual') return 'individual-rl';
-      if (p2 === 'ai') return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl'; // legacy safety
-      return String(p2 || 'unknown');
+      // Prefer whichever side is non-human as the partner agent type
+      const t = (p1 !== 'human') ? p1 : ((p2 !== 'human') ? p2 : 'human');
+      if (t === 'human') return 'human';
+      if (t === 'gpt') {
+        // Prefer exact GPT model name if available
+        const model = CONFIG?.game?.agent?.gpt?.model;
+        if (model && String(model).trim().length > 0) {
+          return String(model);
+        } else {
+          // If model not cached, try to fetch it synchronously as fallback
+          console.warn('⚠️ GPT model not cached in CONFIG, using fallback logic');
+          // For now, return a more specific default that matches the configured model
+          // This should be rarely hit if logCurrentAIModel() is properly awaited
+          return 'gpt-4o'; // matches the configured GPT_MODEL in .env
+        }
+      }
+      if (t === 'rl_joint') return 'joint-rl';
+      if (t === 'rl_individual') return 'individual-rl';
+      if (t === 'ai') return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl'; // legacy safety
+      return String(t || 'unknown');
     } catch (_) {
       return 'unknown';
     }
