@@ -11,6 +11,12 @@ export class GameStateManager {
     this.stepCount = 0;
     this.conditionSequences = {}; // Balanced condition sequences per experiment
 
+    // Real-time multiplayer synchronization
+    this.lastMoveTime = new Map(); // playerIndex -> timestamp
+    this.moveCounter = 0;
+    this.lastSyncTime = 0;
+    this.syncPending = false;
+
     this.reset();
   }
 
@@ -24,6 +30,9 @@ export class GameStateManager {
       trialIndex: 0,
       gameMode: 'human-ai'
     };
+
+    // Clear real-time synchronization state
+    this.clearRealTimeSync();
 
     this.trialData = {
       trialIndex: 0,
@@ -848,6 +857,60 @@ export class GameStateManager {
 
   getCurrentState() {
     return { ...this.currentState };
+  }
+
+  // Real-time movement synchronization methods
+
+  /**
+   * Process player move with throttling for real-time mode
+   */
+  processPlayerMoveRealTime(playerIndex, direction, timestamp = Date.now(), isLocal = false) {
+    const rtConfig = CONFIG.multiplayer.realTimeMovement;
+
+    // Check throttling
+    const lastMoveTime = this.lastMoveTime.get(playerIndex) || 0;
+    if (timestamp - lastMoveTime < rtConfig.moveThrottleDelay) {
+      return { success: false, reason: 'throttled' };
+    }
+
+    // Update last move time
+    this.lastMoveTime.set(playerIndex, timestamp);
+
+    // Process move immediately - no queuing
+    const result = this.processPlayerMove(playerIndex, direction);
+
+    // Add metadata
+    result.timestamp = timestamp;
+    result.isLocal = isLocal;
+    result.moveId = `move_${this.moveCounter++}_${playerIndex}_${timestamp}`;
+
+    return result;
+  }
+
+  /**
+   * Check if state sync is needed
+   */
+  shouldSyncState() {
+    const rtConfig = CONFIG.multiplayer.realTimeMovement;
+    const now = Date.now();
+    return now - this.lastSyncTime > rtConfig.stateSyncInterval;
+  }
+
+  /**
+   * Mark that state sync occurred
+   */
+  markStateSynced() {
+    this.lastSyncTime = Date.now();
+  }
+
+  /**
+   * Clear real-time synchronization state
+   */
+  clearRealTimeSync() {
+    this.lastMoveTime.clear();
+    this.moveCounter = 0;
+    this.lastSyncTime = 0;
+    this.syncPending = false;
   }
 
   getCurrentTrialData() {

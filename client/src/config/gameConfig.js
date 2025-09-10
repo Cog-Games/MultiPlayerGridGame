@@ -66,10 +66,10 @@ export const CONFIG = {
     // Experiment configuration
     experiments: {
       // order: ['1P2G'],
-      // order: [ '2P3G'],
+      order: [ '2P3G'],
       // order: ['1P2G','2P3G'],
       // order: ['2P2G', '2P3G'],
-      order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
+      // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
         '1P1G': 2, // 3
@@ -195,13 +195,24 @@ export const CONFIG = {
     syncInterval: 100,
     moveTimeout: 10000,
     // Human-human synchronized turns: both players input a move, then both apply together
-    synchronizedHumanTurns: true, // false for free movement
+    synchronizedHumanTurns: false, // false for free movement
     // Max wait (ms) on the "Game is Ready! Press SPACE" screen for the other
     // human to press space before falling back to AI partner
     matchPlayReadyTimeout: 10000,
     // Fallback AI partner type when human-human matching fails
     // Allowed: 'gpt' | 'rl_individual' | 'rl_joint'
-    fallbackAIType: 'gpt'
+    fallbackAIType: 'gpt',
+    // Real-time movement stabilization settings
+    realTimeMovement: {
+      // Minimum delay between moves to prevent spam (ms)
+      moveThrottleDelay: 100,
+      // Enable immediate local updates for responsiveness
+      immediateLocalUpdates: true,
+      // Periodic state synchronization interval (ms)
+      stateSyncInterval: 200,
+      // Move validation timeout (ms)
+      moveValidationTimeout: 1000
+    }
   }
 };
 

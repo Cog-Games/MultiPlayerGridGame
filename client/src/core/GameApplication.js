@@ -23,6 +23,11 @@ export class GameApplication {
     this._hhSync = {
       pendingMoves: { 0: null, 1: null }
     };
+
+    // Real-time synchronization state
+    this._rtSync = {
+      syncInterval: null
+    };
   }
 
   async start(options = {}) {
@@ -713,14 +718,32 @@ export class GameApplication {
     });
 
     this.networkManager.on('game-state-update', (gameState) => {
-      console.log('Game state update:', gameState);
-      this.gameStateManager.syncState(gameState);
-      // Redraw UI so both players see the synchronized map immediately
-      this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
-      // If using human-human synchronized turns in 2P experiments, clear any pending intents after a sync
-      if (GameConfigUtils.isSynchronizedHumanTurnsEnabled(this.gameStateManager?.getCurrentState?.()?.experimentType)) {
-        this._hhSync.pendingMoves[0] = null;
-        this._hhSync.pendingMoves[1] = null;
+      console.log('Game state update received');
+
+      // Check if we're in human-human real-time mode
+      const isHumanHuman = CONFIG.game.players.player1.type === 'human' &&
+                           CONFIG.game.players.player2.type === 'human';
+      const isSyncTurns = GameConfigUtils.isSynchronizedHumanTurnsEnabled(gameState?.experimentType);
+
+      // In real-time mode, only sync state periodically to avoid conflicts
+      if (isHumanHuman && !isSyncTurns) {
+        // Only sync if we haven't moved recently to avoid overriding local state
+        const canSync = this.gameStateManager.shouldSyncState();
+        if (canSync) {
+          this.gameStateManager.syncState(gameState);
+          this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+          this.gameStateManager.markStateSynced();
+        }
+      } else {
+        // Normal state sync for other modes
+        this.gameStateManager.syncState(gameState);
+        this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+
+        // Clear pending moves for synchronized turns
+        if (isSyncTurns) {
+          this._hhSync.pendingMoves[0] = null;
+          this._hhSync.pendingMoves[1] = null;
+        }
       }
     });
 
@@ -732,6 +755,10 @@ export class GameApplication {
 
     this.networkManager.on('disconnect', () => {
       console.log('Disconnected from server');
+
+      // Stop real-time synchronization on disconnect
+      this.stopRealTimeSync();
+
       this.uiManager.showError('Connection lost. Please refresh the page.');
     });
   }
@@ -814,15 +841,110 @@ export class GameApplication {
     // Hide lobby, show game
     this.uiManager.showGameScreen();
 
+    // Start real-time synchronization if in human-human mode
+    this.startRealTimeSync();
+
     // Configure multiplayer experiment
     await this.experimentManager.startMultiplayerExperiment(config);
+  }
+
+  startRealTimeSync() {
+    // Check if we need real-time synchronization
+    const isHumanHuman = CONFIG.game.players.player1.type === 'human' &&
+                         CONFIG.game.players.player2.type === 'human';
+
+    if (!isHumanHuman) return;
+
+    // Start periodic state synchronization to ensure consistency
+    this._rtSync.syncInterval = setInterval(() => {
+      if (this.networkManager && this.networkManager.isConnected) {
+        // Send periodic state sync to maintain consistency
+        if (this.gameStateManager.shouldSyncState()) {
+          this.networkManager.syncGameState(this.gameStateManager.getCurrentState());
+          this.gameStateManager.markStateSynced();
+        }
+      }
+    }, CONFIG.multiplayer.realTimeMovement.stateSyncInterval);
+
+    console.log('Real-time synchronization started');
+  }
+
+  stopRealTimeSync() {
+    if (this._rtSync.syncInterval) {
+      clearInterval(this._rtSync.syncInterval);
+      this._rtSync.syncInterval = null;
+    }
+
+    // Clear real-time sync state
+    if (this.gameStateManager && this.gameStateManager.clearRealTimeSync) {
+      this.gameStateManager.clearRealTimeSync();
+    }
+
+    console.log('Real-time synchronization stopped');
   }
 
   handlePlayerMove(direction) {
     // Use the correct player index (1-based for game logic, but add 1 since processPlayerMove expects 1 or 2)
     const playerNumber = this.playerIndex + 1; // Convert 0,1 to 1,2
+    const timestamp = Date.now();
 
-    // Process move locally
+    // Check if we're in human-human real-time mode
+    const isHumanHuman = this.networkManager && this.networkManager.isConnected &&
+                         CONFIG.game.players.player1.type === 'human' &&
+                         CONFIG.game.players.player2.type === 'human';
+
+    const isSyncTurns = GameConfigUtils.isSynchronizedHumanTurnsEnabled(
+      this.gameStateManager?.getCurrentState?.()?.experimentType
+    );
+
+    // Use real-time movement system for human-human free movement
+    if (isHumanHuman && !isSyncTurns) {
+      // Process move with real-time synchronization
+      const moveResult = this.gameStateManager.processPlayerMoveRealTime(
+        playerNumber,
+        direction,
+        timestamp,
+        true // isLocal
+      );
+
+      if (!moveResult.success) {
+        if (moveResult.reason === 'throttled') {
+          // Silently ignore throttled moves
+          return;
+        }
+        console.warn('Move rejected:', moveResult.reason);
+        return;
+      }
+
+      // Update UI immediately for local moves
+      this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+
+      // Send move with timestamp to network
+      if (this.networkManager.isConnected) {
+        this.networkManager.sendGameAction({
+          type: 'move',
+          direction: direction,
+          playerIndex: this.playerIndex,
+          timestamp: timestamp,
+          moveId: moveResult.moveId
+        });
+
+        // Sync full state periodically to ensure consistency
+        if (this.gameStateManager.shouldSyncState()) {
+          this.networkManager.syncGameState(this.gameStateManager.getCurrentState());
+          this.gameStateManager.markStateSynced();
+        }
+      }
+
+      // Check for trial completion
+      if (moveResult.trialComplete) {
+        this.handleTrialComplete(moveResult);
+      }
+
+      return;
+    }
+
+    // Original synchronous processing for other modes
     const moveResult = this.gameStateManager.processPlayerMove(playerNumber, direction);
 
     // Send to network if in multiplayer mode
@@ -831,7 +953,7 @@ export class GameApplication {
         type: 'move',
         direction,
         playerIndex: this.playerIndex,
-        timestamp: Date.now()
+        timestamp: timestamp
       });
     }
 
@@ -853,14 +975,35 @@ export class GameApplication {
 
       // Only process if it's not from the same player (avoid duplicate processing)
       if (action.playerIndex !== this.playerIndex) {
-        // Process remote player move
-        const moveResult = this.gameStateManager.processPlayerMove(remotePlayerNumber, action.direction);
+        // Check if we're in human-human real-time mode
+        const isHumanHuman = CONFIG.game.players.player1.type === 'human' &&
+                             CONFIG.game.players.player2.type === 'human';
 
-        // Update UI
+        const isSyncTurns = GameConfigUtils.isSynchronizedHumanTurnsEnabled(
+          this.gameStateManager?.getCurrentState?.()?.experimentType
+        );
+
+        let moveResult;
+
+        // Use real-time movement system for human-human free movement
+        if (isHumanHuman && !isSyncTurns) {
+          // Process remote move immediately with throttling
+          moveResult = this.gameStateManager.processPlayerMoveRealTime(
+            remotePlayerNumber,
+            action.direction,
+            action.timestamp || Date.now(),
+            false // isLocal = false
+          );
+        } else {
+          // Original synchronous processing for other modes
+          moveResult = this.gameStateManager.processPlayerMove(remotePlayerNumber, action.direction);
+        }
+
+        // Update UI immediately for synchronous processing or optimistic updates
         this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
 
         // Check for trial completion
-        if (moveResult.trialComplete) {
+        if (moveResult && moveResult.trialComplete) {
           this.handleTrialComplete(moveResult);
         }
       }
@@ -937,6 +1080,9 @@ export class GameApplication {
 
   // Cleanup
   destroy() {
+    // Stop real-time synchronization
+    this.stopRealTimeSync();
+
     if (this.networkManager) {
       this.networkManager.disconnect();
     }
