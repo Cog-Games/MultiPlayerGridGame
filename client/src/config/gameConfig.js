@@ -192,7 +192,7 @@ export const CONFIG = {
     matchPlayReadyTimeout: 10000,
     // Fallback AI partner type when human-human matching fails
     // Allowed: 'gpt' | 'rl_individual' | 'rl_joint'
-    fallbackAIType: 'rl_joint'
+    fallbackAIType: 'gpt'
   }
 };
 
