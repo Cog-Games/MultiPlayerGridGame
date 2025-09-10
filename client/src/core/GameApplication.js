@@ -717,8 +717,8 @@ export class GameApplication {
       this.gameStateManager.syncState(gameState);
       // Redraw UI so both players see the synchronized map immediately
       this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
-      // If using human-human synchronized turns, clear any pending intents after a sync
-      if (CONFIG?.multiplayer?.synchronizedHumanTurns) {
+      // If using human-human synchronized turns in 2P experiments, clear any pending intents after a sync
+      if (GameConfigUtils.isSynchronizedHumanTurnsEnabled(this.gameStateManager?.getCurrentState?.()?.experimentType)) {
         this._hhSync.pendingMoves[0] = null;
         this._hhSync.pendingMoves[1] = null;
       }
@@ -746,6 +746,19 @@ export class GameApplication {
 
     // Game actions
     this.uiManager.on('player-move', async (direction) => {
+      // Always allow free movement in single-player experiments (1P1G, 1P2G)
+      try {
+        const state = this.gameStateManager?.getCurrentState?.();
+        const expType = state?.experimentType || '';
+        const isTwoPlayerExperiment = String(expType).includes('2P');
+        const hasTwoPlayersInState = !!(state?.player1 && state?.player2);
+        if (!isTwoPlayerExperiment || !hasTwoPlayersInState) {
+          // In 1P games (or before 2P players are fully set), ignore any sync logic
+          this.handlePlayerMove(direction);
+          return;
+        }
+      } catch (_) { /* fall through to original logic */ }
+
       // If player2 is AI/GPT and synchronized moves are enabled, delegate to ExperimentManager
       // Determine if the other player (not me) is AI/GPT
       const otherIdx = (this.playerIndex === 0) ? 1 : 0;
@@ -754,7 +767,7 @@ export class GameApplication {
       const isAIPartner = otherType !== 'human';
 
       // Human-human synchronized turns: intercept and coordinate
-      const hhSyncEnabled = !!(CONFIG?.multiplayer?.synchronizedHumanTurns);
+      const hhSyncEnabled = GameConfigUtils.isSynchronizedHumanTurnsEnabled(this.gameStateManager?.getCurrentState?.()?.experimentType);
       const inNetworkedPlay = !!(this.networkManager && this.networkManager.isConnected);
       const isHumanHuman = !isAIPartner && inNetworkedPlay;
       if (hhSyncEnabled && isHumanHuman) {
@@ -856,7 +869,7 @@ export class GameApplication {
 
     // Human-human synchronized turns: collect partner's proposed move
     if (action.type === 'proposed-move') {
-      const hhSyncEnabled = !!(CONFIG?.multiplayer?.synchronizedHumanTurns);
+      const hhSyncEnabled = GameConfigUtils.isSynchronizedHumanTurnsEnabled(this.gameStateManager?.getCurrentState?.()?.experimentType);
       if (!hhSyncEnabled) return;
       const isHost = !!(typeof window !== 'undefined' && window.__IS_HOST__);
       const fromIdx = action.playerIndex;

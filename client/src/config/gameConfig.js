@@ -91,13 +91,13 @@ export const CONFIG = {
     // Timing configurations
     timing: {
       trialToFeedbackDelay: 500,
-      feedbackDisplayDuration: 2000,
+      feedbackDisplayDuration: 1000,
       preTrialDisplayDuration: 2000,
       fixationDuration: 1000,
       newGoalMessageDuration: 0,
       // Minimum and maximum time to wait for partner (ms)
       waitingForPartnerMinDuration: 5 * 1000,
-      waitingForPartnerMaxDuration: 180 * 1000
+      waitingForPartnerMaxDuration: 5 * 1000
     },
 
     // AI agent settings
@@ -275,5 +275,16 @@ export const GameConfigUtils = {
 
   getNumTrials(experimentType) {
     return CONFIG.game.experiments.numTrials[experimentType] || 12;
+  },
+
+  // Only enable synchronized human turns for two-player experiments
+  isSynchronizedHumanTurnsEnabled(experimentType) {
+    try {
+      const exp = String(experimentType || '').toUpperCase();
+      const isTwoPlayer = exp.includes('2P');
+      return isTwoPlayer && !!(CONFIG?.multiplayer?.synchronizedHumanTurns);
+    } catch (_) {
+      return false;
+    }
   }
 };
