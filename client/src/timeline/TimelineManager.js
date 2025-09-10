@@ -524,7 +524,7 @@ export class TimelineManager {
         // Notify app to record this fallback event
         try { this.emit('fallback-to-ai', { reason: 'waiting-timeout', stage: 'waiting-for-partner', at: Date.now() }); } catch (_) { /* noop */ }
         // Notify ExperimentManager to activate AI fallback
-        console.log(`[DEBUG] Timeline emitting ai-fallback-activated event (waiting timeout)`);
+        try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] Timeline emitting ai-fallback-activated event (waiting timeout)`); } catch (_) {}
         this.emit('ai-fallback-activated', { fallbackType, aiPlayerNumber: 2 });
         this.nextStage();
       }
@@ -625,15 +625,15 @@ export class TimelineManager {
             try {
               console.log(`⌛ Match-play wait exceeded (${readyTimeoutMs}ms) - falling back to AI mode`);
               const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
-              console.log(`[DEBUG] Timeline fallback - fallbackType: ${fallbackType}`);
+            try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] Timeline fallback - fallbackType: ${fallbackType}`); } catch (_) {}
               GameConfigUtils.setPlayerType(2, fallbackType);
-              console.log(`[DEBUG] Timeline fallback - After setPlayerType, Player2: ${CONFIG.game.players.player2.type}`);
+            try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] Timeline fallback - After setPlayerType, Player2: ${CONFIG.game.players.player2.type}`); } catch (_) {}
               this.gameMode = 'human-ai';
               // Clean up listener to avoid double-proceed if server emits later
               this.off('all-players-ready', allReadyHandler);
 
               // Notify ExperimentManager to activate AI fallback
-              console.log(`[DEBUG] Timeline emitting ai-fallback-activated event`);
+            try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] Timeline emitting ai-fallback-activated event`); } catch (_) {}
               this.emit('ai-fallback-activated', { fallbackType, aiPlayerNumber: 2 });
             } catch (_) { /* noop */ }
             this.nextStage();

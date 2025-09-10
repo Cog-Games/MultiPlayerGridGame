@@ -24,7 +24,7 @@ export class ExperimentManager {
 
     // Initialize map data with MapLoader
     this.mapLoader = mapLoader;
-    console.log('🗺️ ExperimentManager initialized with MapLoader');
+    try { if (!CONFIG?.debug?.disableConsoleLogs) console.log('🗺️ ExperimentManager initialized with MapLoader'); } catch (_) {}
 
     // Ensure map data is loaded
     this.ensureMapDataLoaded();
@@ -36,7 +36,7 @@ export class ExperimentManager {
   // Enable AI partner dynamically (e.g., when human partner disconnects)
   activateAIFallback(fallbackType = (CONFIG?.multiplayer?.fallbackAIType || 'rl_joint'), aiPlayerNumber = 2) {
     try {
-      console.log(`[DEBUG] activateAIFallback called - fallbackType: ${fallbackType}, aiPlayerNumber: ${aiPlayerNumber}`);
+      try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] activateAIFallback called - fallbackType: ${fallbackType}, aiPlayerNumber: ${aiPlayerNumber}`); } catch (_) {}
 
       // Update which player is controlled by AI
       this.aiPlayerNumber = (aiPlayerNumber === 1) ? 1 : 2;
@@ -46,7 +46,7 @@ export class ExperimentManager {
       GameConfigUtils.setPlayerType(this.aiPlayerNumber, fallbackType);
       GameConfigUtils.setPlayerType(humanPlayerNumber, 'human');
 
-      console.log(`[DEBUG] After setPlayerType - Player1: ${CONFIG.game.players.player1.type}, Player2: ${CONFIG.game.players.player2.type}`);
+      try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] After setPlayerType - Player1: ${CONFIG.game.players.player1.type}, Player2: ${CONFIG.game.players.player2.type}`); } catch (_) {}
 
       // Ensure RL agent exists for fallback when GPT is unavailable
       if (!this.rlAgent) {
@@ -79,12 +79,12 @@ export class ExperimentManager {
 
       // Set up AI movement listeners for the fallback AI
       if (!CONFIG?.game?.agent?.synchronizedMoves) {
-        console.log('[DEBUG] Setting up AI movement (non-synchronized mode)');
+        try { if (!CONFIG?.debug?.disableConsoleLogs) console.log('[DEBUG] Setting up AI movement (non-synchronized mode)'); } catch (_) {}
         this.setupAIMovement();
       } else {
         // In synchronized mode, no extra setup needed; AI moves are generated on human input
         console.log('🤖 AI fallback activated (synchronized moves)');
-        console.log('[DEBUG] Setting up independent AI movement after human goal');
+        try { if (!CONFIG?.debug?.disableConsoleLogs) console.log('[DEBUG] Setting up independent AI movement after human goal'); } catch (_) {}
         // But we still need to set up independent AI movement for when human reaches goal
         this.setupIndependentAIAfterHumanGoal();
       }
@@ -94,10 +94,10 @@ export class ExperimentManager {
       try {
         const currentExperimentType = this.gameStateManager?.currentState?.experimentType;
         if (currentExperimentType === '2P3G') {
-          console.log('[DEBUG] Restarting new goal checking for 2P3G after AI fallback');
+          try { if (!CONFIG?.debug?.disableConsoleLogs) console.log('[DEBUG] Restarting new goal checking for 2P3G after AI fallback'); } catch (_) {}
           this.setupNewGoalCheck2P3G();
         } else if (currentExperimentType === '1P2G') {
-          console.log('[DEBUG] Restarting new goal checking for 1P2G after AI fallback');
+          try { if (!CONFIG?.debug?.disableConsoleLogs) console.log('[DEBUG] Restarting new goal checking for 1P2G after AI fallback'); } catch (_) {}
           this.setupNewGoalCheck1P2G();
         }
       } catch (restartErr) {
@@ -528,10 +528,14 @@ export class ExperimentManager {
     let gptError = null;
 
     // Debug logging to help diagnose GPT trigger issues
-    console.log(`[DEBUG] makeAIMove - AI side: P${this.aiPlayerNumber} type: ${aiType}, ExperimentType: ${gameState.experimentType}, GPT allowed: ${isGptAllowed}`);
+    try {
+      if (!CONFIG?.debug?.disableConsoleLogs) {
+        console.log(`[DEBUG] makeAIMove - AI side: P${this.aiPlayerNumber} type: ${aiType}, ExperimentType: ${gameState.experimentType}, GPT allowed: ${isGptAllowed}`);
+      }
+    } catch (_) { /* noop */ }
 
     if (aiType === 'gpt' && isGptAllowed) {
-      console.log(`[DEBUG] Attempting GPT action...`);
+      try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] Attempting GPT action...`); } catch (_) {}
       try {
         direction = await this.gptClient.getNextAction(
           {
@@ -540,13 +544,13 @@ export class ExperimentManager {
           },
           { aiPlayerNumber: this.aiPlayerNumber }
         );
-        console.log(`[DEBUG] GPT returned direction: ${direction}`);
+        try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] GPT returned direction: ${direction}`); } catch (_) {}
       } catch (err) {
         gptError = err;
         console.warn('GPT agent failed, falling back to RL. Reason:', err?.message || err);
       }
     } else {
-      console.log(`[DEBUG] Not using GPT - aiType: ${aiType}, isGptAllowed: ${isGptAllowed}`);
+      try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] Not using GPT - aiType: ${aiType}, isGptAllowed: ${isGptAllowed}`); } catch (_) {}
     }
 
     if (!direction) {
@@ -684,7 +688,7 @@ export class ExperimentManager {
         // This means we're in human-AI mode (either originally or after fallback)
         const p1Type = CONFIG.game.players.player1.type;
         const p2Type = CONFIG.game.players.player2.type;
-        console.log(`[DEBUG] New goal check active in human-AI mode: P1=${p1Type}, P2=${p2Type}, aiPlayerNumber=${this.aiPlayerNumber}`);
+        try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] New goal check active in human-AI mode: P1=${p1Type}, P2=${p2Type}, aiPlayerNumber=${this.aiPlayerNumber}`); } catch (_) {}
         this._loggedFallbackMode = true;
       }
 
@@ -970,7 +974,7 @@ export class ExperimentManager {
 
     // Handle AI fallback activation from timeline
     this.timelineManager.on('ai-fallback-activated', (data) => {
-      console.log('[DEBUG] ExperimentManager received ai-fallback-activated event:', data);
+      try { if (!CONFIG?.debug?.disableConsoleLogs) console.log('[DEBUG] ExperimentManager received ai-fallback-activated event:', data); } catch (_) {}
       const { fallbackType, aiPlayerNumber } = data;
       this.activateAIFallback(fallbackType, aiPlayerNumber);
     });

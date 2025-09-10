@@ -75,7 +75,7 @@ export const CONFIG = {
         '1P1G': 2, // 3
         '1P2G': 4, // 12
         '2P2G': 2, // 8
-        '2P3G': 1, // 12
+        '2P3G': 8, // 12
       }
     },
 
@@ -97,7 +97,7 @@ export const CONFIG = {
       newGoalMessageDuration: 0,
       // Minimum and maximum time to wait for partner (ms)
       waitingForPartnerMinDuration: 5 * 1000,
-      waitingForPartnerMaxDuration: 6 * 1000
+      waitingForPartnerMaxDuration: 180 * 1000
     },
 
     // AI agent settings
