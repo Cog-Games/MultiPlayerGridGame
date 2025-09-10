@@ -2,6 +2,19 @@
 // Outputs one of: up | down | left | right
 // Server-side only. Reads config via process.env at call time.
 
+// Dedicated function to log the exact GPT prompt in a readable format
+function logExactPrompt(prompt) {
+  if (process.env.ENABLE_GPT_DEBUG === 'true') {
+    const timestamp = new Date().toISOString();
+    console.log(`\n${'='.repeat(80)}`);
+    console.log(`[GPT PROMPT ${timestamp}] EXACT PROMPT SENT TO GPT:`);
+    console.log(`${'='.repeat(80)}`);
+    console.log(prompt);
+    console.log(`${'='.repeat(80)}`);
+    console.log(`[END OF PROMPT - Length: ${prompt.length} characters]\n`);
+  }
+}
+
 // Build a compact matrix string for the prompt
 function formatMatrix(matrix) {
   // Expect a 2D array of integers: 0 blank, 1 p1, 2 p2, 3 goal, 4 obstacle
@@ -84,9 +97,14 @@ function buildPrompt({ matrix, currentPlayer, goals, memory, guidance /*, relati
     lines.push('');
   }
 
-  lines.push('Given the above information, reply with exactly one action token: up | down | left | right');
+  lines.push('Given the above information, choose the best action by replying with exactly one action token: up | down | left | right');
 
-  return lines.join('\n');
+  const finalPrompt = lines.join('\n');
+
+  // Log the exact prompt in a prominent, readable format
+  logExactPrompt(finalPrompt);
+
+  return finalPrompt;
 }
 
 function getDefaultModel() {
@@ -135,6 +153,7 @@ async function callOpenAIChat(prompt, { model = getDefaultModel(), temperature =
     resetTokens: resp.headers.get('x-ratelimit-reset-tokens')
   };
 
+
   return { content, usage, latencyMs, rate };
 }
 
@@ -143,10 +162,8 @@ export async function decideGptAction(payload) {
   const model = payload?.model || getDefaultModel();
   const temperature = typeof payload?.temperature === 'number' ? payload.temperature : 0;
 
-
   const result = await callOpenAIChat(prompt, { model, temperature });
   const raw = (result && typeof result === 'object') ? result.content : result;
-
 
   // Sanitize to allowed actions only
   const allowed = new Set(['up', 'down', 'left', 'right']);
@@ -158,7 +175,6 @@ export async function decideGptAction(payload) {
     }
   }
   if (!allowed.has(action)) action = 'right';
-
 
   return {
     action,

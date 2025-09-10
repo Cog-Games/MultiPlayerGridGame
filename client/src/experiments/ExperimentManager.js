@@ -294,7 +294,6 @@ export class ExperimentManager {
         if (resp.ok) {
           const info = await resp.json();
           const model = info?.model || '(unknown)';
-          console.log(`🤖 AI partner: GPT model = ${model}`);
           // Persist model for data recording
           try {
             if (model && model !== '(unknown)') {
@@ -348,8 +347,6 @@ export class ExperimentManager {
               } catch (_) { /* noop */ }
             }
           } catch (_) { /* ignore */ }
-        } else {
-          console.log('🤖 AI partner: GPT (failed to read model from server)');
         }
       } else if (p2Type === 'rl_joint' || p2Type === 'rl_individual' || p2Type === 'ai') {
         const mode = CONFIG?.game?.agent?.type || (p2Type === 'rl_joint' ? 'joint' : 'individual');
@@ -527,15 +524,8 @@ export class ExperimentManager {
     const isGptAllowed = (gameState.experimentType === '2P2G' || gameState.experimentType === '2P3G');
     let gptError = null;
 
-    // Debug logging to help diagnose GPT trigger issues
-    try {
-      if (!CONFIG?.debug?.disableConsoleLogs) {
-        console.log(`[DEBUG] makeAIMove - AI side: P${this.aiPlayerNumber} type: ${aiType}, ExperimentType: ${gameState.experimentType}, GPT allowed: ${isGptAllowed}`);
-      }
-    } catch (_) { /* noop */ }
 
     if (aiType === 'gpt' && isGptAllowed) {
-      try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] Attempting GPT action...`); } catch (_) {}
       try {
         direction = await this.gptClient.getNextAction(
           {
@@ -544,13 +534,10 @@ export class ExperimentManager {
           },
           { aiPlayerNumber: this.aiPlayerNumber }
         );
-        try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] GPT returned direction: ${direction}`); } catch (_) {}
       } catch (err) {
         gptError = err;
         console.warn('GPT agent failed, falling back to RL. Reason:', err?.message || err);
       }
-    } else {
-      try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] Not using GPT - aiType: ${aiType}, isGptAllowed: ${isGptAllowed}`); } catch (_) {}
     }
 
     if (!direction) {

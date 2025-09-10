@@ -176,6 +176,7 @@ app.post('/api/ai/gpt/action', async (req, res) => {
   try {
     const { guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory } = req.body || {};
 
+
     if (!Array.isArray(matrix) || matrix.length === 0) {
       return res.status(400).json({ error: 'Invalid matrix' });
     }
@@ -183,6 +184,8 @@ app.post('/api/ai/gpt/action', async (req, res) => {
       return res.status(400).json({ error: 'Invalid currentPlayer' });
     }
     const result = await decideGptAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory });
+
+
     // result: { action, usage, latencyMs, rate }
     res.json(result);
   } catch (err) {

@@ -162,6 +162,75 @@ Maps served via API from `/config/` directory:
 ```bash
 PORT=3001                    # Server port
 NODE_ENV=development         # Environment
+OPENAI_API_KEY=your_key      # Required for GPT agent
+ENABLE_GPT_DEBUG=true        # Enable detailed GPT prompt logging
+```
+
+## GPT Agent Debugging
+
+### Enable GPT Prompt Debugging
+To see detailed GPT prompts and responses in the terminal:
+
+**Option 1: Use the provided script**
+```bash
+./enable-gpt-debug.sh
+```
+
+**Option 2: Set environment variable manually**
+```bash
+export ENABLE_GPT_DEBUG=true
+npm run dev
+```
+
+**Option 3: Create .env file**
+```bash
+echo "ENABLE_GPT_DEBUG=true" >> .env
+npm run dev
+```
+
+### Debug Output
+When enabled, you'll see only the exact GPT prompt in the terminal - clean and focused logging.
+
+Example debug output:
+```
+================================================================================
+[GPT PROMPT 2024-01-15T10:30:45.125Z] EXACT PROMPT SENT TO GPT:
+================================================================================
+You are playing a navigation game in a 2d grid world with another player where you are hungry travelers need to reach restaurants as quickly as possible.
+Instructions for this game: Collaborate to choose the same restaurant as the other traveler.
+Here is current grid map and legend:
+Legend: 0=blank, 1=traveler1, 2=traveler2, 3=restaurant
+Grid:
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+Traveler1 at (7, 7)
+Traveler2 at (3, 3)
+Restaurants: (10, 10); (5, 5)
+You are traveler 2.
+
+Actions coordinate deltas:
+left = [0, -1]
+right = [0, 1]
+up = [-1, 0]
+down = [1, 0]
+
+Given the above information, reply with exactly one action token: up | down | left | right
+================================================================================
+[END OF PROMPT - Length: 1063 characters]
 ```
 
 ## Data Recording & Export

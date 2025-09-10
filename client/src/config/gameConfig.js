@@ -97,7 +97,7 @@ export const CONFIG = {
       newGoalMessageDuration: 0,
       // Minimum and maximum time to wait for partner (ms)
       waitingForPartnerMinDuration: 5 * 1000,
-      waitingForPartnerMaxDuration: 5 * 1000
+      waitingForPartnerMaxDuration: 5 * 1000 // 180 * 1000
     },
 
     // AI agent settings
