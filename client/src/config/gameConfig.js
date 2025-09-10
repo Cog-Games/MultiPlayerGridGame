@@ -61,14 +61,14 @@ export const CONFIG = {
       // order: ['1P2G'],
       // order: [ '2P3G'],
       // order: ['1P2G','2P3G'],
-      order: ['2P2G', '2P3G'],
-      // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
+      // order: ['2P2G', '2P3G'],
+      order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
-        '1P1G': 3, // 3
-        '1P2G': 12, // 12
-        '2P2G': 8, // 8
-        '2P3G': 12, // 12
+        '1P1G': 2, // 3
+        '1P2G': 4, // 12
+        '2P2G': 2, // 8
+        '2P3G': 4, // 12
       }
     },
 
