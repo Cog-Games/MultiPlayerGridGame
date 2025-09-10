@@ -304,7 +304,7 @@ export class TimelineManager {
             <p>Your participation in this research study is voluntary. You may withdraw at any time and you may choose not to answer any question, but you must proceed to the final screen of the study in order to receive your completion code, which you must submit in order to be paid.</p>
 
             <h4>Compensation</h4>
-            <p>You will receive $2 for your participation in this study, and an additional $0.50 bonus if you finish the task beyond a certain threshold.</p>
+            <p>You will receive $3 for your participation in this study, and an additional bonus (up to $1) if you finish the task beyond a certain threshold.</p>
 
             <h4>Contact Information</h4>
             <p>For questions about the study or for research-related complaints, concerns or suggestions about the research, contact Dr. Tamar Kushnir at (919) 660-5640 during regular business hours. For questions about your rights as a participant contact the Duke Campus Institutional Review Board at campusirb@duke.edu. Please reference Protocol ID# 2024-0427 in your email.</p>
