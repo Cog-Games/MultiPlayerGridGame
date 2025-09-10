@@ -1214,7 +1214,7 @@ export class TimelineManager {
   }
 
   showProlificRedirectStage() {
-    const code = (CONFIG?.game?.prolificCompletionCode) || this.experimentData.completionCode || 'CBBOSCQO';
+    const code = (CONFIG?.game?.prolificCompletionCode) || this.experimentData.completionCode || 'CTNDR8GV';
 
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
@@ -1407,7 +1407,7 @@ export class TimelineManager {
   }
 
   generateCompletionCode() {
-    return (CONFIG?.game?.prolificCompletionCode) || 'CBBOSCQO';
+    return (CONFIG?.game?.prolificCompletionCode) || 'CTNDR8GV';
   }
 
   /**
