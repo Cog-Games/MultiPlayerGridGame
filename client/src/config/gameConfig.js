@@ -68,8 +68,8 @@ export const CONFIG = {
       // order: ['1P2G'],
       // order: [ '2P3G'],
       // order: ['1P2G','2P3G'],
-      order: ['2P2G', '2P3G'],
-      // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
+      // order: ['2P2G', '2P3G'],
+      order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
         '1P1G': 2, // 3
@@ -97,7 +97,7 @@ export const CONFIG = {
       newGoalMessageDuration: 0,
       // Minimum and maximum time to wait for partner (ms)
       waitingForPartnerMinDuration: 5 * 1000,
-      waitingForPartnerMaxDuration: 180 * 1000 // 180 * 1000
+      waitingForPartnerMaxDuration: 300 * 1000 // 180 * 1000
     },
 
     // AI agent settings
