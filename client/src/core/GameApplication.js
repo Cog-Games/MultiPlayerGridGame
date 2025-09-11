@@ -358,7 +358,7 @@ export class GameApplication {
               'player1GoalReachedStep', 'player2GoalReachedStep',
               'newGoalPresented', 'newGoalPosition', 'distanceCondition', 'isNewGoalCloserToPlayer2',
               'trialStartTime', 'gptErrorEvents', 'currentPlayerIndex',
-              'player1Trajectory', 'player2Trajectory', 'player1Actions', 'player2Actions', 'player1RT',
+              'player1Trajectory', 'player2Trajectory', 'player1Actions', 'player2Actions', 'player1RT', 'player2RT',
               'player1CurrentGoal', 'player2CurrentGoal', 'player1FirstDetectedGoal', 'player2FirstDetectedGoal',
               'player1FinalReachedGoal', 'player2FinalReachedGoal', 'firstDetectedSharedGoal'
             ];

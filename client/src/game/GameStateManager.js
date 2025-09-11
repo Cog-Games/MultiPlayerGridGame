@@ -46,6 +46,7 @@ export class GameStateManager {
       player1Actions: [],
       player2Actions: [],
       player1RT: [],
+      player2RT: [],
       // Track which player made each move (for human-human mode analysis)
       currentPlayerIndex: [], // 0-based index (0 or 1) for each move
       trialStartTime: 0,
@@ -109,6 +110,7 @@ export class GameStateManager {
     this.trialData.player1Actions = [];
     this.trialData.player2Actions = [];
     this.trialData.player1RT = [];
+    this.trialData.player2RT = [];
     this.trialData.currentPlayerIndex = [];
     this.trialData.gptErrorEvents = [];
     this.trialData.player1CurrentGoal = [];
@@ -563,6 +565,7 @@ export class GameStateManager {
     } else {
       this.trialData.player2Actions.push(action);
       this.trialData.player2Trajectory.push([...player]);
+      this.trialData.player2RT.push(reactionTime);
     }
 
     // Record which player (0 or 1) made this move for human-human analysis
