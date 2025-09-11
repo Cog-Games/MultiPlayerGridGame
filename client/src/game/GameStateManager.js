@@ -128,6 +128,8 @@ export class GameStateManager {
     this.trialData.newGoalPresented = false;
     this.trialData.isNewGoalCloserToPlayer2 = null;
     this.trialData.collaborationSucceeded = undefined;
+    // Reset finalization flag for new trial
+    this.trialData._finalized = false;
     // Reset fallback flags for new trial
     this.trialData.partnerFallbackOccurred = false;
     this.trialData.partnerFallbackReason = null;
@@ -194,28 +196,48 @@ export class GameStateManager {
   }
 
   // Record a human→AI fallback event for the current run (and current trial if any)
-  recordPartnerFallback({ reason = 'disconnect', stage = 'in-game', at = Date.now() } = {}) {
+  recordPartnerFallback({ reason = 'disconnect', stage = 'in-game', at = Date.now(), fallbackAIType = null } = {}) {
     try {
-      // Determine AI type at fallback time (either side)
+      // Determine actual AI type being used as fallback
       let aiTypeDesc = 'unknown';
-      try {
-        const p1 = CONFIG?.game?.players?.player1?.type;
-        const p2 = CONFIG?.game?.players?.player2?.type;
-        const t = (p1 !== 'human') ? p1 : ((p2 !== 'human') ? p2 : 'human');
-        if (t === 'gpt') {
-          const model = CONFIG?.game?.agent?.gpt?.model;
-          if (model && String(model).trim().length > 0) {
-            aiTypeDesc = String(model);
+
+      if (fallbackAIType) {
+        // Use explicitly provided fallback AI type (preferred)
+        aiTypeDesc = this.normalizeAITypeName(fallbackAIType);
+      } else {
+        // Fallback: try to determine from current config
+        try {
+          const p1 = CONFIG?.game?.players?.player1?.type;
+          const p2 = CONFIG?.game?.players?.player2?.type;
+          const t = (p1 !== 'human') ? p1 : ((p2 !== 'human') ? p2 : null);
+
+          if (t === 'gpt') {
+            const model = CONFIG?.game?.agent?.gpt?.model;
+            if (model && String(model).trim().length > 0) {
+              aiTypeDesc = String(model);
+            } else {
+              console.warn('⚠️ GPT model not cached in CONFIG for fallback recording, using configured default');
+              aiTypeDesc = 'gpt-4o'; // matches the configured GPT_MODEL in .env
+            }
+          } else if (t === 'rl_joint') {
+            aiTypeDesc = 'joint-rl';
+          } else if (t === 'rl_individual') {
+            aiTypeDesc = 'individual-rl';
+          } else if (t === 'ai') {
+            aiTypeDesc = (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl';
+          } else if (t && t !== 'human') {
+            aiTypeDesc = String(t);
           } else {
-            console.warn('⚠️ GPT model not cached in CONFIG for fallback recording, using configured default');
-            aiTypeDesc = 'gpt-4o'; // matches the configured GPT_MODEL in .env
+            // No AI type found, use default fallback
+            const defaultFallback = CONFIG?.multiplayer?.fallbackAIType || 'rl_joint';
+            aiTypeDesc = this.normalizeAITypeName(defaultFallback);
           }
-        } else if (t === 'rl_joint') aiTypeDesc = 'joint-rl';
-        else if (t === 'rl_individual') aiTypeDesc = 'individual-rl';
-        else if (t === 'human') aiTypeDesc = 'human';
-        else if (t === 'ai') aiTypeDesc = (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl';
-        else if (t) aiTypeDesc = String(t);
-      } catch (_) { /* noop */ }
+        } catch (_) {
+          // Use default fallback if config parsing fails
+          const defaultFallback = CONFIG?.multiplayer?.fallbackAIType || 'rl_joint';
+          aiTypeDesc = this.normalizeAITypeName(defaultFallback);
+        }
+      }
 
       // Tag current trial if active
       if (this.trialData) {
@@ -619,6 +641,12 @@ export class GameStateManager {
   }
 
   finalizeTrial(success) {
+    // Prevent duplicate finalization
+    if (this.trialData._finalized) {
+      console.warn('Trial already finalized, skipping duplicate finalization');
+      return;
+    }
+
     // Ensure collaborationSucceeded is explicitly boolean for 2P experiments
     try {
       const is2P = this.currentState && typeof this.currentState.experimentType === 'string' && this.currentState.experimentType.includes('2P');
@@ -663,11 +691,75 @@ export class GameStateManager {
       }
     } catch (_) { /* noop */ }
 
+    // Fix missing goal values before saving
+    this.fixMissingGoalValues();
+
     // Add to experiment data
     this.experimentData.allTrialsData.push({ ...this.trialData });
 
+    // Mark as finalized to prevent duplicates
+    this.trialData._finalized = true;
+
     // Update success threshold tracking
     this.updateSuccessThreshold(success);
+  }
+
+  fixMissingGoalValues() {
+    const experimentType = this.currentState?.experimentType || '';
+
+    // For single-player experiments (1P1G, 1P2G), player2 doesn't exist
+    if (experimentType.startsWith('1P')) {
+      // Set player2FinalReachedGoal to -1 (not applicable)
+      this.trialData.player2FinalReachedGoal = -1;
+    } else if (experimentType.startsWith('2P')) {
+      // For 2-player experiments, if a player didn't reach any goal, set to -1
+      if (this.trialData.player1GoalReachedStep === -1 && this.trialData.player1FinalReachedGoal === null) {
+        this.trialData.player1FinalReachedGoal = -1;
+      }
+      if (this.trialData.player2GoalReachedStep === -1 && this.trialData.player2FinalReachedGoal === null) {
+        this.trialData.player2FinalReachedGoal = -1;
+      }
+    }
+  }
+
+  // Normalize AI type names for consistent recording
+  normalizeAITypeName(aiType) {
+    if (!aiType || typeof aiType !== 'string') {
+      return 'unknown';
+    }
+
+    const normalized = aiType.toLowerCase().trim();
+
+    switch (normalized) {
+      case 'gpt':
+        // Try to get specific GPT model
+        const model = CONFIG?.game?.agent?.gpt?.model;
+        return (model && String(model).trim()) ? String(model) : 'gpt-4o';
+      case 'rl_joint':
+      case 'joint':
+        return 'joint-rl';
+      case 'rl_individual':
+      case 'individual':
+        return 'individual-rl';
+      case 'ai':
+        // Default AI type based on config
+        return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl';
+      case 'human':
+        // This should never be used for fallback AI type!
+        console.error('❌ BUG: Attempted to set partnerFallbackAIType to "human" - using default instead');
+        const defaultFallback = CONFIG?.multiplayer?.fallbackAIType || 'rl_joint';
+        // Avoid infinite recursion by handling the default directly
+        if (defaultFallback === 'rl_joint') return 'joint-rl';
+        if (defaultFallback === 'rl_individual') return 'individual-rl';
+        if (defaultFallback === 'gpt') {
+          const model = CONFIG?.game?.agent?.gpt?.model;
+          return (model && String(model).trim()) ? String(model) : 'gpt-4o';
+        }
+        return 'joint-rl'; // ultimate fallback
+      default:
+        // Return as-is for specific models (e.g., 'gpt-4o-mini')
+        return aiType;
+    }
   }
 
   updateSuccessThreshold(success) {

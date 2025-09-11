@@ -261,10 +261,10 @@ export class GameApplication {
     // Record AI fallback events initiated by the timeline (waiting/match timeouts)
     this.timelineManager.on('fallback-to-ai', (payload) => {
       try {
-        const { reason = 'unknown', stage = 'waiting-for-partner', at = Date.now() } = payload || {};
+        const { reason = 'unknown', stage = 'waiting-for-partner', at = Date.now(), fallbackAIType = null } = payload || {};
         // Best-effort: ensure exact GPT model cached before recording
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
-        this.gameStateManager?.recordPartnerFallback?.({ reason, stage, at });
+        this.gameStateManager?.recordPartnerFallback?.({ reason, stage, at, fallbackAIType });
         // Proactively fetch and persist GPT model so fallback AI type can be exact (e.g., gpt-4o)
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
       } catch (_) { /* noop */ }
@@ -614,7 +614,7 @@ export class GameApplication {
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
         // Record fallback event for export (no UI message)
         try {
-          this.gameStateManager?.recordPartnerFallback?.({ reason: 'disconnect', stage: 'in-game', at: Date.now() });
+          this.gameStateManager?.recordPartnerFallback?.({ reason: 'disconnect', stage: 'in-game', at: Date.now(), fallbackAIType: fallbackType });
         } catch (_) { /* noop */ }
         // Post-upgrade in case model resolved after recording
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
@@ -652,7 +652,7 @@ export class GameApplication {
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
         // Record fallback event for export (no UI message)
         try {
-          this.gameStateManager?.recordPartnerFallback?.({ reason: 'disconnect', stage: 'in-game', at: Date.now() });
+          this.gameStateManager?.recordPartnerFallback?.({ reason: 'disconnect', stage: 'in-game', at: Date.now(), fallbackAIType: fallbackType });
         } catch (_) { /* noop */ }
         // Post-upgrade in case model resolved after recording
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }

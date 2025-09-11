@@ -778,7 +778,8 @@ export class ExperimentManager {
     // Clear intervals
     this.clearGameIntervals();
 
-    // Finalize trial data
+    // Note: finalizeTrial is handled by handleTimelineTrialComplete when using timeline
+    // For standalone mode, finalize trial data
     this.gameStateManager.finalizeTrial(result.success || result.trialComplete);
 
     // Show feedback

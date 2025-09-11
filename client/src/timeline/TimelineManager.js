@@ -475,7 +475,7 @@ export class TimelineManager {
         console.log('⏭️ Skipping multiplayer waiting after min wait - continuing with AI partner');
         const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
         GameConfigUtils.setPlayerType(2, fallbackType);
-        try { this.emit('fallback-to-ai', { reason: 'waiting-skip', stage: 'waiting-for-partner', at: Date.now() }); } catch (_) { /* noop */ }
+        try { this.emit('fallback-to-ai', { reason: 'waiting-skip', stage: 'waiting-for-partner', at: Date.now(), fallbackAIType: fallbackType }); } catch (_) { /* noop */ }
         this.nextStage();
       }
     };
@@ -522,7 +522,7 @@ export class TimelineManager {
         this.gameMode = 'human-ai';
         document.removeEventListener('keydown', handleSkipWaiting);
         // Notify app to record this fallback event
-        try { this.emit('fallback-to-ai', { reason: 'waiting-timeout', stage: 'waiting-for-partner', at: Date.now() }); } catch (_) { /* noop */ }
+        try { this.emit('fallback-to-ai', { reason: 'waiting-timeout', stage: 'waiting-for-partner', at: Date.now(), fallbackAIType: fallbackType }); } catch (_) { /* noop */ }
         // Notify ExperimentManager to activate AI fallback
         try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] Timeline emitting ai-fallback-activated event (waiting timeout)`); } catch (_) {}
         this.emit('ai-fallback-activated', { fallbackType, aiPlayerNumber: 2 });
@@ -653,7 +653,8 @@ export class TimelineManager {
 
           // Arm the timeout after we start listening for readiness
           timeoutId = setTimeout(() => {
-            try { this.emit('fallback-to-ai', { reason: 'match-play-timeout', stage: 'match-play', at: Date.now() }); } catch (_) { /* noop */ }
+            const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
+            try { this.emit('fallback-to-ai', { reason: 'match-play-timeout', stage: 'match-play', at: Date.now(), fallbackAIType: fallbackType }); } catch (_) { /* noop */ }
             fallbackToAI();
           }, readyTimeoutMs);
         } else {
