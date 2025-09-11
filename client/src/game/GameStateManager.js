@@ -962,8 +962,51 @@ export class GameStateManager {
       // Swallow sync inference errors to avoid destabilizing gameplay
     }
 
-    // Merge remote state with local state, preserving goals that exist locally but not remotely
+    // 🔧 FIX: Prevent position rollback in real-time mode by checking move timestamps
     const mergedState = { ...this.currentState, ...remoteState };
+
+    // Special protection for player positions in real-time mode
+    const rtConfig = CONFIG.multiplayer.realTimeMovement;
+    const now = Date.now();
+
+    // Check if we should preserve local player positions to prevent snap-back
+    if (rtConfig && this.currentState) {
+      // For each player, check if we have recent local moves that should not be overwritten
+      [1, 2].forEach(playerNum => {
+        const playerKey = `player${playerNum}`;
+        const localPos = this.currentState[playerKey];
+        const remotePos = remoteState[playerKey];
+
+        if (localPos && remotePos) {
+          // Check if we have a recent local move for this player
+          const lastLocalMoveTime = this.lastMoveTime.get(playerNum) || 0;
+          const timeSinceLastMove = now - lastLocalMoveTime;
+
+          // If we moved this player recently, preserve local position
+          // This prevents remote sync from overwriting fresh local moves
+          const protectionWindow = rtConfig.localMoveProtectionWindow || 300;
+          if (timeSinceLastMove < protectionWindow) {
+            console.log(`🔧 [ROLLBACK FIX] Preserving local position for player${playerNum} (moved ${timeSinceLastMove}ms ago)`);
+            mergedState[playerKey] = localPos;
+
+            // Also update the grid matrix to reflect the preserved position
+            if (mergedState.gridMatrix && Array.isArray(localPos) && localPos.length === 2) {
+              const [row, col] = localPos;
+              if (row >= 0 && row < mergedState.gridMatrix.length &&
+                  col >= 0 && col < mergedState.gridMatrix[0].length) {
+                // Clear remote position if different
+                if (Array.isArray(remotePos) &&
+                    (remotePos[0] !== localPos[0] || remotePos[1] !== localPos[1])) {
+                  mergedState.gridMatrix[remotePos[0]][remotePos[1]] = GAME_OBJECTS.blank;
+                }
+                // Set local position
+                mergedState.gridMatrix[row][col] = playerNum;
+              }
+            }
+          }
+        }
+      });
+    }
 
     // Special handling for currentGoals to prevent goal disappearance in 2P3G
     if (this.currentState?.experimentType === '2P3G' || remoteState?.experimentType === '2P3G') {
@@ -1029,6 +1072,22 @@ export class GameStateManager {
     const rtConfig = CONFIG.multiplayer.realTimeMovement;
     const now = Date.now();
     return now - this.lastSyncTime > rtConfig.stateSyncInterval;
+  }
+
+  /**
+   * Check if we have recent local moves that should not be overwritten
+   */
+  hasRecentLocalMoves() {
+    const now = Date.now();
+    const recentThreshold = 250; // 250ms threshold for "recent" moves
+
+    // Check if any player has moved recently
+    for (const [playerNum, lastMoveTime] of this.lastMoveTime.entries()) {
+      if (now - lastMoveTime < recentThreshold) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

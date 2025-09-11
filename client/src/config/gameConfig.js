@@ -208,10 +208,12 @@ export const CONFIG = {
       moveThrottleDelay: 100,
       // Enable immediate local updates for responsiveness
       immediateLocalUpdates: true,
-      // Periodic state synchronization interval (ms)
-      stateSyncInterval: 200,
+      // Periodic state synchronization interval (ms) - increased to reduce conflicts
+      stateSyncInterval: 300,
       // Move validation timeout (ms)
-      moveValidationTimeout: 1000
+      moveValidationTimeout: 1000,
+      // Time window to protect recent local moves from being overwritten (ms)
+      localMoveProtectionWindow: 300
     }
   }
 };

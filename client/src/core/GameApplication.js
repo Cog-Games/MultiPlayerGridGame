@@ -729,12 +729,18 @@ export class GameApplication {
 
       // In real-time mode, only sync state periodically to avoid conflicts
       if (isHumanHuman && !isSyncTurns) {
-        // Only sync if we haven't moved recently to avoid overriding local state
+        // 🔧 FIX: More conservative sync conditions to prevent position rollback
         const canSync = this.gameStateManager.shouldSyncState();
-        if (canSync) {
+        const hasRecentLocalMoves = this.gameStateManager.hasRecentLocalMoves();
+
+        // Only sync if enough time has passed AND we don't have very recent local moves
+        if (canSync && !hasRecentLocalMoves) {
+          console.log('🔄 Syncing remote state (no recent local moves)');
           this.gameStateManager.syncState(gameState);
           this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
           this.gameStateManager.markStateSynced();
+        } else if (hasRecentLocalMoves) {
+          console.log('⏸️ Skipping sync - recent local moves detected');
         }
       } else {
         // Normal state sync for other modes
