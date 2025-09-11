@@ -46,6 +46,8 @@ export class GameStateManager {
       player1Actions: [],
       player2Actions: [],
       player1RT: [],
+      // Track which player made each move (for human-human mode analysis)
+      currentPlayerIndex: [], // 0-based index (0 or 1) for each move
       trialStartTime: 0,
       player1GoalReachedStep: -1,
       player2GoalReachedStep: -1,
@@ -107,6 +109,7 @@ export class GameStateManager {
     this.trialData.player1Actions = [];
     this.trialData.player2Actions = [];
     this.trialData.player1RT = [];
+    this.trialData.currentPlayerIndex = [];
     this.trialData.gptErrorEvents = [];
     this.trialData.player1CurrentGoal = [];
     this.trialData.player2CurrentGoal = [];
@@ -357,7 +360,7 @@ export class GameStateManager {
     }
   }
 
-  processPlayerMove(playerIndex, direction) {
+  processPlayerMove(playerIndex, direction, currentPlayerIndex = null) {
     if (this.isMoving) {
       return { success: false, reason: 'already_moving' };
     }
@@ -383,7 +386,7 @@ export class GameStateManager {
 
       // Record the move
       const reactionTime = Date.now() - this.gameStartTime;
-      this.recordPlayerMove(playerIndex, movement, reactionTime);
+      this.recordPlayerMove(playerIndex, movement, reactionTime, currentPlayerIndex);
 
       // Calculate new position
       const realAction = GameHelpers.isValidMove(this.currentState.gridMatrix, player, movement);
@@ -546,7 +549,7 @@ export class GameStateManager {
     }
   }
 
-  recordPlayerMove(playerIndex, action, reactionTime) {
+  recordPlayerMove(playerIndex, action, reactionTime, currentPlayerIndex = null) {
     const player = playerIndex === 1 ? this.currentState.player1 : this.currentState.player2;
 
     if (playerIndex === 1) {
@@ -556,6 +559,15 @@ export class GameStateManager {
     } else {
       this.trialData.player2Actions.push(action);
       this.trialData.player2Trajectory.push([...player]);
+    }
+
+    // Record which player (0 or 1) made this move for human-human analysis
+    // If currentPlayerIndex is not provided, infer from playerIndex (assuming player1=0, player2=1)
+    if (currentPlayerIndex !== null) {
+      this.trialData.currentPlayerIndex.push(currentPlayerIndex);
+    } else {
+      // Default behavior: player1 -> 0, player2 -> 1
+      this.trialData.currentPlayerIndex.push(playerIndex === 1 ? 0 : 1);
     }
   }
 
@@ -956,7 +968,7 @@ export class GameStateManager {
   /**
    * Process player move with throttling for real-time mode
    */
-  processPlayerMoveRealTime(playerIndex, direction, timestamp = Date.now(), isLocal = false) {
+  processPlayerMoveRealTime(playerIndex, direction, timestamp = Date.now(), isLocal = false, currentPlayerIndex = null) {
     const rtConfig = CONFIG.multiplayer.realTimeMovement;
 
     // Check throttling
@@ -969,7 +981,7 @@ export class GameStateManager {
     this.lastMoveTime.set(playerIndex, timestamp);
 
     // Process move immediately - no queuing
-    const result = this.processPlayerMove(playerIndex, direction);
+    const result = this.processPlayerMove(playerIndex, direction, currentPlayerIndex);
 
     // Add metadata
     result.timestamp = timestamp;

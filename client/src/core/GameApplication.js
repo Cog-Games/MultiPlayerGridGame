@@ -332,6 +332,8 @@ export class GameApplication {
               o.roomId = exportObj.roomId || '';
               // Add participantId per row for easier analysis join
               o.participantId = exportObj.participantId;
+              // Add current player number (1 or 2) for human-human mode analysis
+              o.currentPlayer = (this.playerIndex !== undefined) ? (this.playerIndex + 1) : null;
               // Legacy naming: prefer distanceCondition in exports
               if (o.newGoalConditionType && !o.distanceCondition) {
                 o.distanceCondition = o.newGoalConditionType;
@@ -348,17 +350,17 @@ export class GameApplication {
             // Prefer a sensible column order for readability; include common fields first if present
             const preferredOrder = [
               'trialIndex', 'experimentType', 'partnerAgentType',
+              'currentPlayer', 'participantId', 'roomId',
               'humanPlayerIndex', 'aiPlayerIndex',
               'partnerFallbackOccurred', 'partnerFallbackReason', 'partnerFallbackStage', 'partnerFallbackTime',
               'partnerFallbackAIType',
               'collaborationSucceeded',
               'player1GoalReachedStep', 'player2GoalReachedStep',
               'newGoalPresented', 'newGoalPosition', 'distanceCondition', 'isNewGoalCloserToPlayer2',
-              'trialStartTime', 'gptErrorEvents', 'participantId',
+              'trialStartTime', 'gptErrorEvents', 'currentPlayerIndex',
               'player1Trajectory', 'player2Trajectory', 'player1Actions', 'player2Actions', 'player1RT',
               'player1CurrentGoal', 'player2CurrentGoal', 'player1FirstDetectedGoal', 'player2FirstDetectedGoal',
-              'player1FinalReachedGoal', 'player2FinalReachedGoal', 'firstDetectedSharedGoal',
-              'roomId'
+              'player1FinalReachedGoal', 'player2FinalReachedGoal', 'firstDetectedSharedGoal'
             ];
             const headers = [];
             // Add preferred keys that exist
@@ -904,7 +906,8 @@ export class GameApplication {
         playerNumber,
         direction,
         timestamp,
-        true // isLocal
+        true, // isLocal
+        this.playerIndex // currentPlayerIndex (0 or 1)
       );
 
       if (!moveResult.success) {
@@ -945,7 +948,7 @@ export class GameApplication {
     }
 
     // Original synchronous processing for other modes
-    const moveResult = this.gameStateManager.processPlayerMove(playerNumber, direction);
+    const moveResult = this.gameStateManager.processPlayerMove(playerNumber, direction, this.playerIndex);
 
     // Send to network if in multiplayer mode
     if (this.networkManager && this.networkManager.isConnected) {
@@ -992,11 +995,12 @@ export class GameApplication {
             remotePlayerNumber,
             action.direction,
             action.timestamp || Date.now(),
-            false // isLocal = false
+            false, // isLocal = false
+            action.playerIndex // currentPlayerIndex from remote player (0 or 1)
           );
         } else {
           // Original synchronous processing for other modes
-          moveResult = this.gameStateManager.processPlayerMove(remotePlayerNumber, action.direction);
+          moveResult = this.gameStateManager.processPlayerMove(remotePlayerNumber, action.direction, action.playerIndex);
         }
 
         // Update UI immediately for synchronous processing or optimistic updates
