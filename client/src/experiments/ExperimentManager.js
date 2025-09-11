@@ -714,6 +714,14 @@ export class ExperimentManager {
 
       if (!gen) return;
 
+      // Double-check that we haven't already presented a goal (race condition protection)
+      if (this.gameStateManager.trialData?.newGoalPresented) {
+        console.log('🔧 [RACE PROTECTION] Goal already presented, skipping duplicate generation');
+        return;
+      }
+
+      console.log('🎯 [GOAL GEN] Generating new goal at position:', gen.position);
+
       // Apply changes to internal state via GameStateManager APIs
       this.gameStateManager.addGoal(gen.position);
       const closerInfo = (typeof gen.distanceToPlayer2 === 'number' && typeof gen.distanceToPlayer1 === 'number')

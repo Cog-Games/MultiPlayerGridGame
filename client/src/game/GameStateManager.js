@@ -336,7 +336,11 @@ export class GameStateManager {
     if (row < 0 || row >= this.currentState.gridMatrix.length) return;
     if (col < 0 || col >= this.currentState.gridMatrix[0].length) return;
     // Do not add duplicate
-    if (this.currentState.currentGoals.some(g => g[0] === row && g[1] === col)) return;
+    if (this.currentState.currentGoals.some(g => g[0] === row && g[1] === col)) {
+      console.log(`🔧 [GOAL] Duplicate goal at [${row}, ${col}] not added`);
+      return;
+    }
+    console.log(`🎯 [GOAL] Adding goal at [${row}, ${col}]. Total goals: ${this.currentState.currentGoals.length + 1}`);
     this.currentState.gridMatrix[row][col] = GAME_OBJECTS.goal;
     this.currentState.currentGoals.push([row, col]);
   }
@@ -955,8 +959,32 @@ export class GameStateManager {
       // Swallow sync inference errors to avoid destabilizing gameplay
     }
 
-    // Merge remote state with local state
-    this.currentState = { ...this.currentState, ...remoteState };
+    // Merge remote state with local state, preserving goals that exist locally but not remotely
+    const mergedState = { ...this.currentState, ...remoteState };
+
+    // Special handling for currentGoals to prevent goal disappearance in 2P3G
+    if (this.currentState?.experimentType === '2P3G' || remoteState?.experimentType === '2P3G') {
+      const localGoals = Array.isArray(this.currentState?.currentGoals) ? this.currentState.currentGoals : [];
+      const remoteGoals = Array.isArray(remoteState?.currentGoals) ? remoteState.currentGoals : [];
+
+      // Use the version with more goals (prevents regression)
+      if (localGoals.length > remoteGoals.length) {
+        console.log(`🔧 [SYNC FIX] Preserving local goals (${localGoals.length}) over remote goals (${remoteGoals.length})`);
+        mergedState.currentGoals = localGoals;
+        // Also preserve the grid matrix with local goals
+        if (this.currentState?.gridMatrix) {
+          mergedState.gridMatrix = this.currentState.gridMatrix;
+        }
+      } else if (remoteGoals.length > localGoals.length) {
+        console.log(`🔧 [SYNC FIX] Accepting remote goals (${remoteGoals.length}) over local goals (${localGoals.length})`);
+        // Remote has more goals, ensure the grid matrix is updated to match
+        if (remoteState?.gridMatrix) {
+          mergedState.gridMatrix = remoteState.gridMatrix;
+        }
+      }
+    }
+
+    this.currentState = mergedState;
   }
 
   getCurrentState() {
