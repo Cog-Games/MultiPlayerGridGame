@@ -13,6 +13,8 @@ export class GameStateManager {
 
     // Real-time multiplayer synchronization
     this.lastMoveTime = new Map(); // playerIndex -> timestamp
+    // Track last local move time per player to protect against rollback only for local inputs
+    this.lastLocalMoveTime = new Map(); // playerIndex -> timestamp (local only)
     this.moveCounter = 0;
     this.lastSyncTime = 0;
     this.syncPending = false;
@@ -1053,9 +1055,21 @@ export class GameStateManager {
 
     // Update last move time
     this.lastMoveTime.set(playerIndex, timestamp);
+    if (isLocal) {
+      this.lastLocalMoveTime.set(playerIndex, timestamp);
+    }
 
-    // Process move immediately - no queuing
-    const result = this.processPlayerMove(playerIndex, direction, currentPlayerIndex);
+    // Process move immediately - bypass global movement lock for real-time interleaving
+    const originalIsMoving = this.isMoving;
+    let result;
+    try {
+      // Temporarily disable the movement lock to prevent dropping rapid interleaved moves
+      this.isMoving = false;
+      result = this.processPlayerMove(playerIndex, direction, currentPlayerIndex);
+    } finally {
+      // Restore original flag (processPlayerMove schedules its own reset as well)
+      this.isMoving = originalIsMoving;
+    }
 
     // Add metadata
     result.timestamp = timestamp;
@@ -1082,7 +1096,7 @@ export class GameStateManager {
     const recentThreshold = 250; // 250ms threshold for "recent" moves
 
     // Check if any player has moved recently
-    for (const [playerNum, lastMoveTime] of this.lastMoveTime.entries()) {
+    for (const [playerNum, lastMoveTime] of this.lastLocalMoveTime.entries()) {
       if (now - lastMoveTime < recentThreshold) {
         return true;
       }
@@ -1102,6 +1116,7 @@ export class GameStateManager {
    */
   clearRealTimeSync() {
     this.lastMoveTime.clear();
+    this.lastLocalMoveTime.clear();
     this.moveCounter = 0;
     this.lastSyncTime = 0;
     this.syncPending = false;
