@@ -18,7 +18,7 @@ export class NetworkManager {
         reject(new Error('Socket.IO not available. Please ensure the Socket.IO client is loaded.'));
         return;
       }
-      
+
       this.socket = io(CONFIG.server.url, {
         transports: ['websocket'],
         upgrade: false
@@ -35,20 +35,20 @@ export class NetworkManager {
         console.log('Disconnected from server:', reason);
         this.isConnected = false;
         this.emit('disconnect', reason);
-        
+
         // Auto-reconnect logic
         if (reason === 'io server disconnect') {
           // Server initiated disconnect - don't reconnect
           return;
         }
-        
+
         this.handleReconnection();
       });
 
       this.socket.on('connect_error', (error) => {
         console.error('Connection error:', error);
         this.isConnected = false;
-        
+
         if (this.reconnectAttempts === 0) {
           reject(error);
         }
@@ -56,7 +56,7 @@ export class NetworkManager {
 
       // Forward all socket events
       this.setupEventForwarding();
-      
+
       // Connection timeout
       setTimeout(() => {
         if (!this.isConnected) {
@@ -94,14 +94,37 @@ export class NetworkManager {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
       console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-      
+
+      // Emit reconnection attempt event
+      this.emit('reconnecting', { attempt: this.reconnectAttempts, maxAttempts: this.maxReconnectAttempts });
+
       setTimeout(() => {
         this.socket.connect();
       }, CONFIG.server.reconnectDelay * this.reconnectAttempts);
     } else {
       console.error('Max reconnection attempts reached');
-      this.emit('error', { message: 'Connection lost. Please refresh the page.' });
+      this.emit('error', {
+        message: 'Connection lost. Please refresh the page or try reconnecting.',
+        type: 'connection_lost',
+        canRetry: true
+      });
     }
+  }
+
+  // Manual retry connection
+  async retryConnection() {
+    if (this.socket && !this.isConnected) {
+      console.log('Manually retrying connection...');
+      this.reconnectAttempts = 0; // Reset attempts for manual retry
+      try {
+        await this.connect();
+        return true;
+      } catch (error) {
+        console.error('Manual reconnection failed:', error);
+        return false;
+      }
+    }
+    return false;
   }
 
   // Room management

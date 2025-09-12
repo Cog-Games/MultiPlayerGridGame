@@ -557,6 +557,44 @@ export class UIManager {
     console.log('✅ Game canvas set up in timeline container');
   }
 
+  // Connection lost error with retry option
+  showConnectionLostError(message, onRetry) {
+    this.container.innerHTML = `
+      <div style="text-align: center; padding: 20px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; margin: 20px;">
+        <h3 style="color: #721c24; margin-bottom: 15px;">⚠️ Connection Lost</h3>
+        <p style="color: #721c24; margin-bottom: 20px;">${message}</p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+          <button onclick="location.reload()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+            Refresh Page
+          </button>
+          <button id="retry-connection-btn" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+            Try Reconnecting
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Add retry button event listener
+    const retryBtn = document.getElementById('retry-connection-btn');
+    if (retryBtn && onRetry) {
+      retryBtn.addEventListener('click', onRetry);
+    }
+  }
+
+  // Reconnecting message
+  showReconnectingMessage(message) {
+    this.showGameStatus(message, 'info');
+  }
+
+  // Success message
+  showSuccessMessage(message) {
+    this.showGameStatus(message, 'success');
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+      this.showGameStatus('');
+    }, 3000);
+  }
+
   // Cleanup
   destroy() {
     if (this.keyboardHandler) {

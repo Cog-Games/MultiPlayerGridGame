@@ -93,6 +93,7 @@ export class GameStateManager {
     };
 
     this.stepCount = 0;
+    this.gameStartTime = 0; // Will be properly set in initializeTrial
     this.isMoving = false;
     this.conditionSequences = {};
   }
@@ -393,6 +394,11 @@ export class GameStateManager {
       }
 
       // Record the move
+      // Ensure gameStartTime is valid (not 0 or very old timestamp)
+      if (this.gameStartTime === 0 || (Date.now() - this.gameStartTime) > 60000) {
+        console.warn('Invalid gameStartTime detected, resetting to current time');
+        this.gameStartTime = Date.now();
+      }
       const reactionTime = Date.now() - this.gameStartTime;
       this.recordPlayerMove(playerIndex, movement, reactionTime, currentPlayerIndex);
 

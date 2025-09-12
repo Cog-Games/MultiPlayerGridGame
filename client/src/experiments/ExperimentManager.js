@@ -1021,6 +1021,18 @@ export class ExperimentManager {
     // Store completion callback
     this.currentTrialCompleteCallback = onComplete;
 
+    // Notify GameApplication to start inactivity tracking for human-human trials
+    try {
+      // Get GameApplication instance from window if available
+      const gameApp = window.__GAME_APPLICATION__;
+      if (gameApp && experimentType.includes('2P')) {
+        console.log('🔗 Notifying GameApplication of trial start for inactivity tracking');
+        gameApp.handleTrialStart?.(experimentType, experimentIndex, trialIndex);
+      }
+    } catch (error) {
+      console.warn('⚠️ Could not notify GameApplication of trial start:', error);
+    }
+
     try {
       // Get trial design (now async)
       let design = await this.getTrialDesign(experimentType, trialIndex);
@@ -1104,6 +1116,17 @@ export class ExperimentManager {
 
     // Clear intervals
     this.clearGameIntervals();
+
+    // Notify GameApplication to stop inactivity tracking
+    try {
+      const gameApp = window.__GAME_APPLICATION__;
+      if (gameApp) {
+        console.log('🔗 Notifying GameApplication of trial completion');
+        gameApp.handleTrialEnd?.();
+      }
+    } catch (error) {
+      console.warn('⚠️ Could not notify GameApplication of trial completion:', error);
+    }
 
     // Determine success based on experiment type
     const currentTrialData = this.gameStateManager.getCurrentTrialData();

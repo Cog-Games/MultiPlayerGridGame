@@ -28,6 +28,15 @@ export class GameApplication {
     this._rtSync = {
       syncInterval: null
     };
+
+    // Partner inactivity tracking for human-human mode
+    this._inactivityTracking = {
+      enabled: false,
+      partnerLastMoveTime: null,
+      inactivityTimerId: null,
+      inactivityTimeoutMs: CONFIG?.multiplayer?.inactivityFallback?.timeoutMs || 60000, // 1 minute
+      checkIntervalMs: CONFIG?.multiplayer?.inactivityFallback?.checkIntervalMs || 5000 // Check every 5 seconds
+    };
   }
 
   async start(options = {}) {
@@ -113,6 +122,9 @@ export class GameApplication {
 
     this.isInitialized = true;
 
+    // Make GameApplication available globally for ExperimentManager communication
+    try { window.__GAME_APPLICATION__ = this; } catch (_) { /* ignore */ }
+
     // Proactively fetch and cache GPT model for accurate recording (e.g., partnerFallbackAIType)
     try { await this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
   }
@@ -185,6 +197,85 @@ export class GameApplication {
         this.networkManager.setMatchPlayReady();
       } else {
         console.warn('⚠️ Network manager not available for match-play-ready');
+      }
+    });
+
+    // Handle partner status check from timeline
+    this.timelineManager.on('check-partner-status', async (data) => {
+      console.log('🔍 Timeline checking partner status...');
+
+      // Check if we have an active network connection and room
+      if (!this.networkManager || !this.networkManager.isConnected) {
+        console.log('❌ No network connection - switching to AI mode');
+        this.activateAIFallbackForExperiment(data.experimentType);
+        return;
+      }
+
+      // Check if we're in a room with other players
+      const isInRoom = !!this.currentRoomId;
+
+      if (!isInRoom) {
+        console.log('❌ Not in a room - switching to AI mode');
+        this.activateAIFallbackForExperiment(data.experimentType);
+        return;
+      }
+
+      // Try to ping the server to check room status
+      try {
+        // Send a ping to check if we're still connected and in a room
+        this.networkManager.socket.emit('ping-room-status');
+
+        // Wait for response with a timeout
+        const response = await new Promise((resolve) => {
+          const timeout = setTimeout(() => resolve(null), 2000); // 2 second timeout
+
+          this.networkManager.socket.once('room-status-response', (status) => {
+            clearTimeout(timeout);
+            resolve(status);
+          });
+        });
+
+        if (!response) {
+          console.log('❌ No response from server - switching to AI mode');
+          this.activateAIFallbackForExperiment(data.experimentType);
+          // Mark partner status as checked
+          if (this.timelineManager) {
+            this.timelineManager.partnerStatusChecked = true;
+            this.timelineManager.shouldSkipMatchPlay = true;
+          }
+          return;
+        }
+
+        // Check if room has other players
+        const hasOtherPlayers = response.playerCount > 1;
+
+        if (!hasOtherPlayers) {
+          console.log('❌ No other players in room - switching to AI mode');
+          this.activateAIFallbackForExperiment(data.experimentType);
+          // Mark partner status as checked
+          if (this.timelineManager) {
+            this.timelineManager.partnerStatusChecked = true;
+            this.timelineManager.shouldSkipMatchPlay = true;
+          }
+          return;
+        }
+
+        console.log('✅ Partner status check passed - partner appears to be connected');
+        // Mark partner status as checked and confirmed
+        if (this.timelineManager) {
+          this.timelineManager.partnerStatusChecked = true;
+          this.timelineManager.shouldSkipMatchPlay = false;
+        }
+
+      } catch (error) {
+        console.error('Error checking partner status:', error);
+        console.log('❌ Error checking partner status - switching to AI mode');
+        this.activateAIFallbackForExperiment(data.experimentType);
+        // Mark partner status as checked
+        if (this.timelineManager) {
+          this.timelineManager.partnerStatusChecked = true;
+          this.timelineManager.shouldSkipMatchPlay = true;
+        }
       }
     });
   }
@@ -269,6 +360,9 @@ export class GameApplication {
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
       } catch (_) { /* noop */ }
     });
+
+    // Note: Trial start/end inactivity tracking is now handled via direct
+    // communication from ExperimentManager (handleTrialStart/handleTrialEnd)
 
     console.log('📡 Timeline event handlers setup completed');
   }
@@ -818,7 +912,14 @@ export class GameApplication {
     // Error handling
     this.networkManager.on('error', (error) => {
       console.error('Network error:', error);
-      this.uiManager.showError(error.message);
+      if (error.type === 'connection_lost' && error.canRetry) {
+        // Show retry option for connection lost errors
+        this.uiManager.showConnectionLostError(error.message, () => {
+          this.retryConnection();
+        });
+      } else {
+        this.uiManager.showError(error.message);
+      }
     });
 
     this.networkManager.on('disconnect', () => {
@@ -827,7 +928,15 @@ export class GameApplication {
       // Stop real-time synchronization on disconnect
       this.stopRealTimeSync();
 
-      this.uiManager.showError('Connection lost. Please refresh the page.');
+      // Show reconnection UI
+      this.uiManager.showConnectionLostError('Connection lost. Attempting to reconnect...', () => {
+        this.retryConnection();
+      });
+    });
+
+    // Handle reconnection events
+    this.networkManager.on('reconnecting', (data) => {
+      this.uiManager.showReconnectingMessage(`Reconnecting... (${data.attempt}/${data.maxAttempts})`);
     });
   }
 
@@ -1044,6 +1153,10 @@ export class GameApplication {
 
       // Only process if it's not from the same player (avoid duplicate processing)
       if (action.playerIndex !== this.playerIndex) {
+        console.log('🎮 Received partner move from player', action.playerIndex, 'direction:', action.direction);
+        // Update partner last move time for inactivity tracking
+        this.updatePartnerLastMoveTime();
+
         // Check if we're in human-human real-time mode
         const isHumanHuman = CONFIG.game.players.player1.type === 'human' &&
                              CONFIG.game.players.player2.type === 'human';
@@ -1148,10 +1261,239 @@ export class GameApplication {
     this.experimentManager.handleTrialComplete(result);
   }
 
+  async retryConnection() {
+    if (this.networkManager) {
+      console.log('Attempting to reconnect...');
+      try {
+        const success = await this.networkManager.retryConnection();
+        if (success) {
+          this.uiManager.showSuccessMessage('Reconnected successfully!');
+          // Rejoin room if we were in a room
+          if (this.currentRoomId) {
+            await this.networkManager.joinRoom({ roomId: this.currentRoomId });
+          }
+        } else {
+          this.uiManager.showError('Reconnection failed. Please refresh the page.');
+        }
+      } catch (error) {
+        console.error('Reconnection error:', error);
+        this.uiManager.showError('Reconnection failed. Please refresh the page.');
+      }
+    }
+  }
+
+  activateAIFallbackForExperiment(experimentType) {
+    console.log(`🤖 Activating AI fallback for experiment: ${experimentType}`);
+
+    const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
+
+    // Determine which player index should be AI (opposite of local player)
+    const aiPlayerNumber = (this.playerIndex === 0) ? 2 : 1;
+
+    // Update config to use AI fallback
+    GameConfigUtils.setPlayerType(aiPlayerNumber, fallbackType);
+
+    // Update timeline mode
+    this.timelineManager.gameMode = 'human-ai';
+
+    // Activate AI fallback in experiment manager
+    try {
+      this.experimentManager?.activateAIFallback?.(fallbackType, aiPlayerNumber);
+    } catch (error) {
+      console.error('Error activating AI fallback:', error);
+    }
+
+    // Record fallback event
+    try {
+      this.gameStateManager?.recordPartnerFallback?.({
+        reason: 'partner-disconnected',
+        stage: 'experiment-transition',
+        at: Date.now(),
+        fallbackAIType: fallbackType
+      });
+    } catch (error) {
+      console.error('Error recording fallback event:', error);
+    }
+
+    // Update UI
+    try {
+      this.uiManager.setPlayerInfo(this.playerIndex, 'human-ai');
+    } catch (error) {
+      console.error('Error updating UI:', error);
+    }
+
+    // Stop inactivity tracking since we're no longer in human-human mode
+    this.stopInactivityTracking();
+
+    console.log(`✅ AI fallback activated - Player${aiPlayerNumber} is now ${fallbackType}`);
+  }
+
+  startInactivityTracking() {
+    // Check if inactivity fallback is enabled
+    const inactivityFallbackEnabled = CONFIG?.multiplayer?.inactivityFallback?.enabled !== false;
+
+    // Only enable in human-human mode
+    const isHumanHuman = CONFIG.game.players.player1.type === 'human' &&
+                         CONFIG.game.players.player2.type === 'human';
+
+    console.log('🔍 startInactivityTracking called:');
+    console.log('  - isHumanHuman:', isHumanHuman);
+    console.log('  - inactivityFallbackEnabled:', inactivityFallbackEnabled);
+    console.log('  - timeoutMs:', this._inactivityTracking.inactivityTimeoutMs);
+    console.log('  - checkIntervalMs:', this._inactivityTracking.checkIntervalMs);
+
+    if (!isHumanHuman || !inactivityFallbackEnabled) {
+      if (!inactivityFallbackEnabled) {
+        console.log('⚠️ Partner inactivity fallback is disabled in config');
+      }
+      if (!isHumanHuman) {
+        console.log('⚠️ Not in human-human mode - P1:', CONFIG.game.players.player1.type, 'P2:', CONFIG.game.players.player2.type);
+      }
+      return;
+    }
+
+    const timeoutSeconds = Math.round(this._inactivityTracking.inactivityTimeoutMs / 1000);
+    console.log(`🕐 Starting partner inactivity tracking (${timeoutSeconds}s timeout)`);
+
+    // Clear any existing timer BEFORE enabling a new one
+    if (this._inactivityTracking.inactivityTimerId) {
+      clearInterval(this._inactivityTracking.inactivityTimerId);
+      this._inactivityTracking.inactivityTimerId = null;
+    }
+
+    // Now enable and initialize tracking
+    this._inactivityTracking.enabled = true;
+    this._inactivityTracking.partnerLastMoveTime = Date.now(); // Initialize with current time
+
+    // Set up periodic check for partner inactivity
+    this._inactivityTracking.inactivityTimerId = setInterval(() => {
+      this.checkPartnerInactivity();
+    }, this._inactivityTracking.checkIntervalMs);
+
+    console.log('✅ Inactivity tracking timer started with ID:', this._inactivityTracking.inactivityTimerId);
+  }
+
+  stopInactivityTracking() {
+    if (this._inactivityTracking.inactivityTimerId) {
+      clearInterval(this._inactivityTracking.inactivityTimerId);
+      this._inactivityTracking.inactivityTimerId = null;
+    }
+    this._inactivityTracking.enabled = false;
+    console.log('⏹️ Partner inactivity tracking stopped');
+  }
+
+  updatePartnerLastMoveTime() {
+    if (this._inactivityTracking.enabled) {
+      this._inactivityTracking.partnerLastMoveTime = Date.now();
+      console.log('📝 Partner moved - resetting inactivity timer');
+    }
+  }
+
+  checkPartnerInactivity() {
+    console.log('🔍 checkPartnerInactivity called - enabled:', this._inactivityTracking.enabled, 'lastMoveTime:', this._inactivityTracking.partnerLastMoveTime);
+
+    if (!this._inactivityTracking.enabled || !this._inactivityTracking.partnerLastMoveTime) {
+      console.log('⚠️ Inactivity check skipped - not enabled or no last move time');
+      return;
+    }
+
+    const timeSinceLastMove = Date.now() - this._inactivityTracking.partnerLastMoveTime;
+
+    console.log(`⏱️ Time since last partner move: ${Math.round(timeSinceLastMove / 1000)}s (timeout: ${Math.round(this._inactivityTracking.inactivityTimeoutMs / 1000)}s)`);
+
+    if (timeSinceLastMove >= this._inactivityTracking.inactivityTimeoutMs) {
+      console.log(`⏰ Partner inactive for ${Math.round(timeSinceLastMove / 1000)}s - activating AI fallback`);
+
+      // Stop tracking to prevent multiple triggers
+      this.stopInactivityTracking();
+
+      // Activate AI fallback due to inactivity
+      this.activateAIFallbackDueToInactivity();
+    } else {
+      // Log remaining time for debugging
+      const remainingTime = this._inactivityTracking.inactivityTimeoutMs - timeSinceLastMove;
+      console.log(`⏱️ Partner inactive for ${Math.round(timeSinceLastMove / 1000)}s, ${Math.round(remainingTime / 1000)}s remaining`);
+    }
+  }
+
+  activateAIFallbackDueToInactivity() {
+    console.log('🤖 Activating AI fallback due to partner inactivity');
+
+    const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
+
+    // Determine which player index should be AI (opposite of local player)
+    const aiPlayerNumber = (this.playerIndex === 0) ? 2 : 1;
+
+    // Update config to use AI fallback
+    GameConfigUtils.setPlayerType(aiPlayerNumber, fallbackType);
+
+    // Update timeline mode if using timeline
+    if (this.timelineManager) {
+      this.timelineManager.gameMode = 'human-ai';
+    }
+
+    // Activate AI fallback in experiment manager
+    try {
+      this.experimentManager?.activateAIFallback?.(fallbackType, aiPlayerNumber);
+    } catch (error) {
+      console.error('Error activating AI fallback:', error);
+    }
+
+    // Record fallback event
+    try {
+      this.gameStateManager?.recordPartnerFallback?.({
+        reason: 'partner-inactivity',
+        stage: 'in-game',
+        at: Date.now(),
+        fallbackAIType: fallbackType
+      });
+    } catch (error) {
+      console.error('Error recording fallback event:', error);
+    }
+
+    // Show user notification
+    try {
+      this.uiManager.showGameStatus('🤖 Partner inactive - switching to AI partner', 'info');
+      setTimeout(() => {
+        this.uiManager.showGameStatus('');
+      }, 3000);
+    } catch (error) {
+      console.error('Error updating UI:', error);
+    }
+
+    console.log(`✅ AI fallback activated due to inactivity - Player${aiPlayerNumber} is now ${fallbackType}`);
+  }
+
+  handleTrialStart(experimentType, experimentIndex, trialIndex) {
+    console.log(`🎬 Trial start notification received: ${experimentType} (${experimentIndex}, ${trialIndex})`);
+    console.log('🔍 Player types - P1:', CONFIG.game.players.player1.type, 'P2:', CONFIG.game.players.player2.type);
+
+    // Start inactivity tracking for human-human trials
+    const isHumanHuman = CONFIG.game.players.player1.type === 'human' &&
+                         CONFIG.game.players.player2.type === 'human';
+
+    console.log('🔍 Is human-human:', isHumanHuman, 'Experiment type:', experimentType);
+
+    if (isHumanHuman && experimentType && experimentType.includes('2P')) {
+      console.log('🕐 Starting inactivity tracking for human-human trial');
+      this.startInactivityTracking();
+    } else {
+      console.log('⚠️ Not starting inactivity tracking - isHumanHuman:', isHumanHuman, 'is2P:', experimentType?.includes('2P'));
+    }
+  }
+
+  handleTrialEnd() {
+    console.log('🔚 Trial end notification received - stopping inactivity tracking');
+    this.stopInactivityTracking();
+  }
+
   // Cleanup
   destroy() {
     // Stop real-time synchronization
     this.stopRealTimeSync();
+
+    // Stop inactivity tracking
+    this.stopInactivityTracking();
 
     if (this.networkManager) {
       this.networkManager.disconnect();

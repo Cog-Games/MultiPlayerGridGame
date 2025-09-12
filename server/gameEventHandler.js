@@ -9,7 +9,7 @@ export class GameEventHandler {
       try {
         const { roomId, gameMode = 'human-ai', experimentType = '2P2G' } = data;
         const room = this.roomManager.joinRoom(socket.id, roomId, gameMode);
-        
+
         socket.join(room.id);
         socket.emit('room-joined', {
           roomId: room.id,
@@ -138,6 +138,25 @@ export class GameEventHandler {
         });
       }
     });
+
+    // Room status ping for partner detection
+    socket.on('ping-room-status', () => {
+      const room = this.roomManager.getPlayerRoom(socket.id);
+      if (room) {
+        const playerCount = room.players ? room.players.length : 0;
+        socket.emit('room-status-response', {
+          roomId: room.id,
+          playerCount: playerCount,
+          players: room.players || []
+        });
+      } else {
+        socket.emit('room-status-response', {
+          roomId: null,
+          playerCount: 0,
+          players: []
+        });
+      }
+    });
   }
 
   handleDisconnection(socket, io) {
@@ -156,7 +175,7 @@ export class GameEventHandler {
 
   startGame(room, io) {
     this.roomManager.setRoomStatus(room.id, 'playing');
-    
+
     const gameConfig = {
       experimentType: room.experimentType,
       gameMode: room.gameMode,

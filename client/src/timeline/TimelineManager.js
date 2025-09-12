@@ -144,6 +144,13 @@ export class TimelineManager {
         } else {
           console.log(`➕ Skipping waiting stage for ${experimentType}; adding match-play only`);
           // Only add the match play gate for subsequent 2P experiments
+          // But first check if partner is still connected
+          this.stages.push({
+            type: 'check_partner_presence',
+            experimentType: experimentType,
+            experimentIndex: expIndex,
+            handler: () => this.checkPartnerPresenceAndProceed(experimentType, expIndex)
+          });
           this.stages.push({
             type: 'match_play',
             experimentType: experimentType,
@@ -419,6 +426,48 @@ export class TimelineManager {
 
     document.addEventListener('keydown', handleSpacebar);
     document.body.focus();
+  }
+
+  checkPartnerPresenceAndProceed(experimentType, experimentIndex) {
+    console.log(`🔍 Checking partner presence for ${experimentType} transition...`);
+
+    // Check if we're in human-human mode and if partner is still connected
+    const isP2Human = (CONFIG?.game?.players?.player2?.type === 'human');
+
+    if (isP2Human) {
+      // Check if we have network connection and partner
+      this.emit('check-partner-status', { experimentType, experimentIndex });
+
+      // Set up a flag to track if we should proceed or skip
+      this.partnerStatusChecked = false;
+      this.shouldSkipMatchPlay = false;
+
+      // Give a longer timeout to check partner status
+      setTimeout(() => {
+        if (!this.partnerStatusChecked) {
+          console.log('⏰ Partner status check timeout - assuming partner disconnected');
+          this.shouldSkipMatchPlay = true;
+          this.partnerStatusChecked = true;
+        }
+
+        // If we're still in human-human mode after the check, proceed to match-play
+        const stillHuman = (CONFIG?.game?.players?.player2?.type === 'human');
+        if (stillHuman && !this.shouldSkipMatchPlay) {
+          console.log('✅ Partner still connected, proceeding to match-play stage');
+          this.nextStage();
+        } else {
+          console.log('🤖 Partner disconnected, switching to AI mode');
+          this.gameMode = 'human-ai';
+          // Skip the match-play stage since we're now in AI mode
+          this.nextStage(); // This will skip the match-play stage
+        }
+      }, 3000); // 3 second timeout to allow partner status check
+    } else {
+      // Already in AI mode, skip match-play stage
+      console.log('🤖 Already in AI mode, skipping match-play stage');
+      this.gameMode = 'human-ai';
+      this.nextStage(); // This will skip the match-play stage
+    }
   }
 
   showWaitingForPartnerStage(experimentType, experimentIndex) {

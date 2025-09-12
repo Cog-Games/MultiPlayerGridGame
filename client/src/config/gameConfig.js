@@ -68,8 +68,8 @@ export const CONFIG = {
       // order: ['1P2G'],
       // order: [ '2P3G'],
       // order: ['1P2G','2P3G'],
-      // order: ['2P2G', '2P3G'],
-      order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
+      order: ['2P2G', '2P3G'],
+      // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
         '1P1G': 3, // 3
@@ -205,6 +205,15 @@ export const CONFIG = {
     // Fallback AI partner type when human-human matching fails
     // Allowed: 'gpt' | 'rl_individual' | 'rl_joint'
     fallbackAIType: 'gpt',
+    // Partner inactivity settings
+    inactivityFallback: {
+      // Enable automatic fallback to AI when partner is inactive
+      enabled: true,
+      // Time in milliseconds after which partner is considered inactive
+      timeoutMs: 40000, // 1 minute
+      // How often to check for partner inactivity (ms)
+      checkIntervalMs: 5000 // 5 seconds
+    },
     // Real-time movement stabilization settings
     realTimeMovement: {
       // Minimum delay between moves to prevent spam (ms)
