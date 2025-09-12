@@ -68,14 +68,14 @@ export const CONFIG = {
       // order: ['1P2G'],
       // order: [ '2P3G'],
       // order: ['1P2G','2P3G'],
-      order: ['2P2G', '2P3G'],
-      // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
+      // order: ['2P2G', '2P3G'],
+      order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
-        '1P1G': 3, // 3
-        '1P2G': 12, // 12
-        '2P2G': 8, // 8
-        '2P3G': 12, // 12
+        '1P1G': 1, // 3
+        '1P2G': 1, // 12
+        '2P2G': 1, // 8
+        '2P3G': 1, // 12
       }
     },
 
@@ -210,7 +210,7 @@ export const CONFIG = {
       // Enable automatic fallback to AI when partner is inactive
       enabled: true,
       // Time in milliseconds after which partner is considered inactive
-      timeoutMs: 40000, // 1 minute
+      timeoutMs: 40000, // 40s-1 minute
       // How often to check for partner inactivity (ms)
       checkIntervalMs: 5000 // 5 seconds
     },
