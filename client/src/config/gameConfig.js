@@ -45,7 +45,7 @@ export const CONFIG = {
     version: '2.0.0',
     prolificCompletionCode: getEnvVar('VITE_PROLIFIC_COMPLETION_CODE', 'CTNDR8GV'),
     matrixSize: 15,
-    maxGameLength: 40,
+    maxGameLength: 60,
 
     // Player configuration
     players: {
