@@ -408,6 +408,19 @@ export class GameApplication {
           })();
 
           const fallbackEvents = (gsData && Array.isArray(gsData.fallbackEvents)) ? gsData.fallbackEvents : [];
+
+          // Calculate collaboration success statistics
+          const allTrials = exportObj.allTrialsData || [];
+          const collaborationTrials = allTrials.filter(trial =>
+            trial.experimentType && trial.experimentType.includes('2P')
+          );
+          const collaborationSuccessCount = collaborationTrials.filter(trial =>
+            trial.collaborationSucceeded === true
+          ).length;
+          const collaborationSuccessRate = collaborationTrials.length > 0
+            ? Math.round((collaborationSuccessCount / collaborationTrials.length) * 100)
+            : 0;
+
           const metaRows = [
             ['participantId', exportObj.participantId],
             ['roomId', exportObj.roomId || ''],
@@ -418,11 +431,37 @@ export class GameApplication {
             ['fallbackEvents', JSON.stringify(fallbackEvents)],
             ['waitingDuration', exportObj.waitingDuration || 0],
             ['waitingDetails', JSON.stringify(exportObj.waitingDetails || [])],
+            ['collaborationTrialsTotal', collaborationTrials.length],
+            ['collaborationSuccessCount', collaborationSuccessCount],
+            ['collaborationSuccessRate', collaborationSuccessRate],
             ['version', exportObj.version],
             ['timestamp', exportObj.timestamp]
           ];
           const metaSheet = XLSX.utils.aoa_to_sheet(metaRows);
           XLSX.utils.book_append_sheet(wb, metaSheet, 'Meta');
+
+          // Collaboration Summary sheet
+          const collaborationSummaryRows = [
+            ['Metric', 'Value'],
+            ['Total Collaboration Trials', collaborationTrials.length],
+            ['Collaboration Successes', collaborationSuccessCount],
+            ['Collaboration Failures', collaborationTrials.length - collaborationSuccessCount],
+            ['Collaboration Success Rate (%)', collaborationSuccessRate],
+            ['', ''], // Empty row for spacing
+            ['Experiment Type', 'Success Count', 'Total Trials', 'Success Rate (%)']
+          ];
+
+          // Add per-experiment-type breakdown
+          const experimentTypes = [...new Set(collaborationTrials.map(t => t.experimentType))];
+          experimentTypes.forEach(expType => {
+            const expTrials = collaborationTrials.filter(t => t.experimentType === expType);
+            const expSuccesses = expTrials.filter(t => t.collaborationSucceeded === true).length;
+            const expRate = expTrials.length > 0 ? Math.round((expSuccesses / expTrials.length) * 100) : 0;
+            collaborationSummaryRows.push([expType, expSuccesses, expTrials.length, expRate]);
+          });
+
+          const collaborationSheet = XLSX.utils.aoa_to_sheet(collaborationSummaryRows);
+          XLSX.utils.book_append_sheet(wb, collaborationSheet, 'CollaborationSummary');
 
           // Questionnaire sheet
           const q = exportObj.questionnaireData || exportObj.questionnaire || {};

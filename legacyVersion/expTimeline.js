@@ -1168,6 +1168,39 @@ function sendExcelToGoogleDrive(experimentData, questionnaireData, filename) {
             XLSX.utils.book_append_sheet(wb, emptyWS, "Experiment Data");
         }
 
+        // Add collaboration summary sheet
+        const collaborationTrials = experimentData.filter(trial =>
+            trial.experimentType && trial.experimentType.includes('2P')
+        );
+        const collaborationSuccessCount = collaborationTrials.filter(trial =>
+            trial.collaborationSucceeded === true
+        ).length;
+        const collaborationSuccessRate = collaborationTrials.length > 0
+            ? Math.round((collaborationSuccessCount / collaborationTrials.length) * 100)
+            : 0;
+
+        const collaborationSummaryData = [
+            ['Metric', 'Value'],
+            ['Total Collaboration Trials', collaborationTrials.length],
+            ['Collaboration Successes', collaborationSuccessCount],
+            ['Collaboration Failures', collaborationTrials.length - collaborationSuccessCount],
+            ['Collaboration Success Rate (%)', collaborationSuccessRate],
+            ['', ''], // Empty row for spacing
+            ['Experiment Type', 'Success Count', 'Total Trials', 'Success Rate (%)']
+        ];
+
+        // Add per-experiment-type breakdown
+        const experimentTypes = [...new Set(collaborationTrials.map(t => t.experimentType))];
+        experimentTypes.forEach(expType => {
+            const expTrials = collaborationTrials.filter(t => t.experimentType === expType);
+            const expSuccesses = expTrials.filter(t => t.collaborationSucceeded === true).length;
+            const expRate = expTrials.length > 0 ? Math.round((expSuccesses / expTrials.length) * 100) : 0;
+            collaborationSummaryData.push([expType, expSuccesses, expTrials.length, expRate]);
+        });
+
+        const collaborationWS = XLSX.utils.aoa_to_sheet(collaborationSummaryData);
+        XLSX.utils.book_append_sheet(wb, collaborationWS, "Collaboration Summary");
+
         // Add questionnaire data sheet
         if (questionnaireData && questionnaireData.length > 1) {
             const questionnaireWS = XLSX.utils.aoa_to_sheet(questionnaireData);
