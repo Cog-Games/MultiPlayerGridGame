@@ -729,6 +729,22 @@ export class GameApplication {
 
       // In real-time mode, only sync state periodically to avoid conflicts
       if (isHumanHuman && !isSyncTurns) {
+        // Force-apply remote state if it introduces a new goal we don't have yet
+        try {
+          const localGoalsLen = (() => {
+            try { return (this.gameStateManager?.getCurrentState?.()?.currentGoals || []).length; } catch (_) { return 0; }
+          })();
+          const remoteGoalsLen = Array.isArray(gameState?.currentGoals) ? gameState.currentGoals.length : 0;
+          const hasNewGoalOnRemote = remoteGoalsLen > localGoalsLen;
+          if (hasNewGoalOnRemote) {
+            console.log('🎯 Detected new goal on remote — forcing immediate sync');
+            this.gameStateManager.syncState(gameState);
+            this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+            this.gameStateManager.markStateSynced();
+            return; // Skip throttling path for goal updates
+          }
+        } catch (_) { /* noop */ }
+
         // 🔧 FIX: More conservative sync conditions to prevent position rollback
         const canSync = this.gameStateManager.shouldSyncState();
         const hasRecentLocalMoves = this.gameStateManager.hasRecentLocalMoves();

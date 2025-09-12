@@ -533,6 +533,9 @@ export class GameStateManager {
       if (p1 && move1) this.detectAndRecordGoals(1, move1);
       if (p2 && move2) this.detectAndRecordGoals(2, move2);
 
+      // Increment step count once for the synchronized step (mapped variant)
+      this.stepCount++;
+
       results.trialComplete = this.checkTrialCompletion();
       return results;
     } finally {

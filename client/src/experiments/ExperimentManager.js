@@ -765,12 +765,16 @@ export class ExperimentManager {
   }
 
   setupGameTimeout() {
-    const timeout = setTimeout(() => {
-      console.log('Game timeout reached');
-      this.handleTrialComplete({ success: false, timeout: true });
-    }, CONFIG.game.maxGameLength * 1000); // Convert to milliseconds
-
-    this.gameTimeoutId = timeout;
+    const durationMs = Number(CONFIG?.game?.timing?.maxTrialDurationMs) || 0;
+    if (durationMs > 0) {
+      const timeout = setTimeout(() => {
+        console.log('Game timeout reached');
+        this.handleTrialComplete({ success: false, timeout: true });
+      }, durationMs);
+      this.gameTimeoutId = timeout;
+    } else {
+      try { if (!CONFIG?.debug?.disableConsoleLogs) console.log('[DEBUG] Trial time cap disabled (maxTrialDurationMs=0)'); } catch (_) {}
+    }
   }
 
   handleTrialComplete(result) {
@@ -1072,12 +1076,16 @@ export class ExperimentManager {
   }
 
   setupTimelineGameTimeout() {
-    const timeout = setTimeout(() => {
-      console.log('Game timeout reached');
-      this.handleTimelineTrialComplete({ success: false, timeout: true });
-    }, CONFIG.game.maxGameLength * 1000);
-
-    this.gameTimeoutId = timeout;
+    const durationMs = Number(CONFIG?.game?.timing?.maxTrialDurationMs) || 0;
+    if (durationMs > 0) {
+      const timeout = setTimeout(() => {
+        console.log('Game timeout reached');
+        this.handleTimelineTrialComplete({ success: false, timeout: true });
+      }, durationMs);
+      this.gameTimeoutId = timeout;
+    } else {
+      try { if (!CONFIG?.debug?.disableConsoleLogs) console.log('[DEBUG] Timeline trial time cap disabled (maxTrialDurationMs=0)'); } catch (_) {}
+    }
   }
 
   handleTimelineTrialComplete(result) {

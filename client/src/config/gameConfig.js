@@ -66,9 +66,9 @@ export const CONFIG = {
     // Experiment configuration
     experiments: {
       // order: ['1P2G'],
-      // order: [ '2P3G'],
+      order: [ '2P3G'],
       // order: ['1P2G','2P3G'],
-      order: ['2P2G', '2P3G'],
+      // order: ['2P2G', '2P3G'],
       // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
@@ -89,12 +89,15 @@ export const CONFIG = {
     },
 
     // Timing configurations
-    timing: {
+  timing: {
       trialToFeedbackDelay: 500,
       feedbackDisplayDuration: 1000,
       preTrialDisplayDuration: 2000,
       fixationDuration: 1000,
       newGoalMessageDuration: 0,
+      // Optional hard wall-clock cap for a trial (ms). 0 disables.
+      // Legacy behavior had no time cap; only step-based via maxGameLength.
+      maxTrialDurationMs: 0,
       // Minimum and maximum time to wait for partner (ms)
       waitingForPartnerMinDuration: 5 * 1000,
       waitingForPartnerMaxDuration: 5 * 1000 // 180 * 1000
