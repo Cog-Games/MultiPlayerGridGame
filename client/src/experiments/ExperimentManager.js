@@ -791,8 +791,19 @@ export class ExperimentManager {
     this.clearGameIntervals();
 
     // Note: finalizeTrial is handled by handleTimelineTrialComplete when using timeline
-    // For standalone mode, finalize trial data
-    this.gameStateManager.finalizeTrial(result.success || result.trialComplete);
+    // For standalone mode, finalize trial data with proper success determination
+    const experimentType = this.gameStateManager.getCurrentState().experimentType;
+    let success;
+    if (experimentType && experimentType.startsWith('1P')) {
+      // Single player experiments - success means player reached a goal before timeout
+      const player1AtGoal = this.gameStateManager.getCurrentState().player1 &&
+        GameHelpers.isGoalReached(this.gameStateManager.getCurrentState().player1, this.gameStateManager.getCurrentState().currentGoals);
+      success = !!player1AtGoal;
+    } else {
+      // 2P experiments - use result success for standalone mode
+      success = !!(result.success || result.trialComplete);
+    }
+    this.gameStateManager.finalizeTrial(success);
 
     // Show feedback
     this.uiManager.showTrialFeedback(result);
@@ -1099,8 +1110,11 @@ export class ExperimentManager {
     const experimentType = this.gameStateManager.getCurrentState().experimentType;
     let success;
     if (experimentType && experimentType.startsWith('1P')) {
-      // Single player experiments - use result success
-      success = !!(result.success || result.trialComplete);
+      // Single player experiments - success means player reached a goal before timeout
+      // Check if player reached a goal (not just that the move was processed successfully)
+      const player1AtGoal = this.gameStateManager.getCurrentState().player1 &&
+        GameHelpers.isGoalReached(this.gameStateManager.getCurrentState().player1, this.gameStateManager.getCurrentState().currentGoals);
+      success = !!player1AtGoal;
     } else {
       // 2P experiments - use collaboration success (coerce to boolean; default false)
       if (typeof currentTrialData.collaborationSucceeded !== 'boolean') {
