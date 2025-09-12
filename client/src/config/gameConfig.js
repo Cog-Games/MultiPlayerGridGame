@@ -72,16 +72,16 @@ export const CONFIG = {
       // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
-        '1P1G': 2, // 3
+        '1P1G': 3, // 3
         '1P2G': 12, // 12
-        '2P2G': 4, // 8
+        '2P2G': 8, // 8
         '2P3G': 12, // 12
       }
     },
 
     // Success threshold for collaboration games
     successThreshold: {
-      enabled: true,
+      enabled: false,
       consecutiveSuccessesRequired: 5,
       minTrialsBeforeCheck: 12,
       maxTrials: 24,
@@ -99,8 +99,8 @@ export const CONFIG = {
       // Legacy behavior had no time cap; only step-based via maxGameLength.
       maxTrialDurationMs: 0,
       // Minimum and maximum time to wait for partner (ms)
-      waitingForPartnerMinDuration: 5 * 1000,
-      waitingForPartnerMaxDuration: 5 * 1000 // 180 * 1000
+      waitingForPartnerMinDuration: 9 * 1000,
+      waitingForPartnerMaxDuration: 300 * 1000 // 300 * 1000
     },
 
     // AI agent settings

@@ -300,7 +300,10 @@ export class GameApplication {
         completionCode: data.completionCode || '',
         version: (CONFIG?.game?.version) || '2.0.0',
         experimentType: (this.timelineManager?.gameMode === 'human-human') ? 'human-human' : 'human-AI',
-        roomId
+        roomId,
+        // Add waiting time data
+        waitingDuration: data.waitingDuration || 0,
+        waitingDetails: data.waitingDetails || []
       };
 
       const dataStr = JSON.stringify(exportObj, null, 2);
@@ -413,6 +416,8 @@ export class GameApplication {
             ['partnerAgentType', partnerAgentType],
             ['fallbackEventCount', fallbackEvents.length],
             ['fallbackEvents', JSON.stringify(fallbackEvents)],
+            ['waitingDuration', exportObj.waitingDuration || 0],
+            ['waitingDetails', JSON.stringify(exportObj.waitingDetails || [])],
             ['version', exportObj.version],
             ['timestamp', exportObj.timestamp]
           ];

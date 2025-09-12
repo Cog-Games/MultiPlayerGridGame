@@ -12,6 +12,7 @@ export class TimelineManager {
     this.mapData = {};
     // Track whether we've already shown the partner-finding stage
     this.hasShownPartnerFindingStage = false;
+    this.waitingTimes = []; // Store waiting time records for export
     this.experimentData = {
       participantId: this.getParticipantId(),
       startTime: new Date().toISOString(),
@@ -427,6 +428,10 @@ export class TimelineManager {
     const maxWaitMs = (CONFIG?.game?.timing?.waitingForPartnerMaxDuration) || 15000;
     const readyAt = Date.now() + minWaitMs;
     let partnerFound = false;
+
+    // Record waiting start time
+    const waitingStartTime = Date.now();
+    console.log('⏱️ [WAITING] Partner search started at:', new Date(waitingStartTime).toISOString());
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
         <div id="waiting-room" style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 600px; text-align: center;">
@@ -438,9 +443,15 @@ export class TimelineManager {
 
           <p style="font-size: 18px; color: #666; margin-bottom: 20px;">Connecting you with another player...</p>
 
-          <p style="font-size: 14px; color: #999;">
+          <p style="font-size: 14px; color: #999; margin-bottom: 15px;">
             This may take a few moments.
           </p>
+
+          <div style="background: #e8f4fd; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px; margin-top: 20px;">
+            <p style="font-size: 14px; color: #0c5460; margin: 0; font-weight: 500;">
+              💰 Your waiting time (if it exceeds 5 minutes) will be compensated ($0.5 per minute). Thank you for your patience!
+            </p>
+          </div>
 
 
         </div>
@@ -471,6 +482,15 @@ export class TimelineManager {
       if (event.code === 'Space' || event.key === ' ') {
         event.preventDefault();
         if (Date.now() < readyAt) return; // enforce minimum wait
+
+        // Record waiting end time and duration for skip
+        const waitingEndTime = Date.now();
+        const waitingDuration = waitingEndTime - waitingStartTime;
+        console.log('⏱️ [WAITING] Skipped after waiting duration:', waitingDuration + 'ms (' + (waitingDuration / 1000).toFixed(1) + 's)');
+
+        // Store waiting time data for export
+        this.recordWaitingTime(waitingStartTime, waitingEndTime, waitingDuration, 'skip', experimentType, experimentIndex);
+
         document.removeEventListener('keydown', handleSkipWaiting);
         console.log('⏭️ Skipping multiplayer waiting after min wait - continuing with AI partner');
         const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
@@ -498,6 +518,15 @@ export class TimelineManager {
       console.log('👥 Partner connected - will advance after minimum waiting time', payload);
       this.gameMode = 'human-human';
       partnerFound = true;
+
+      // Record waiting end time and duration
+      const waitingEndTime = Date.now();
+      const waitingDuration = waitingEndTime - waitingStartTime;
+      console.log('⏱️ [WAITING] Partner found! Waiting duration:', waitingDuration + 'ms (' + (waitingDuration / 1000).toFixed(1) + 's)');
+
+      // Store waiting time data for export
+      this.recordWaitingTime(waitingStartTime, waitingEndTime, waitingDuration, 'partner_found', experimentType, experimentIndex);
+
       document.removeEventListener('keydown', handleSkipWaiting);
       this.off('partner-connected', partnerConnectedHandler);
       let targetAt = readyAt;
@@ -516,6 +545,14 @@ export class TimelineManager {
     // Fallback after maximum wait if no partner connected
     setTimeout(() => {
       if (!partnerFound) {
+        // Record waiting end time and duration for timeout
+        const waitingEndTime = Date.now();
+        const waitingDuration = waitingEndTime - waitingStartTime;
+        console.log('⏱️ [WAITING] Timeout after waiting duration:', waitingDuration + 'ms (' + (waitingDuration / 1000).toFixed(1) + 's)');
+
+        // Store waiting time data for export
+        this.recordWaitingTime(waitingStartTime, waitingEndTime, waitingDuration, 'timeout', experimentType, experimentIndex);
+
         console.log(`⌛ No partner found after ${maxWaitMs}ms - falling back to AI mode`);
         const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
         GameConfigUtils.setPlayerType(2, fallbackType);
@@ -1573,5 +1610,31 @@ export class TimelineManager {
     } else {
       console.log('No more stages to run');
     }
+  }
+
+  // Record waiting time data for export
+  recordWaitingTime(startTime, endTime, duration, reason, experimentType, experimentIndex) {
+    const waitingDurationSeconds = Math.round(duration / 1000 * 10) / 10; // Round to 1 decimal place
+
+    // Store in experiment data for Excel export
+    if (!this.experimentData.waitingDuration) {
+      this.experimentData.waitingDuration = 0;
+    }
+    this.experimentData.waitingDuration += waitingDurationSeconds;
+
+    // Store detailed waiting info
+    if (!this.experimentData.waitingDetails) {
+      this.experimentData.waitingDetails = [];
+    }
+    this.experimentData.waitingDetails.push({
+      experimentType: experimentType,
+      experimentIndex: experimentIndex,
+      durationSeconds: waitingDurationSeconds,
+      reason: reason,
+      startTime: new Date(startTime).toISOString(),
+      endTime: new Date(endTime).toISOString()
+    });
+
+    console.log('📊 [WAITING] Recorded waiting time:', waitingDurationSeconds + 's (total: ' + this.experimentData.waitingDuration + 's)');
   }
 }
