@@ -1089,7 +1089,7 @@ export class TimelineManager {
 
               <div style="margin-bottom: 25px;">
                 <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
-                  Will you play with the other player again?
+                  Would you play with the other player again?
                 </label>
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                   ${[
