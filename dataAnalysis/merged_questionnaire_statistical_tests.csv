@@ -1,0 +1,4 @@
+Variable,Chi2_Statistic,P_Value,Significance,Significant
+AI Detection,26.704,0.009,**,True
+Collaboration Rating,49.151,0.000,***,True
+Play Again Intention,21.440,0.044,*,True

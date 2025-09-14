@@ -1,0 +1,4 @@
+game_type,n_participants,mean_success_rate,std_success_rate,count,total_trials
+gpt-4.1-mini,11,0.693,0.278,11,182
+human,28,0.982,0.034,28,515
+mixed,11,0.859,0.155,11,177

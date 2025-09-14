@@ -1,0 +1,5 @@
+Game_Type,N,AI_Like_Count,AI_Like_Percent,Good_Collab_Count,Good_Collab_Percent,Positive_Play_Count,Positive_Play_Percent,Study
+Human,28,14,50.0%,25,89.3%,20,71.4%,Human-Human-GPT
+GPT-4.1-mini,11,11,100.0%,3,27.3%,5,45.5%,Human-Human-GPT
+Individual RL,30,25,83.3%,13,43.3%,18,60.0%,Human-RL
+Joint RL,30,20,66.7%,30,100.0%,23,76.7%,Human-RL

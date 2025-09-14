@@ -1,0 +1,18 @@
+room_id,unique_partner_types,partner_types_list,game_type
+1aa4a978-1316-4242-a21e-9772545006a7,1,['human'],Human-Human
+3058f602-8cd4-402d-96ff-5aa79525a18e,1,['human'],Human-Human
+329a09b2-ad1f-4458-af0b-f7dd194297d1,1,['human'],Human-Human
+3f333c71-69b9-47d2-afa2-a8cdd8a7a34f,1,['gpt-4.1-mini'],Human-AI
+49124e6f-79b4-4627-ab53-ba0f80c28c33,2,"['human', 'gpt-4.1-mini']",Human-AI
+7a5db826-2ab9-4c4c-8578-c93df8f87b1d,2,"['human', 'gpt-4.1-mini']",Human-AI
+7e03a0e9-c26d-4eaa-aada-b9088e8981fe,1,['gpt-4.1-mini'],Human-AI
+9891f74f-a030-43ed-b425-c8b99990e72d,1,['gpt-4.1-mini'],Human-AI
+9a6ddc72-01b2-432c-848d-7629f2ff5bd7,1,['human'],Human-Human
+9d17be6d-fd28-4858-bf25-10f159569d54,1,['human'],Human-Human
+aa6f51e0-a8a1-49f7-ba8a-a3f3bba2b5f5,1,['gpt-4.1-mini'],Human-AI
+b5ed8553-19fc-43a4-ae35-6e256c500817,1,['gpt-4.1-mini'],Human-AI
+db2021d6-0a33-4478-a117-bf4fbec70cd4,2,"['human', 'gpt-4.1-mini']",Human-AI
+e55b3b94-4195-40a0-b088-223a8c4f1d88,2,"['gpt-4.1-mini', 'human']",Human-AI
+eb76ae37-255a-4cfa-a16b-78dc1b788aaa,1,['human'],Human-Human
+fa684eb1-e4c4-4905-96b7-15cf7b8a3f2d,1,['human'],Human-Human
+fc2813a7-4ebd-43fe-a958-ab321b8830f1,1,['human'],Human-Human

@@ -1,0 +1,100 @@
+study,game_type,ai_detection,collaboration_rating,play_again,ai_detection_cat,collaboration_rating_cat,play_again_cat,ai_detection_score,collaboration_rating_score,play_again_score
+Human-RL,joint_rl,Probably an AI,Very good collaborator,Not sure,Probably an AI,Very good collaborator,Not sure,2,5,3
+Human-RL,individual_rl,Definitely an AI,Very good collaborator,Definitely play again,Definitely an AI,Very good collaborator,Definitely play again,1,5,5
+Human-RL,individual_rl,Probably an AI,Poor collaborator,Probably play again,Probably an AI,Poor collaborator,Probably play again,2,2,4
+Human-RL,individual_rl,Not sure,Very good collaborator,Definitely play again,Not sure,Very good collaborator,Definitely play again,3,5,5
+Human-RL,joint_rl,Probably a person,Very good collaborator,Definitely play again,Probably a person,Very good collaborator,Definitely play again,4,5,5
+Human-RL,joint_rl,Probably an AI,Very good collaborator,Definitely play again,Probably an AI,Very good collaborator,Definitely play again,2,5,5
+Human-RL,individual_rl,Probably an AI,Neutral,Not sure,Probably an AI,Neutral,Not sure,2,3,3
+Human-RL,individual_rl,Not sure,Poor collaborator,Not sure,Not sure,Poor collaborator,Not sure,3,2,3
+Human-RL,joint_rl,Probably an AI,Very good collaborator,Not sure,Probably an AI,Very good collaborator,Not sure,2,5,3
+Human-RL,joint_rl,Probably an AI,Good collaborator,Probably play again,Probably an AI,Good collaborator,Probably play again,2,4,4
+Human-RL,individual_rl,Definitely an AI,Good collaborator,Probably not play again,Definitely an AI,Good collaborator,Probably not play again,1,4,2
+Human-RL,individual_rl,Probably an AI,Poor collaborator,Definitely not play again,Probably an AI,Poor collaborator,Definitely not play again,2,2,1
+Human-RL,individual_rl,Probably an AI,Very good collaborator,Definitely play again,Probably an AI,Very good collaborator,Definitely play again,2,5,5
+Human-RL,joint_rl,Probably an AI,Very good collaborator,Definitely play again,Probably an AI,Very good collaborator,Definitely play again,2,5,5
+Human-RL,individual_rl,Probably an AI,Poor collaborator,Probably not play again,Probably an AI,Poor collaborator,Probably not play again,2,2,2
+Human-RL,joint_rl,Probably an AI,Good collaborator,Not sure,Probably an AI,Good collaborator,Not sure,2,4,3
+Human-RL,joint_rl,Probably a person,Very good collaborator,Definitely play again,Probably a person,Very good collaborator,Definitely play again,4,5,5
+Human-RL,joint_rl,Definitely a person,Very good collaborator,Definitely play again,Definitely a person,Very good collaborator,Definitely play again,5,5,5
+Human-RL,joint_rl,Probably an AI,Very good collaborator,Definitely play again,Probably an AI,Very good collaborator,Definitely play again,2,5,5
+Human-RL,joint_rl,Not sure,Very good collaborator,Not sure,Not sure,Very good collaborator,Not sure,3,5,3
+Human-RL,individual_rl,Probably an AI,Poor collaborator,Probably not play again,Probably an AI,Poor collaborator,Probably not play again,2,2,2
+Human-RL,joint_rl,Definitely an AI,Very good collaborator,Definitely play again,Definitely an AI,Very good collaborator,Definitely play again,1,5,5
+Human-RL,individual_rl,Definitely an AI,Poor collaborator,Probably not play again,Definitely an AI,Poor collaborator,Probably not play again,1,2,2
+Human-RL,individual_rl,Definitely an AI,Neutral,Probably not play again,Definitely an AI,Neutral,Probably not play again,1,3,2
+Human-RL,joint_rl,Probably a person,Good collaborator,Not sure,Probably a person,Good collaborator,Not sure,4,4,3
+Human-RL,joint_rl,Probably a person,Very good collaborator,Definitely play again,Probably a person,Very good collaborator,Definitely play again,4,5,5
+Human-RL,individual_rl,Definitely an AI,Neutral,Definitely play again,Definitely an AI,Neutral,Definitely play again,1,3,5
+Human-RL,individual_rl,Not sure,Poor collaborator,Definitely play again,Not sure,Poor collaborator,Definitely play again,3,2,5
+Human-RL,joint_rl,Probably an AI,Very good collaborator,Definitely play again,Probably an AI,Very good collaborator,Definitely play again,2,5,5
+Human-RL,individual_rl,Probably an AI,Neutral,Probably play again,Probably an AI,Neutral,Probably play again,2,3,4
+Human-RL,individual_rl,Definitely an AI,Very poor collaborator,Definitely not play again,Definitely an AI,Very poor collaborator,Definitely not play again,1,1,1
+Human-RL,individual_rl,Probably an AI,Neutral,Probably play again,Probably an AI,Neutral,Probably play again,2,3,4
+Human-RL,individual_rl,Probably a person,Very good collaborator,Probably not play again,Probably a person,Very good collaborator,Probably not play again,4,5,2
+Human-RL,joint_rl,Probably an AI,Good collaborator,Definitely play again,Probably an AI,Good collaborator,Definitely play again,2,4,5
+Human-RL,individual_rl,Probably an AI,Good collaborator,Definitely play again,Probably an AI,Good collaborator,Definitely play again,2,4,5
+Human-RL,individual_rl,Not sure,Good collaborator,Probably play again,Not sure,Good collaborator,Probably play again,3,4,4
+Human-RL,joint_rl,Probably an AI,Very good collaborator,Definitely play again,Probably an AI,Very good collaborator,Definitely play again,2,5,5
+Human-RL,joint_rl,Definitely an AI,Very good collaborator,Definitely play again,Definitely an AI,Very good collaborator,Definitely play again,1,5,5
+Human-RL,individual_rl,Probably an AI,Poor collaborator,Probably play again,Probably an AI,Poor collaborator,Probably play again,2,2,4
+Human-RL,joint_rl,Probably an AI,Very good collaborator,Definitely play again,Probably an AI,Very good collaborator,Definitely play again,2,5,5
+Human-RL,joint_rl,Probably a person,Very good collaborator,Not sure,Probably a person,Very good collaborator,Not sure,4,5,3
+Human-RL,individual_rl,Probably an AI,Very good collaborator,Definitely play again,Probably an AI,Very good collaborator,Definitely play again,2,5,5
+Human-RL,individual_rl,Probably an AI,Neutral,Definitely play again,Probably an AI,Neutral,Definitely play again,2,3,5
+Human-RL,joint_rl,Probably a person,Very good collaborator,Not sure,Probably a person,Very good collaborator,Not sure,4,5,3
+Human-RL,joint_rl,Probably a person,Very good collaborator,Probably play again,Probably a person,Very good collaborator,Probably play again,4,5,4
+Human-RL,joint_rl,Probably an AI,Very good collaborator,Definitely play again,Probably an AI,Very good collaborator,Definitely play again,2,5,5
+Human-RL,individual_rl,Probably an AI,Good collaborator,Probably play again,Probably an AI,Good collaborator,Probably play again,2,4,4
+Human-RL,individual_rl,Probably an AI,Poor collaborator,Not sure,Probably an AI,Poor collaborator,Not sure,2,2,3
+Human-RL,joint_rl,Definitely an AI,Very good collaborator,Definitely play again,Definitely an AI,Very good collaborator,Definitely play again,1,5,5
+Human-RL,individual_rl,Probably an AI,Very good collaborator,Definitely play again,Probably an AI,Very good collaborator,Definitely play again,2,5,5
+Human-RL,joint_rl,Probably an AI,Very good collaborator,Definitely play again,Probably an AI,Very good collaborator,Definitely play again,2,5,5
+Human-RL,joint_rl,Definitely an AI,Very good collaborator,Definitely play again,Definitely an AI,Very good collaborator,Definitely play again,1,5,5
+Human-RL,joint_rl,Probably an AI,Good collaborator,Probably play again,Probably an AI,Good collaborator,Probably play again,2,4,4
+Human-RL,individual_rl,Probably an AI,Good collaborator,Definitely play again,Probably an AI,Good collaborator,Definitely play again,2,4,5
+Human-RL,joint_rl,Definitely an AI,Good collaborator,Definitely play again,Definitely an AI,Good collaborator,Definitely play again,1,4,5
+Human-RL,joint_rl,Not sure,Good collaborator,Probably play again,Not sure,Good collaborator,Probably play again,3,4,4
+Human-RL,individual_rl,Definitely an AI,Very good collaborator,Probably play again,Definitely an AI,Very good collaborator,Probably play again,1,5,4
+Human-RL,individual_rl,Definitely an AI,Very good collaborator,Definitely play again,Definitely an AI,Very good collaborator,Definitely play again,1,5,5
+Human-RL,joint_rl,Definitely an AI,Good collaborator,Probably play again,Definitely an AI,Good collaborator,Probably play again,1,4,4
+Human-RL,individual_rl,Definitely an AI,Poor collaborator,Not sure,Definitely an AI,Poor collaborator,Not sure,1,2,3
+Human-Human-GPT,human,Not sure,Very good collaborator,Definitely play again,Not sure,Very good collaborator,Definitely play again,3,5,5
+Human-Human-GPT,gpt-4.1-mini,Definitely an AI,Poor collaborator,Not sure,Definitely an AI,Poor collaborator,Not sure,1,2,3
+Human-Human-GPT,human,Probably an AI,Good collaborator,Probably play again,Probably an AI,Good collaborator,Probably play again,2,4,4
+Human-Human-GPT,human,Probably an AI,Good collaborator,Definitely play again,Probably an AI,Good collaborator,Definitely play again,2,4,5
+Human-Human-GPT,human,Not sure,Very good collaborator,Definitely play again,Not sure,Very good collaborator,Definitely play again,3,5,5
+Human-Human-GPT,human,Probably a person,Very good collaborator,Definitely play again,Probably a person,Very good collaborator,Definitely play again,4,5,5
+Human-Human-GPT,human,Probably a person,Good collaborator,Not sure,Probably a person,Good collaborator,Not sure,4,4,3
+Human-Human-GPT,human,Probably an AI,Very good collaborator,Not sure,Probably an AI,Very good collaborator,Not sure,2,5,3
+Human-Human-GPT,gpt-4.1-mini,Probably an AI,Neutral,Definitely play again,Probably an AI,Neutral,Definitely play again,2,3,5
+Human-Human-GPT,human,Not sure,Very good collaborator,Probably play again,Not sure,Very good collaborator,Probably play again,3,5,4
+Human-Human-GPT,human,Probably an AI,Neutral,Not sure,Probably an AI,Neutral,Not sure,2,3,3
+Human-Human-GPT,human,Probably a person,Very good collaborator,Definitely play again,Probably a person,Very good collaborator,Definitely play again,4,5,5
+Human-Human-GPT,human,Not sure,Very good collaborator,Definitely play again,Not sure,Very good collaborator,Definitely play again,3,5,5
+Human-Human-GPT,human,Probably an AI,Good collaborator,Definitely play again,Probably an AI,Good collaborator,Definitely play again,2,4,5
+Human-Human-GPT,human,Probably an AI,Very good collaborator,Definitely play again,Probably an AI,Very good collaborator,Definitely play again,2,5,5
+Human-Human-GPT,human,Probably an AI,Good collaborator,Definitely play again,Probably an AI,Good collaborator,Definitely play again,2,4,5
+Human-Human-GPT,human,Not sure,Very good collaborator,Definitely play again,Not sure,Very good collaborator,Definitely play again,3,5,5
+Human-Human-GPT,gpt-4.1-mini,Probably an AI,Poor collaborator,Not sure,Probably an AI,Poor collaborator,Not sure,2,2,3
+Human-Human-GPT,gpt-4.1-mini,Definitely an AI,Very poor collaborator,Probably not play again,Definitely an AI,Very poor collaborator,Probably not play again,1,1,2
+Human-Human-GPT,human,Probably an AI,Very good collaborator,Definitely play again,Probably an AI,Very good collaborator,Definitely play again,2,5,5
+Human-Human-GPT,human,Probably an AI,Good collaborator,Probably play again,Probably an AI,Good collaborator,Probably play again,2,4,4
+Human-Human-GPT,gpt-4.1-mini,Probably an AI,Neutral,Probably play again,Probably an AI,Neutral,Probably play again,2,3,4
+Human-Human-GPT,human,Probably an AI,Good collaborator,Not sure,Probably an AI,Good collaborator,Not sure,2,4,3
+Human-Human-GPT,human,Probably a person,Good collaborator,Definitely play again,Probably a person,Good collaborator,Definitely play again,4,4,5
+Human-Human-GPT,human,Probably an AI,Very good collaborator,Definitely play again,Probably an AI,Very good collaborator,Definitely play again,2,5,5
+Human-Human-GPT,gpt-4.1-mini,Probably an AI,Neutral,Definitely not play again,Probably an AI,Neutral,Definitely not play again,2,3,1
+Human-Human-GPT,gpt-4.1-mini,Definitely an AI,Poor collaborator,Probably not play again,Definitely an AI,Poor collaborator,Probably not play again,1,2,2
+Human-Human-GPT,gpt-4.1-mini,Definitely an AI,Very good collaborator,Definitely play again,Definitely an AI,Very good collaborator,Definitely play again,1,5,5
+Human-Human-GPT,human,Probably an AI,Very good collaborator,Definitely play again,Probably an AI,Very good collaborator,Definitely play again,2,5,5
+Human-Human-GPT,human,Probably a person,Very good collaborator,Not sure,Probably a person,Very good collaborator,Not sure,4,5,3
+Human-Human-GPT,human,Not sure,Very good collaborator,Definitely play again,Not sure,Very good collaborator,Definitely play again,3,5,5
+Human-Human-GPT,gpt-4.1-mini,Probably an AI,Good collaborator,Probably play again,Probably an AI,Good collaborator,Probably play again,2,4,4
+Human-Human-GPT,human,Not sure,Good collaborator,Probably play again,Not sure,Good collaborator,Probably play again,3,4,4
+Human-Human-GPT,human,Not sure,Very good collaborator,Definitely play again,Not sure,Very good collaborator,Definitely play again,3,5,5
+Human-Human-GPT,human,Definitely an AI,Neutral,Not sure,Definitely an AI,Neutral,Not sure,1,3,3
+Human-Human-GPT,gpt-4.1-mini,Definitely an AI,Very poor collaborator,Definitely not play again,Definitely an AI,Very poor collaborator,Definitely not play again,1,1,1
+Human-Human-GPT,human,Probably a person,Good collaborator,Probably not play again,Probably a person,Good collaborator,Probably not play again,4,4,2
+Human-Human-GPT,gpt-4.1-mini,Definitely an AI,Good collaborator,Probably play again,Definitely an AI,Good collaborator,Probably play again,1,4,4
+Human-Human-GPT,human,Probably an AI,Neutral,Probably not play again,Probably an AI,Neutral,Probably not play again,2,3,2

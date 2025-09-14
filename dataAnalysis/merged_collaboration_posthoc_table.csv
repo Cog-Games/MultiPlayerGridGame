@@ -1,0 +1,7 @@
+Comparison,Group_A,Group_B,Mean_A,Mean_B,Mean_Difference,SE,T_stat,p_tukey,Significance,CI_Lower,CI_Upper
+GPT-4.1-mini vs Human,GPT-4.1-mini,Human,0.738,0.971,-0.233,0.024,-9.869,0.000,***,-2.364,-2.364
+GPT-4.1-mini vs Individual RL,GPT-4.1-mini,Individual RL,0.738,0.978,-0.240,0.023,-10.234,0.000,***,-2.469,-2.469
+GPT-4.1-mini vs Joint RL,GPT-4.1-mini,Joint RL,0.738,0.992,-0.254,0.023,-10.827,0.000,***,-2.755,-2.755
+Human vs Individual RL,Human,Individual RL,0.971,0.978,-0.006,0.017,-0.364,0.983,ns,-0.147,-0.147
+Human vs Joint RL,Human,Joint RL,0.971,0.992,-0.020,0.017,-1.159,0.654,ns,-0.582,-0.582
+Individual RL vs Joint RL,Individual RL,Joint RL,0.978,0.992,-0.014,0.017,-0.810,0.850,ns,-0.385,-0.385

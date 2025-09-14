@@ -1,0 +1,5 @@
+Game_Type,Study,N,Mean,SD,SE,CI_95_Lower,CI_95_Upper,Min,Max
+Human,Human-Human-GPT,28,0.971,0.042,0.008,0.955,0.988,0.850,1.000
+GPT-4.1-mini,Human-Human-GPT,11,0.738,0.173,0.052,0.622,0.854,0.412,0.944
+Individual RL,Human-RL,30,0.978,0.043,0.008,0.962,0.994,0.833,1.000
+Joint RL,Human-RL,30,0.992,0.025,0.005,0.982,1.001,0.917,1.000
