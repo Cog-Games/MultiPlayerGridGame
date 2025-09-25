@@ -51,6 +51,9 @@ export class GameStateManager {
       player2RT: [],
       // Track which player made each move (for human-human mode analysis)
       currentPlayerIndex: [], // 0-based index (0 or 1) for each move
+      player1StartPosition: null,
+      player2StartPosition: null,
+      initialGoalPositions: [],
       trialStartTime: 0,
       player1GoalReachedStep: -1,
       player2GoalReachedStep: -1,
@@ -116,6 +119,9 @@ export class GameStateManager {
     this.trialData.player2RT = [];
     this.trialData.currentPlayerIndex = [];
     this.trialData.gptErrorEvents = [];
+    this.trialData.player1StartPosition = null;
+    this.trialData.player2StartPosition = null;
+    this.trialData.initialGoalPositions = [];
     this.trialData.player1CurrentGoal = [];
     this.trialData.player2CurrentGoal = [];
 
@@ -201,6 +207,26 @@ export class GameStateManager {
     // Update current state
     this.currentState.experimentType = experimentType;
     this.currentState.trialIndex = trialIndex;
+
+    // Record initial spatial layout for exports/analysis
+    try {
+      this.trialData.player1StartPosition = Array.isArray(this.currentState.player1) && this.currentState.player1.length >= 2
+        ? [...this.currentState.player1]
+        : null;
+      this.trialData.player2StartPosition = Array.isArray(this.currentState.player2) && this.currentState.player2.length >= 2
+        ? [...this.currentState.player2]
+        : null;
+
+      if (Array.isArray(this.currentState.currentGoals)) {
+        this.trialData.initialGoalPositions = this.currentState.currentGoals
+          .filter(goal => Array.isArray(goal) && goal.length >= 2)
+          .map(goal => [...goal]);
+      } else {
+        this.trialData.initialGoalPositions = [];
+      }
+    } catch (_) {
+      // Best effort only; export will fall back to null/empty if this fails
+    }
   }
 
   // Record a human→AI fallback event for the current run (and current trial if any)

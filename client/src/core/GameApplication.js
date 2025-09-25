@@ -449,6 +449,7 @@ export class GameApplication {
               'trialIndex', 'experimentType', 'partnerAgentType',
               'currentPlayer', 'participantId', 'roomId',
               'humanPlayerIndex', 'aiPlayerIndex',
+              'player1StartPosition', 'player2StartPosition', 'initialGoalPositions',
               'partnerFallbackOccurred', 'partnerFallbackReason', 'partnerFallbackStage', 'partnerFallbackTime',
               'partnerFallbackAIType',
               'collaborationSucceeded',

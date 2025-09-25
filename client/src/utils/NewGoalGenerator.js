@@ -309,10 +309,19 @@ export class NewGoalGenerator {
         return closerOK && equalSumOk;
       }
       case this.DISTANCE_CONDITIONS.EQUAL_TO_BOTH: {
-        const distanceDifference = Math.abs(newGoalDistanceToPlayer2 - newGoalDistanceToPlayer1);
-        // Treat exactly equal (difference 0) as equal; if allowEqualDistance is true, also allow minimal imbalance of 1
-        const equalToBoth = allowEqualDistance ? (distanceDifference <= 1) : (distanceDifference === 0);
-        return equalToBoth && equalSumOk;
+        // Match legacy implementation with 4 equal constraints
+        const distanceDiff1 = Math.abs(newGoalDistanceToPlayer1 - player1DistanceToOldGoal);
+        const distanceDiff2 = Math.abs(newGoalDistanceToPlayer2 - player2DistanceToOldGoal);
+        const distanceDiff3 = Math.abs(newGoalDistanceToPlayer2 - newGoalDistanceToPlayer1);
+
+        const equalTolerance = allowEqualDistance ? 1 : 0; // tolerance for equal distance
+        const sumTolerance = allowEqualDistance ? 1 : 0; // relaxed sum tolerance for EQUAL_TO_BOTH
+
+        const meetsEqualCondition = distanceDiff1 <= equalTolerance &&
+                                  distanceDiff2 <= equalTolerance &&
+                                  distanceDiff3 <= equalTolerance &&
+                                  Math.abs(newDistanceSum - oldDistanceSum) <= sumTolerance;
+        return meetsEqualCondition;
       }
       default:
         return false;
