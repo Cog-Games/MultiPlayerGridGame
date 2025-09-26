@@ -16,7 +16,7 @@ const RL_AGENT_CONFIG = {
   debugMode: false,
   useFastOptimalPolicy: false,
   enablePolicyPrecalculation: false,
-  jointRLImplementation: '4action'
+  jointRLImplementation: 'bfs'
 };
 
 try { if (CONFIG?.game?.matrixSize) RL_AGENT_CONFIG.gridSize = CONFIG.game.matrixSize; } catch {}
@@ -117,13 +117,167 @@ const JointPlanner4Action = (() => {
   return { getAction, precalc, clear };
 })();
 
+// ---------- BFS-based joint planner (16 joint actions, legacy port) ----------
+const JointBFSPlanner = (() => {
+  const ROWS = RL_AGENT_CONFIG.gridSize || 15;
+  const COLS = RL_AGENT_CONFIG.gridSize || 15;
+  const N = ROWS * COLS;
+  const actionSpace = [[0, -1], [0, 1], [-1, 0], [1, 0]]; // L, R, U, D
+
+  const toIdx = (r, c) => r * COLS + c;
+  const rowOf = i => Math.floor(i / COLS);
+  const colOf = i => i % COLS;
+  const inGrid = (r, c) => r >= 0 && r < ROWS && c >= 0 && c < COLS;
+  const stepIdx = (idx, a) => {
+    const r = rowOf(idx), c = colOf(idx);
+    const nr = r + actionSpace[a][0];
+    const nc = c + actionSpace[a][1];
+    return inGrid(nr, nc) ? toIdx(nr, nc) : idx;
+  };
+
+  const planners = new Map(); // key -> { Q: Float32Array, goalSet: Set, beta }
+
+  function buildPlanner(goals, beta = 1.0) {
+    const goalSet = new Set(goals.map(([r, c]) => toIdx(r, c)));
+    const S = N * N;
+    const Q = new Float32Array(S * 16);
+    const rewardGoal = RL_AGENT_CONFIG.goalReward;
+    const stepCost = RL_AGENT_CONFIG.stepCost;
+    const gamma = RL_AGENT_CONFIG.gamma || 0.9;
+
+    // Precompute Manhattan distances to each goal for all positions
+    const goalDistances = new Array(N);
+    for (let pos = 0; pos < N; pos++) {
+      goalDistances[pos] = new Array(goals.length);
+      const r = Math.floor(pos / COLS), c = pos % COLS;
+      for (let g = 0; g < goals.length; g++) {
+        const [gr, gc] = goals[g];
+        goalDistances[pos][g] = Math.abs(r - gr) + Math.abs(c - gc);
+      }
+    }
+
+    const proximityCache = new Map();
+    function getProximityReward(nextAI, nextPL, done) {
+      if (done) return 0;
+      const key = (nextAI <= nextPL)
+        ? `${nextAI}-${nextPL}`
+        : `${nextPL}-${nextAI}`;
+      if (proximityCache.has(key)) return proximityCache.get(key);
+      let minJoint = Infinity;
+      for (let g = 0; g < goals.length; g++) {
+        const d = goalDistances[nextAI][g] + goalDistances[nextPL][g];
+        if (d < minJoint) minJoint = d;
+      }
+      const reward = -RL_AGENT_CONFIG.proximityRewardWeight * minJoint;
+      proximityCache.set(key, reward);
+      return reward;
+    }
+
+    for (let s = 0; s < S; s++) {
+      const iAI = Math.floor(s / N);
+      const iPL = s % N;
+      if (goalSet.has(iAI) && goalSet.has(iPL) && iAI === iPL) {
+        for (let j = 0; j < 16; j++) Q[s * 16 + j] = 0;
+        continue;
+      }
+      for (let aAI = 0; aAI < 4; aAI++) {
+        const nextAI = goalSet.has(iAI) ? iAI : stepIdx(iAI, aAI);
+        for (let aPL = 0; aPL < 4; aPL++) {
+          const nextPL = goalSet.has(iPL) ? iPL : stepIdx(iPL, aPL);
+          const jointIdx = aAI * 4 + aPL;
+          const done = goalSet.has(nextAI) && goalSet.has(nextPL) && nextAI === nextPL;
+          const proximityReward = getProximityReward(nextAI, nextPL, done);
+          const r = done ? rewardGoal : stepCost + proximityReward;
+
+          let futureValue = 0;
+          if (!done) {
+            let minDist = Infinity;
+            for (let g = 0; g < goals.length; g++) {
+              const d = goalDistances[nextAI][g] + goalDistances[nextPL][g];
+              if (d < minDist) minDist = d;
+            }
+            futureValue = gamma * (rewardGoal + stepCost * minDist);
+          }
+          Q[s * 16 + jointIdx] = r + futureValue;
+        }
+      }
+    }
+    return { Q, goalSet, beta };
+  }
+
+  function getAction(aiState, playerState, goals, beta = null) {
+    if (beta == null) beta = RL_AGENT_CONFIG.softmaxBeta;
+    const key = hashGoals(goals) + '|' + beta;
+    if (!planners.has(key)) planners.set(key, buildPlanner(goals, beta));
+    const { Q, goalSet } = planners.get(key);
+
+    const idxAI = toIdx(aiState[0], aiState[1]);
+    const idxPL = toIdx(playerState[0], playerState[1]);
+    if (goalSet.has(idxAI) && goalSet.has(idxPL) && idxAI === idxPL) return null;
+
+    const s = idxAI * N + idxPL;
+    const base = s * 16;
+    const qValues = [
+      Q[base], Q[base + 1], Q[base + 2], Q[base + 3],
+      Q[base + 4], Q[base + 5], Q[base + 6], Q[base + 7],
+      Q[base + 8], Q[base + 9], Q[base + 10], Q[base + 11],
+      Q[base + 12], Q[base + 13], Q[base + 14], Q[base + 15]
+    ];
+
+    // Optional slowdown when player already on a goal but AI not
+    const playerOnGoal = goalSet.has(idxPL);
+    const aiOnGoal = goalSet.has(idxAI);
+    if (playerOnGoal && !aiOnGoal) {
+      for (let j = 0; j < 16; j++) {
+        const aiActionIdx = Math.floor(j / 4);
+        if (aiActionIdx < 4) qValues[j] *= 0.5; // dampen movement
+      }
+    }
+
+    if (qValues.some(q => !isFinite(q))) {
+      return actionSpace[Math.floor(Math.random() * actionSpace.length)];
+    }
+
+    const maxQ = Math.max(...qValues);
+    const logPrefs = qValues.map(q => beta * (q - maxQ));
+    const clipped = logPrefs.map(lp => Math.max(-700, Math.min(700, lp)));
+    const prefs = clipped.map(lp => Math.exp(lp));
+    const sum = prefs.reduce((a, b) => a + b, 0);
+    if (!isFinite(sum) || sum === 0) {
+      return actionSpace[Math.floor(Math.random() * actionSpace.length)];
+    }
+    const r = Math.random() * sum;
+    let acc = 0;
+    for (let j = 0; j < 16; j++) {
+      acc += prefs[j];
+      if (r < acc) {
+        const aiActionIdx = Math.floor(j / 4);
+        return actionSpace[aiActionIdx];
+      }
+    }
+    return actionSpace[0];
+  }
+
+  function precalc(goals) {
+    const beta = RL_AGENT_CONFIG.softmaxBeta;
+    const key = hashGoals(goals) + '|' + beta;
+    if (!planners.has(key)) planners.set(key, buildPlanner(goals, beta));
+  }
+
+  function clear() { planners.clear(); }
+  return { getAction, precalc, clear };
+})();
+
 export class RLAgent {
   constructor() { this.isPreCalculating = false; }
   getAIAction(_gridMatrix, currentPos, goals, playerPos = null) {
     if (!goals || goals.length === 0) return [0, 0];
     try {
       if (playerPos && CONFIG.game.agent.type === 'joint') {
-        const action = JointPlanner4Action.getAction(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta);
+        const impl = (RL_AGENT_CONFIG.jointRLImplementation || 'vi4').toLowerCase();
+        const action = (impl === 'bfs')
+          ? JointBFSPlanner.getAction(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta)
+          : JointPlanner4Action.getAction(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta);
         return action === null ? [0, 0] : action;
       }
       return this.getIndividualRLAction(currentPos, goals);
@@ -134,7 +288,17 @@ export class RLAgent {
     const runner = new RunIndividualVI(RL_AGENT_CONFIG.gridSize, actionSpace, noiseActionSpace, RL_AGENT_CONFIG.noise, RL_AGENT_CONFIG.gamma, RL_AGENT_CONFIG.goalReward, RL_AGENT_CONFIG.softmaxBeta);
     const { policy } = runner.call(goals, obstacles); const probs = policy.call(currentPos); return chooseBestAction(probs);
   }
-  precalculatePolicyForGoals(goals, _experimentType) { if (this.isPreCalculating) return; this.isPreCalculating = true; setTimeout(() => { try { JointPlanner4Action.precalc(goals); } finally { this.isPreCalculating = false; } }, 0); }
+  precalculatePolicyForGoals(goals, _experimentType) {
+    if (this.isPreCalculating) return;
+    this.isPreCalculating = true;
+    setTimeout(() => {
+      try {
+        const impl = (RL_AGENT_CONFIG.jointRLImplementation || 'vi4').toLowerCase();
+        if (impl === 'bfs') JointBFSPlanner.precalc(goals);
+        else JointPlanner4Action.precalc(goals);
+      } finally { this.isPreCalculating = false; }
+    }, 0);
+  }
   enableAutoPolicyPrecalculation() { /* compatibility */ }
   resetNewGoalPreCalculationFlag() { /* compatibility */ }
 }

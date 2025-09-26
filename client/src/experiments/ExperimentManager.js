@@ -568,6 +568,19 @@ export class ExperimentManager {
       const moveResult = this.gameStateManager.processPlayerMove(this.aiPlayerNumber, direction);
       this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
 
+      // Pre-calculate RL policy at trial start to avoid first-move lag (legacy-inspired)
+      try {
+        const st = this.gameStateManager.getCurrentState();
+        const p2Type = CONFIG?.game?.players?.player2?.type;
+        const usingRL = (p2Type === 'rl_joint' || p2Type === 'ai' || CONFIG?.game?.agent?.type === 'joint');
+        if (usingRL && this.rlAgent && typeof this.rlAgent.precalculatePolicyForGoals === 'function') {
+          const goals = Array.isArray(st?.currentGoals) ? st.currentGoals : [];
+          if (goals.length > 0) {
+            setTimeout(() => this.rlAgent.precalculatePolicyForGoals(goals, experimentType), 0);
+          }
+        }
+      } catch (_) { /* best-effort only */ }
+
       if (moveResult.trialComplete) {
         this.handleTrialComplete(moveResult);
       }
@@ -638,6 +651,32 @@ export class ExperimentManager {
       if (this.rlAgent && typeof this.rlAgent.resetNewGoalPreCalculationFlag === 'function') {
         this.rlAgent.resetNewGoalPreCalculationFlag();
       }
+
+      // Pre-calculate RL policy for new goals to avoid first-move lag (legacy-inspired)
+      try {
+        const st2 = this.gameStateManager.getCurrentState();
+        const p2Type2 = CONFIG?.game?.players?.player2?.type;
+        const usingRL2 = (p2Type2 === 'rl_joint' || p2Type2 === 'ai' || CONFIG?.game?.agent?.type === 'joint');
+        if (usingRL2 && this.rlAgent && typeof this.rlAgent.precalculatePolicyForGoals === 'function') {
+          const goals2 = Array.isArray(st2?.currentGoals) ? st2.currentGoals : [];
+          if (goals2.length > 0) {
+            setTimeout(() => this.rlAgent.precalculatePolicyForGoals(goals2, st2?.experimentType || null), 0);
+          }
+        }
+      } catch (_) { /* best-effort only */ }
+
+      // Pre-calculate RL policy for new goals to avoid first-move lag (legacy-inspired)
+      try {
+        const st = this.gameStateManager.getCurrentState();
+        const p2Type = CONFIG?.game?.players?.player2?.type;
+        const usingRL = (p2Type === 'rl_joint' || p2Type === 'ai' || CONFIG?.game?.agent?.type === 'joint');
+        if (usingRL && this.rlAgent && typeof this.rlAgent.precalculatePolicyForGoals === 'function') {
+          const goals = Array.isArray(st?.currentGoals) ? st.currentGoals : [];
+          if (goals.length > 0) {
+            setTimeout(() => this.rlAgent.precalculatePolicyForGoals(goals, st?.experimentType || null), 0);
+          }
+        }
+      } catch (_) { /* best-effort only */ }
 
       // Redraw
       this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());

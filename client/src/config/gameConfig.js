@@ -57,7 +57,7 @@ export const CONFIG = {
       player2: {
         // Types: 'human' | 'gpt' | 'rl_individual' | 'rl_joint'
         // Legacy alias 'ai' is treated as 'rl_joint'
-        type: 'human',
+        type: 'rl_joint',
         color: 'orange',
         description: 'Human, GPT, or RL partner'
       }
@@ -65,9 +65,9 @@ export const CONFIG = {
 
     // Experiment configuration
     experiments: {
-      order: ['1P1G'],
+      // order: ['1P1G'],
       // order: ['1P2G'],
-      // order: [ '2P3G'],
+      order: [ '2P3G'],
       // order: ['1P2G','2P3G'],
       // order: ['2P2G', '2P3G'],
       // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
@@ -100,8 +100,8 @@ export const CONFIG = {
       // Legacy behavior had no time cap; only step-based via maxGameLength.
       maxTrialDurationMs: 60 * 1000,
       // Minimum and maximum time to wait for partner (ms)
-      waitingForPartnerMinDuration: 9 * 1000,
-      waitingForPartnerMaxDuration: 300 * 1000 // 5*60*1000, 5mins
+      waitingForPartnerMinDuration: 3 * 1000, // 9*1000, 9s
+      waitingForPartnerMaxDuration: 3 * 1000 // 300*1000, 5mins
     },
 
     // AI agent settings
