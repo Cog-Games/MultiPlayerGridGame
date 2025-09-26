@@ -77,3 +77,4 @@ experiment-data-*.json.env.example
 *.xlsx
 *.png
 *.csv
+*.png
