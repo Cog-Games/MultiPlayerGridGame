@@ -1,5 +1,5 @@
 experiment_category,rlAgentType,count,mean,std,sem
-1P2G,individual,30,0.7874,0.1734,0.0317
-1P2G,joint,30,0.8167,0.1599,0.0292
-2P3G,individual,30,0.6815,0.0835,0.0153
-2P3G,joint,30,0.7828,0.1189,0.0217
+1P2G,individual,2,0.5833,0.2357,0.1667
+1P2G,joint,2,0.8542,0.0295,0.0208
+2P3G,individual,1,0.625,,
+2P3G,joint,2,0.7321,0.0253,0.0179
