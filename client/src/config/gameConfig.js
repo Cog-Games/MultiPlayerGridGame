@@ -57,7 +57,7 @@ export const CONFIG = {
       player2: {
         // Types: 'human' | 'gpt' | 'rl_individual' | 'rl_joint'
         // Legacy alias 'ai' is treated as 'rl_joint'
-        type: 'rl_joint',
+        type: 'gpt',
         color: 'orange',
         description: 'Human, GPT, or RL partner'
       }
