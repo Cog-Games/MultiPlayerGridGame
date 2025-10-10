@@ -49,6 +49,8 @@ export class GameStateManager {
       player2Actions: [],
       player1RT: [],
       player2RT: [],
+      // AI theory-of-mind logging: per AI step, what goal did AI infer for the other player
+      aiInferredOtherGoals: [],
       // Track which player made each move (for human-human mode analysis)
       currentPlayerIndex: [], // 0-based index (0 or 1) for each move
       player1StartPosition: null,
@@ -613,6 +615,19 @@ export class GameStateManager {
       // Default behavior: player1 -> 0, player2 -> 1
       this.trialData.currentPlayerIndex.push(playerIndex === 1 ? 0 : 1);
     }
+  }
+
+  // Record the AI agent's inferred goal for the other player on this step (if using gpt-ToM)
+  recordAIInferredOtherGoal(inferredGoal) {
+    try {
+      if (!Array.isArray(this.trialData.aiInferredOtherGoals)) {
+        this.trialData.aiInferredOtherGoals = [];
+      }
+      // Store as coordinate array or null per step alignment with AI actions
+      this.trialData.aiInferredOtherGoals.push(
+        (Array.isArray(inferredGoal) && inferredGoal.length >= 2) ? [inferredGoal[0], inferredGoal[1]] : null
+      );
+    } catch (_) { /* noop */ }
   }
 
   detectAndRecordGoals(playerIndex, action) {

@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { GameRoomManager } from './gameRoomManager.js';
 import { GameEventHandler } from './gameEventHandler.js';
-import { decideGptAction, getGptConfigInfo } from './ai/gptAgent.js';
+import { decideGptAction, decideGptTomAction, getGptConfigInfo } from './ai/gptAgent.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -183,10 +183,16 @@ app.post('/api/ai/gpt/action', async (req, res) => {
     if (!currentPlayer || !Array.isArray(currentPlayer.pos)) {
       return res.status(400).json({ error: 'Invalid currentPlayer' });
     }
-    const result = await decideGptAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory });
+    // Route to ToM variant if requested via model label
+    let result;
+    if (model && /^gpt-?tom$/i.test(String(model))) {
+      result = await decideGptTomAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory });
+    } else {
+      result = await decideGptAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory });
+    }
 
 
-    // result: { action, usage, latencyMs, rate }
+    // result: { action, inferredGoal?, usage, latencyMs, rate }
     res.json(result);
   } catch (err) {
     console.error('GPT action error:', err);

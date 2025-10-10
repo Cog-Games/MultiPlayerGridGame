@@ -97,6 +97,10 @@ export class GptAgentClient {
         }
       }
     } catch (_) { /* ignore */ }
+    // If ToM variant returned an inferred goal, surface it to caller
+    if (data && Object.prototype.hasOwnProperty.call(data, 'inferredGoal')) {
+      return { action: data?.action || null, inferredGoal: data?.inferredGoal ?? null, model: data?.model };
+    }
     return data?.action || null;
   }
 }

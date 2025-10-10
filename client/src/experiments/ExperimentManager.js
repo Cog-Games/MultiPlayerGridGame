@@ -297,7 +297,11 @@ export class ExperimentManager {
           // Persist model for data recording
           try {
             if (model && model !== '(unknown)') {
-              CONFIG.game.agent.gpt.model = model;
+              // Do not overwrite an explicit ToM label set by user/config
+              const current = CONFIG?.game?.agent?.gpt?.model;
+              if (!current || !/^gpt-?tom$/i.test(String(current))) {
+                CONFIG.game.agent.gpt.model = model;
+              }
               // Update current trial's partnerAgentType if available
               const td = this.gameStateManager?.trialData;
               const st = this.gameStateManager?.currentState;
@@ -410,6 +414,12 @@ export class ExperimentManager {
           },
           { aiPlayerNumber: this.aiPlayerNumber }
         );
+        if (aiDirection && typeof aiDirection === 'object') {
+          if (Object.prototype.hasOwnProperty.call(aiDirection, 'inferredGoal')) {
+            this.gameStateManager.recordAIInferredOtherGoal(aiDirection.inferredGoal ?? null);
+          }
+          aiDirection = aiDirection?.action || null;
+        }
       } catch (e) {
         gptError = e;
         console.warn('GPT agent request failed during synchronized move; falling back to RL:', e?.message || e);
@@ -534,6 +544,13 @@ export class ExperimentManager {
           },
           { aiPlayerNumber: this.aiPlayerNumber }
         );
+        // If ToM variant, store inferred goal and use only the action for movement
+        if (direction && typeof direction === 'object') {
+          if (Object.prototype.hasOwnProperty.call(direction, 'inferredGoal')) {
+            this.gameStateManager.recordAIInferredOtherGoal(direction.inferredGoal ?? null);
+          }
+          direction = direction?.action || null;
+        }
       } catch (err) {
         gptError = err;
         console.warn('GPT agent failed, falling back to RL. Reason:', err?.message || err);

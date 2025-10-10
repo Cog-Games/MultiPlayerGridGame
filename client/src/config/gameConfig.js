@@ -116,7 +116,7 @@ export const CONFIG = {
       // Optional GPT agent client defaults (non-sensitive)
       gpt: {
         // If set, forwarded to server; server may override model
-        model: 'gpt-4.1-mini',
+        model: 'gpt',
         temperature: 0,
         // Include past trajectories in GPT prompt
         memory: {
