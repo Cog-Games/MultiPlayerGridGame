@@ -249,6 +249,168 @@ export function getGptConfigInfo() {
   };
 }
 
+// === Vision (VLM) variant ===
+
+function getVlmModel() {
+  // Vision-capable model; allow override via VLM_API_MODEL else reuse GPT_API_MODEL
+  return process.env.VLM_API_MODEL || process.env.GPT_API_MODEL || process.env.GPT_MODEL || 'gpt-4o-mini';
+}
+
+export function getVlmConfigInfo() {
+  return {
+    model: getVlmModel(),
+    apiModel: getVlmModel(),
+    hasApiKey: Boolean(process.env.OPENAI_API_KEY)
+  };
+}
+
+async function callOpenAIChatVision({ text, imageDataUrl, model = getVlmModel(), temperature = 0, systemMessage } = {}) {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) throw new Error('OPENAI_API_KEY is not set on the server');
+
+  const userContent = [];
+  if (text) userContent.push({ type: 'text', text });
+  if (imageDataUrl) {
+    userContent.push({ type: 'image_url', image_url: { url: imageDataUrl, detail: 'low' } });
+  }
+
+  const t0 = Date.now();
+  const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model,
+      temperature,
+      messages: [
+        { role: 'system', content: systemMessage || 'You output only one token: up, down, left, or right.' },
+        { role: 'user', content: userContent }
+      ]
+    })
+  });
+
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`OpenAI API error: ${resp.status} ${text}`);
+  }
+  const data = await resp.json();
+  const latencyMs = Date.now() - t0;
+  const content = data?.choices?.[0]?.message?.content?.trim().toLowerCase() || '';
+  const usage = data?.usage || null;
+  const rate = {
+    remainingRequests: resp.headers.get('x-ratelimit-remaining-requests'),
+    remainingTokens: resp.headers.get('x-ratelimit-remaining-tokens'),
+    limitRequests: resp.headers.get('x-ratelimit-limit-requests'),
+    limitTokens: resp.headers.get('x-ratelimit-limit-tokens'),
+    resetRequests: resp.headers.get('x-ratelimit-reset-requests'),
+    resetTokens: resp.headers.get('x-ratelimit-reset-tokens')
+  };
+  return { content, usage, latencyMs, rate };
+}
+
+export async function decideGptVlmAction(payload) {
+  const { imageDataUrl } = payload || {};
+  // Build the same prompt as text but include image for visual grounding
+  const prompt = buildPrompt(payload);
+  const externalModel = payload?.model || 'vlm';
+  const apiModel = getVlmModel();
+  const temperature = typeof payload?.temperature === 'number' ? payload.temperature : 0;
+
+  const result = await callOpenAIChatVision({
+    text: prompt,
+    imageDataUrl,
+    model: apiModel,
+    temperature,
+    systemMessage: 'You are a precise navigator. Consider the image and text; output only one token: up, down, left, or right.'
+  });
+
+  const raw = (result && typeof result === 'object') ? result.content : result;
+  const allowed = new Set(['up', 'down', 'left', 'right']);
+  const token = String(raw || '').split(/\s+/)[0];
+  let action = token;
+  if (!allowed.has(action)) {
+    for (const a of allowed) { if ((raw || '').includes(a)) { action = a; break; } }
+  }
+  if (!allowed.has(action)) {
+    const arr = Array.from(allowed);
+    action = arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  try {
+    logGptOutput({
+      kind: 'base',
+      modelLabel: externalModel,
+      baseModel: apiModel,
+      content: String(raw || ''),
+      action,
+      usage: (result && result.usage) || null,
+      latencyMs: (result && result.latencyMs) || null,
+      rate: (result && result.rate) || null
+    });
+  } catch (_) { /* noop */ }
+
+  return {
+    action,
+    model: externalModel,
+    baseModel: apiModel,
+    usage: (result && result.usage) || null,
+    latencyMs: (result && result.latencyMs) || null,
+    rate: (result && result.rate) || null
+  };
+}
+
+export async function decideGptVlmTomAction(payload) {
+  const { imageDataUrl } = payload || {};
+  // Reuse ToM prompt content and add image
+  const prompt = buildTomPrompt(payload);
+  const externalModel = payload?.model || 'vlm-ToM';
+  const apiModel = getVlmModel();
+  const temperature = typeof payload?.temperature === 'number' ? payload.temperature : 0;
+
+  const result = await callOpenAIChatVision({
+    text: prompt,
+    imageDataUrl,
+    model: apiModel,
+    temperature,
+    systemMessage: 'You are a precise planner. Consider the image and text. Output ONLY strict JSON with keys inferred_goal (array or null) and action (up|down|left|right). No explanations.'
+  });
+
+  const raw = (result && typeof result === 'object') ? result.content : result;
+  const parsed = parseTomResponse(String(raw || ''));
+  const allowed = new Set(['up', 'down', 'left', 'right']);
+  let action = parsed.action || null;
+  if (!allowed.has(action)) {
+    for (const a of allowed) { if ((raw || '').includes(a)) { action = a; break; } }
+  }
+  if (!allowed.has(action)) {
+    const arr = Array.from(allowed);
+    action = arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  try {
+    logGptOutput({
+      kind: 'tom',
+      modelLabel: externalModel,
+      baseModel: apiModel,
+      content: String(raw || ''),
+      action,
+      inferredGoal: Array.isArray(parsed.inferredGoal) ? parsed.inferredGoal : null,
+      usage: (result && result.usage) || null,
+      latencyMs: (result && result.latencyMs) || null,
+      rate: (result && result.rate) || null
+    });
+  } catch (_) { /* noop */ }
+
+  return {
+    action,
+    inferredGoal: Array.isArray(parsed.inferredGoal) ? parsed.inferredGoal : null,
+    model: 'vlm-ToM',
+    baseModel: apiModel,
+    usage: (result && result.usage) || null,
+    latencyMs: (result && result.latencyMs) || null,
+    rate: (result && result.rate) || null
+  };
+}
+
 // === Theory-of-Mind variant ===
 
 function buildTomPrompt({ matrix, currentPlayer, goals, memory, guidance }) {

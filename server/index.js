@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { GameRoomManager } from './gameRoomManager.js';
 import { GameEventHandler } from './gameEventHandler.js';
-import { decideGptAction, decideGptTomAction, getGptConfigInfo } from './ai/gptAgent.js';
+import { decideGptAction, decideGptTomAction, getGptConfigInfo, decideGptVlmAction, getVlmConfigInfo } from './ai/gptAgent.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -197,6 +197,40 @@ app.post('/api/ai/gpt/action', async (req, res) => {
   } catch (err) {
     console.error('GPT action error:', err);
     res.status(500).json({ error: 'Failed to get GPT action', detail: String(err?.message || err) });
+  }
+});
+
+// VLM agent endpoints
+app.get('/api/ai/vlm/config', (req, res) => {
+  try {
+    res.json(getVlmConfigInfo());
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to read VLM config' });
+  }
+});
+
+app.post('/api/ai/vlm/action', async (req, res) => {
+  try {
+    const { guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory, imageDataUrl } = req.body || {};
+    if (!Array.isArray(matrix) || matrix.length === 0) {
+      return res.status(400).json({ error: 'Invalid matrix' });
+    }
+    if (!currentPlayer || !Array.isArray(currentPlayer.pos)) {
+      return res.status(400).json({ error: 'Invalid currentPlayer' });
+    }
+    if (!imageDataUrl || typeof imageDataUrl !== 'string') {
+      return res.status(400).json({ error: 'Missing imageDataUrl' });
+    }
+    let result;
+    if (model && /^vlm-?tom$/i.test(String(model))) {
+      result = await decideGptVlmTomAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory, imageDataUrl });
+    } else {
+      result = await decideGptVlmAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory, imageDataUrl });
+    }
+    res.json(result);
+  } catch (err) {
+    console.error('VLM action error:', err);
+    res.status(500).json({ error: 'Failed to get VLM action', detail: String(err?.message || err) });
   }
 });
 

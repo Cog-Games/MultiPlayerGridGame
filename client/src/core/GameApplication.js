@@ -487,13 +487,21 @@ export class GameApplication {
             const p2Type = (CONFIG?.game?.players?.player2?.type);
             const t = (p1Type !== 'human') ? p1Type : ((p2Type !== 'human') ? p2Type : 'human');
             if (t === 'human') return 'human';
-            if (t === 'gpt') {
+            if (t === 'gpt' || t === 'gpt-ToM') {
               const model = (CONFIG?.game?.agent?.gpt?.model);
               if (model && String(model).trim().length > 0) {
                 return String(model);
               } else {
                 console.warn('⚠️ GPT model not cached in CONFIG for export, using configured default');
                 return 'gpt-4o'; // matches the configured GPT_MODEL in .env
+              }
+            }
+            if (t === 'vlm' || t === 'vlm-ToM') {
+              const model = (CONFIG?.game?.agent?.vlm?.model);
+              if (model && String(model).trim().length > 0) {
+                return String(model);
+              } else {
+                return 'gpt-4o-mini';
               }
             }
             if (t === 'rl_joint') return 'joint-rl';

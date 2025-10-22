@@ -247,7 +247,7 @@ export class GameStateManager {
           const p2 = CONFIG?.game?.players?.player2?.type;
           const t = (p1 !== 'human') ? p1 : ((p2 !== 'human') ? p2 : null);
 
-          if (t === 'gpt') {
+          if (t === 'gpt' || t === 'gpt-ToM') {
             const model = CONFIG?.game?.agent?.gpt?.model;
             if (model && String(model).trim().length > 0) {
               aiTypeDesc = String(model);
@@ -255,6 +255,9 @@ export class GameStateManager {
               console.warn('⚠️ GPT model not cached in CONFIG for fallback recording, using configured default');
               aiTypeDesc = 'gpt-4o'; // matches the configured GPT_MODEL in .env
             }
+          } else if (t === 'vlm' || t === 'vlm-ToM') {
+            const vmodel = CONFIG?.game?.agent?.vlm?.model;
+            aiTypeDesc = (vmodel && String(vmodel).trim()) ? String(vmodel) : 'gpt-4o-mini';
           } else if (t === 'rl_joint') {
             aiTypeDesc = 'joint-rl';
           } else if (t === 'rl_individual') {
@@ -806,6 +809,19 @@ export class GameStateManager {
         // Try to get specific GPT model
         const model = CONFIG?.game?.agent?.gpt?.model;
         return (model && String(model).trim()) ? String(model) : 'gpt-4o';
+      case 'gpt-tom':
+      case 'gpttom':
+        // Map ToM label to underlying GPT API model
+        const modelTom = CONFIG?.game?.agent?.gpt?.model;
+        return (modelTom && String(modelTom).trim()) ? String(modelTom) : 'gpt-4o';
+      case 'vlm':
+        // Try to get specific VLM model
+        const vmodel = CONFIG?.game?.agent?.vlm?.model;
+        return (vmodel && String(vmodel).trim()) ? String(vmodel) : 'gpt-4o-mini';
+      case 'vlm-tom':
+      case 'vlmtom':
+        const vmodelTom = CONFIG?.game?.agent?.vlm?.model;
+        return (vmodelTom && String(vmodelTom).trim()) ? String(vmodelTom) : 'gpt-4o-mini';
       case 'rl_joint':
       case 'joint':
         return 'joint-rl';
@@ -863,7 +879,7 @@ export class GameStateManager {
       // Prefer whichever side is non-human as the partner agent type
       const t = (p1 !== 'human') ? p1 : ((p2 !== 'human') ? p2 : 'human');
       if (t === 'human') return 'human';
-      if (t === 'gpt') {
+      if (t === 'gpt' || t === 'gpt-ToM') {
         // Prefer exact GPT model name if available
         const model = CONFIG?.game?.agent?.gpt?.model;
         if (model && String(model).trim().length > 0) {
@@ -875,6 +891,13 @@ export class GameStateManager {
           // This should be rarely hit if logCurrentAIModel() is properly awaited
           return 'gpt-4o'; // matches the configured GPT_MODEL in .env
         }
+      }
+      if (t === 'vlm' || t === 'vlm-ToM') {
+        const model = CONFIG?.game?.agent?.vlm?.model;
+        if (model && String(model).trim().length > 0) {
+          return String(model);
+        }
+        return 'gpt-4o-mini';
       }
       if (t === 'rl_joint') return 'joint-rl';
       if (t === 'rl_individual') return 'individual-rl';

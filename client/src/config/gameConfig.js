@@ -55,9 +55,8 @@ export const CONFIG = {
         description: 'Human player (you)'
       },
       player2: {
-        // Types: 'human' | 'gpt' | 'rl_individual' | 'rl_joint'
-        // Legacy alias 'ai' is treated as 'rl_joint'
-        type: 'gpt',
+        // Types: 'human' | 'gpt' | 'gpt-ToM' | 'vlm' | 'vlm-ToM' | 'rl_individual' | 'rl_joint'
+        type: 'vlm-ToM',
         color: 'orange',
         description: 'Human, GPT, or RL partner'
       }
@@ -113,15 +112,24 @@ export const CONFIG = {
       // When true, AI/GPT moves are synchronized with the human input
       // i.e., on each human key press, AI/GPT generates a move and both apply before a single redraw
       synchronizedMoves: true,
-      // Optional GPT agent client defaults (non-sensitive)
+      // Optional GPT/VLM agent client defaults (non-sensitive)
       gpt: {
-        // If set, forwarded to server; server may override model
-        model: 'gpt',
+        // API model name used on server (e.g., 'gpt-4o-mini')
+        model: 'gpt-4o-mini',
         temperature: 0,
         // Include past trajectories in GPT prompt
         memory: {
           enabled: true,
           // Limit steps appended to prompt per player to control token usage
+          maxSteps: 50
+        }
+      },
+      vlm: {
+        // Vision API model name used on server (e.g., 'gpt-4o-mini')
+        model: 'gpt-4o-mini',
+        temperature: 0,
+        memory: {
+          enabled: true,
           maxSteps: 50
         }
       }
@@ -199,13 +207,13 @@ export const CONFIG = {
     syncInterval: 100,
     moveTimeout: 10000,
     // Human-human synchronized turns: both players input a move, then both apply together
-    synchronizedHumanTurns: false, // false for free movement
+    synchronizedHumanTurns: true, // false for free movement
     // Max wait (ms) on the "Game is Ready! Press SPACE" screen for the other
     // human to press space before falling back to AI partner
     matchPlayReadyTimeout: 10000,
     // Fallback AI partner type when human-human matching fails
-    // Allowed: 'gpt' | 'rl_individual' | 'rl_joint'
-    fallbackAIType: 'gpt',
+    // Allowed: 'gpt' | 'gpt-ToM' | 'vlm' | 'vlm-ToM' | 'rl_individual' | 'rl_joint'
+    fallbackAIType: 'gpt-ToM',
     // Partner inactivity settings
     inactivityFallback: {
       // Enable automatic fallback to AI when partner is inactive
@@ -271,7 +279,7 @@ export const GameConfigUtils = {
   setPlayerType(playerIndex, type) {
     // Normalize legacy alias
     const normalized = (type === 'ai') ? 'rl_joint' : type;
-    const allowed = ['human', 'gpt', 'rl_individual', 'rl_joint'];
+    const allowed = ['human', 'gpt', 'gpt-ToM', 'vlm', 'vlm-ToM', 'rl_individual', 'rl_joint'];
     if (!allowed.includes(normalized)) return;
     CONFIG.game.players[`player${playerIndex}`].type = normalized;
 

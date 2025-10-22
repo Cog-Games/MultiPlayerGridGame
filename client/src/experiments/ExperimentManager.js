@@ -1,6 +1,7 @@
 import { CONFIG, GAME_OBJECTS, GameConfigUtils } from '../config/gameConfig.js';
 import { RLAgent } from '../ai/RLAgent.js';
 import { GptAgentClient } from '../ai/GptAgentClient.js';
+import { VlmAgentClient } from '../ai/VlmAgentClient.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
 import { NewGoalGenerator } from '../utils/NewGoalGenerator.js';
 import { mapLoader } from '../utils/MapLoader.js';
@@ -12,6 +13,7 @@ export class ExperimentManager {
     this.timelineManager = timelineManager;
     this.rlAgent = new RLAgent();
     this.gptClient = new GptAgentClient();
+    this.vlmClient = new VlmAgentClient();
 
     this.currentExperimentSequence = [];
     this.currentExperimentIndex = 0;
@@ -288,69 +290,39 @@ export class ExperimentManager {
   async logCurrentAIModel() {
     try {
       const p2Type = CONFIG?.game?.players?.player2?.type;
-      if (p2Type === 'gpt') {
-        const base = (CONFIG.server.url || '').replace(/\/$/, '');
+      const base = (CONFIG.server.url || '').replace(/\/$/, '');
+      if (p2Type === 'gpt' || p2Type === 'gpt-ToM') {
         const resp = await fetch(`${base}/api/ai/gpt/config`);
         if (resp.ok) {
           const info = await resp.json();
           const model = info?.model || '(unknown)';
-          // Persist model for data recording
           try {
             if (model && model !== '(unknown)') {
-              // Do not overwrite an explicit ToM label set by user/config
-              const current = CONFIG?.game?.agent?.gpt?.model;
-              if (!current || !/^gpt-?tom$/i.test(String(current))) {
-                CONFIG.game.agent.gpt.model = model;
-              }
-              // Update current trial's partnerAgentType if available
+              CONFIG.game.agent.gpt.model = model; // API model cache only
               const td = this.gameStateManager?.trialData;
               const st = this.gameStateManager?.currentState;
               if (td && st && String(st.experimentType || '').includes('2P')) {
                 td.partnerAgentType = model;
-                // If a fallback occurred earlier and the fallback AI type was generic 'gpt',
-                // upgrade it to the exact model string for accurate export
-                if (td.partnerFallbackOccurred) {
-                  if (!td.partnerFallbackAIType || /^gpt$/i.test(String(td.partnerFallbackAIType))) {
-                    td.partnerFallbackAIType = model;
-                  }
-                  // Also update experiment-level fallbackEvents for this trial if present
-                  try {
-                    const exp = this.gameStateManager?.experimentData;
-                    const curIdx = Number.isInteger(st.trialIndex) ? st.trialIndex : null;
-                    if (exp && Array.isArray(exp.fallbackEvents)) {
-                      exp.fallbackEvents.forEach(evt => {
-                        const matchIdx = (curIdx !== null) ? (evt.trialIndex === curIdx) : true;
-                        if (matchIdx && (!evt.aiType || /^gpt$/i.test(String(evt.aiType)))) {
-                          evt.aiType = model;
-                        }
-                      });
-                    }
-                  } catch (_) { /* noop */ }
-                }
               }
-              // Also sweep existing saved trials to upgrade any generic 'gpt' fallback entries
-              try {
-                const exp = this.gameStateManager?.experimentData;
-                if (exp && Array.isArray(exp.allTrialsData)) {
-                  exp.allTrialsData.forEach(tr => {
-                    if (tr && tr.partnerFallbackOccurred && (!tr.partnerFallbackAIType || /^gpt$/i.test(String(tr.partnerFallbackAIType)))) {
-                      tr.partnerFallbackAIType = model;
-                    }
-                    if (tr && String(tr.partnerAgentType || '').toLowerCase() === 'gpt') {
-                      tr.partnerAgentType = model;
-                    }
-                  });
-                }
-                if (exp && Array.isArray(exp.fallbackEvents)) {
-                  exp.fallbackEvents.forEach(evt => {
-                    if (evt && (!evt.aiType || /^gpt$/i.test(String(evt.aiType)))) {
-                      evt.aiType = model;
-                    }
-                  });
-                }
-              } catch (_) { /* noop */ }
             }
-          } catch (_) { /* ignore */ }
+          } catch (_) { /* noop */ }
+        }
+      } else if (p2Type === 'vlm' || p2Type === 'vlm-ToM') {
+        const resp = await fetch(`${base}/api/ai/vlm/config`);
+        if (resp.ok) {
+          const info = await resp.json();
+          const model = info?.model || '(unknown)';
+          try {
+            if (model && model !== '(unknown)') {
+              if (!CONFIG.game.agent.vlm) CONFIG.game.agent.vlm = {};
+              CONFIG.game.agent.vlm.model = model; // API model cache only
+              const td = this.gameStateManager?.trialData;
+              const st = this.gameStateManager?.currentState;
+              if (td && st && String(st.experimentType || '').includes('2P')) {
+                td.partnerAgentType = model;
+              }
+            }
+          } catch (_) { /* noop */ }
         }
       } else if (p2Type === 'rl_joint' || p2Type === 'rl_individual' || p2Type === 'ai') {
         const mode = CONFIG?.game?.agent?.type || (p2Type === 'rl_joint' ? 'joint' : 'individual');
@@ -405,14 +377,14 @@ export class ExperimentManager {
       ? CONFIG.game.players.player1.type
       : CONFIG.game.players.player2.type;
 
-    if (aiType === 'gpt' && isGptAllowed) {
+    if ((aiType === 'gpt' || aiType === 'gpt-ToM') && isGptAllowed) {
       try {
         aiDirection = await this.gptClient.getNextAction(
           {
             ...gameState,
             trialData: this.gameStateManager.getCurrentTrialData()
           },
-          { aiPlayerNumber: this.aiPlayerNumber }
+          { aiPlayerNumber: this.aiPlayerNumber, model: (aiType === 'gpt-ToM' ? 'gpt-ToM' : undefined) }
         );
         if (aiDirection && typeof aiDirection === 'object') {
           if (Object.prototype.hasOwnProperty.call(aiDirection, 'inferredGoal')) {
@@ -423,6 +395,25 @@ export class ExperimentManager {
       } catch (e) {
         gptError = e;
         console.warn('GPT agent request failed during synchronized move; falling back to RL:', e?.message || e);
+      }
+    } else if ((aiType === 'vlm' || aiType === 'vlm-ToM') && isGptAllowed) {
+      try {
+        aiDirection = await this.vlmClient.getNextAction(
+          {
+            ...gameState,
+            trialData: this.gameStateManager.getCurrentTrialData()
+          },
+          { aiPlayerNumber: this.aiPlayerNumber, model: (aiType === 'vlm-ToM' ? 'vlm-ToM' : undefined) }
+        );
+        if (aiDirection && typeof aiDirection === 'object') {
+          if (Object.prototype.hasOwnProperty.call(aiDirection, 'inferredGoal')) {
+            this.gameStateManager.recordAIInferredOtherGoal(aiDirection.inferredGoal ?? null);
+          }
+          aiDirection = aiDirection?.action || null;
+        }
+      } catch (e) {
+        gptError = e;
+        console.warn('VLM agent request failed during synchronized move; falling back to RL:', e?.message || e);
       }
     }
     if (!aiDirection) {
@@ -535,14 +526,14 @@ export class ExperimentManager {
     let gptError = null;
 
 
-    if (aiType === 'gpt' && isGptAllowed) {
+    if ((aiType === 'gpt' || aiType === 'gpt-ToM') && isGptAllowed) {
       try {
         direction = await this.gptClient.getNextAction(
           {
             ...gameState,
             trialData: this.gameStateManager.getCurrentTrialData()
           },
-          { aiPlayerNumber: this.aiPlayerNumber }
+          { aiPlayerNumber: this.aiPlayerNumber, model: (aiType === 'gpt-ToM' ? 'gpt-ToM' : undefined) }
         );
         // If ToM variant, store inferred goal and use only the action for movement
         if (direction && typeof direction === 'object') {
@@ -554,6 +545,25 @@ export class ExperimentManager {
       } catch (err) {
         gptError = err;
         console.warn('GPT agent failed, falling back to RL. Reason:', err?.message || err);
+      }
+    } else if ((aiType === 'vlm' || aiType === 'vlm-ToM') && isGptAllowed) {
+      try {
+        direction = await this.vlmClient.getNextAction(
+          {
+            ...gameState,
+            trialData: this.gameStateManager.getCurrentTrialData()
+          },
+          { aiPlayerNumber: this.aiPlayerNumber, model: (aiType === 'vlm-ToM' ? 'vlm-ToM' : undefined) }
+        );
+        if (direction && typeof direction === 'object') {
+          if (Object.prototype.hasOwnProperty.call(direction, 'inferredGoal')) {
+            this.gameStateManager.recordAIInferredOtherGoal(direction.inferredGoal ?? null);
+          }
+          direction = direction?.action || null;
+        }
+      } catch (err) {
+        gptError = err;
+        console.warn('VLM agent failed, falling back to RL. Reason:', err?.message || err);
       }
     }
 
