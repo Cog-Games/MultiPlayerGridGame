@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { GameRoomManager } from './gameRoomManager.js';
 import { GameEventHandler } from './gameEventHandler.js';
-import { decideGptAction, decideGptTomAction, getGptConfigInfo, decideGptVlmAction, getVlmConfigInfo } from './ai/gptAgent.js';
+import { decideGptAction, decideGptTomAction, getGptConfigInfo, decideGptVlmAction, decideGptVlmTomAction, getVlmConfigInfo } from './ai/gptAgent.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

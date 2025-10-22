@@ -56,7 +56,7 @@ export const CONFIG = {
       },
       player2: {
         // Types: 'human' | 'gpt' | 'gpt-ToM' | 'vlm' | 'vlm-ToM' | 'rl_individual' | 'rl_joint'
-        type: 'vlm-ToM',
+        type: 'human',
         color: 'orange',
         description: 'Human, GPT, or RL partner'
       }
@@ -115,7 +115,7 @@ export const CONFIG = {
       // Optional GPT/VLM agent client defaults (non-sensitive)
       gpt: {
         // API model name used on server (e.g., 'gpt-4o-mini')
-        model: 'gpt-4o-mini',
+        model: 'gpt-4.1-mini',
         temperature: 0,
         // Include past trajectories in GPT prompt
         memory: {
@@ -126,7 +126,7 @@ export const CONFIG = {
       },
       vlm: {
         // Vision API model name used on server (e.g., 'gpt-4o-mini')
-        model: 'gpt-4o-mini',
+        model: 'gpt-4.1-mini',
         temperature: 0,
         memory: {
           enabled: true,
@@ -213,7 +213,7 @@ export const CONFIG = {
     matchPlayReadyTimeout: 10000,
     // Fallback AI partner type when human-human matching fails
     // Allowed: 'gpt' | 'gpt-ToM' | 'vlm' | 'vlm-ToM' | 'rl_individual' | 'rl_joint'
-    fallbackAIType: 'gpt-ToM',
+    fallbackAIType: 'vlm-ToM',
     // Partner inactivity settings
     inactivityFallback: {
       // Enable automatic fallback to AI when partner is inactive

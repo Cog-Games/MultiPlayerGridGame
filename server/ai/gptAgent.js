@@ -462,7 +462,7 @@ function buildTomPrompt({ matrix, currentPlayer, goals, memory, guidance }) {
   // ToM-specific instruction and strict JSON output requirement for reliable parsing
   lines.push(
     'First, infer the other traveler\'s current intended restaurant (choose from Restaurants).',
-    'Then, choose the best action for you given all information.',
+    'Then, choose the best action to collaborate with the other traveler based on this inferred goal and all other information.',
     'Reply ONLY with strict JSON: {"inferred_goal":[row,col] or null, "action":"up|down|left|right"}. No extra text.'
   );
 
