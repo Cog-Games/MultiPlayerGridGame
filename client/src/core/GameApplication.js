@@ -4,6 +4,7 @@ import { UIManager } from '../ui/UIManager.js';
 import { ExperimentManager } from '../experiments/ExperimentManager.js';
 import { TimelineManager } from '../timeline/TimelineManager.js';
 import { CONFIG, GameConfigUtils } from '../config/gameConfig.js';
+import { GameHelpers } from '../utils/GameHelpers.js';
 
 export class GameApplication {
   constructor(container) {
@@ -1208,7 +1209,15 @@ export class GameApplication {
       if (!hhSyncEnabled) return;
       const isHost = !!(typeof window !== 'undefined' && window.__IS_HOST__);
       const fromIdx = action.playerIndex;
-      this._hhSync.pendingMoves[fromIdx] = action.direction;
+      // Ignore proposed moves from a player who already reached a goal
+      try {
+        const state = this.gameStateManager?.getCurrentState?.();
+        const pos = (fromIdx === 0) ? state?.player1 : state?.player2;
+        const atGoal = GameHelpers?.isGoalReached?.(pos, state?.currentGoals || []) === true;
+        this._hhSync.pendingMoves[fromIdx] = atGoal ? null : action.direction;
+      } catch (_) {
+        this._hhSync.pendingMoves[fromIdx] = action.direction;
+      }
 
       // Host resolves the turn when both moves are present
       if (isHost) {
@@ -1218,6 +1227,17 @@ export class GameApplication {
   }
 
   async handleHumanHumanSynchronizedMove(direction) {
+    // If I've already reached a goal, ignore further movement input
+    try {
+      const state = this.gameStateManager?.getCurrentState?.();
+      const meNumber = this.playerIndex + 1; // 1 or 2
+      const mePos = (meNumber === 1) ? state?.player1 : state?.player2;
+      const atGoal = GameHelpers?.isGoalReached?.(mePos, state?.currentGoals || []) === true;
+      if (atGoal) {
+        return; // do not allow further moves for a player who already reached a goal
+      }
+    } catch (_) { /* fall through if state unavailable */ }
+
     // Store my proposed move
     this._hhSync.pendingMoves[this.playerIndex] = direction;
 
@@ -1231,7 +1251,7 @@ export class GameApplication {
       });
     }
 
-    // If host, attempt to resolve immediately if partner move already arrived
+    // If host, attempt to resolve immediately
     const isHost = !!(typeof window !== 'undefined' && window.__IS_HOST__);
     if (isHost) {
       this.tryResolveHumanHumanTurn();
@@ -1239,12 +1259,49 @@ export class GameApplication {
   }
 
   tryResolveHumanHumanTurn() {
+    // Pending proposed moves
     const m0 = this._hhSync.pendingMoves[0];
     const m1 = this._hhSync.pendingMoves[1];
-    if (!m0 || !m1) return; // Wait for both
 
-    // Apply both moves simultaneously (uses shared synchronized step with stepCount++)
-    const result = this.gameStateManager.processSynchronizedMoves(m0, m1);
+    // Determine goal states for both players
+    let p1AtGoal = false;
+    let p2AtGoal = false;
+    try {
+      const state = this.gameStateManager?.getCurrentState?.();
+      p1AtGoal = GameHelpers?.isGoalReached?.(state?.player1, state?.currentGoals || []) === true;
+      p2AtGoal = GameHelpers?.isGoalReached?.(state?.player2, state?.currentGoals || []) === true;
+    } catch (_) { /* default false */ }
+
+    // If both already at goal, nothing to resolve
+    if (p1AtGoal && p2AtGoal) {
+      this._hhSync.pendingMoves[0] = null;
+      this._hhSync.pendingMoves[1] = null;
+      return;
+    }
+
+    // Decide required moves based on who has reached a goal
+    let applyM0 = null;
+    let applyM1 = null;
+
+    if (!p1AtGoal && !p2AtGoal) {
+      // Both active: require both moves
+      if (!m0 || !m1) return;
+      applyM0 = m0;
+      applyM1 = m1;
+    } else if (p1AtGoal && !p2AtGoal) {
+      // Only player 2 active: require only p2 move
+      if (!m1) return;
+      applyM0 = null;
+      applyM1 = m1;
+    } else if (!p1AtGoal && p2AtGoal) {
+      // Only player 1 active: require only p1 move
+      if (!m0) return;
+      applyM0 = m0;
+      applyM1 = null;
+    }
+
+    // Apply synchronized step (one or both moves). Step count increments once.
+    const result = this.gameStateManager.processSynchronizedMoves(applyM0, applyM1);
     // Redraw
     this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
     // Broadcast full state to partner
