@@ -1194,22 +1194,29 @@ export class ExperimentManager {
       console.warn('⚠️ Could not notify GameApplication of trial completion:', error);
     }
 
-    // Determine success based on experiment type
+    // Determine success with authoritative override when provided
     const currentTrialData = this.gameStateManager.getCurrentTrialData();
     const experimentType = this.gameStateManager.getCurrentState().experimentType;
     let success;
+    const hasAuthoritative = (result && typeof result.success === 'boolean');
     if (experimentType && experimentType.startsWith('1P')) {
-      // Single player experiments - success means player reached a goal before timeout
-      // Check if player reached a goal (not just that the move was processed successfully)
-      const player1AtGoal = this.gameStateManager.getCurrentState().player1 &&
-        GameHelpers.isGoalReached(this.gameStateManager.getCurrentState().player1, this.gameStateManager.getCurrentState().currentGoals);
-      success = !!player1AtGoal;
+      success = hasAuthoritative ? !!result.success : (() => {
+        const p1 = this.gameStateManager.getCurrentState().player1;
+        return !!(p1 && GameHelpers.isGoalReached(p1, this.gameStateManager.getCurrentState().currentGoals));
+      })();
     } else {
-      // 2P experiments - use collaboration success (coerce to boolean; default false)
-      if (typeof currentTrialData.collaborationSucceeded !== 'boolean') {
-        currentTrialData.collaborationSucceeded = false;
+      // 2P experiments - prefer authoritative success when present, else derive from trialData
+      if (hasAuthoritative) {
+        success = !!result.success;
+      } else {
+        if (typeof currentTrialData.collaborationSucceeded !== 'boolean') {
+          currentTrialData.collaborationSucceeded = false;
+        }
+        success = currentTrialData.collaborationSucceeded === true;
       }
-      success = currentTrialData.collaborationSucceeded === true;
+      // Force trial data flag to align with success for consistency across clients
+      currentTrialData.collaborationSucceeded = !!success;
+      this.gameStateManager.trialData = { ...this.gameStateManager.trialData, collaborationSucceeded: !!success };
     }
 
     // Finalize trial data
@@ -1218,7 +1225,7 @@ export class ExperimentManager {
     // Get trial data for timeline
     const trialData = {
       ...result,
-      success: success, // Override with correct success value
+      success: !!success, // Ensure both clients store identical boolean
       trialData: this.gameStateManager.getCurrentTrialData(),
       gameState: this.gameStateManager.getCurrentState()
     };
