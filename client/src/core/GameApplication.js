@@ -919,6 +919,16 @@ export class GameApplication {
       }
     });
 
+    // Trial completion broadcast from server (ensure both clients advance)
+    this.networkManager.on('trial-completed', (payload) => {
+      try {
+        const trialData = (payload && payload.trialData) ? payload.trialData : payload;
+        this.handleTrialComplete(trialData || {});
+      } catch (e) {
+        console.warn('Error handling trial-completed event:', e);
+      }
+    });
+
     // Error handling
     this.networkManager.on('error', (error) => {
       console.error('Network error:', error);
