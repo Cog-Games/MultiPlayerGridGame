@@ -30,6 +30,9 @@ export class GameApplication {
       syncInterval: null
     };
 
+    // Guard to prevent duplicate trial completion handling
+    this._trialCompleteHandled = false;
+
     // Partner inactivity tracking for human-human mode
     this._inactivityTracking = {
       enabled: false,
@@ -922,8 +925,7 @@ export class GameApplication {
     // Trial completion broadcast from server (ensure both clients advance)
     this.networkManager.on('trial-completed', (payload) => {
       try {
-        const trialData = (payload && payload.trialData) ? payload.trialData : payload;
-        this.handleTrialComplete(trialData || {});
+        this.handleRemoteTrialCompleted(payload || {});
       } catch (e) {
         console.warn('Error handling trial-completed event:', e);
       }
@@ -1328,13 +1330,86 @@ export class GameApplication {
   }
 
   handleTrialComplete(result) {
-    // Send completion to network if needed
+    // Prevent duplicate handling on host
+    if (this._trialCompleteHandled) return;
+    this._trialCompleteHandled = true;
+
+    // Build canonical, authoritative completion payload from local state
+    const gameState = this.gameStateManager.getCurrentState();
+    const trialData = this.gameStateManager.getCurrentTrialData();
+
+    let success = false;
+    try {
+      const expType = String(gameState?.experimentType || '');
+      if (expType.startsWith('1P')) {
+        const p1 = gameState.player1;
+        success = !!GameHelpers.isGoalReached(p1, gameState.currentGoals);
+      } else {
+        // 2P experiments: rely on collaborationSucceeded computed in GameStateManager
+        success = trialData && trialData.collaborationSucceeded === true;
+      }
+    } catch (_) { /* keep default */ }
+
+    const finalPayload = {
+      ...result,
+      success: !!success,
+      trialComplete: true,
+      trialData,
+      gameState
+    };
+
+    // Send completion to network so partner advances with identical payload
     if (this.networkManager && this.networkManager.isConnected) {
-      this.networkManager.sendTrialComplete(result);
+      this.networkManager.sendTrialComplete(finalPayload);
     }
 
-    // Let experiment manager handle the completion
-    this.experimentManager.handleTrialComplete(result);
+    // Route to experiment manager (timeline-aware)
+    if (this.experimentManager?.handleTimelineTrialComplete && this.timelineManager) {
+      this.experimentManager.handleTimelineTrialComplete(finalPayload);
+    } else {
+      this.experimentManager.handleTrialComplete(finalPayload);
+    }
+  }
+
+  handleRemoteTrialCompleted(payload) {
+    // Partner-triggered trial completion: ensure we also advance once
+    if (this._trialCompleteHandled) return;
+    this._trialCompleteHandled = true;
+
+    try {
+      // Clear any pending human-human synchronized moves
+      if (this._hhSync && this._hhSync.pendingMoves) {
+        this._hhSync.pendingMoves[0] = null;
+        this._hhSync.pendingMoves[1] = null;
+      }
+
+      // Apply canonical end-of-trial state for consistency
+      if (payload && payload.gameState) {
+        this.gameStateManager.syncState(payload.gameState);
+      }
+      if (payload && payload.trialData) {
+        // Overwrite local trial data with authoritative copy
+        this.gameStateManager.trialData = { ...this.gameStateManager.trialData, ...payload.trialData };
+      }
+
+      // Update UI once with the final state
+      this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+
+      // Proceed via timeline-aware handler to avoid recomputation
+      if (this.experimentManager?.handleTimelineTrialComplete && this.timelineManager) {
+        this.experimentManager.handleTimelineTrialComplete(payload);
+      } else {
+        this.experimentManager.handleTrialComplete(payload);
+      }
+    } catch (e) {
+      console.warn('Error applying remote trial completion:', e);
+      // Fallback: proceed with local completion path
+      if (this.experimentManager?.handleTimelineTrialComplete && this.timelineManager) {
+        this.experimentManager.handleTimelineTrialComplete(payload || {});
+      } else {
+        this.experimentManager.handleTrialComplete(payload || {});
+      }
+    }
   }
 
   async retryConnection() {
@@ -1556,6 +1631,9 @@ export class GameApplication {
     } else {
       console.log('⚠️ Not starting inactivity tracking - isHumanHuman:', isHumanHuman, 'is2P:', experimentType?.includes('2P'));
     }
+
+    // Reset trial completion guard at the start of each trial
+    this._trialCompleteHandled = false;
   }
 
   handleTrialEnd() {
