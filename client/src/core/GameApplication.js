@@ -925,7 +925,9 @@ export class GameApplication {
     // Trial completion broadcast from server (ensure both clients advance)
     this.networkManager.on('trial-completed', (payload) => {
       try {
-        this.handleRemoteTrialCompleted(payload || {});
+        // Server wraps the canonical payload as { playerId, trialData }
+        const canonical = (payload && payload.trialData) ? payload.trialData : (payload || {});
+        this.handleRemoteTrialCompleted(canonical);
       } catch (e) {
         console.warn('Error handling trial-completed event:', e);
       }
@@ -1388,7 +1390,7 @@ export class GameApplication {
         this.gameStateManager.syncState(payload.gameState);
       }
       if (payload && payload.trialData) {
-        // Overwrite local trial data with authoritative copy
+        // Overwrite local trial data with authoritative copy (not the wrapper)
         this.gameStateManager.trialData = { ...this.gameStateManager.trialData, ...payload.trialData };
       }
 
