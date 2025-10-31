@@ -8,18 +8,21 @@ export class VlmAgentClient {
     this.baseUrl = CONFIG.server.url || '';
   }
 
+  // Build guidance per experiment type (concise, single responsibility)
   static guidanceFor(experimentType) {
     switch (experimentType) {
       case '2P2G':
-        return 'You will collaborate with another player; pick the same restaurant to win.';
+        // 2P2G: collaborate; win if both choose the same restaurant
+        return 'You will collaborate  with another player. Each round, you can win if both of you go to the same restaurant. You lose the round if you end up at different restaurants. For each round that you win, you earn an additional 10 points.';
       case '2P3G':
-        return 'You will collaborate with another player; some restaurants may appear later.';
+        // 2P3G: same partner; some restaurants may appear later
+        return 'You will collaborate  with another player. Each round, you can win if both of you go to the same restaurant. You lose the round if you end up at different restaurants. Note that some restaurants are already open when the round starts. Others may appear later. For each round that you win, you earn an additional 10 points.';
       case '1P2G':
-        return 'Single player: reach any open restaurant.';
+        return 'Single player: reach any open goal.';
       case '1P1G':
-        return 'Single player: reach the restaurant.';
+        return 'Single player: reach the goal.';
       default:
-        return 'Choose the best single step to reach a valid restaurant.';
+        return 'Choose the best single step to reach a valid goal.';
     }
   }
 
