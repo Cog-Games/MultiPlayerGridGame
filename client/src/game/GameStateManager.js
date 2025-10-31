@@ -721,11 +721,14 @@ export class GameStateManager {
       return;
     }
 
-    // Ensure collaborationSucceeded is explicitly boolean for 2P experiments
+    // Recompute collaboration success deterministically at finalization for 2P experiments
     try {
       const is2P = this.currentState && typeof this.currentState.experimentType === 'string' && this.currentState.experimentType.includes('2P');
-      if (is2P && typeof this.trialData.collaborationSucceeded !== 'boolean') {
-        this.trialData.collaborationSucceeded = false;
+      if (is2P) {
+        const p1 = this.trialData.player1FinalReachedGoal;
+        const p2 = this.trialData.player2FinalReachedGoal;
+        const bothValid = Number.isInteger(p1) && p1 >= 0 && Number.isInteger(p2) && p2 >= 0;
+        this.trialData.collaborationSucceeded = !!(bothValid && p1 === p2);
       }
     } catch (_) { /* noop */ }
 
