@@ -99,8 +99,8 @@ export const CONFIG = {
       // Legacy behavior had no time cap; only step-based via maxGameLength.
       maxTrialDurationMs: 60 * 1000,
       // Minimum and maximum time to wait for partner (ms)
-      waitingForPartnerMinDuration: 3 * 1000, // 9*1000, 9s
-      waitingForPartnerMaxDuration: 3 * 1000 // 300*1000, 5mins
+      waitingForPartnerMinDuration: 9 * 1000, // 9*1000, 9s
+      waitingForPartnerMaxDuration: 300 * 1000 // 300*1000, 5mins
     },
 
     // AI agent settings
@@ -116,7 +116,7 @@ export const CONFIG = {
       gpt: {
         // API model name used on server (e.g., 'gpt-4o-mini')
         model: 'gpt-4.1-mini',
-        temperature: 0,
+        temperature: 1,
         // Include past trajectories in GPT prompt
         memory: {
           enabled: true,
