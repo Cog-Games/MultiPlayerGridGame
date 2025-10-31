@@ -9,10 +9,24 @@ export class UIManager {
     this.currentScreen = null;
     this.gameCanvas = null;
     this.keyboardHandler = null;
+    this.fullscreenKeyHandler = null;
+    this.fullscreenChangeHandler = null;
     this.playerIndex = 0; // 0 = red player, 1 = orange player
     this.gameMode = 'human-ai'; // 'human-ai' or 'human-human'
     this.lastGameState = null;
     this.handleResize = null;
+
+    // Keep renderer sizing in sync with document fullscreen changes
+    if (typeof document !== 'undefined') {
+      this.fullscreenChangeHandler = () => {
+        const isFs = !!document.fullscreenElement;
+        try { this.renderer.setFullscreen(isFs); } catch (_) {}
+        if (this.lastGameState && this.gameCanvas) {
+          this.renderer.render(this.gameCanvas, this.lastGameState);
+        }
+      };
+      document.addEventListener('fullscreenchange', this.fullscreenChangeHandler);
+    }
   }
 
   cleanupCanvas() {
@@ -81,6 +95,9 @@ export class UIManager {
               <li>Work together to reach the green goals ⚫</li>
             </ul>
           </div>
+          <div style="margin-bottom: 16px; color: #555; font-size: 18px; font-weight: bold;">
+            press the spacebar to enter the fullscreen and start the game!
+          </div>
           <button id="start-experiment" style="
             padding: 15px 30px;
             font-size: 18px;
@@ -97,12 +114,48 @@ export class UIManager {
     `;
 
     // Add event listener
-    document.getElementById('start-experiment').addEventListener('click', () => {
+    document.getElementById('start-experiment').addEventListener('click', async () => {
+      if (!document.fullscreenElement) {
+        await this.enterFullscreen().catch(() => {});
+      }
       this.emit('start-experiment', CONFIG.game.experiments.order[0]);
     });
+
+    // Spacebar to enter fullscreen and start game on the whole document
+    if (this.fullscreenKeyHandler) {
+      document.removeEventListener('keydown', this.fullscreenKeyHandler);
+    }
+    this.fullscreenKeyHandler = async (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        // Enter fullscreen first
+        await this.enterFullscreen();
+        // Then start the experiment if fullscreen config allows it
+        if (CONFIG.fullscreen && CONFIG.fullscreen.autoStartOnFullscreen) {
+          this.emit('start-experiment', CONFIG.game.experiments.order[0]);
+        }
+      }
+    };
+    document.addEventListener('keydown', this.fullscreenKeyHandler);
+  }
+
+  async enterFullscreen() {
+    try {
+      if (!document.fullscreenElement && document.documentElement && document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch (err) {
+      console.warn('Fullscreen request failed:', err);
+      this.showNotification('Fullscreen is not allowed by the browser');
+    }
   }
 
   showLobbyScreen() {
+    // Remove welcome screen fullscreen key listener if present
+    if (this.fullscreenKeyHandler) {
+      document.removeEventListener('keydown', this.fullscreenKeyHandler);
+      this.fullscreenKeyHandler = null;
+    }
     this.cleanupCanvas();
     this.currentScreen = 'lobby';
     this.container.innerHTML = `
@@ -599,6 +652,14 @@ export class UIManager {
   destroy() {
     if (this.keyboardHandler) {
       document.removeEventListener('keydown', this.keyboardHandler);
+    }
+    if (this.fullscreenKeyHandler) {
+      document.removeEventListener('keydown', this.fullscreenKeyHandler);
+      this.fullscreenKeyHandler = null;
+    }
+    if (this.fullscreenChangeHandler) {
+      document.removeEventListener('fullscreenchange', this.fullscreenChangeHandler);
+      this.fullscreenChangeHandler = null;
     }
 
     this.eventHandlers.clear();

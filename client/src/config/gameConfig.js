@@ -66,10 +66,10 @@ export const CONFIG = {
     experiments: {
       // order: ['1P1G'],
       // order: ['1P2G'],
-      order: [ '2P3G'],
+      // order: [ '2P3G'],
       // order: ['1P2G','2P3G'],
       // order: ['2P2G', '2P3G'],
-      // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
+      order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
         '1P1G': 1, // 3
@@ -149,6 +149,16 @@ export const CONFIG = {
       goal: '#0066ff',
       obstacle: '#333333'
     }
+  },
+
+  // Fullscreen settings
+  fullscreen: {
+    // Enable fullscreen on spacebar press in welcome screen
+    enableOnWelcome: true,
+    // Auto-start game when entering fullscreen from welcome screen
+    autoStartOnFullscreen: true,
+    // Show fullscreen instructions in welcome screen
+    showInstructions: true
   },
 
   // 1P2G specific configuration

@@ -388,18 +388,25 @@ export class TimelineManager {
 
           <div style="margin-top: 30px;">
             <p style="font-size: 22px; font-weight: bold; color: #333; margin-bottom: 20px;">
-              Press the <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-family: monospace;">spacebar</span> to continue!
+              Press the <span style="background-color: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-family: monospace; border: 1px solid #ccc;">spacebar</span> to enter the fullscreen and start the game!
             </p>
           </div>
         </div>
       </div>
     `;
 
-    // Handle spacebar to continue (matching legacy)
-    const handleSpacebar = (event) => {
+    // Handle spacebar to enter fullscreen and continue
+    const handleSpacebar = async (event) => {
       if (event.code === 'Space' || event.key === ' ') {
         event.preventDefault();
         document.removeEventListener('keydown', handleSpacebar);
+        try {
+          if (!document.fullscreenElement && document.documentElement && document.documentElement.requestFullscreen) {
+            await document.documentElement.requestFullscreen();
+          }
+        } catch (_) {
+          // Ignore fullscreen failures and continue
+        }
         console.log('🎮 Starting game sequence');
         this.nextStage();
       }

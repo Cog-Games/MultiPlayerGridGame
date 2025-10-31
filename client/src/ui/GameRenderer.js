@@ -8,6 +8,9 @@ export class GameRenderer {
     this.canvasSize = CONFIG.visual.canvasSize;
     this.padding = CONFIG.visual.padding;
     this.effectiveCellSize = this.cellSize + this.padding; // Cell + padding as used in legacy
+    // Fullscreen/responsive controls
+    this.fullscreen = false;
+    this.baseScale = 0.85; // percent of viewport when not fullscreen
   }
 
   createCanvas() {
@@ -38,8 +41,10 @@ export class GameRenderer {
     const viewportMin = (typeof window !== 'undefined') ? Math.min(window.innerWidth || 0, window.innerHeight || 0) : this.canvasSize;
     const parentWidth = parent ? parent.clientWidth : viewportMin;
 
-    // Use 85% of the smaller dimension, but never exceed parent width
-    const targetCssSize = Math.max(200, Math.floor(Math.min(viewportMin * 0.85, parentWidth - 16)));
+    // Use 100% in fullscreen, otherwise a comfortable percentage
+    const scale = this.fullscreen ? 1 : this.baseScale;
+    const margin = this.fullscreen ? 0 : 16; // small margin when not fullscreen
+    const targetCssSize = Math.max(200, Math.floor(Math.min(viewportMin * scale, parentWidth - margin)));
 
     // Compute integer cellSize based on padding formula:
     // total = N*cellSize + (N+1)*padding  => cellSize = (total - (N+1)*padding)/N
@@ -70,6 +75,12 @@ export class GameRenderer {
     if (this.ctx && typeof this.ctx.setTransform === 'function') {
       this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
+  }
+
+  // Toggle renderer fullscreen sizing behavior
+  setFullscreen(isFullscreen) {
+    this.fullscreen = !!isFullscreen;
+    this.applyResponsiveSizing();
   }
 
   render(canvas, gameState) {
