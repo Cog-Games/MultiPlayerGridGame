@@ -620,16 +620,23 @@ export class GameStateManager {
     }
   }
 
-  // Record the AI agent's inferred goal for the other player on this step (if using gpt-ToM)
+  // Record the AI agent's inferred goal for the other player on this step (ToM variants)
+  // Accepts either a goal index (number) or a coordinate [row, col]. Stores the goal INDEX.
   recordAIInferredOtherGoal(inferredGoal) {
     try {
       if (!Array.isArray(this.trialData.aiInferredOtherGoals)) {
         this.trialData.aiInferredOtherGoals = [];
       }
-      // Store as coordinate array or null per step alignment with AI actions
-      this.trialData.aiInferredOtherGoals.push(
-        (Array.isArray(inferredGoal) && inferredGoal.length >= 2) ? [inferredGoal[0], inferredGoal[1]] : null
-      );
+      let idx = null;
+      if (Number.isInteger(inferredGoal)) {
+        idx = inferredGoal;
+      } else if (Array.isArray(inferredGoal) && inferredGoal.length >= 2) {
+        // Convert coordinate to goal index using current goals
+        try {
+          idx = GameHelpers.whichGoalReached([inferredGoal[0], inferredGoal[1]], this.currentState.currentGoals);
+        } catch (_) { /* safe fallback to null */ }
+      }
+      this.trialData.aiInferredOtherGoals.push(idx);
     } catch (_) { /* noop */ }
   }
 
