@@ -89,10 +89,10 @@ export class TimelineManager {
     console.log('📋 Creating comprehensive timeline stages...');
 
     // 1. Consent form
-    // this.stages.push({
-    //   type: 'consent',
-    //   handler: () => this.showConsentStage()
-    // });
+    this.stages.push({
+      type: 'consent',
+      handler: () => this.showConsentStage()
+    });
 
     // 2. Welcome info
     this.stages.push({
