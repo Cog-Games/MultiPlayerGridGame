@@ -377,11 +377,14 @@ export class GameApplication {
       // Pull comprehensive trial data from GameStateManager (legacy: allTrialsData)
       const gsData = this.gameStateManager?.getExperimentData?.() || { allTrialsData: [], successThreshold: {} };
 
-      // Participant ID: prefer existing, else try Prolific PID from URL
-      let participantId = data.participantId;
-      if (!participantId) {
+      // Participant ID: always prefer Prolific PID from URL when present
+      let participantId = null;
+      try {
         const params = new URLSearchParams(window.location.search);
-        participantId = params.get('PROLIFIC_PID') || params.get('prolific_pid') || `participant_${Date.now()}`;
+        const prolific = params.get('PROLIFIC_PID') || params.get('prolific_pid');
+        participantId = prolific || data.participantId || `participant_${Date.now()}`;
+      } catch (_) {
+        participantId = data.participantId || `participant_${Date.now()}`;
       }
 
       // Determine room id (from runtime or payload)
