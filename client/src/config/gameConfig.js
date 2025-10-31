@@ -100,7 +100,7 @@ export const CONFIG = {
       maxTrialDurationMs: 60 * 1000,
       // Minimum and maximum time to wait for partner (ms)
       waitingForPartnerMinDuration: 9 * 1000, // 9*1000, 9s
-      waitingForPartnerMaxDuration: 300 * 1000 // 300*1000, 5mins
+      waitingForPartnerMaxDuration: 180 * 1000 // 300*1000, 5mins
     },
 
     // AI agent settings
