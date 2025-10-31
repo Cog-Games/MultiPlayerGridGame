@@ -371,7 +371,7 @@ export async function decideGptVlmTomAction(payload) {
     imageDataUrl,
     model: apiModel,
     temperature,
-    systemMessage: 'You are a precise planner. Consider the image and text. Output ONLY strict JSON with keys inferred_goal (array or null) and action (up|down|left|right). No explanations.'
+    systemMessage: 'You are a collaborative navigation AI with theory-of-mind capabilities. Analyze the visual grid image and text context to infer the other player\'s intended goal, then choose your next action to coordinate with them. Output ONLY valid JSON with keys "inferred_goal" (array [row,col] or null) and "action" (one of: "up", "down", "left", "right"). No explanations, no markdown, no additional text.'
   });
 
   const raw = (result && typeof result === 'object') ? result.content : result;
@@ -425,27 +425,34 @@ function buildTomPrompt({ matrix, currentPlayer, goals, memory, guidance }) {
   const goalsStr = goalsList.length ? goalsList.map(g => `(${g[0]}, ${g[1]})`).join('; ') : 'none';
 
   const lines = [
-    'You are playing a navigation game in a 2d grid world with another player where you are hungry travelers need to reach restaurants as quickly as possible.',
+    '=== GAME CONTEXT ===',
+    'You are playing a navigation game in a 2D grid world with another player. You are hungry travelers who need to reach restaurants as quickly as possible.',
+    '',
     (typeof guidance === 'string' && guidance.trim().length > 0)
-      ? `Instructions for this game: ${guidance.trim()}`
-      : 'Instructions for this game: Collaborate to choose the same restaurant as the other traveler.',
-    'Here is current grid map and legend:',
+      ? `GAME RULES: ${guidance.trim()}`
+      : 'GAME RULES: Collaborate to choose the same restaurant as the other traveler.',
+    '',
+    '=== CURRENT STATE ===',
+    'Grid map and legend:',
     legend,
-    'Grid:',
+    'Grid matrix:',
     matrixStr,
     '',
-    `Traveler1 at ${p1Str}`,
-    `Traveler2 at ${p2Str}`,
-    `Restaurants: ${goalsStr}`,
-    (currentPlayer && currentPlayer.label === 'player1')
-      ? 'You are traveler 1.'
-      : 'You are traveler 2.',
+    `Player positions:`,
+    `  Traveler1 (red): ${p1Str}`,
+    `  Traveler2 (orange): ${p2Str}`,
+    `Restaurants (blue): ${goalsStr}`,
     '',
-    'Actions coordinate deltas:',
-    'left = [0, -1]',
-    'right = [0, 1]',
-    'up = [-1, 0]',
-    'down = [1, 0]',
+    (currentPlayer && currentPlayer.label === 'player1')
+      ? 'YOU ARE: Traveler 1 (red)'
+      : 'YOU ARE: Traveler 2 (orange)',
+    '',
+    '=== ACTIONS ===',
+    'Movement directions (coordinate deltas):',
+    '  left = [0, -1]  (move left, column decreases)',
+    '  right = [0, 1]  (move right, column increases)',
+    '  up = [-1, 0]    (move up, row decreases)',
+    '  down = [1, 0]   (move down, row increases)',
     ''
   ];
 
@@ -453,18 +460,38 @@ function buildTomPrompt({ matrix, currentPlayer, goals, memory, guidance }) {
     const p1t = Array.isArray(memory.trajectories.player1) ? memory.trajectories.player1 : [];
     const p2t = Array.isArray(memory.trajectories.player2) ? memory.trajectories.player2 : [];
     const fmt = (traj) => traj.map(c => `(${c[0]}, ${c[1]})`).join(' -> ');
-    lines.push('Recent trajectories:');
-    lines.push(`Traveler1: ${fmt(p1t) || 'n/a'}`);
-    lines.push(`Traveler2: ${fmt(p2t) || 'n/a'}`);
+    lines.push('=== RECENT MOVEMENT HISTORY ===');
+    lines.push(`Traveler1 path: ${fmt(p1t) || 'n/a'}`);
+    lines.push(`Traveler2 path: ${fmt(p2t) || 'n/a'}`);
     lines.push('');
   }
 
-  // ToM-specific instruction and strict JSON output requirement for reliable parsing
+  // Enhanced ToM-specific instruction
   lines.push(
-    'First, infer the other traveler\'s current intended restaurant (choose from Restaurants).',
-    'Then, choose the best action to collaborate with the other traveler based on this inferred goal and all other information.',
-    'Reply ONLY with strict JSON: {"inferred_goal":[row,col] or null, "action":"up|down|left|right"}. No extra text.'
+    '=== YOUR TASK ===',
+    'STEP 1 - INFERENCE: Analyze the other traveler\'s recent movements and current position to infer which restaurant they are heading toward.',
+    '  - Consider their trajectory history (if available)',
+    '  - Consider their current position relative to each restaurant',
+    '  - Consider which restaurant would be most efficient for them to reach',
+    '  - If unclear, infer the closest restaurant to them',
+    '',
+    'STEP 2 - COLLABORATION: Choose your next action to move toward the same restaurant you inferred for the other traveler.',
+    '  - Your goal is to coordinate and both reach the same restaurant',
+    '  - Choose the most efficient single-step action (up, down, left, or right)',
+    '  - Consider both your own position and the other traveler\'s likely goal',
+    '',
+    '=== OUTPUT FORMAT ===',
+    'Reply with ONLY valid JSON in this exact format:',
+    '  {"inferred_goal": [row, col] or null, "action": "up"|"down"|"left"|"right"}',
+    '',
+    'Examples:',
+    '  {"inferred_goal": [5, 7], "action": "right"}',
+    '  {"inferred_goal": [2, 3], "action": "up"}',
+    '  {"inferred_goal": null, "action": "left"}',
+    '',
+    'Do NOT include any explanations, reasoning, or additional text. Only output the JSON object.'
   );
+
 
   const finalPrompt = lines.join('\n');
   logExactPrompt(finalPrompt);
@@ -505,7 +532,7 @@ export async function decideGptTomAction(payload) {
   const result = await callOpenAIChat(prompt, {
     model: baseModel,
     temperature,
-    systemMessage: 'You are a precise planner. Output ONLY strict JSON with keys inferred_goal (array or null) and action (up|down|left|right). No explanations.'
+    systemMessage: 'You are a collaborative navigation AI with theory-of-mind capabilities. Analyze the visual grid image and text context to infer the other player\'s intended goal, then choose your next action to coordinate with them. Output ONLY valid JSON with keys "inferred_goal" (array [row,col] or null) and "action" (one of: "up", "down", "left", "right"). No explanations, no markdown, no additional text.'
   });
   const raw = (result && typeof result === 'object') ? result.content : result;
   const parsed = parseTomResponse(String(raw || ''));
