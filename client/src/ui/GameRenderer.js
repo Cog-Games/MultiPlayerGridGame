@@ -38,12 +38,17 @@ export class GameRenderer {
 
     // Determine maximum CSS size available (square) based on viewport and parent container
     const parent = this.canvas.parentElement;
-    const viewportMin = (typeof window !== 'undefined') ? Math.min(window.innerWidth || 0, window.innerHeight || 0) : this.canvasSize;
+    // In fullscreen mode, reserve space for text elements (header, trial info, instructions)
+    const textReserve = this.fullscreen ? 150 : 0; // Reserve ~150px for text in fullscreen
+    const viewportHeight = (typeof window !== 'undefined' && window.innerHeight) ? window.innerHeight - textReserve : 0;
+    const viewportMin = (typeof window !== 'undefined')
+      ? Math.min(window.innerWidth || 0, Math.max(viewportHeight, window.innerHeight * 0.7))
+      : this.canvasSize;
     const parentWidth = parent ? parent.clientWidth : viewportMin;
 
-    // Use 100% in fullscreen, otherwise a comfortable percentage
-    const scale = this.fullscreen ? 1 : this.baseScale;
-    const margin = this.fullscreen ? 0 : 16; // small margin when not fullscreen
+    // Use 85% scale in fullscreen to ensure text fits, otherwise use baseScale
+    const scale = this.fullscreen ? 0.85 : this.baseScale;
+    const margin = this.fullscreen ? 20 : 16; // Add margin in fullscreen too
     const targetCssSize = Math.max(200, Math.floor(Math.min(viewportMin * scale, parentWidth - margin)));
 
     // Compute integer cellSize based on padding formula:
