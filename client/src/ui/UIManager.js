@@ -348,7 +348,7 @@ export class UIManager {
 
   // Feedback and results
   showTrialFeedback(result) {
-    const success = result.success || result.collaborationSucceeded;
+    const success = !!(result && (result.success === true || result.collaborationSucceeded === true));
     const experimentType = result.experimentType || '2P2G'; // Default to collaboration type
 
     // Determine message type based on experiment type

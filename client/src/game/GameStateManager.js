@@ -702,7 +702,7 @@ export class GameStateManager {
         const p2Goal = this.trialData.player2FinalReachedGoal;
 
         // Collaboration succeeds when both players reach the same goal
-        this.trialData.collaborationSucceeded = (p1Goal === p2Goal && p1Goal !== null);
+        this.trialData.collaborationSucceeded = (p1Goal !== null && p2Goal !== null && p1Goal === p2Goal);
 
         // For 2P experiments, trial is complete when both players reach goals
         // but the success depends on whether they reached the same goal
