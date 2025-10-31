@@ -1087,12 +1087,12 @@ export class ExperimentManager {
     // Store completion callback
     this.currentTrialCompleteCallback = onComplete;
 
-    // Notify GameApplication to start inactivity tracking for human-human trials
+    // Notify GameApplication of trial start for ALL experiments
+    // This resets its trial-complete guard and starts inactivity tracking when applicable
     try {
-      // Get GameApplication instance from window if available
       const gameApp = window.__GAME_APPLICATION__;
-      if (gameApp && experimentType.includes('2P')) {
-        console.log('🔗 Notifying GameApplication of trial start for inactivity tracking');
+      if (gameApp) {
+        console.log('🔗 Notifying GameApplication of trial start');
         gameApp.handleTrialStart?.(experimentType, experimentIndex, trialIndex);
       }
     } catch (error) {
