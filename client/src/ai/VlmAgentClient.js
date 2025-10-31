@@ -13,7 +13,7 @@ export class VlmAgentClient {
     switch (experimentType) {
       case '2P2G':
         // 2P2G: collaborate; win if both choose the same restaurant
-        return 'You will collaborate  with another player. Each round, you can win if both of you go to the same restaurant. You lose the round if you end up at different restaurants. For each round that you win, you earn an additional 10 points.';
+        return 'You will collaborate with another player. Each round, you can win if both of you go to the same restaurant. You lose the round if you end up at different restaurants. Movement: Both players move one step at a time - the action will only take effect after both players have pressed their buttons. For each round that you win, you earn an additional 10 points.';
       case '2P3G':
         // 2P3G: same partner; some restaurants may appear later
         return 'You will collaborate  with another player. Each round, you can win if both of you go to the same restaurant. You lose the round if you end up at different restaurants. Note that some restaurants are already open when the round starts. Others may appear later. For each round that you win, you earn an additional 10 points.';

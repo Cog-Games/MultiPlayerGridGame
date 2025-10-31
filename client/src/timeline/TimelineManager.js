@@ -1440,6 +1440,7 @@ export class TimelineManager {
                 <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
                   <li>Each round, you can <strong> win </strong> if both of you go to the <strong> same </strong> restaurant.</li>
                   <li>You lose the round if you end up at different restaurants.</li>
+                  <li>Movement: Both players move one step at a time - the action will only take effect after both players have pressed their buttons.</li>
                   <li>For each round that you win, you earn an additional 10 cents.</li>
                 </ul>
               </div>
