@@ -79,6 +79,22 @@ export const GameHelpers = {
   },
 
   /**
+   * Determine collaboration success: both players reached the SAME goal.
+   * Uses current gameState to recompute outcome deterministically.
+   */
+  didBothPlayersReachSameGoal(gameState) {
+    if (!gameState) return false;
+    const { player1, player2, currentGoals } = gameState;
+    if (!player1 || !player2 || !Array.isArray(currentGoals) || currentGoals.length < 2) return false;
+    const p1At = this.isGoalReached(player1, currentGoals);
+    const p2At = this.isGoalReached(player2, currentGoals);
+    if (!p1At || !p2At) return false;
+    const g1 = this.whichGoalReached(player1, currentGoals);
+    const g2 = this.whichGoalReached(player2, currentGoals);
+    return Number.isInteger(g1) && Number.isInteger(g2) && g1 === g2;
+  },
+
+  /**
    * Detect which goal a player is heading towards
    */
   detectPlayerGoal(playerPos, action, goals, goalHistory) {

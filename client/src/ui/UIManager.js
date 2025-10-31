@@ -145,7 +145,6 @@ export class UIManager {
         await document.documentElement.requestFullscreen();
       }
     } catch (err) {
-      console.warn('Fullscreen request failed:', err);
       this.showNotification('Fullscreen is not allowed by the browser');
     }
   }
@@ -348,7 +347,8 @@ export class UIManager {
 
   // Feedback and results
   showTrialFeedback(result) {
-    const success = !!(result && (result.success === true || result.collaborationSucceeded === true));
+    // Use only the canonical success flag provided by caller
+    const success = !!(result && result.success === true);
     const experimentType = result.experimentType || '2P2G'; // Default to collaboration type
 
     // Determine message type based on experiment type

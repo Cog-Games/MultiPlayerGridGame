@@ -862,17 +862,18 @@ export class ExperimentManager {
     let success;
     if (experimentType && experimentType.startsWith('1P')) {
       // Single player experiments - success means player reached a goal before timeout
-      const player1AtGoal = this.gameStateManager.getCurrentState().player1 &&
-        GameHelpers.isGoalReached(this.gameStateManager.getCurrentState().player1, this.gameStateManager.getCurrentState().currentGoals);
-      success = !!player1AtGoal;
+      const st = this.gameStateManager.getCurrentState();
+      const p1 = st.player1;
+      success = !!(p1 && GameHelpers.isGoalReached(p1, st.currentGoals));
     } else {
-      // 2P experiments - use result success for standalone mode
-      success = !!(result.success || result.trialComplete);
+      // 2P experiments - recompute deterministically from final positions
+      const st = this.gameStateManager.getCurrentState();
+      success = !!GameHelpers.didBothPlayersReachSameGoal(st);
     }
     this.gameStateManager.finalizeTrial(success);
 
-    // Show feedback
-    this.uiManager.showTrialFeedback(result);
+    // Show feedback with canonical success flag
+    this.uiManager.showTrialFeedback({ success, experimentType });
 
     // Move to next trial after delay
     setTimeout(() => {
@@ -1196,25 +1197,21 @@ export class ExperimentManager {
 
     // Determine success with authoritative override when provided
     const currentTrialData = this.gameStateManager.getCurrentTrialData();
-    const experimentType = this.gameStateManager.getCurrentState().experimentType;
+    const currentState = this.gameStateManager.getCurrentState();
+    const experimentType = currentState.experimentType;
     let success;
     const hasAuthoritative = (result && typeof result.success === 'boolean');
     if (experimentType && experimentType.startsWith('1P')) {
       success = hasAuthoritative ? !!result.success : (() => {
-        const p1 = this.gameStateManager.getCurrentState().player1;
-        return !!(p1 && GameHelpers.isGoalReached(p1, this.gameStateManager.getCurrentState().currentGoals));
+        const p1 = currentState.player1;
+        return !!(p1 && GameHelpers.isGoalReached(p1, currentState.currentGoals));
       })();
     } else {
-      // 2P experiments - prefer authoritative success when present, else derive from trialData
-      if (hasAuthoritative) {
-        success = !!result.success;
-      } else {
-        if (typeof currentTrialData.collaborationSucceeded !== 'boolean') {
-          currentTrialData.collaborationSucceeded = false;
-        }
-        success = currentTrialData.collaborationSucceeded === true;
-      }
-      // Force trial data flag to align with success for consistency across clients
+      // 2P experiments - deterministically recompute success from final positions
+      const recomputed = !!GameHelpers.didBothPlayersReachSameGoal(currentState);
+      // If authoritative success disagrees, override with recomputed
+      success = hasAuthoritative ? !!result.success && recomputed : recomputed;
+      // Force trial data flag to align with recomputed success for consistency
       currentTrialData.collaborationSucceeded = !!success;
       this.gameStateManager.trialData = { ...this.gameStateManager.trialData, collaborationSucceeded: !!success };
     }

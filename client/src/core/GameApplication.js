@@ -1347,8 +1347,8 @@ export class GameApplication {
         const p1 = gameState.player1;
         success = !!GameHelpers.isGoalReached(p1, gameState.currentGoals);
       } else {
-        // 2P experiments: rely on collaborationSucceeded computed in GameStateManager
-        success = trialData && trialData.collaborationSucceeded === true;
+        // 2P experiments: deterministically recompute from final positions/goals
+        success = !!GameHelpers.didBothPlayersReachSameGoal(gameState);
       }
     } catch (_) { /* keep default */ }
 
