@@ -26,6 +26,11 @@ export default defineConfig({
         target: 'http://localhost:3001',
         changeOrigin: true,
       },
+      // Proxy Python-generated static files (maps, etc.) to the game server
+      '/python': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
     },
   },
 });

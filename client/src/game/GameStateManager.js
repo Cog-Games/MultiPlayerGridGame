@@ -363,6 +363,37 @@ export class GameStateManager {
       this.currentState.gridMatrix[row][col] = GAME_OBJECTS.goal;
       this.currentState.currentGoals.push([row, col]);
     }
+
+    // Place obstacles if provided
+    if (Array.isArray(design.obstacles)) {
+      try { console.log(`🧩 Design obstacles provided: ${design.obstacles.length}`); } catch (_) { /* noop */ }
+      for (const pos of design.obstacles) {
+        if (Array.isArray(pos) && pos.length >= 2) {
+          const r = pos[0];
+          const c = pos[1];
+          if (
+            Number.isInteger(r) && Number.isInteger(c) &&
+            r >= 0 && r < this.currentState.gridMatrix.length &&
+            c >= 0 && c < this.currentState.gridMatrix[0].length
+          ) {
+            // Do not overwrite players or goals
+            if (this.currentState.gridMatrix[r][c] === GAME_OBJECTS.blank) {
+              this.currentState.gridMatrix[r][c] = GAME_OBJECTS.obstacle;
+            }
+          }
+        }
+      }
+      try {
+        // Count obstacles applied
+        let count = 0;
+        for (let rr = 0; rr < this.currentState.gridMatrix.length; rr++) {
+          for (let cc = 0; cc < this.currentState.gridMatrix[rr].length; cc++) {
+            if (this.currentState.gridMatrix[rr][cc] === GAME_OBJECTS.obstacle) count++;
+          }
+        }
+        console.log(`🧱 Obstacles placed on grid: ${count}`);
+      } catch (_) { /* noop */ }
+    }
   }
 
   // Safely add a new goal to the internal state and grid
@@ -841,6 +872,8 @@ export class GameStateManager {
       case 'rl_individual':
       case 'individual':
         return 'individual-rl';
+      case 'rl_individual_python':
+        return 'individual-rl-python';
       case 'ai':
         // Default AI type based on config
         return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl';
@@ -914,6 +947,7 @@ export class GameStateManager {
       }
       if (t === 'rl_joint') return 'joint-rl';
       if (t === 'rl_individual') return 'individual-rl';
+      if (t === 'rl_individual_python') return 'individual-rl-python';
       if (t === 'ai') return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl'; // legacy safety
       return String(t || 'unknown');
     } catch (_) {

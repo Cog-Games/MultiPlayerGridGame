@@ -128,10 +128,15 @@ export class UIManager {
     this.fullscreenKeyHandler = async (e) => {
       if (e.code === 'Space') {
         e.preventDefault();
-        // Enter fullscreen first
-        await this.enterFullscreen();
-        // Then start the experiment if fullscreen config allows it
-        if (CONFIG.fullscreen && CONFIG.fullscreen.autoStartOnFullscreen) {
+
+        // Enter fullscreen first if enabled
+        if (CONFIG.fullscreen?.enabled) {
+          await this.enterFullscreen();
+        }
+
+        // Then start the experiment if fullscreen config allows it OR if fullscreen is disabled (so we just start)
+        const shouldStart = (!CONFIG.fullscreen?.enabled) || (CONFIG.fullscreen?.autoStartOnFullscreen);
+        if (shouldStart) {
           this.emit('start-experiment', CONFIG.game.experiments.order[0]);
         }
       }

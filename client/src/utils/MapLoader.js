@@ -13,6 +13,15 @@ export class MapLoader {
 
     // Load map data from server API
   async loadMapData() {
+    // Choose source based on CONFIG
+    try {
+      const source = (CONFIG?.maps?.source) || 'server';
+      if (source === 'python-json') {
+        console.log('🗺️ Loading map data from Python JSON...');
+        return await this.loadMapDataFromPythonJson();
+      }
+    } catch (_) { /* ignore, fallback to server */ }
+
     console.log('🗺️ Loading map data from server...');
     
     // Check if server is running first
@@ -60,6 +69,28 @@ export class MapLoader {
       console.log(`🗺️ ${expType}: ${mapCount} maps loaded`);
     }
 
+    return maps;
+  }
+
+  async loadMapDataFromPythonJson() {
+    const base = (CONFIG?.maps?.pythonJsonBasePath) || '/python/gameDesign/output';
+    const experimentTypes = ['1P1G', '1P2G', '2P2G', '2P3G'];
+    const maps = {};
+    for (const expType of experimentTypes) {
+      try {
+        const url = `${base}/${expType}.json`;
+        console.log(`🌐 Fetching ${expType} maps from ${url} ...`);
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        maps[expType] = data;
+        const count = data ? Object.keys(data).length : 0;
+        console.log(`✅ Loaded ${count} ${expType} maps from Python JSON`);
+      } catch (e) {
+        console.warn(`⚠️ Failed to load ${expType} from Python JSON, using fallback:`, e?.message || e);
+        maps[expType] = this.getFallbackMaps(expType);
+      }
+    }
     return maps;
   }
 

@@ -75,6 +75,10 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Serve generated Python assets (maps, etc.) under /python
+// This allows the client to fetch JSON maps if configured to do so
+app.use('/python', express.static(path.join(__dirname, '..', 'python')));
+
 // Get room stats
 app.get('/api/rooms', (req, res) => {
   res.json(roomManager.getRoomStats());

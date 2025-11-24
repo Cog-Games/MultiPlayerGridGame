@@ -1,6 +1,7 @@
 import { CONFIG, GAME_OBJECTS, GameConfigUtils } from '../config/gameConfig.js';
 import { RLAgent } from '../ai/RLAgent.js';
 import { GptAgentClient } from '../ai/GptAgentClient.js';
+import { WeIntentAgent } from '../ai/WeIntentAgent.js';
 import { VlmAgentClient } from '../ai/VlmAgentClient.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
 import { NewGoalGenerator } from '../utils/NewGoalGenerator.js';
@@ -13,6 +14,7 @@ export class ExperimentManager {
     this.timelineManager = timelineManager;
     this.rlAgent = new RLAgent();
     this.gptClient = new GptAgentClient();
+    this.weIntentAgent = new WeIntentAgent();
     this.vlmClient = new VlmAgentClient();
 
     this.currentExperimentSequence = [];
@@ -70,6 +72,8 @@ export class ExperimentManager {
             td.partnerAgentType = 'joint-rl';
           } else if (fallbackType === 'rl_individual') {
             td.partnerAgentType = 'individual-rl';
+          } else if (fallbackType === 'rl_individual_python') {
+            td.partnerAgentType = 'individual-rl-python';
           } else {
             td.partnerAgentType = String(fallbackType);
           }
@@ -415,6 +419,15 @@ export class ExperimentManager {
         gptError = e;
         console.warn('VLM agent request failed during synchronized move; falling back to RL:', e?.message || e);
       }
+    } else if (aiType === 'we_intent_js') {
+      try {
+        aiDirection = this.weIntentAgent.getNextAction(
+          { ...gameState, trialData: this.gameStateManager.getCurrentTrialData() },
+          { aiPlayerNumber: this.aiPlayerNumber }
+        );
+      } catch (e) {
+        console.warn('WeIntentAgent failed, falling back to RL:', e?.message || e);
+      }
     }
     if (!aiDirection) {
       if (!this.rlAgent) return; // Safety
@@ -564,6 +577,19 @@ export class ExperimentManager {
       } catch (err) {
         gptError = err;
         console.warn('VLM agent failed, falling back to RL. Reason:', err?.message || err);
+      }
+    }
+
+    if (!direction) {
+      if (aiType === 'we_intent_js') {
+        try {
+          direction = this.weIntentAgent.getNextAction(
+            { ...gameState, trialData: this.gameStateManager.getCurrentTrialData() },
+            { aiPlayerNumber: this.aiPlayerNumber }
+          );
+        } catch (e) {
+          console.warn('WeIntentAgent failed, falling back to RL:', e?.message || e);
+        }
       }
     }
 

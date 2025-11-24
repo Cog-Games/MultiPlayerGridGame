@@ -83,6 +83,13 @@ export class GameApplication {
   async initialize(mode, experimentType, roomId) {
     if (this.isInitialized) return;
 
+    // Ensure config consistency for RL agents
+    // This fixes case where config file has mismatched player/agent types
+    const p2Type = CONFIG.game.players.player2.type;
+    if (['rl_individual', 'rl_joint', 'rl_individual_python'].includes(p2Type)) {
+      GameConfigUtils.setPlayerType(2, p2Type);
+    }
+
     // Initialize core managers
     this.gameStateManager = new GameStateManager();
     this.uiManager = new UIManager(this.container);
@@ -129,6 +136,15 @@ export class GameApplication {
     // Make GameApplication available globally for ExperimentManager communication
     try { window.__GAME_APPLICATION__ = this; } catch (_) { /* ignore */ }
 
+    // Log current player configuration and map source at startup for debugging
+    try {
+      const p1 = CONFIG?.game?.players?.player1?.type;
+      const p2 = CONFIG?.game?.players?.player2?.type;
+      const agent = CONFIG?.game?.agent?.type;
+      const mapSrc = CONFIG?.maps?.source || 'server';
+      console.log(`🔧 Startup config → player1: ${p1}, player2: ${p2}, rlMode: ${agent}, mapSource: ${mapSrc}`);
+    } catch (_) { /* noop */ }
+
     // Proactively fetch and cache GPT model for accurate recording (e.g., partnerFallbackAIType)
     try { await this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
   }
@@ -141,7 +157,7 @@ export class GameApplication {
     const skipNetwork = urlParams.get('skipNetwork') === 'true';
 
     // Default to configured fallback AI when not explicitly set
-    if (!['gpt', 'human', 'rl_joint', 'rl_individual'].includes(CONFIG.game.players.player2.type)) {
+    if (!['gpt', 'human', 'rl_joint', 'rl_individual', 'rl_individual_python'].includes(CONFIG.game.players.player2.type)) {
       GameConfigUtils.setPlayerType(2, CONFIG.multiplayer.fallbackAIType || 'rl_joint');
     }
     this.uiManager.setPlayerInfo(0, 'human-ai');
