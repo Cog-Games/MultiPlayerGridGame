@@ -154,28 +154,33 @@ export class GameRenderer {
 
   drawGoals() {
     // Draw goals from gameState.currentGoals if available
-    if (this.gameState && this.gameState.currentGoals && Array.isArray(this.gameState.currentGoals)) {
-      for (const goal of this.gameState.currentGoals) {
+    if (this.gameState && Array.isArray(this.gameState.currentGoals)) {
+      const types = Array.isArray(this.gameState.currentGoalTypes)
+        ? this.gameState.currentGoalTypes
+        : [];
+      this.gameState.currentGoals.forEach((goal, index) => {
         if (goal && Array.isArray(goal) && goal.length >= 2) {
           const [row, col] = goal;
-          this.drawGoalWithPlayerCheck(row, col);
+          const type = types[index] || 'small';
+          this.drawGoalWithPlayerCheck(row, col, type);
         }
-      }
+      });
     } else {
       // Fallback to grid matrix if currentGoals not available
       const gridSize = CONFIG.game.matrixSize;
       for (let row = 0; row < gridSize; row++) {
         for (let col = 0; col < gridSize; col++) {
           const cellValue = this.gameState.gridMatrix[row][col];
-          if (cellValue === GAME_OBJECTS.goal) {
-            this.drawGoalWithPlayerCheck(row, col);
+          if (cellValue === GAME_OBJECTS.goal_small || cellValue === GAME_OBJECTS.goal_big || cellValue === GAME_OBJECTS.goal) {
+            const type = (cellValue === GAME_OBJECTS.goal_big) ? 'big' : 'small';
+            this.drawGoalWithPlayerCheck(row, col, type);
           }
         }
       }
     }
   }
 
-  drawGoalWithPlayerCheck(row, col) {
+  drawGoalWithPlayerCheck(row, col, type = 'small') {
     // Check if any player is at this goal position
     const hasPlayer = this.isPlayerAtPosition(row, col);
 
@@ -191,7 +196,14 @@ export class GameRenderer {
       this.ctx.globalAlpha = 0.7; // Same as legacy version
     }
 
-    this.ctx.fillRect(x, y, this.cellSize, this.cellSize);
+    // Big goals fill most of the cell, small goals are inset squares
+    if (type === 'big') {
+      const margin = this.cellSize * 0.08;
+      this.ctx.fillRect(x + margin, y + margin, this.cellSize - 2 * margin, this.cellSize - 2 * margin);
+    } else {
+      const margin = this.cellSize * 0.3;
+      this.ctx.fillRect(x + margin, y + margin, this.cellSize - 2 * margin, this.cellSize - 2 * margin);
+    }
     this.ctx.restore();
   }
 

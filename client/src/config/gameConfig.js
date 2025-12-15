@@ -43,6 +43,7 @@ export const CONFIG = {
     name: 'GridWorldExperiment_StagHunt',
     version: '1.0.0',
     prolificCompletionCode: getEnvVar('VITE_PROLIFIC_COMPLETION_CODE', 'CTNDR8GV'),
+    // Size of the square grid world (N x N)
     matrixSize: 15,
     maxGameLength: 60,
 
@@ -55,7 +56,7 @@ export const CONFIG = {
       },
       player2: {
         // Types: 'human' | 'gpt' | 'gpt-ToM' | 'vlm' | 'vlm-ToM' | 'rl_individual' | 'rl_joint' | 'we_intent_js'
-        type: 'we_intent_js',
+        type: 'rl_joint',
         color: 'orange',
         description: 'Human, GPT, or RL partner'
       }
@@ -85,6 +86,23 @@ export const CONFIG = {
       minTrialsBeforeCheck: 12,
       maxTrials: 24,
       randomSamplingAfterTrial: 12
+    },
+
+    // Reward configuration (points paid by different goal types)
+    // These are read by the game logic but can be tuned per experiment.
+    rewards: {
+      // Reward for any small (solo-collectable) goal
+      smallGoalReward: 1,
+      // Reward per player when BOTH players reach the same big joint goal
+      bigGoalJointReward: 3
+    },
+
+    // Dual-goal mechanic configuration
+    // When enabled for an experiment type, maps may contain both small and big goals.
+    dualGoals: {
+      // Experiment types that use dual-goal maps and scoring
+      // (others treat all goals as standard small goals)
+      enabledExperiments: ['2P2G']
     },
 
     // Timing configurations
@@ -146,7 +164,9 @@ export const CONFIG = {
 
   // Visual settings
   visual: {
-    canvasSize: 632, // (cellSize + padding) * matrixSize + padding = (40 + 2) * 15 + 2 = 632
+    // For matrixSize 9 with cellSize 40 and padding 2:
+    // canvasSize = (cellSize + padding) * matrixSize + padding = (40 + 2) * 9 + 2 = 380
+    canvasSize: 380,
     cellSize: 40,
     padding: 2,
     colors: {
@@ -162,7 +182,7 @@ export const CONFIG = {
   // Fullscreen settings
   fullscreen: {
     // Master switch for fullscreen functionality
-    enabled: true,
+    enabled: false,
     // Enable fullscreen on spacebar press in welcome screen
     enableOnWelcome: true,
     // Auto-start game when entering fullscreen from welcome screen
@@ -264,7 +284,12 @@ export const GAME_OBJECTS = {
   blank: 0,
   player: 1,
   ai_player: 2,
+  // Default/legacy goal (treated as a small/solo goal)
   goal: 3,
+  // Explicit small-goal code (solo-collectable, low reward)
+  goal_small: 3,
+  // Big joint goal (requires both players to collect, high reward)
+  goal_big: 5,
   obstacle: 4
 };
 

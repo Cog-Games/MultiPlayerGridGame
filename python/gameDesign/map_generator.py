@@ -81,14 +81,28 @@ def gen_2p2g(size: int, count: int, density: float, rng: random.Random) -> Dict[
     for i in range(count):
         p1 = [center, max(0, center - 3)]
         p2 = [center, min(size - 1, center + 3)]
+        # Two small solo goals placed above/below centre plus an optional big joint goal
         g1 = [rng.randrange(1, max(2, center - 2)), center]
         g2 = [rng.randrange(min(size - 2, center + 1), size - 1), center]
-        obstacles = generate_obstacles(size, exclude=[tuple(p1), tuple(p2), tuple(g1), tuple(g2)], density=density, rng=rng)
+        # Place a big joint goal somewhere on the right side corridor
+        big = [center, min(size - 2, center + 4)]
+
+        obstacles = generate_obstacles(
+            size,
+            exclude=[tuple(p1), tuple(p2), tuple(g1), tuple(g2), tuple(big)],
+            density=density,
+            rng=rng,
+        )
+
         maps[str(i)] = [{
             "initPlayerGrid": p1,
             "initAIGrid": p2,
+            # Legacy targets preserved for backwards compatibility (treated as small goals)
             "target1": g1,
             "target2": g2,
+            # New dual-goal encoding used by the JS client:
+            "smallGoals": [g1, g2],
+            "bigGoals": [big],
             "obstacles": obstacles,
             "mapType": "2P2G",
         }]

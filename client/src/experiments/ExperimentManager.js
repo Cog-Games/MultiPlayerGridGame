@@ -6,6 +6,7 @@ import { VlmAgentClient } from '../ai/VlmAgentClient.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
 import { NewGoalGenerator } from '../utils/NewGoalGenerator.js';
 import { mapLoader } from '../utils/MapLoader.js';
+import { MapParser } from '../utils/MapParser.js';
 
 export class ExperimentManager {
   constructor(gameStateManager, uiManager, timelineManager = null) {
@@ -697,7 +698,7 @@ export class ExperimentManager {
       if (!result) return;
 
       // Apply changes to internal state via GameStateManager APIs
-      this.gameStateManager.addGoal(result.position);
+      this.gameStateManager.addGoal(result.position, 'small');
       this.gameStateManager.markNewGoalPresented(result.position, distanceCondition, {});
 
       // Reset RL pre-calculation if available
@@ -815,7 +816,7 @@ export class ExperimentManager {
       console.log('🎯 [GOAL GEN] Generating new goal at position:', gen.position);
 
       // Apply changes to internal state via GameStateManager APIs
-      this.gameStateManager.addGoal(gen.position);
+      this.gameStateManager.addGoal(gen.position, 'small');
       const closerInfo = (typeof gen.distanceToPlayer2 === 'number' && typeof gen.distanceToPlayer1 === 'number')
         ? { isNewGoalCloserToPlayer2: gen.distanceToPlayer2 < gen.distanceToPlayer1 }
         : {};
@@ -1009,13 +1010,27 @@ export class ExperimentManager {
         return this.mapLoader.createFallbackDesign(experimentType);
       }
 
-      // Select map based on trial index (or randomly if too many trials)
+      // Select map based on trial index (or wrap around if more maps than trials)
       const mapKeys = Object.keys(mapsForExperiment);
       const selectedKey = mapKeys[trialIndex % mapKeys.length];
       const selectedMapArray = mapsForExperiment[selectedKey];
 
       if (Array.isArray(selectedMapArray) && selectedMapArray.length > 0) {
-        const design = { ...selectedMapArray[0] }; // Clone the design
+        let design = { ...selectedMapArray[0] }; // Clone the design
+
+        // If this design is based on an ASCII map and has randomization enabled,
+        // apply a fresh random rotation/mirroring for EACH trial.
+        if (Array.isArray(design.asciiMap) && design.randomize) {
+          try {
+            const transformedAscii = MapParser.transformRandomly(design.asciiMap);
+            const parsed = MapParser.parseAsciiMap(transformedAscii);
+            design = { ...design, ...parsed };
+            console.log(`🎲 Applied random ASCII transform for trial ${trialIndex}`);
+          } catch (e) {
+            console.warn('⚠️ Failed to apply ASCII randomization, using base design:', e?.message || e);
+          }
+        }
+
         console.log(`✅ Loaded map design for trial ${trialIndex}:`, design);
         return design;
       }

@@ -28,6 +28,8 @@ export class GameStateManager {
       player1: null,
       player2: null,
       currentGoals: [],
+      // Parallel to currentGoals; each entry is 'small' | 'big'
+      currentGoalTypes: [],
       experimentType: null,
       trialIndex: 0,
       gameMode: 'human-ai'
@@ -352,16 +354,50 @@ export class GameStateManager {
 
     // Place goals
     this.currentState.currentGoals = [];
-    if (design.target1 && design.target1.length >= 2) {
-      const [row, col] = design.target1;
-      this.currentState.gridMatrix[row][col] = GAME_OBJECTS.goal;
+    this.currentState.currentGoalTypes = [];
+
+    const addGoalAt = (row, col, type = 'small') => {
+      if (!Number.isInteger(row) || !Number.isInteger(col)) return;
+      if (row < 0 || row >= this.currentState.gridMatrix.length) return;
+      if (col < 0 || col >= this.currentState.gridMatrix[0].length) return;
+
+      // Avoid duplicates
+      if (this.currentState.currentGoals.some(g => g[0] === row && g[1] === col)) return;
+
+      const objectCode = (type === 'big') ? GAME_OBJECTS.goal_big : GAME_OBJECTS.goal_small;
+      this.currentState.gridMatrix[row][col] = objectCode;
       this.currentState.currentGoals.push([row, col]);
+      this.currentState.currentGoalTypes.push(type === 'big' ? 'big' : 'small');
+    };
+
+    // New-style dual-goal maps may provide explicit small/big goal lists
+    if (Array.isArray(design.smallGoals)) {
+      for (const pos of design.smallGoals) {
+        if (Array.isArray(pos) && pos.length >= 2) {
+          addGoalAt(pos[0], pos[1], 'small');
+        }
+      }
     }
 
-    if (design.target2 && design.target2.length >= 2) {
-      const [row, col] = design.target2;
-      this.currentState.gridMatrix[row][col] = GAME_OBJECTS.goal;
-      this.currentState.currentGoals.push([row, col]);
+    if (Array.isArray(design.bigGoals)) {
+      for (const pos of design.bigGoals) {
+        if (Array.isArray(pos) && pos.length >= 2) {
+          addGoalAt(pos[0], pos[1], 'big');
+        }
+      }
+    }
+
+    // Backwards-compatible fallback: use legacy target1/target2 fields
+    if (this.currentState.currentGoals.length === 0) {
+      if (design.target1 && design.target1.length >= 2) {
+        const [row, col] = design.target1;
+        addGoalAt(row, col, 'small');
+      }
+
+      if (design.target2 && design.target2.length >= 2) {
+        const [row, col] = design.target2;
+        addGoalAt(row, col, 'small');
+      }
     }
 
     // Place obstacles if provided
@@ -397,7 +433,7 @@ export class GameStateManager {
   }
 
   // Safely add a new goal to the internal state and grid
-  addGoal(position) {
+  addGoal(position, type = 'small') {
     if (!position || position.length < 2) return;
     const [row, col] = position;
     if (!this.currentState || !this.currentState.gridMatrix) return;
@@ -409,9 +445,14 @@ export class GameStateManager {
       console.log(`🔧 [GOAL] Duplicate goal at [${row}, ${col}] not added`);
       return;
     }
-    console.log(`🎯 [GOAL] Adding goal at [${row}, ${col}]. Total goals: ${this.currentState.currentGoals.length + 1}`);
-    this.currentState.gridMatrix[row][col] = GAME_OBJECTS.goal;
+    console.log(`🎯 [GOAL] Adding goal at [${row}, ${col}] (type=${type}). Total goals: ${this.currentState.currentGoals.length + 1}`);
+    const objectCode = (type === 'big') ? GAME_OBJECTS.goal_big : GAME_OBJECTS.goal_small;
+    this.currentState.gridMatrix[row][col] = objectCode;
     this.currentState.currentGoals.push([row, col]);
+    if (!Array.isArray(this.currentState.currentGoalTypes)) {
+      this.currentState.currentGoalTypes = [];
+    }
+    this.currentState.currentGoalTypes.push(type === 'big' ? 'big' : 'small');
   }
 
   // Record trial metadata for a newly presented goal
@@ -808,6 +849,11 @@ export class GameStateManager {
       }
     } catch (_) { /* noop */ }
 
+    // Compute reward based on final goals and goal types BEFORE normalizing missing values
+    try {
+      this.computeRewardsForTrial();
+    } catch (_) { /* best-effort only */ }
+
     // Fix missing goal values before saving
     this.fixMissingGoalValues();
 
@@ -820,6 +866,67 @@ export class GameStateManager {
 
     // Update success threshold tracking
     this.updateSuccessThreshold(success);
+  }
+
+  computeRewardsForTrial() {
+    // Initialize reward fields if missing
+    if (typeof this.trialData.player1Reward !== 'number') this.trialData.player1Reward = 0;
+    if (typeof this.trialData.player2Reward !== 'number') this.trialData.player2Reward = 0;
+    if (typeof this.trialData.totalReward !== 'number') this.trialData.totalReward = 0;
+
+    const rewardsCfg = (CONFIG?.game?.rewards) || {};
+    const smallReward = Number.isFinite(rewardsCfg.smallGoalReward) ? rewardsCfg.smallGoalReward : 1;
+    const bigJointReward = Number.isFinite(rewardsCfg.bigGoalJointReward) ? rewardsCfg.bigGoalJointReward : 3;
+
+    const types = Array.isArray(this.currentState?.currentGoalTypes)
+      ? this.currentState.currentGoalTypes
+      : [];
+
+    const experimentType = String(this.currentState?.experimentType || '');
+    const isTwoPlayer = experimentType.includes('2P');
+
+    let p1Reward = 0;
+    let p2Reward = 0;
+
+    const p1Idx = this.trialData.player1FinalReachedGoal;
+    const p2Idx = this.trialData.player2FinalReachedGoal;
+
+    const valid1 = Number.isInteger(p1Idx) && p1Idx >= 0 && p1Idx < types.length;
+    const valid2 = Number.isInteger(p2Idx) && p2Idx >= 0 && p2Idx < types.length;
+
+    const type1 = valid1 ? (types[p1Idx] || 'small') : null;
+    const type2 = valid2 ? (types[p2Idx] || 'small') : null;
+
+    if (isTwoPlayer) {
+      const bothSameBig =
+        valid1 && valid2 &&
+        p1Idx === p2Idx &&
+        type1 === 'big' && type2 === 'big';
+
+      if (bothSameBig) {
+        // Joint collection of a big goal: reward for both players
+        p1Reward = bigJointReward;
+        p2Reward = bigJointReward;
+      } else {
+        // Solo collection: only small goals pay out; big goals require both players
+        if (valid1 && type1 === 'small') p1Reward = smallReward;
+        if (valid2 && type2 === 'small') p2Reward = smallReward;
+      }
+    } else {
+      // 1P experiments: any reached goal gives the small-goal reward
+      if (valid1) p1Reward = smallReward;
+    }
+
+    this.trialData.player1Reward = p1Reward;
+    this.trialData.player2Reward = p2Reward;
+    this.trialData.totalReward = p1Reward + p2Reward;
+
+    // Accumulate into experiment-level total score
+    if (this.experimentData && typeof this.experimentData.totalScore === 'number') {
+      this.experimentData.totalScore += this.trialData.totalReward;
+    } else if (this.experimentData) {
+      this.experimentData.totalScore = this.trialData.totalReward;
+    }
   }
 
   fixMissingGoalValues() {

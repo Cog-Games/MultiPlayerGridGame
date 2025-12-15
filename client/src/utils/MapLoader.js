@@ -1,5 +1,6 @@
 // Map loading and randomization utility based on legacy version
 import { CONFIG } from '../config/gameConfig.js';
+import { MapParser } from './MapParser.js';
 
 export class MapLoader {
   constructor() {
@@ -11,19 +12,46 @@ export class MapLoader {
     this.mapData = await this.loadMapData();
   }
 
-    // Load map data from server API
+  // Process loaded map data to handle ASCII maps
+  processMapData(mapData) {
+    if (!mapData) return mapData;
+
+    const processed = {};
+    for (const [key, maps] of Object.entries(mapData)) {
+      if (Array.isArray(maps)) {
+        processed[key] = maps.map(mapDesign => {
+          if (mapDesign.asciiMap) {
+            const parsed = MapParser.parseAsciiMap(mapDesign.asciiMap);
+            // Merge any extra properties from the original object (e.g. mapType)
+            return { ...mapDesign, ...parsed };
+          }
+          return mapDesign;
+        });
+      } else {
+        processed[key] = maps;
+      }
+    }
+    return processed;
+  }
+
+  // Load map data from server API
   async loadMapData() {
     // Choose source based on CONFIG
     try {
       const source = (CONFIG?.maps?.source) || 'server';
       if (source === 'python-json') {
         console.log('🗺️ Loading map data from Python JSON...');
-        return await this.loadMapDataFromPythonJson();
+        const data = await this.loadMapDataFromPythonJson();
+        // Post-process each experiment type's map data
+        for (const type in data) {
+          data[type] = this.processMapData(data[type]);
+        }
+        return data;
       }
     } catch (_) { /* ignore, fallback to server */ }
 
     console.log('🗺️ Loading map data from server...');
-    
+
     // Check if server is running first
     const serverRunning = await this.checkServerHealth();
     if (!serverRunning) {
@@ -31,20 +59,21 @@ export class MapLoader {
       console.log('💡 To get real maps and enable multiplayer, start the server with: npm run dev');
       return this.loadAllFallbackMaps();
     }
-    
+
     const experimentTypes = ['1P1G', '1P2G', '2P2G', '2P3G'];
     const maps = {};
-    
+
     for (const expType of experimentTypes) {
       try {
         console.log(`🌐 Fetching ${expType} maps from server...`);
         const response = await fetch(`/api/maps/${expType}`);
-        
+
         if (response.ok) {
           const contentType = response.headers.get('content-type');
           if (contentType && contentType.includes('application/json')) {
             const data = await response.json();
-            maps[expType] = data.maps;
+            // Process maps to handle ASCII format if present
+            maps[expType] = this.processMapData(data.maps);
             console.log(`✅ Loaded ${data.mapCount} ${expType} maps from server`);
           } else {
             throw new Error('Server returned non-JSON response (likely HTML error page)');
@@ -107,7 +136,7 @@ export class MapLoader {
       const startCol = 1 + (i % 3);
       const goalRow = 2 + Math.floor(i / 4);
       const goalCol = 10 + (i % 5);
-      
+
       maps[String(i)] = [{
         initPlayerGrid: [startRow, startCol],
         target1: [goalRow, goalCol],
@@ -194,7 +223,7 @@ export class MapLoader {
   // Get maps for specific experiment type
   getMapsForExperiment(experimentType) {
     console.log(`🎯 Getting maps for experiment: ${experimentType}`);
-    
+
     if (!this.mapData) {
       console.warn('⚠️ Map data not loaded yet, using fallback');
       return this.getFallbackMaps(experimentType);
@@ -205,7 +234,7 @@ export class MapLoader {
       console.error(`❌ No map data available for experiment type: ${experimentType}`);
       return this.getFallbackMaps(experimentType);
     }
-    
+
     console.log(`✅ Found ${Object.keys(mapData).length} maps for ${experimentType}`);
     return mapData;
   }
@@ -246,12 +275,62 @@ export class MapLoader {
       // Map data structure is: { "key": [{ designObject }] }
       const mapArray = mapData[randomKey];
       if (Array.isArray(mapArray) && mapArray.length > 0) {
-        selectedMaps.push({ ...mapArray[0] }); // Clone the design object
+        let mapDesign = { ...mapArray[0] }; // Clone the design object
+
+        // Apply randomization
+        // If map uses asciiMap, prefer ASCII transformation for robustness
+        if (mapDesign.asciiMap && (mapDesign.randomize || mapDesign.randomizeOrientation)) {
+             const transformedAscii = MapParser.transformRandomly(mapDesign.asciiMap);
+             const parsed = MapParser.parseAsciiMap(transformedAscii);
+             // Overwrite coordinates with new parsed ones, preserving other props
+             mapDesign = { ...mapDesign, ...parsed };
+        }
+        // Fallback to legacy coordinate transformation if requested and no asciiMap
+        else if (mapDesign.randomizeOrientation) {
+             mapDesign = this.randomizeMapOrientation(mapDesign);
+        }
+
+        selectedMaps.push(mapDesign);
       }
     }
 
     console.log(`Selected ${selectedMaps.length} random maps from ${keys.length} available maps`);
     return selectedMaps;
+  }
+
+  // Randomly rotate or mirror map coordinates
+  randomizeMapOrientation(design) {
+    const size = CONFIG.game.matrixSize;
+    const transformations = [
+      (r, c) => [r, c],           // Identity
+      (r, c) => [c, size - 1 - r], // Rotate 90
+      (r, c) => [size - 1 - r, size - 1 - c], // Rotate 180
+      (r, c) => [size - 1 - c, r], // Rotate 270
+      (r, c) => [size - 1 - r, c], // Flip Vertical (Mirror X)
+      (r, c) => [r, size - 1 - c], // Flip Horizontal (Mirror Y)
+      (r, c) => [c, r],            // Transpose (Diag Mirror)
+      (r, c) => [size - 1 - c, size - 1 - r] // Anti-Transpose
+    ];
+
+    const randomTransform = transformations[Math.floor(Math.random() * transformations.length)];
+
+    const transformPoint = (point) => {
+        if (!point) return point;
+        return randomTransform(point[0], point[1]);
+    };
+
+    const newDesign = { ...design };
+
+    if (design.initPlayerGrid) newDesign.initPlayerGrid = transformPoint(design.initPlayerGrid);
+    if (design.initAIGrid) newDesign.initAIGrid = transformPoint(design.initAIGrid);
+    if (design.target1) newDesign.target1 = transformPoint(design.target1);
+    if (design.target2) newDesign.target2 = transformPoint(design.target2);
+
+    if (design.smallGoals) newDesign.smallGoals = design.smallGoals.map(transformPoint);
+    if (design.bigGoals) newDesign.bigGoals = design.bigGoals.map(transformPoint);
+    if (design.obstacles) newDesign.obstacles = design.obstacles.map(transformPoint);
+
+    return newDesign;
   }
 
   // Get random map for collaboration games (post trial 12)
@@ -335,7 +414,7 @@ export class MapLoader {
   // Server health check
   async checkServerHealth() {
     try {
-      const response = await fetch('/health', { 
+      const response = await fetch('/health', {
         method: 'GET',
         timeout: 2000 // 2 second timeout
       });
