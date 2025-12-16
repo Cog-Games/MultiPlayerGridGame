@@ -66,10 +66,10 @@ export const CONFIG = {
     experiments: {
       // order: ['1P1G'],
       // order: ['1P2G'],
-      // order: [ '2P3G'],
+      order: [ '2P3G'],
       // order: ['1P2G','2P3G'],
       // order: ['2P2G', '2P3G'],
-      order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
+      // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
         '1P1G': 3, // 3
@@ -99,8 +99,8 @@ export const CONFIG = {
       // Legacy behavior had no time cap; only step-based via maxGameLength.
       maxTrialDurationMs: 60 * 1000,
       // Minimum and maximum time to wait for partner (ms)
-      waitingForPartnerMinDuration: 9 * 1000, // 9*1000, 9s
-      waitingForPartnerMaxDuration: 290 * 1000 // 300*1000, 5mins
+      waitingForPartnerMinDuration: 1 * 1000, // 9*1000, 9s
+      waitingForPartnerMaxDuration: 1 * 1000 // 300*1000, 5mins
     },
 
     // AI agent settings
@@ -223,7 +223,7 @@ export const CONFIG = {
     matchPlayReadyTimeout: 10000,
     // Fallback AI partner type when human-human matching fails
     // Allowed: 'gpt' | 'gpt-ToM' | 'vlm' | 'vlm-ToM' | 'rl_individual' | 'rl_joint' | 'committedAgent'
-    fallbackAIType: 'rl_joint',
+    fallbackAIType: 'committedAgent',
     // Partner inactivity settings
     inactivityFallback: {
       // Enable automatic fallback to AI when partner is inactive
