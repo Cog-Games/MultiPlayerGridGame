@@ -812,7 +812,8 @@ export class TimelineManager {
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
         <div style="text-align: center; max-width: 800px; width: 100%;">
-          <h3 style="margin-bottom: 20px;">Game ${experimentIndex + 1}</h3>
+          <h3 id="game-title" style="margin-bottom: 10px;">Game ${experimentIndex + 1}</h3>
+          <h4 id="trial-info" style="margin-bottom: 20px;">Round ${trialIndex + 1}</h4>
           <div id="game-canvas-container" style="margin: 0 auto; position: relative; display: flex; justify-content: center;">
             <!-- Game canvas will be inserted here by ExperimentManager -->
           </div>

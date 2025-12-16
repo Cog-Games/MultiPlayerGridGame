@@ -315,11 +315,21 @@ export class UIManager {
     const trialInfo = document.getElementById('trial-info');
 
     if (gameTitle) {
-      gameTitle.textContent = `Game ${experimentIndex + 1}`;
+      const totalGames = Array.isArray(CONFIG?.game?.experiments?.order)
+        ? CONFIG.game.experiments.order.length
+        : null;
+      gameTitle.textContent = (Number.isInteger(totalGames) && totalGames > 0)
+        ? `Game ${experimentIndex + 1} / ${totalGames}`
+        : `Game ${experimentIndex + 1}`;
     }
 
     if (trialInfo) {
-      trialInfo.textContent = `Round ${trialIndex + 1}`;
+      const totalTrials = (experimentType && CONFIG?.game?.experiments?.numTrials?.[experimentType])
+        ? CONFIG.game.experiments.numTrials[experimentType]
+        : null;
+      trialInfo.textContent = (Number.isInteger(totalTrials) && totalTrials > 0)
+        ? `Round ${trialIndex + 1} / ${totalTrials}`
+        : `Round ${trialIndex + 1}`;
     }
   }
 
