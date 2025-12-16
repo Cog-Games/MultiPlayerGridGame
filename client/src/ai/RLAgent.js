@@ -269,11 +269,16 @@ const JointBFSPlanner = (() => {
 })();
 
 export class RLAgent {
-  constructor() { this.isPreCalculating = false; }
-  getAIAction(_gridMatrix, currentPos, goals, playerPos = null) {
+  constructor() {
+    this.isPreCalculating = false;
+    // Cache for goal-conditioned individual policies: key = "r,c" for single-goal
+    this._individualPolicyCache = new Map();
+  }
+  getAIAction(_gridMatrix, currentPos, goals, playerPos = null, options = null) {
     if (!goals || goals.length === 0) return [0, 0];
     try {
-      if (playerPos && CONFIG.game.agent.type === 'joint') {
+      const forceJoint = !!(options && options.forceJoint);
+      if (playerPos && (forceJoint || CONFIG.game.agent.type === 'joint')) {
         const impl = (RL_AGENT_CONFIG.jointRLImplementation || 'vi4').toLowerCase();
         const action = (impl === 'bfs')
           ? JointBFSPlanner.getAction(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta)
@@ -287,6 +292,41 @@ export class RLAgent {
     const actionSpace = [[0, -1], [0, 1], [-1, 0], [1, 0]]; const noiseActionSpace = [...actionSpace]; const obstacles = [];
     const runner = new RunIndividualVI(RL_AGENT_CONFIG.gridSize, actionSpace, noiseActionSpace, RL_AGENT_CONFIG.noise, RL_AGENT_CONFIG.gamma, RL_AGENT_CONFIG.goalReward, RL_AGENT_CONFIG.softmaxBeta);
     const { policy } = runner.call(goals, obstacles); const probs = policy.call(currentPos); return chooseBestAction(probs);
+  }
+
+  // Returns a probability map over actions for a SINGLE goal: { "dr,dc": prob }.
+  // Used by Bayesian goal inference to compute P(action | goal).
+  getIndividualActionProbabilities(currentPos, goal) {
+    if (!Array.isArray(goal) || goal.length < 2) return {};
+    const key = `${goal[0]},${goal[1]}`;
+    let policy = this._individualPolicyCache.get(key) || null;
+    if (!policy) {
+      const actionSpace = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+      const noiseActionSpace = [...actionSpace];
+      const obstacles = [];
+      const runner = new RunIndividualVI(
+        RL_AGENT_CONFIG.gridSize,
+        actionSpace,
+        noiseActionSpace,
+        RL_AGENT_CONFIG.noise,
+        RL_AGENT_CONFIG.gamma,
+        RL_AGENT_CONFIG.goalReward,
+        RL_AGENT_CONFIG.softmaxBeta
+      );
+      const out = runner.call([goal], obstacles);
+      policy = out?.policy || null;
+      if (policy) this._individualPolicyCache.set(key, policy);
+    }
+    try {
+      return policy ? (policy.call(currentPos) || {}) : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  // Clear caches (useful between experiments or if grid params change).
+  clearIndividualPolicyCache() {
+    try { this._individualPolicyCache?.clear?.(); } catch (_) { /* noop */ }
   }
   precalculatePolicyForGoals(goals, _experimentType) {
     if (this.isPreCalculating) return;

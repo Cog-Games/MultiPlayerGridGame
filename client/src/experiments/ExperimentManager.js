@@ -1,5 +1,6 @@
 import { CONFIG, GAME_OBJECTS, GameConfigUtils } from '../config/gameConfig.js';
 import { RLAgent } from '../ai/RLAgent.js';
+import { CommittedAgent } from '../ai/CommittedAgent.js';
 import { GptAgentClient } from '../ai/GptAgentClient.js';
 import { VlmAgentClient } from '../ai/VlmAgentClient.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
@@ -12,6 +13,7 @@ export class ExperimentManager {
     this.uiManager = uiManager;
     this.timelineManager = timelineManager;
     this.rlAgent = new RLAgent();
+    this.committedAgent = new CommittedAgent({ rlAgent: this.rlAgent });
     this.gptClient = new GptAgentClient();
     this.vlmClient = new VlmAgentClient();
 
@@ -54,6 +56,10 @@ export class ExperimentManager {
       if (!this.rlAgent) {
         this.rlAgent = new RLAgent();
       }
+      // Ensure committed agent exists (shares RL agent)
+      if (!this.committedAgent) {
+        this.committedAgent = new CommittedAgent({ rlAgent: this.rlAgent });
+      }
 
       // Update current trial's recorded partner agent type
       try {
@@ -70,6 +76,8 @@ export class ExperimentManager {
             td.partnerAgentType = 'joint-rl';
           } else if (fallbackType === 'rl_individual') {
             td.partnerAgentType = 'individual-rl';
+          } else if (fallbackType === 'committedAgent') {
+            td.partnerAgentType = 'committedAgent';
           } else {
             td.partnerAgentType = String(fallbackType);
           }
@@ -200,6 +208,8 @@ export class ExperimentManager {
 
     // Initialize trial
     this.gameStateManager.initializeTrial(this.currentTrialIndex, experimentType, design);
+    // Reset commitment state per trial
+    try { this.committedAgent?.reset?.(); } catch (_) { /* noop */ }
 
     // Update UI
     this.uiManager.updateGameInfo(this.currentExperimentIndex, this.currentTrialIndex, experimentType);
@@ -327,6 +337,8 @@ export class ExperimentManager {
       } else if (p2Type === 'rl_joint' || p2Type === 'rl_individual' || p2Type === 'ai') {
         const mode = CONFIG?.game?.agent?.type || (p2Type === 'rl_joint' ? 'joint' : 'individual');
         console.log(`🤖 AI partner: RL mode = ${mode}`);
+      } else if (p2Type === 'committedAgent') {
+        console.log('🤖 AI partner: committedAgent (joint→commit switch)');
       }
     } catch (e) {
       console.log('🤖 AI partner: failed to log model info:', e?.message || e);
@@ -417,13 +429,7 @@ export class ExperimentManager {
       }
     }
     if (!aiDirection) {
-      if (!this.rlAgent) return; // Safety
-      const aiAction = this.rlAgent.getAIAction(
-        gameState.gridMatrix,
-        (this.aiPlayerNumber === 1) ? gameState.player1 : gameState.player2,
-        gameState.currentGoals,
-        (this.aiPlayerNumber === 1) ? gameState.player2 : gameState.player1
-      );
+      const aiAction = this.getRLLikeActionForCurrentAI(gameState);
       aiDirection = this.actionToDirection(aiAction);
 
       // If GPT error occurred, record the event with fallback details
@@ -568,13 +574,7 @@ export class ExperimentManager {
     }
 
     if (!direction) {
-      if (!this.rlAgent) return;
-      const aiAction = this.rlAgent.getAIAction(
-        gameState.gridMatrix,
-        (this.aiPlayerNumber === 1) ? gameState.player1 : gameState.player2,
-        gameState.currentGoals,
-        (this.aiPlayerNumber === 1) ? gameState.player2 : gameState.player1
-      );
+      const aiAction = this.getRLLikeActionForCurrentAI(gameState);
       if (aiAction[0] === 0 && aiAction[1] === 0) {
         return; // No movement
       }
@@ -599,7 +599,7 @@ export class ExperimentManager {
       try {
         const st = this.gameStateManager.getCurrentState();
         const p2Type = CONFIG?.game?.players?.player2?.type;
-        const usingRL = (p2Type === 'rl_joint' || p2Type === 'ai' || CONFIG?.game?.agent?.type === 'joint');
+        const usingRL = (p2Type === 'rl_joint' || p2Type === 'committedAgent' || p2Type === 'ai' || CONFIG?.game?.agent?.type === 'joint');
         if (usingRL && this.rlAgent && typeof this.rlAgent.precalculatePolicyForGoals === 'function') {
           const goals = Array.isArray(st?.currentGoals) ? st.currentGoals : [];
           if (goals.length > 0) {
@@ -683,7 +683,7 @@ export class ExperimentManager {
       try {
         const st2 = this.gameStateManager.getCurrentState();
         const p2Type2 = CONFIG?.game?.players?.player2?.type;
-        const usingRL2 = (p2Type2 === 'rl_joint' || p2Type2 === 'ai' || CONFIG?.game?.agent?.type === 'joint');
+        const usingRL2 = (p2Type2 === 'rl_joint' || p2Type2 === 'committedAgent' || p2Type2 === 'ai' || CONFIG?.game?.agent?.type === 'joint');
         if (usingRL2 && this.rlAgent && typeof this.rlAgent.precalculatePolicyForGoals === 'function') {
           const goals2 = Array.isArray(st2?.currentGoals) ? st2.currentGoals : [];
           if (goals2.length > 0) {
@@ -696,7 +696,7 @@ export class ExperimentManager {
       try {
         const st = this.gameStateManager.getCurrentState();
         const p2Type = CONFIG?.game?.players?.player2?.type;
-        const usingRL = (p2Type === 'rl_joint' || p2Type === 'ai' || CONFIG?.game?.agent?.type === 'joint');
+        const usingRL = (p2Type === 'rl_joint' || p2Type === 'committedAgent' || p2Type === 'ai' || CONFIG?.game?.agent?.type === 'joint');
         if (usingRL && this.rlAgent && typeof this.rlAgent.precalculatePolicyForGoals === 'function') {
           const goals = Array.isArray(st?.currentGoals) ? st.currentGoals : [];
           if (goals.length > 0) {
@@ -828,6 +828,36 @@ export class ExperimentManager {
     if (deltaRow === 0 && deltaCol === 1) return 'right';
 
     return null;
+  }
+
+  // Returns an action delta [dRow, dCol] for the current AI type when using the "RL-like" path.
+  // This is where we plug in committedAgent while keeping existing RL behavior unchanged.
+  getRLLikeActionForCurrentAI(gameState) {
+    const aiType = (this.aiPlayerNumber === 1)
+      ? CONFIG.game.players.player1.type
+      : CONFIG.game.players.player2.type;
+
+    if (aiType === 'committedAgent') {
+      if (!this.committedAgent) {
+        // Best-effort init if missing; share RL agent instance when possible
+        if (!this.rlAgent) this.rlAgent = new RLAgent();
+        this.committedAgent = new CommittedAgent({ rlAgent: this.rlAgent });
+      }
+      return this.committedAgent.getAIAction(
+        gameState,
+        this.gameStateManager.getCurrentTrialData(),
+        this.aiPlayerNumber
+      );
+    }
+
+    // Default: existing RLAgent behavior
+    if (!this.rlAgent) this.rlAgent = new RLAgent();
+    return this.rlAgent.getAIAction(
+      gameState.gridMatrix,
+      (this.aiPlayerNumber === 1) ? gameState.player1 : gameState.player2,
+      gameState.currentGoals,
+      (this.aiPlayerNumber === 1) ? gameState.player2 : gameState.player1
+    );
   }
 
   setupGameTimeout() {
@@ -1110,6 +1140,8 @@ export class ExperimentManager {
 
       // Initialize trial
       this.gameStateManager.initializeTrial(trialIndex, experimentType, design);
+      // Reset commitment state per trial
+      try { this.committedAgent?.reset?.(); } catch (_) { /* noop */ }
 
       // Update UI - use timeline's game container
       this.uiManager.updateGameInfo(experimentIndex, trialIndex, experimentType);
@@ -1133,6 +1165,8 @@ export class ExperimentManager {
       // Use fallback design if everything fails
       const fallbackDesign = GameHelpers.createFallbackDesign(experimentType);
       this.gameStateManager.initializeTrial(trialIndex, experimentType, fallbackDesign);
+      // Reset commitment state per trial
+      try { this.committedAgent?.reset?.(); } catch (_) { /* noop */ }
       this.uiManager.updateGameInfo(experimentIndex, trialIndex, experimentType);
       this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
       this.startTimelineTrialExecution(experimentType);

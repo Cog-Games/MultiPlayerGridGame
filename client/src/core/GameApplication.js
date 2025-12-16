@@ -51,7 +51,7 @@ export class GameApplication {
     this.useTimelineFlow = urlParams.get('timeline') !== 'false' && useTimeline;
     const aiParam = urlParams.get('ai');
     if (aiParam) {
-      // Accept: 'gpt' | 'rl_joint' | 'rl_individual' | legacy 'ai'
+      // Accept: 'gpt' | 'rl_joint' | 'rl_individual' | 'committedAgent' | legacy 'ai'
       GameConfigUtils.setPlayerType(2, aiParam);
     }
 
@@ -141,7 +141,7 @@ export class GameApplication {
     const skipNetwork = urlParams.get('skipNetwork') === 'true';
 
     // Default to configured fallback AI when not explicitly set
-    if (!['gpt', 'human', 'rl_joint', 'rl_individual'].includes(CONFIG.game.players.player2.type)) {
+    if (!['gpt', 'human', 'rl_joint', 'rl_individual', 'committedAgent'].includes(CONFIG.game.players.player2.type)) {
       GameConfigUtils.setPlayerType(2, CONFIG.multiplayer.fallbackAIType || 'rl_joint');
     }
     this.uiManager.setPlayerInfo(0, 'human-ai');

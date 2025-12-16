@@ -55,7 +55,7 @@ export const CONFIG = {
         description: 'Human player (you)'
       },
       player2: {
-        // Types: 'human' | 'gpt' | 'gpt-ToM' | 'vlm' | 'vlm-ToM' | 'rl_individual' | 'rl_joint'
+        // Types: 'human' | 'gpt' | 'gpt-ToM' | 'vlm' | 'vlm-ToM' | 'rl_individual' | 'rl_joint' | 'committedAgent'
         type: 'human',
         color: 'orange',
         description: 'Human, GPT, or RL partner'
@@ -66,10 +66,10 @@ export const CONFIG = {
     experiments: {
       // order: ['1P1G'],
       // order: ['1P2G'],
-      // order: [ '2P3G'],
+      order: [ '2P3G'],
       // order: ['1P2G','2P3G'],
       // order: ['2P2G', '2P3G'],
-      order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
+      // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
         '1P1G': 3, // 3
@@ -100,7 +100,7 @@ export const CONFIG = {
       maxTrialDurationMs: 60 * 1000,
       // Minimum and maximum time to wait for partner (ms)
       waitingForPartnerMinDuration: 9 * 1000, // 9*1000, 9s
-      waitingForPartnerMaxDuration: 180 * 1000 // 300*1000, 5mins
+      waitingForPartnerMaxDuration: 290 * 1000 // 300*1000, 5mins
     },
 
     // AI agent settings
@@ -222,8 +222,8 @@ export const CONFIG = {
     // human to press space before falling back to AI partner
     matchPlayReadyTimeout: 10000,
     // Fallback AI partner type when human-human matching fails
-    // Allowed: 'gpt' | 'gpt-ToM' | 'vlm' | 'vlm-ToM' | 'rl_individual' | 'rl_joint'
-    fallbackAIType: 'vlm-ToM',
+    // Allowed: 'gpt' | 'gpt-ToM' | 'vlm' | 'vlm-ToM' | 'rl_individual' | 'rl_joint' | 'committedAgent'
+    fallbackAIType: 'rl_joint',
     // Partner inactivity settings
     inactivityFallback: {
       // Enable automatic fallback to AI when partner is inactive
@@ -289,7 +289,7 @@ export const GameConfigUtils = {
   setPlayerType(playerIndex, type) {
     // Normalize legacy alias
     const normalized = (type === 'ai') ? 'rl_joint' : type;
-    const allowed = ['human', 'gpt', 'gpt-ToM', 'vlm', 'vlm-ToM', 'rl_individual', 'rl_joint'];
+    const allowed = ['human', 'gpt', 'gpt-ToM', 'vlm', 'vlm-ToM', 'rl_individual', 'rl_joint', 'committedAgent'];
     if (!allowed.includes(normalized)) return;
     CONFIG.game.players[`player${playerIndex}`].type = normalized;
 
@@ -297,6 +297,8 @@ export const GameConfigUtils = {
     if (playerIndex === 2) {
       if (normalized === 'rl_joint') CONFIG.game.agent.type = 'joint';
       if (normalized === 'rl_individual') CONFIG.game.agent.type = 'individual';
+      // committedAgent starts with joint planning, but can switch internally
+      if (normalized === 'committedAgent') CONFIG.game.agent.type = 'joint';
     }
   },
 
