@@ -377,12 +377,33 @@ export class GameApplication {
       // Pull comprehensive trial data from GameStateManager (legacy: allTrialsData)
       const gsData = this.gameStateManager?.getExperimentData?.() || { allTrialsData: [], successThreshold: {} };
 
+      const getProlificPidFromUrl = () => {
+        try {
+          // Normal query string
+          const params = new URLSearchParams(window.location.search || '');
+          const p = params.get('PROLIFIC_PID') || params.get('prolific_pid');
+          if (p && String(p).trim()) return String(p).trim();
+        } catch (_) { /* ignore */ }
+        try {
+          // Some deployments store query params after '#', e.g. '#/?PROLIFIC_PID=...'
+          const hash = String(window.location.hash || '');
+          const qIdx = hash.indexOf('?');
+          if (qIdx >= 0) {
+            const hashQuery = hash.slice(qIdx + 1);
+            const params2 = new URLSearchParams(hashQuery);
+            const p2 = params2.get('PROLIFIC_PID') || params2.get('prolific_pid');
+            if (p2 && String(p2).trim()) return String(p2).trim();
+          }
+        } catch (_) { /* ignore */ }
+        return null;
+      };
+
       // Participant ID: always prefer Prolific PID from URL when present
       let participantId = null;
+      let prolificPid = null;
       try {
-        const params = new URLSearchParams(window.location.search);
-        const prolific = params.get('PROLIFIC_PID') || params.get('prolific_pid');
-        participantId = prolific || data.participantId || `participant_${Date.now()}`;
+        prolificPid = getProlificPidFromUrl();
+        participantId = prolificPid || data.participantId || `participant_${Date.now()}`;
       } catch (_) {
         participantId = data.participantId || `participant_${Date.now()}`;
       }
@@ -393,6 +414,7 @@ export class GameApplication {
       // Legacy-compatible export object
       const exportObj = {
         participantId,
+        prolificPid: prolificPid || null,
         timestamp: new Date().toISOString(),
         experimentOrder: (CONFIG?.game?.experiments?.order) || [],
         allTrialsData: gsData.allTrialsData || [],
@@ -436,6 +458,8 @@ export class GameApplication {
               o.roomId = exportObj.roomId || '';
               // Add participantId per row for easier analysis join
               o.participantId = exportObj.participantId;
+              // Also include explicit prolificPid for verification/debugging
+              o.prolificPid = exportObj.prolificPid || '';
               // Add current player number (1 or 2) for human-human mode analysis
               o.currentPlayer = (this.playerIndex !== undefined) ? (this.playerIndex + 1) : null;
               // Legacy naming: prefer distanceCondition in exports
@@ -533,6 +557,7 @@ export class GameApplication {
 
           const metaRows = [
             ['participantId', exportObj.participantId],
+            ['prolificPid', exportObj.prolificPid || ''],
             ['roomId', exportObj.roomId || ''],
             ['experimentOrder', JSON.stringify(exportObj.experimentOrder || [])],
             ['experimentType', exportObj.experimentType],

@@ -1493,9 +1493,22 @@ export class TimelineManager {
 
   getParticipantId() {
     try {
-      const params = new URLSearchParams(window.location.search);
+      const params = new URLSearchParams(window.location.search || '');
       const prolific = params.get('PROLIFIC_PID') || params.get('prolific_pid');
-      if (prolific) return prolific;
+      if (prolific && String(prolific).trim()) return String(prolific).trim();
+    } catch (e) {
+      // ignore
+    }
+    // Hash-query fallback (e.g., '#/?PROLIFIC_PID=...')
+    try {
+      const hash = String(window.location.hash || '');
+      const qIdx = hash.indexOf('?');
+      if (qIdx >= 0) {
+        const hashQuery = hash.slice(qIdx + 1);
+        const params2 = new URLSearchParams(hashQuery);
+        const prolific2 = params2.get('PROLIFIC_PID') || params2.get('prolific_pid');
+        if (prolific2 && String(prolific2).trim()) return String(prolific2).trim();
+      }
     } catch (e) {
       // ignore
     }
