@@ -108,6 +108,7 @@ export class VlmAgentClient {
     const aiLabel = aiPlayerNumber === 1 ? 'player1' : 'player2';
 
     const agentCfg = CONFIG?.game?.agent?.vlm || {};
+    const useTom = Boolean(options?.tom);
     const trialData = state.trialData || null;
     const maxSteps = Math.max(0, Number(agentCfg?.memory?.maxSteps) || 0);
     const p1Traj = Array.isArray(trialData?.player1Trajectory) ? trialData.player1Trajectory : [];
@@ -122,8 +123,11 @@ export class VlmAgentClient {
       currentPlayer: { label: aiLabel, pos: state[aiLabel] },
       goals: state.currentGoals,
       relativeInfo: VlmAgentClient.buildRelativeInfo(state, aiLabel),
+      // IMPORTANT: `model` is the underlying VLM model (shared by vlm and vlm-ToM).
+      // ToM vs base is requested via `tom: true`.
       model: options.model || agentCfg.model || undefined,
       temperature: typeof options.temperature === 'number' ? options.temperature : (typeof agentCfg.temperature === 'number' ? agentCfg.temperature : undefined),
+      tom: useTom,
       memory: {
         enabled: Boolean(agentCfg?.memory?.enabled),
         maxSteps,
@@ -149,7 +153,8 @@ export class VlmAgentClient {
     const data = await resp.json();
     // Persist model used for export consistency
     try {
-      const modelUsed = data && (data.model || data.modelUsed);
+      // Prefer the underlying API model (baseModel/modelUsed) over any variant label.
+      const modelUsed = data && (data.baseModel || data.modelUsed || data.model);
       if (modelUsed) {
         const current = (CONFIG?.game?.agent?.vlm?.model);
         if (!current || String(current).trim() !== String(modelUsed).trim()) {

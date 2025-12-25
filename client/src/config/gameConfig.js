@@ -99,8 +99,8 @@ export const CONFIG = {
       // Legacy behavior had no time cap; only step-based via maxGameLength.
       maxTrialDurationMs: 60 * 1000,
       // Minimum and maximum time to wait for partner (ms)
-      waitingForPartnerMinDuration: 9 * 1000, // 9*1000, 9s
-      waitingForPartnerMaxDuration: 290 * 1000 // 300*1000, 5mins
+      waitingForPartnerMinDuration: 1 * 1000, // 9*1000, 9s
+      waitingForPartnerMaxDuration: 1 * 1000 // 300*1000, 5mins
     },
 
     // AI agent settings
@@ -131,6 +131,15 @@ export const CONFIG = {
         memory: {
           enabled: true,
           maxSteps: 50
+        },
+        // NOTE:
+        // `vlm` and `vlm-ToM` MUST share the exact same VLM settings (model/temperature/memory/etc).
+        // The ONLY behavioral difference is that `vlm-ToM` performs an additional inference step
+        // and returns an `inferredGoal` each step (see server/client ToM routing via a boolean flag).
+        tom: {
+          // When the player2 type is `vlm-ToM`, the client will request ToM output from the server.
+          // Keep this config identical across `vlm` and `vlm-ToM`; do not tune parameters here.
+          inferGoalEachStep: true
         }
       }
     }

@@ -126,8 +126,6 @@ export class GameStateManager {
     this.trialData.initialGoalPositions = [];
     this.trialData.player1CurrentGoal = [];
     this.trialData.player2CurrentGoal = [];
-    // Ensure AI inferred goals are per-trial (avoid carry-over/shared reference)
-    this.trialData.aiInferredOtherGoals = [];
 
     // Reset goal detection variables
     this.trialData.player1FirstDetectedGoal = null;
@@ -264,8 +262,6 @@ export class GameStateManager {
             aiTypeDesc = 'joint-rl';
           } else if (t === 'rl_individual') {
             aiTypeDesc = 'individual-rl';
-          } else if (t === 'committedAgent') {
-            aiTypeDesc = 'committedAgent';
           } else if (t === 'ai') {
             aiTypeDesc = (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl';
           } else if (t && t !== 'human') {
@@ -782,9 +778,8 @@ export class GameStateManager {
     // Fix missing goal values before saving
     this.fixMissingGoalValues();
 
-    // Add to experiment data (use deep clone to avoid shared array references across trials)
-    const snapshot = JSON.parse(JSON.stringify(this.trialData));
-    this.experimentData.allTrialsData.push(snapshot);
+    // Add to experiment data
+    this.experimentData.allTrialsData.push({ ...this.trialData });
 
     // Mark as finalized to prevent duplicates
     this.trialData._finalized = true;
@@ -840,9 +835,6 @@ export class GameStateManager {
       case 'rl_joint':
       case 'joint':
         return 'joint-rl';
-      case 'committedagent':
-      case 'committed':
-        return 'committedAgent';
       case 'rl_individual':
       case 'individual':
         return 'individual-rl';
@@ -919,7 +911,6 @@ export class GameStateManager {
       }
       if (t === 'rl_joint') return 'joint-rl';
       if (t === 'rl_individual') return 'individual-rl';
-      if (t === 'committedAgent') return 'committedAgent';
       if (t === 'ai') return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl'; // legacy safety
       return String(t || 'unknown');
     } catch (_) {

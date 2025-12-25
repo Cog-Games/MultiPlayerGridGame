@@ -403,7 +403,9 @@ export async function decideGptVlmTomAction(payload) {
   return {
     action,
     inferredGoal: Array.isArray(parsed.inferredGoal) ? parsed.inferredGoal : null,
-    model: 'vlm-ToM',
+    // Mirror GPT ToM behavior: if caller passed a real model name, don't overwrite it with the ToM label.
+    // The underlying model actually used is always `baseModel`.
+    model: (externalModel && /^vlm-?tom$/i.test(String(externalModel))) ? 'vlm-ToM' : (externalModel || 'vlm-ToM'),
     baseModel: apiModel,
     usage: (result && result.usage) || null,
     latencyMs: (result && result.latencyMs) || null,

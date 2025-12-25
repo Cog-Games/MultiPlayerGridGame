@@ -174,7 +174,7 @@ app.get('/api/ai/gpt/config', (req, res) => {
 
 app.post('/api/ai/gpt/action', async (req, res) => {
   try {
-    const { guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory } = req.body || {};
+    const { guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory, tom } = req.body || {};
 
 
     if (!Array.isArray(matrix) || matrix.length === 0) {
@@ -183,9 +183,12 @@ app.post('/api/ai/gpt/action', async (req, res) => {
     if (!currentPlayer || !Array.isArray(currentPlayer.pos)) {
       return res.status(400).json({ error: 'Invalid currentPlayer' });
     }
-    // Route to ToM variant if requested via model label
+    // Route to ToM variant if requested via boolean (preferred) or legacy model label.
+    // IMPORTANT: if `tom` is explicitly provided (true/false), it overrides the legacy model-label routing.
     let result;
-    if (model && /^gpt-?tom$/i.test(String(model))) {
+    const hasTomFlag = (typeof tom === 'boolean');
+    const useTom = hasTomFlag ? tom : Boolean(model && /^gpt-?tom$/i.test(String(model)));
+    if (useTom) {
       result = await decideGptTomAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory });
     } else {
       result = await decideGptAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory });
@@ -211,7 +214,7 @@ app.get('/api/ai/vlm/config', (req, res) => {
 
 app.post('/api/ai/vlm/action', async (req, res) => {
   try {
-    const { guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory, imageDataUrl } = req.body || {};
+    const { guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory, imageDataUrl, tom } = req.body || {};
     if (!Array.isArray(matrix) || matrix.length === 0) {
       return res.status(400).json({ error: 'Invalid matrix' });
     }
@@ -222,7 +225,11 @@ app.post('/api/ai/vlm/action', async (req, res) => {
       return res.status(400).json({ error: 'Missing imageDataUrl' });
     }
     let result;
-    if (model && /^vlm-?tom$/i.test(String(model))) {
+    // Route to ToM variant if requested via boolean (preferred) or legacy model label.
+    // IMPORTANT: if `tom` is explicitly provided (true/false), it overrides the legacy model-label routing.
+    const hasTomFlag = (typeof tom === 'boolean');
+    const useTom = hasTomFlag ? tom : Boolean(model && /^vlm-?tom$/i.test(String(model)));
+    if (useTom) {
       result = await decideGptVlmTomAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory, imageDataUrl });
     } else {
       result = await decideGptVlmAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory, imageDataUrl });

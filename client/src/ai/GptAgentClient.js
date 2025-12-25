@@ -50,6 +50,7 @@ export class GptAgentClient {
     const aiLabel = aiPlayerNumber === 1 ? 'player1' : 'player2';
 
     const agentCfg = CONFIG?.game?.agent?.gpt || {};
+    const useTom = Boolean(options?.tom);
     // Optional trajectories memory
     const trialData = state.trialData || null;
     const maxSteps = Math.max(0, Number(agentCfg?.memory?.maxSteps) || 0);
@@ -63,8 +64,11 @@ export class GptAgentClient {
       currentPlayer: { label: aiLabel, pos: state[aiLabel] },
       goals: state.currentGoals,
       relativeInfo: GptAgentClient.buildRelativeInfo(state, aiLabel),
+      // IMPORTANT: `model` is the underlying GPT model (shared by gpt and gpt-ToM).
+      // ToM vs base is requested via `tom: true`.
       model: options.model || agentCfg.model || undefined,
       temperature: typeof options.temperature === 'number' ? options.temperature : (typeof agentCfg.temperature === 'number' ? agentCfg.temperature : undefined),
+      tom: useTom,
       memory: {
         enabled: Boolean(agentCfg?.memory?.enabled),
         maxSteps,
@@ -89,7 +93,8 @@ export class GptAgentClient {
     const data = await resp.json();
     // Persist exact model used (ensures recordings use precise GPT type)
     try {
-      const modelUsed = data && (data.model || data.modelUsed);
+      // Prefer the underlying API model (baseModel/modelUsed) over any variant label.
+      const modelUsed = data && (data.baseModel || data.modelUsed || data.model);
       if (modelUsed) {
         const current = (CONFIG?.game?.agent?.gpt?.model);
         if (!current || String(current).trim() !== String(modelUsed).trim()) {
