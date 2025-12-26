@@ -7,7 +7,8 @@ import { GameHelpers } from '../utils/GameHelpers.js';
 // - After joint goal detected and a new goal appears, bias toward the old joint goal with:
 //     P(choose_old)=σ(logit(0.8) + κ * ΔS)
 //   where ΔS compares old vs best alternative using S(g)=EU(g)+log P_intent(g).
-// - Before joint detection/new-goal, act using joint-RL policy (legacy behavior).
+// - Before joint detection/new-goal, act using joint-RL policy.
+
 export class CommittedAgent {
   constructor(options = {}) {
     this.rl = options.rlAgent || new RLAgent();

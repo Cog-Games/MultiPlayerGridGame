@@ -1271,14 +1271,14 @@ export class TimelineManager {
           const el = document.getElementById('saving-status');
           const btn = document.getElementById('continueBtn');
           if (el && btn && btn.disabled) {
-            el.textContent = '⚠️ Save taking longer than expected. You may continue.';
+            el.textContent = '⚠️ Save taking longer than expected. You may continue, but please do not close the tab until you see a success message.';
             el.style.color = '#dc3545';
             btn.disabled = false;
             btn.style.opacity = '1';
             btn.style.cursor = 'pointer';
             btn.textContent = 'Continue';
           }
-        }, 15000);
+        }, 45000);
       }
     } catch (_) { /* noop */ }
 

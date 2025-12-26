@@ -632,21 +632,32 @@ export class GameApplication {
           formData.append('filedata', base64);
           formData.append('filetype', 'excel');
 
-          fetch(scriptUrl, { method: 'POST', mode: 'no-cors', body: formData })
-            .then(() => {
-              console.log('✅ Google Drive save attempted via Apps Script');
-              // Provide user feedback like legacy and notify timeline
-              try {
-                if (this.timelineManager) {
-                  this.timelineManager.emit('data-save-success');
-                }
-                alert('Data saved successfully!');
-              } catch (e) {
-                // Ignore UI feedback errors
+          // Prefer server-side proxy save (same Render service). This provides a real ok/fail response.
+          const serverBase = (CONFIG?.server?.url) || (typeof window !== 'undefined' ? window.location.origin : '');
+          const endpoint = String(serverBase).replace(/\/+$/, '') + '/api/data/save';
+
+          fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filename: excelFilename, filedata: base64, filetype: 'excel' })
+          })
+            .then(async (resp) => {
+              const json = await resp.json().catch(() => null);
+              if (resp.ok && json && json.ok) {
+                console.log('✅ Google Drive save confirmed via server proxy');
+                // Notify timeline; this unblocks the Prolific completion stage
+                try { this.timelineManager?.emit?.('data-save-success'); } catch (_) { /* noop */ }
+                try { alert('Data saved successfully!'); } catch (_) { /* noop */ }
+                return;
               }
+              throw new Error(json?.error || `HTTP ${resp.status}`);
             })
             .catch(err => {
-              console.warn('⚠️ Google Drive save failed. Local saving is disabled.', err);
+              console.warn('⚠️ Google Drive save failed via server proxy.', err);
+              // Fallback: attempt direct Apps Script call (opaque in browser; cannot verify)
+              fetch(scriptUrl, { method: 'POST', mode: 'no-cors', body: formData })
+                .then(() => console.warn('⚠️ Fallback Apps Script request sent (opaque response; not verifiable).'))
+                .catch((e) => console.warn('⚠️ Fallback Apps Script request failed.', e));
             });
         } catch (e) {
           console.warn('⚠️ Excel/Apps Script save failed. Local saving is disabled.', e);
