@@ -1013,11 +1013,11 @@ export class GameStateManager {
           }
         }
         if (isVlm) {
-          const model = CONFIG?.game?.agent?.vlm?.model;
-          if (model && String(model).trim().length > 0) {
-            return String(model);
-          }
-          return 'gpt-4o-mini';
+          // IMPORTANT: for VLM we record the *mode* (vlm vs vlm-tom) as partnerAgentType,
+          // because ToM vs non-ToM is the key experimental manipulation. The underlying model
+          // is already cached separately in CONFIG.game.agent.vlm.model for debugging/export if needed.
+          if (raw === 'vlm-ToM' || lower === 'vlm-tom' || lower === 'vlmtom') return 'vlm-tom';
+          return 'vlm';
         }
       }
       if (t === 'rl_joint') return 'joint-rl';

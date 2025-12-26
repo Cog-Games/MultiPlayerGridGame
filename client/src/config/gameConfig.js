@@ -73,7 +73,7 @@ export const CONFIG = {
         // - 'vlm' | 'vlm-tom'
         // - 'rl_individual' | 'rl_joint' | 'committedAgent'
         // Legacy aliases still accepted: 'gpt'|'gpt-ToM' (-> llm/llm-tom), 'vlm-ToM' (-> vlm-tom)
-        type: 'vlm',
+        type: 'vlm-tom',
         color: 'orange',
         description: 'Human, GPT, or RL partner'
       }

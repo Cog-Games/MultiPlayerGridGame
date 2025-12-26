@@ -355,8 +355,8 @@ export class ExperimentManager {
               const td = this.gameStateManager?.trialData;
               const st = this.gameStateManager?.currentState;
               if (td && st && String(st.experimentType || '').includes('2P')) {
-                // Don't overwrite RL fallback labeling if a GPT→RL fallback happened this trial
-                if (!td.gptFallbackOccurred) td.partnerAgentType = model;
+                // Record the VLM *mode* (vlm vs vlm-tom) as partnerAgentType. Don't overwrite if fallback happened.
+                if (!td.gptFallbackOccurred) td.partnerAgentType = normalizedType;
               }
             }
           } catch (_) { /* noop */ }
