@@ -1,4 +1,4 @@
-import { CONFIG, GAME_OBJECTS, GameConfigUtils } from '../config/gameConfig.js';
+import { CONFIG, GAME_OBJECTS, GameConfigUtils, DIRECTIONS } from '../config/gameConfig.js';
 import { RLAgent } from '../ai/RLAgent.js';
 import { LlmAgentClient } from '../ai/LlmAgentClient.js';
 import { VlmAgentClient } from '../ai/VlmAgentClient.js';
@@ -398,6 +398,22 @@ export class ExperimentManager {
 
     // Determine human/AI mapping
     const humanPlayerNumber = (this.aiPlayerNumber === 1) ? 2 : 1;
+
+    // If the very first human move is invalid (wall/out-of-bounds), treat it as a no-op:
+    // - do NOT request/apply an AI move
+    // - do NOT advance stepCount / record actions
+    try {
+      const isFirstStep = (this.gameStateManager?.stepCount ?? 0) === 0;
+      if (isFirstStep && humanDirection) {
+        const movement = DIRECTIONS[`arrow${humanDirection}`]?.movement;
+        const humanPos = (humanPlayerNumber === 1) ? gameState.player1 : gameState.player2;
+        if (Array.isArray(movement) && movement.length >= 2 && Array.isArray(humanPos) && humanPos.length >= 2) {
+          const real = GameHelpers.isValidMove(gameState.gridMatrix, humanPos, movement);
+          const blocked = Array.isArray(real) && real.length >= 2 && real[0] === 0 && real[1] === 0;
+          if (blocked) return;
+        }
+      }
+    } catch (_) { /* noop */ }
 
     // Generate AI/GPT direction
     let aiDirection = null;
