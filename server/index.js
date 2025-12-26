@@ -61,8 +61,7 @@ const io = new Server(server, {
 });
 
 app.use(cors());
-// Experiment payloads can be fairly large (base64 xlsx)
-app.use(express.json({ limit: '25mb' }));
+app.use(express.json());
 
 // Initialize game managers
 const roomManager = new GameRoomManager();
@@ -171,49 +170,6 @@ app.get('/api/maps/:experimentType', (req, res) => {
   } catch (error) {
     console.error('Error reading map file:', error);
     res.status(500).json({ error: 'Failed to read map file' });
-  }
-});
-
-// Save experiment data to Google Drive via Apps Script (server-to-server).
-// This avoids the browser `no-cors` opaque response problem on Prolific.
-app.post('/api/data/save', async (req, res) => {
-  try {
-    const { filename, filedata, filetype } = req.body || {};
-    if (!filename || typeof filename !== 'string') {
-      return res.status(400).json({ ok: false, error: 'Missing filename' });
-    }
-    if (!filedata || typeof filedata !== 'string') {
-      return res.status(400).json({ ok: false, error: 'Missing filedata' });
-    }
-    const ft = (filetype && typeof filetype === 'string') ? filetype : 'excel';
-
-    // Prefer server env var; fallback to legacy hardcoded endpoint to match client default.
-    const scriptUrl = process.env.GOOGLE_APPS_SCRIPT_URL
-      || 'https://script.google.com/macros/s/AKfycbyfQ-XKsoFbmQZGM7c741rEXh2ZUpVK-uUIu9ycooXKnaxM5-hRSzIUhQ-uWZ668Qql/exec';
-
-    // Apps Script can read parameters from urlencoded bodies (`e.parameter.*`).
-    const body = new URLSearchParams();
-    body.set('filename', filename);
-    body.set('filedata', filedata);
-    body.set('filetype', ft);
-
-    const resp = await fetch(scriptUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-      body
-    });
-    const text = await resp.text().catch(() => '');
-
-    if (!resp.ok) {
-      console.error('[data-save] Apps Script upload failed:', resp.status, text.slice(0, 500));
-      return res.status(502).json({ ok: false, error: 'Apps Script upload failed', status: resp.status, detail: text.slice(0, 500) });
-    }
-
-    console.log('[data-save] Uploaded via Apps Script:', { filename, bytes: filedata.length });
-    return res.json({ ok: true, filename });
-  } catch (err) {
-    console.error('[data-save] Error:', err);
-    return res.status(500).json({ ok: false, error: 'Failed to save data', detail: String(err?.message || err) });
   }
 });
 
