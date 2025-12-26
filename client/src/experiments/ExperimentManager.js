@@ -1,5 +1,6 @@
 import { CONFIG, GAME_OBJECTS, GameConfigUtils, DIRECTIONS } from '../config/gameConfig.js';
 import { RLAgent } from '../ai/RLAgent.js';
+import { CommittedAgent } from '../ai/CommittedAgent.js';
 import { LlmAgentClient } from '../ai/LlmAgentClient.js';
 import { VlmAgentClient } from '../ai/VlmAgentClient.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
@@ -12,6 +13,8 @@ export class ExperimentManager {
     this.uiManager = uiManager;
     this.timelineManager = timelineManager;
     this.rlAgent = new RLAgent();
+    // Use committed agent as the fallback policy when GPT/VLM fails (wraps RL with commitment bias logic)
+    this.committedAgent = new CommittedAgent({ rlAgent: this.rlAgent });
     this.llmClient = new LlmAgentClient();
     this.vlmClient = new VlmAgentClient();
 
@@ -335,7 +338,7 @@ export class ExperimentManager {
               const st = this.gameStateManager?.currentState;
               if (td && st && String(st.experimentType || '').includes('2P')) {
                 // Don't overwrite RL fallback labeling if a GPT→RL fallback happened this trial
-                if (!td.gptFallbackToRlOccurred) td.partnerAgentType = model;
+                if (!td.gptFallbackOccurred) td.partnerAgentType = model;
               }
             }
           } catch (_) { /* noop */ }
@@ -353,7 +356,7 @@ export class ExperimentManager {
               const st = this.gameStateManager?.currentState;
               if (td && st && String(st.experimentType || '').includes('2P')) {
                 // Don't overwrite RL fallback labeling if a GPT→RL fallback happened this trial
-                if (!td.gptFallbackToRlOccurred) td.partnerAgentType = model;
+                if (!td.gptFallbackOccurred) td.partnerAgentType = model;
               }
             }
           } catch (_) { /* noop */ }
@@ -472,16 +475,48 @@ export class ExperimentManager {
       }
     }
     if (!aiDirection) {
-      if (!this.rlAgent) return; // Safety
-      const aiAction = this.rlAgent.getAIAction(
-        gameState.gridMatrix,
-        (this.aiPlayerNumber === 1) ? gameState.player1 : gameState.player2,
-        gameState.currentGoals,
-        (this.aiPlayerNumber === 1) ? gameState.player2 : gameState.player1
-      );
+      const fallbackPolicy = (() => {
+        const fp = CONFIG?.game?.agent?.fallbackPolicy || {};
+        const key = (aiType && aiType.startsWith('vlm')) ? 'vlm' : 'llm';
+        return fp?.[key] || 'committedAgent';
+      })();
+
+      let aiAction = null;
+      if (fallbackPolicy === 'committedAgent') {
+        if (!this.committedAgent) return; // Safety
+        aiAction = this.committedAgent.getAIAction(
+          gameState,
+          this.gameStateManager.getCurrentTrialData(),
+          this.aiPlayerNumber
+        );
+      } else if (fallbackPolicy === 'rl_individual' || fallbackPolicy === 'rl_joint') {
+        if (!this.rlAgent) return; // Safety
+        const prevMode = CONFIG?.game?.agent?.type;
+        try {
+          // Ensure RLAgent uses the intended mode for this one decision
+          if (CONFIG?.game?.agent) CONFIG.game.agent.type = (fallbackPolicy === 'rl_individual') ? 'individual' : 'joint';
+          aiAction = this.rlAgent.getAIAction(
+            gameState.gridMatrix,
+            (this.aiPlayerNumber === 1) ? gameState.player1 : gameState.player2,
+            gameState.currentGoals,
+            (this.aiPlayerNumber === 1) ? gameState.player2 : gameState.player1
+          );
+        } finally {
+          try { if (CONFIG?.game?.agent) CONFIG.game.agent.type = prevMode; } catch (_) { /* noop */ }
+        }
+      } else {
+        // Unknown config: default to committedAgent
+        if (!this.committedAgent) return;
+        aiAction = this.committedAgent.getAIAction(
+          gameState,
+          this.gameStateManager.getCurrentTrialData(),
+          this.aiPlayerNumber
+        );
+      }
+
       aiDirection = this.actionToDirection(aiAction);
 
-      // Record any LLM/VLM → RL fallback (even if no explicit error was thrown)
+      // Record any LLM/VLM fallback (even if no explicit error was thrown)
       const attemptedRemoteAgent =
         (isGptAllowed && (aiType === 'llm' || aiType === 'llm-tom' || aiType === 'vlm' || aiType === 'vlm-tom'));
       if (attemptedRemoteAgent) {
@@ -489,7 +524,7 @@ export class ExperimentManager {
           phase: 'synchronized',
           error: (gptError ? (gptError?.message || String(gptError)) : `No action returned from ${aiType}`),
           humanDirection,
-          fallback: 'rl',
+          fallback: fallbackPolicy,
           fallbackDirection: aiDirection
         });
       }
@@ -630,19 +665,46 @@ export class ExperimentManager {
     }
 
     if (!direction) {
-      if (!this.rlAgent) return;
-      const aiAction = this.rlAgent.getAIAction(
-        gameState.gridMatrix,
-        (this.aiPlayerNumber === 1) ? gameState.player1 : gameState.player2,
-        gameState.currentGoals,
-        (this.aiPlayerNumber === 1) ? gameState.player2 : gameState.player1
-      );
-      if (aiAction[0] === 0 && aiAction[1] === 0) {
-        return; // No movement
+      const fallbackPolicy = (() => {
+        const fp = CONFIG?.game?.agent?.fallbackPolicy || {};
+        const key = (aiType && aiType.startsWith('vlm')) ? 'vlm' : 'llm';
+        return fp?.[key] || 'committedAgent';
+      })();
+
+      let aiAction = null;
+      if (fallbackPolicy === 'committedAgent') {
+        if (!this.committedAgent) return;
+        aiAction = this.committedAgent.getAIAction(
+          gameState,
+          this.gameStateManager.getCurrentTrialData(),
+          this.aiPlayerNumber
+        );
+      } else if (fallbackPolicy === 'rl_individual' || fallbackPolicy === 'rl_joint') {
+        if (!this.rlAgent) return;
+        const prevMode = CONFIG?.game?.agent?.type;
+        try {
+          if (CONFIG?.game?.agent) CONFIG.game.agent.type = (fallbackPolicy === 'rl_individual') ? 'individual' : 'joint';
+          aiAction = this.rlAgent.getAIAction(
+            gameState.gridMatrix,
+            (this.aiPlayerNumber === 1) ? gameState.player1 : gameState.player2,
+            gameState.currentGoals,
+            (this.aiPlayerNumber === 1) ? gameState.player2 : gameState.player1
+          );
+        } finally {
+          try { if (CONFIG?.game?.agent) CONFIG.game.agent.type = prevMode; } catch (_) { /* noop */ }
+        }
+      } else {
+        if (!this.committedAgent) return;
+        aiAction = this.committedAgent.getAIAction(
+          gameState,
+          this.gameStateManager.getCurrentTrialData(),
+          this.aiPlayerNumber
+        );
       }
+      if (aiAction && Array.isArray(aiAction) && aiAction[0] === 0 && aiAction[1] === 0) return; // No movement
       direction = this.actionToDirection(aiAction);
 
-      // Record any LLM/VLM → RL fallback (even if no explicit error was thrown)
+      // Record any LLM/VLM fallback (even if no explicit error was thrown)
       const attemptedRemoteAgent =
         (isGptAllowed && (aiType === 'llm' || aiType === 'llm-tom' || aiType === 'vlm' || aiType === 'vlm-tom'));
       if (attemptedRemoteAgent) {
@@ -650,7 +712,7 @@ export class ExperimentManager {
           phase: 'independent',
           error: (gptError ? (gptError?.message || String(gptError)) : `No action returned from ${aiType}`),
           humanDirection: null,
-          fallback: 'rl',
+          fallback: fallbackPolicy,
           fallbackDirection: direction
         });
       }

@@ -488,6 +488,8 @@ export class GameApplication {
               'player1GoalReachedStep', 'player2GoalReachedStep',
               'newGoalPresented', 'newGoalPosition', 'distanceCondition', 'isNewGoalCloserToPlayer2',
               'trialStartTime',
+              'gptFallbackOccurred', 'gptFallbackAgentType', 'gptFallbackCount', 'gptFallbackFirstStep', 'gptFallbackFirstTimeMs',
+              'gptFallbackLastError', 'gptFallbackLastFallbackDirection',
               'gptFallbackToRlOccurred', 'gptFallbackToRlCount', 'gptFallbackToRlFirstStep', 'gptFallbackToRlFirstTimeMs',
               'gptFallbackToRlLastError', 'gptFallbackToRlLastFallbackDirection',
               'gptErrorEvents',

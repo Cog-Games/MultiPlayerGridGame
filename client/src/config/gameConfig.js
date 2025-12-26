@@ -135,6 +135,15 @@ export const CONFIG = {
       llm: DEFAULT_LLM_AGENT_CONFIG,
       // Legacy alias (kept for older code paths / analysis notebooks)
       gpt: DEFAULT_LLM_AGENT_CONFIG,
+      // When an LLM/VLM step fails (network error / invalid response / no action), choose the fallback policy.
+      // - 'committedAgent': CommittedAgent wrapper around RL (default)
+      // - 'rl_joint': joint RL planner
+      // - 'rl_individual': individual RL planner
+      // Note: `gpt` is a legacy alias of `llm` in this codebase.
+      fallbackPolicy: {
+        llm: 'committedAgent',
+        vlm: 'committedAgent'
+      },
       vlm: {
         // Vision API model name used on server (e.g., 'gpt-4o-mini')
         model: 'gpt-4.1-mini',
