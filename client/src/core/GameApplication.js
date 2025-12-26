@@ -620,8 +620,24 @@ export class GameApplication {
           XLSX.utils.book_append_sheet(wb, qSheet, 'Questionnaire');
 
           // Write workbook and send to Apps Script
-          const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-          const base64 = btoa(String.fromCharCode.apply(null, new Uint8Array(wbout)));
+          // IMPORTANT:
+          // Avoid `btoa(String.fromCharCode.apply(...))` on large buffers (can throw due to argument limits).
+          // SheetJS can output base64 directly, which is much more robust for Prolific-sized datasets.
+          let base64;
+          try {
+            base64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+          } catch (e) {
+            // Fallback for older SheetJS builds: write ArrayBuffer and convert to base64 in chunks
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+            const bytes = new Uint8Array(wbout);
+            const chunkSize = 0x8000; // 32KB chunks to avoid call-stack/argument limits
+            let binary = '';
+            for (let i = 0; i < bytes.length; i += chunkSize) {
+              const sub = bytes.subarray(i, i + chunkSize);
+              binary += String.fromCharCode.apply(null, sub);
+            }
+            base64 = btoa(binary);
+          }
           const ts = new Date().toISOString().replace(/[:.]/g, '-');
           const safeId = String(exportObj.participantId).replace(/[^a-zA-Z0-9_-]/g, '_');
           const safeRoom = String(exportObj.roomId || 'no-room').replace(/[^a-zA-Z0-9_-]/g, '_');
