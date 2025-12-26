@@ -78,7 +78,7 @@ export class UIManager {
   showMainScreen() {
     this.cleanupCanvas();
     this.currentScreen = 'main';
-    const preferFullscreen = !!(CONFIG?.fullscreen?.defaultEnabled);
+    const preferFullscreen = !!(CONFIG?.game?.fullscreen?.defaultEnabled ?? CONFIG?.fullscreen?.defaultEnabled);
     const startHint = preferFullscreen
       ? 'press the spacebar to enter the fullscreen and start the game!'
       : 'press the spacebar to start the game!';

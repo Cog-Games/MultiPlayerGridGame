@@ -81,20 +81,21 @@ export const CONFIG = {
 
     // Experiment configuration
     experiments: {
-      // order: ['1P1G'],
-      // order: ['1P2G'],
-      order: [ '2P3G'],
+      // order: ['2P3G'],
       // order: ['1P2G','2P3G'],
       // order: ['2P2G', '2P3G'],
-      // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
+      order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
         '1P1G': 3, // 3
         '1P2G': 12, // 12
         '2P2G': 8, // 8
-        '2P3G': 2, // 12
+        '2P3G': 12, // 12
       }
     },
+
+    // Fullscreen settings
+    fullscreen: { defaultEnabled: true},
 
     // Success threshold for collaboration games
     successThreshold: {
@@ -116,8 +117,8 @@ export const CONFIG = {
       // Legacy behavior had no time cap; only step-based via maxGameLength.
       maxTrialDurationMs: 60 * 1000,
       // Minimum and maximum time to wait for partner (ms)
-      waitingForPartnerMinDuration: 3 * 1000, // 9*1000, 9s
-      waitingForPartnerMaxDuration: 3 * 1000 // 300*1000, 5mins
+      waitingForPartnerMinDuration: 9 * 1000, // 9*1000, 9s
+      waitingForPartnerMaxDuration: 290 * 1000 // 290*1000, 5mins
     },
 
     // AI agent settings
@@ -170,13 +171,6 @@ export const CONFIG = {
     }
   },
 
-  // Fullscreen settings
-  fullscreen: {
-    // If true, the app will TRY to enter fullscreen on the first user gesture (space/click) on welcome screens.
-    // If false, the app will start in windowed mode by default (no fullscreen request).
-    // Note: browsers require a user gesture to enter fullscreen; this flag only affects whether we request it.
-    defaultEnabled: false
-  },
 
   // 1P2G specific configuration
   oneP2G: {
@@ -240,7 +234,6 @@ export const CONFIG = {
     matchPlayReadyTimeout: 10000,
     // Fallback AI partner type when human-human matching fails
     // Allowed (canonical): 'llm' | 'llm-tom' | 'vlm' | 'vlm-tom' | 'rl_individual' | 'rl_joint' | 'committedAgent'
-    // Legacy aliases accepted: 'gpt' | 'gpt-ToM' | 'vlm-ToM'
     fallbackAIType: 'vlm-tom',
     // Partner inactivity settings
     inactivityFallback: {

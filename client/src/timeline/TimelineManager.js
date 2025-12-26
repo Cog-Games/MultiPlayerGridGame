@@ -365,7 +365,7 @@ export class TimelineManager {
   }
 
   showWelcomeInfoStage() {
-    const preferFullscreen = !!(CONFIG?.fullscreen?.defaultEnabled);
+    const preferFullscreen = !!(CONFIG?.game?.fullscreen?.defaultEnabled ?? CONFIG?.fullscreen?.defaultEnabled);
     const promptText = preferFullscreen ? 'enter the fullscreen and start the game' : 'start the game';
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
