@@ -51,7 +51,8 @@ export class GameApplication {
     this.useTimelineFlow = urlParams.get('timeline') !== 'false' && useTimeline;
     const aiParam = urlParams.get('ai');
     if (aiParam) {
-      // Accept: 'gpt' | 'rl_joint' | 'rl_individual' | 'committedAgent' | legacy 'ai'
+      // Accept (canonical): 'llm' | 'llm-tom' | 'vlm' | 'vlm-tom' | 'rl_joint' | 'rl_individual' | 'committedAgent'
+      // Legacy aliases accepted: 'gpt' | 'gpt-ToM' | 'vlm-ToM' | 'ai'
       GameConfigUtils.setPlayerType(2, aiParam);
     }
 
@@ -129,7 +130,7 @@ export class GameApplication {
     // Make GameApplication available globally for ExperimentManager communication
     try { window.__GAME_APPLICATION__ = this; } catch (_) { /* ignore */ }
 
-    // Proactively fetch and cache GPT model for accurate recording (e.g., partnerFallbackAIType)
+    // Proactively fetch and cache LLM/VLM model for accurate recording (e.g., partnerFallbackAIType)
     try { await this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
   }
 
@@ -141,7 +142,7 @@ export class GameApplication {
     const skipNetwork = urlParams.get('skipNetwork') === 'true';
 
     // Default to configured fallback AI when not explicitly set
-    if (!['gpt', 'human', 'rl_joint', 'rl_individual', 'committedAgent'].includes(CONFIG.game.players.player2.type)) {
+    if (!['llm', 'llm-tom', 'vlm', 'vlm-tom', 'human', 'rl_joint', 'rl_individual', 'committedAgent', 'gpt', 'gpt-ToM', 'vlm-ToM'].includes(CONFIG.game.players.player2.type)) {
       GameConfigUtils.setPlayerType(2, CONFIG.multiplayer.fallbackAIType || 'rl_joint');
     }
     this.uiManager.setPlayerInfo(0, 'human-ai');
@@ -518,21 +519,27 @@ export class GameApplication {
             const p2Type = (CONFIG?.game?.players?.player2?.type);
             const t = (p1Type !== 'human') ? p1Type : ((p2Type !== 'human') ? p2Type : 'human');
             if (t === 'human') return 'human';
-            if (t === 'gpt' || t === 'gpt-ToM') {
-              const model = (CONFIG?.game?.agent?.gpt?.model);
-              if (model && String(model).trim().length > 0) {
-                return String(model);
-              } else {
-                console.warn('⚠️ GPT model not cached in CONFIG for export, using configured default');
-                return 'gpt-4o'; // matches the configured GPT_MODEL in .env
+            {
+              const raw = String(t || '');
+              const lower = raw.toLowerCase().trim();
+              const isLlm = (lower === 'llm' || lower === 'llm-tom' || lower === 'gpt' || lower === 'gpt-tom' || lower === 'gpttom' || raw === 'gpt-ToM');
+              const isVlm = (lower === 'vlm' || lower === 'vlm-tom' || lower === 'vlmtom' || raw === 'vlm-ToM');
+              if (isLlm) {
+                const model = (CONFIG?.game?.agent?.llm?.model) || (CONFIG?.game?.agent?.gpt?.model);
+                if (model && String(model).trim().length > 0) {
+                  return String(model);
+                } else {
+                  console.warn('⚠️ LLM model not cached in CONFIG for export, using configured default');
+                  return 'gpt-4o';
+                }
               }
-            }
-            if (t === 'vlm' || t === 'vlm-ToM') {
-              const model = (CONFIG?.game?.agent?.vlm?.model);
-              if (model && String(model).trim().length > 0) {
-                return String(model);
-              } else {
-                return 'gpt-4o-mini';
+              if (isVlm) {
+                const model = (CONFIG?.game?.agent?.vlm?.model);
+                if (model && String(model).trim().length > 0) {
+                  return String(model);
+                } else {
+                  return 'gpt-4o-mini';
+                }
               }
             }
             if (t === 'rl_joint') return 'joint-rl';

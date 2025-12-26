@@ -247,15 +247,20 @@ export class GameStateManager {
           const p2 = CONFIG?.game?.players?.player2?.type;
           const t = (p1 !== 'human') ? p1 : ((p2 !== 'human') ? p2 : null);
 
-          if (t === 'gpt' || t === 'gpt-ToM') {
-            const model = CONFIG?.game?.agent?.gpt?.model;
+          const raw = String(t || '');
+          const lower = raw.toLowerCase().trim();
+          const isLlm = (lower === 'llm' || lower === 'llm-tom' || lower === 'gpt' || lower === 'gpt-tom' || lower === 'gpttom' || raw === 'gpt-ToM');
+          const isVlm = (lower === 'vlm' || lower === 'vlm-tom' || lower === 'vlmtom' || raw === 'vlm-ToM');
+
+          if (isLlm) {
+            const model = CONFIG?.game?.agent?.llm?.model || CONFIG?.game?.agent?.gpt?.model;
             if (model && String(model).trim().length > 0) {
               aiTypeDesc = String(model);
             } else {
-              console.warn('⚠️ GPT model not cached in CONFIG for fallback recording, using configured default');
-              aiTypeDesc = 'gpt-4o'; // matches the configured GPT_MODEL in .env
+              console.warn('⚠️ LLM model not cached in CONFIG for fallback recording, using configured default');
+              aiTypeDesc = 'gpt-4o';
             }
-          } else if (t === 'vlm' || t === 'vlm-ToM') {
+          } else if (isVlm) {
             const vmodel = CONFIG?.game?.agent?.vlm?.model;
             aiTypeDesc = (vmodel && String(vmodel).trim()) ? String(vmodel) : 'gpt-4o-mini';
           } else if (t === 'rl_joint') {
@@ -753,9 +758,9 @@ export class GameStateManager {
         if (computed && recorded !== computed) {
           this.trialData.partnerAgentType = computed;
         }
-        // Upgrade fallback AI type to exact GPT model string if still generic 'gpt'
-        const model = CONFIG?.game?.agent?.gpt?.model;
-        if (this.trialData.partnerFallbackOccurred && model && /^gpt$/i.test(String(this.trialData.partnerFallbackAIType || ''))) {
+        // Upgrade fallback AI type to exact LLM model string if still generic ('llm' or legacy 'gpt')
+        const model = CONFIG?.game?.agent?.llm?.model || CONFIG?.game?.agent?.gpt?.model;
+        if (this.trialData.partnerFallbackOccurred && model && /^(llm|gpt)$/i.test(String(this.trialData.partnerFallbackAIType || ''))) {
           this.trialData.partnerFallbackAIType = model;
         }
       }
@@ -815,15 +820,14 @@ export class GameStateManager {
     const normalized = aiType.toLowerCase().trim();
 
     switch (normalized) {
-      case 'gpt':
-        // Try to get specific GPT model
-        const model = CONFIG?.game?.agent?.gpt?.model;
+      case 'llm':
+      case 'llm-tom':
+      case 'gpt':       // legacy alias
+      case 'gpt-tom':   // legacy alias
+      case 'gpttom':    // legacy alias
+        // Prefer exact LLM model (text-only) if available
+        const model = CONFIG?.game?.agent?.llm?.model || CONFIG?.game?.agent?.gpt?.model;
         return (model && String(model).trim()) ? String(model) : 'gpt-4o';
-      case 'gpt-tom':
-      case 'gpttom':
-        // Map ToM label to underlying GPT API model
-        const modelTom = CONFIG?.game?.agent?.gpt?.model;
-        return (modelTom && String(modelTom).trim()) ? String(modelTom) : 'gpt-4o';
       case 'vlm':
         // Try to get specific VLM model
         const vmodel = CONFIG?.game?.agent?.vlm?.model;
@@ -848,8 +852,8 @@ export class GameStateManager {
         // Avoid infinite recursion by handling the default directly
         if (defaultFallback === 'rl_joint') return 'joint-rl';
         if (defaultFallback === 'rl_individual') return 'individual-rl';
-        if (defaultFallback === 'gpt') {
-          const model = CONFIG?.game?.agent?.gpt?.model;
+        if (defaultFallback === 'llm' || defaultFallback === 'llm-tom' || defaultFallback === 'gpt') {
+          const model = CONFIG?.game?.agent?.llm?.model || CONFIG?.game?.agent?.gpt?.model;
           return (model && String(model).trim()) ? String(model) : 'gpt-4o';
         }
         return 'joint-rl'; // ultimate fallback
@@ -889,25 +893,29 @@ export class GameStateManager {
       // Prefer whichever side is non-human as the partner agent type
       const t = (p1 !== 'human') ? p1 : ((p2 !== 'human') ? p2 : 'human');
       if (t === 'human') return 'human';
-      if (t === 'gpt' || t === 'gpt-ToM') {
-        // Prefer exact GPT model name if available
-        const model = CONFIG?.game?.agent?.gpt?.model;
+      {
+        const raw = String(t || '');
+        const lower = raw.toLowerCase().trim();
+        const isLlm = (lower === 'llm' || lower === 'llm-tom' || lower === 'gpt' || lower === 'gpt-tom' || lower === 'gpttom' || raw === 'gpt-ToM');
+        const isVlm = (lower === 'vlm' || lower === 'vlm-tom' || lower === 'vlmtom' || raw === 'vlm-ToM');
+
+        if (isLlm) {
+          // Prefer exact LLM model name if available
+          const model = CONFIG?.game?.agent?.llm?.model || CONFIG?.game?.agent?.gpt?.model;
         if (model && String(model).trim().length > 0) {
           return String(model);
         } else {
-          // If model not cached, try to fetch it synchronously as fallback
-          console.warn('⚠️ GPT model not cached in CONFIG, using fallback logic');
-          // For now, return a more specific default that matches the configured model
-          // This should be rarely hit if logCurrentAIModel() is properly awaited
-          return 'gpt-4o'; // matches the configured GPT_MODEL in .env
+            console.warn('⚠️ LLM model not cached in CONFIG, using fallback logic');
+            return 'gpt-4o';
+          }
         }
-      }
-      if (t === 'vlm' || t === 'vlm-ToM') {
-        const model = CONFIG?.game?.agent?.vlm?.model;
-        if (model && String(model).trim().length > 0) {
-          return String(model);
+        if (isVlm) {
+          const model = CONFIG?.game?.agent?.vlm?.model;
+          if (model && String(model).trim().length > 0) {
+            return String(model);
+          }
+          return 'gpt-4o-mini';
         }
-        return 'gpt-4o-mini';
       }
       if (t === 'rl_joint') return 'joint-rl';
       if (t === 'rl_individual') return 'individual-rl';

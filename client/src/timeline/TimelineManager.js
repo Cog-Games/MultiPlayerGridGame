@@ -365,6 +365,8 @@ export class TimelineManager {
   }
 
   showWelcomeInfoStage() {
+    const preferFullscreen = !!(CONFIG?.fullscreen?.defaultEnabled);
+    const promptText = preferFullscreen ? 'enter the fullscreen and start the game' : 'start the game';
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
         <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
@@ -388,7 +390,7 @@ export class TimelineManager {
 
           <div style="margin-top: 30px;">
             <p style="font-size: 22px; font-weight: bold; color: #333; margin-bottom: 20px;">
-              Press the <span style="background-color: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-family: monospace; border: 1px solid #ccc;">spacebar</span> to enter the fullscreen and start the game!
+              Press the <span style="background-color: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-family: monospace; border: 1px solid #ccc;">spacebar</span> to ${promptText}!
             </p>
           </div>
         </div>
@@ -400,12 +402,14 @@ export class TimelineManager {
       if (event.code === 'Space' || event.key === ' ') {
         event.preventDefault();
         document.removeEventListener('keydown', handleSpacebar);
-        try {
-          if (!document.fullscreenElement && document.documentElement && document.documentElement.requestFullscreen) {
-            await document.documentElement.requestFullscreen();
+        if (preferFullscreen) {
+          try {
+            if (!document.fullscreenElement && document.documentElement && document.documentElement.requestFullscreen) {
+              await document.documentElement.requestFullscreen();
+            }
+          } catch (_) {
+            // Ignore fullscreen failures and continue
           }
-        } catch (_) {
-          // Ignore fullscreen failures and continue
         }
         console.log('🎮 Starting game sequence');
         this.nextStage();
@@ -505,7 +509,8 @@ export class TimelineManager {
 
           <div style="background: #e8f4fd; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px; margin-top: 20px;">
             <p style="font-size: 14px; color: #0c5460; margin: 0; font-weight: 500;">
-              💰 Your waiting time (if it exceeds 5 minutes) will be compensated ($0.5 per minute). Thank you for your patience!
+              💰 Your waiting time (if it exceeds 5 minutes) will be compensated ($0.5 per minute).<br/>
+              Thank you for your patience!
             </p>
           </div>
 

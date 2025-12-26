@@ -7,7 +7,17 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { GameRoomManager } from './gameRoomManager.js';
 import { GameEventHandler } from './gameEventHandler.js';
-import { decideGptAction, decideGptTomAction, getGptConfigInfo, decideGptVlmAction, decideGptVlmTomAction, getVlmConfigInfo } from './ai/gptAgent.js';
+import {
+  decideGptAction,
+  decideGptTomAction,
+  getGptConfigInfo,
+  decideLlmAction,
+  decideLlmTomAction,
+  getLlmConfigInfo,
+  decideGptVlmAction,
+  decideGptVlmTomAction,
+  getVlmConfigInfo
+} from './ai/gptAgent.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -163,16 +173,16 @@ app.get('/api/maps/:experimentType', (req, res) => {
   }
 });
 
-// GPT agent endpoints
-app.get('/api/ai/gpt/config', (req, res) => {
+// LLM agent endpoints (canonical)
+app.get('/api/ai/llm/config', (req, res) => {
   try {
-    res.json(getGptConfigInfo());
+    res.json(getLlmConfigInfo());
   } catch (e) {
-    res.status(500).json({ error: 'Failed to read GPT config' });
+    res.status(500).json({ error: 'Failed to read LLM config' });
   }
 });
 
-app.post('/api/ai/gpt/action', async (req, res) => {
+app.post('/api/ai/llm/action', async (req, res) => {
   try {
     const { guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory, tom } = req.body || {};
 
@@ -187,15 +197,52 @@ app.post('/api/ai/gpt/action', async (req, res) => {
     // IMPORTANT: if `tom` is explicitly provided (true/false), it overrides the legacy model-label routing.
     let result;
     const hasTomFlag = (typeof tom === 'boolean');
-    const useTom = hasTomFlag ? tom : Boolean(model && /^gpt-?tom$/i.test(String(model)));
+    const useTom = hasTomFlag ? tom : Boolean(model && /^(gpt-?tom|llm-?tom)$/i.test(String(model)));
     if (useTom) {
-      result = await decideGptTomAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory });
+      result = await decideLlmTomAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory });
     } else {
-      result = await decideGptAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory });
+      result = await decideLlmAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory });
     }
 
 
     // result: { action, inferredGoal?, usage, latencyMs, rate }
+    res.json(result);
+  } catch (err) {
+    console.error('LLM action error:', err);
+    res.status(500).json({ error: 'Failed to get LLM action', detail: String(err?.message || err) });
+  }
+});
+
+// Legacy GPT endpoints (aliases to LLM endpoints)
+app.get('/api/ai/gpt/config', (req, res) => {
+  try {
+    // Legacy alias: return the same config as /api/ai/llm/config
+    res.json(getLlmConfigInfo());
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to read GPT config' });
+  }
+});
+
+app.post('/api/ai/gpt/action', async (req, res) => {
+  try {
+    // Legacy alias: execute the same logic as /api/ai/llm/action
+    const { guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory, tom } = req.body || {};
+
+    if (!Array.isArray(matrix) || matrix.length === 0) {
+      return res.status(400).json({ error: 'Invalid matrix' });
+    }
+    if (!currentPlayer || !Array.isArray(currentPlayer.pos)) {
+      return res.status(400).json({ error: 'Invalid currentPlayer' });
+    }
+
+    let result;
+    const hasTomFlag = (typeof tom === 'boolean');
+    const useTom = hasTomFlag ? tom : Boolean(model && /^(gpt-?tom|llm-?tom)$/i.test(String(model)));
+    if (useTom) {
+      result = await decideLlmTomAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory });
+    } else {
+      result = await decideLlmAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory });
+    }
     res.json(result);
   } catch (err) {
     console.error('GPT action error:', err);

@@ -15,6 +15,18 @@ const defaultServerUrl = (typeof window !== 'undefined' && window.location && wi
   ? window.location.origin
   : 'http://localhost:3001';
 
+// Shared LLM defaults (text-only). Used for canonical `llm` naming and legacy `gpt` naming.
+// NOTE: This object may be mutated at runtime to cache the API model the server actually used.
+const DEFAULT_LLM_AGENT_CONFIG = {
+  // API model name used on server (e.g., 'gpt-4o-mini')
+  model: 'gpt-4.1-mini',
+  temperature: 1,
+  memory: {
+    enabled: true,
+    maxSteps: 50
+  }
+};
+
 export const CONFIG = {
   // Debug / logging configuration
   debug: {
@@ -55,8 +67,13 @@ export const CONFIG = {
         description: 'Human player (you)'
       },
       player2: {
-        // Types: 'human' | 'gpt' | 'gpt-ToM' | 'vlm' | 'vlm-ToM' | 'rl_individual' | 'rl_joint' | 'committedAgent'
-        type: 'human',
+        // Types (canonical):
+        // - 'human'
+        // - 'llm' | 'llm-tom'
+        // - 'vlm' | 'vlm-tom'
+        // - 'rl_individual' | 'rl_joint' | 'committedAgent'
+        // Legacy aliases still accepted: 'gpt'|'gpt-ToM' (-> llm/llm-tom), 'vlm-ToM' (-> vlm-tom)
+        type: 'vlm',
         color: 'orange',
         description: 'Human, GPT, or RL partner'
       }
@@ -66,10 +83,10 @@ export const CONFIG = {
     experiments: {
       // order: ['1P1G'],
       // order: ['1P2G'],
-      // order: [ '2P3G'],
+      order: [ '2P3G'],
       // order: ['1P2G','2P3G'],
       // order: ['2P2G', '2P3G'],
-      order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
+      // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
         '1P1G': 3, // 3
@@ -99,8 +116,8 @@ export const CONFIG = {
       // Legacy behavior had no time cap; only step-based via maxGameLength.
       maxTrialDurationMs: 60 * 1000,
       // Minimum and maximum time to wait for partner (ms)
-      waitingForPartnerMinDuration: 1 * 1000, // 9*1000, 9s
-      waitingForPartnerMaxDuration: 1 * 1000 // 300*1000, 5mins
+      waitingForPartnerMinDuration: 3 * 1000, // 9*1000, 9s
+      waitingForPartnerMaxDuration: 3 * 1000 // 300*1000, 5mins
     },
 
     // AI agent settings
@@ -112,18 +129,11 @@ export const CONFIG = {
       // When true, AI/GPT moves are synchronized with the human input
       // i.e., on each human key press, AI/GPT generates a move and both apply before a single redraw
       synchronizedMoves: true,
-      // Optional GPT/VLM agent client defaults (non-sensitive)
-      gpt: {
-        // API model name used on server (e.g., 'gpt-4o-mini')
-        model: 'gpt-4.1-mini',
-        temperature: 1,
-        // Include past trajectories in GPT prompt
-        memory: {
-          enabled: true,
-          // Limit steps appended to prompt per player to control token usage
-          maxSteps: 50
-        }
-      },
+      // Optional LLM/VLM agent client defaults (non-sensitive)
+      // LLM = text-only; VLM = text + image.
+      llm: DEFAULT_LLM_AGENT_CONFIG,
+      // Legacy alias (kept for older code paths / analysis notebooks)
+      gpt: DEFAULT_LLM_AGENT_CONFIG,
       vlm: {
         // Vision API model name used on server (e.g., 'gpt-4o-mini')
         model: 'gpt-4.1-mini',
@@ -133,12 +143,12 @@ export const CONFIG = {
           maxSteps: 50
         },
         // NOTE:
-        // `vlm` and `vlm-ToM` MUST share the exact same VLM settings (model/temperature/memory/etc).
-        // The ONLY behavioral difference is that `vlm-ToM` performs an additional inference step
+        // `vlm` and `vlm-tom` MUST share the exact same VLM settings (model/temperature/memory/etc).
+        // The ONLY behavioral difference is that `vlm-tom` performs an additional inference step
         // and returns an `inferredGoal` each step (see server/client ToM routing via a boolean flag).
         tom: {
-          // When the player2 type is `vlm-ToM`, the client will request ToM output from the server.
-          // Keep this config identical across `vlm` and `vlm-ToM`; do not tune parameters here.
+          // When the player2 type is `vlm-tom`, the client will request ToM output from the server.
+          // Keep this config identical across `vlm` and `vlm-tom`; do not tune parameters here.
           inferGoalEachStep: true
         }
       }
@@ -162,12 +172,10 @@ export const CONFIG = {
 
   // Fullscreen settings
   fullscreen: {
-    // Enable fullscreen on spacebar press in welcome screen
-    enableOnWelcome: true,
-    // Auto-start game when entering fullscreen from welcome screen
-    autoStartOnFullscreen: true,
-    // Show fullscreen instructions in welcome screen
-    showInstructions: true
+    // If true, the app will TRY to enter fullscreen on the first user gesture (space/click) on welcome screens.
+    // If false, the app will start in windowed mode by default (no fullscreen request).
+    // Note: browsers require a user gesture to enter fullscreen; this flag only affects whether we request it.
+    defaultEnabled: false
   },
 
   // 1P2G specific configuration
@@ -231,8 +239,9 @@ export const CONFIG = {
     // human to press space before falling back to AI partner
     matchPlayReadyTimeout: 10000,
     // Fallback AI partner type when human-human matching fails
-    // Allowed: 'gpt' | 'gpt-ToM' | 'vlm' | 'vlm-ToM' | 'rl_individual' | 'rl_joint' | 'committedAgent'
-    fallbackAIType: 'vlm-ToM',
+    // Allowed (canonical): 'llm' | 'llm-tom' | 'vlm' | 'vlm-tom' | 'rl_individual' | 'rl_joint' | 'committedAgent'
+    // Legacy aliases accepted: 'gpt' | 'gpt-ToM' | 'vlm-ToM'
+    fallbackAIType: 'vlm-tom',
     // Partner inactivity settings
     inactivityFallback: {
       // Enable automatic fallback to AI when partner is inactive
@@ -296,9 +305,16 @@ export const DIRECTIONS = {
 // Export utility functions
 export const GameConfigUtils = {
   setPlayerType(playerIndex, type) {
-    // Normalize legacy alias
-    const normalized = (type === 'ai') ? 'rl_joint' : type;
-    const allowed = ['human', 'gpt', 'gpt-ToM', 'vlm', 'vlm-ToM', 'rl_individual', 'rl_joint', 'committedAgent'];
+    // Normalize legacy alias + legacy agent naming
+    const raw = (type === 'ai') ? 'rl_joint' : type;
+    const t = String(raw || '').trim();
+    const lower = t.toLowerCase();
+    const normalized =
+      (lower === 'gpt') ? 'llm'
+        : (t === 'gpt-ToM' || lower === 'gpt-tom' || lower === 'gpttom') ? 'llm-tom'
+          : (t === 'vlm-ToM' || lower === 'vlm-tom' || lower === 'vlmtom') ? 'vlm-tom'
+            : t;
+    const allowed = ['human', 'llm', 'llm-tom', 'vlm', 'vlm-tom', 'gpt', 'gpt-ToM', 'vlm-ToM', 'rl_individual', 'rl_joint', 'committedAgent'];
     if (!allowed.includes(normalized)) return;
     CONFIG.game.players[`player${playerIndex}`].type = normalized;
 

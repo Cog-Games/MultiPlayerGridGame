@@ -1,6 +1,6 @@
 import { CONFIG, GAME_OBJECTS, GameConfigUtils } from '../config/gameConfig.js';
 import { RLAgent } from '../ai/RLAgent.js';
-import { GptAgentClient } from '../ai/GptAgentClient.js';
+import { LlmAgentClient } from '../ai/LlmAgentClient.js';
 import { VlmAgentClient } from '../ai/VlmAgentClient.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
 import { NewGoalGenerator } from '../utils/NewGoalGenerator.js';
@@ -12,7 +12,7 @@ export class ExperimentManager {
     this.uiManager = uiManager;
     this.timelineManager = timelineManager;
     this.rlAgent = new RLAgent();
-    this.gptClient = new GptAgentClient();
+    this.llmClient = new LlmAgentClient();
     this.vlmClient = new VlmAgentClient();
 
     this.currentExperimentSequence = [];
@@ -33,6 +33,23 @@ export class ExperimentManager {
 
     // Set up timeline event handlers if timeline manager is provided
     this.setupTimelineIntegration();
+  }
+
+  // Normalize agent type strings across legacy and new naming.
+  // New canonical types:
+  // - llm / llm-tom
+  // - vlm / vlm-tom
+  // Legacy aliases accepted:
+  // - gpt -> llm
+  // - gpt-ToM / gpt-tom / gpttom -> llm-tom
+  // - vlm-ToM / vlm-tom / vlmtom -> vlm-tom
+  normalizeAgentType(type) {
+    const raw = String(type || '').trim();
+    const t = raw.toLowerCase();
+    if (t === 'gpt') return 'llm';
+    if (raw === 'gpt-ToM' || t === 'gpt-tom' || t === 'gpttom') return 'llm-tom';
+    if (raw === 'vlm-ToM' || t === 'vlm-tom' || t === 'vlmtom') return 'vlm-tom';
+    return t;
   }
 
   // Enable AI partner dynamically (e.g., when human partner disconnects)
@@ -59,9 +76,10 @@ export class ExperimentManager {
       try {
         const td = this.gameStateManager?.trialData;
         if (td) {
-          if (fallbackType === 'gpt') {
-            const model = CONFIG?.game?.agent?.gpt?.model;
-            td.partnerAgentType = (model && String(model).trim()) ? model : 'gpt';
+          const ft = this.normalizeAgentType(fallbackType);
+          if (ft === 'llm' || ft === 'llm-tom') {
+            const model = CONFIG?.game?.agent?.llm?.model;
+            td.partnerAgentType = (model && String(model).trim()) ? model : 'llm';
             // If model not known yet, attempt to fetch/log and update asynchronously
             if (!model || !String(model).trim()) {
               this.logCurrentAIModel?.();
@@ -190,12 +208,14 @@ export class ExperimentManager {
       design = GameHelpers.createFallbackDesign(experimentType);
     }
 
-    // If this is a 2P experiment with a GPT partner on either side,
+    // If this is a 2P experiment with an LLM partner on either side,
     // prefetch the exact model so partnerAgentType records it from the start
     try {
       const p1Type = CONFIG?.game?.players?.player1?.type;
       const p2Type = CONFIG?.game?.players?.player2?.type;
-      if (String(experimentType || '').includes('2P') && (p1Type === 'gpt' || p2Type === 'gpt')) {
+      const n1 = this.normalizeAgentType(p1Type);
+      const n2 = this.normalizeAgentType(p2Type);
+      if (String(experimentType || '').includes('2P') && (n1 === 'llm' || n1 === 'llm-tom' || n2 === 'llm' || n2 === 'llm-tom')) {
         await this.logCurrentAIModel();
       }
     } catch (_) { /* noop */ }
@@ -293,14 +313,24 @@ export class ExperimentManager {
     try {
       const p2Type = CONFIG?.game?.players?.player2?.type;
       const base = (CONFIG.server.url || '').replace(/\/$/, '');
-      if (p2Type === 'gpt' || p2Type === 'gpt-ToM') {
-        const resp = await fetch(`${base}/api/ai/gpt/config`);
+      // Normalize legacy aliases: gpt/gpt-ToM -> llm/llm-tom, vlm-ToM -> vlm-tom
+      const raw = String(p2Type || '');
+      const t = raw.toLowerCase().trim();
+      const normalizedType =
+        (t === 'gpt' ? 'llm'
+          : (t === 'gpt-tom' || t === 'gpttom' || t === 'gpt-tom' || raw === 'gpt-ToM') ? 'llm-tom'
+            : (t === 'vlm-tom' || t === 'vlmtom' || raw === 'vlm-ToM') ? 'vlm-tom'
+              : t);
+
+      if (normalizedType === 'llm' || normalizedType === 'llm-tom') {
+        const resp = await fetch(`${base}/api/ai/llm/config`);
         if (resp.ok) {
           const info = await resp.json();
           const model = info?.model || '(unknown)';
           try {
             if (model && model !== '(unknown)') {
-              CONFIG.game.agent.gpt.model = model; // API model cache only
+              if (!CONFIG.game.agent.llm) CONFIG.game.agent.llm = {};
+              CONFIG.game.agent.llm.model = model; // API model cache only
               const td = this.gameStateManager?.trialData;
               const st = this.gameStateManager?.currentState;
               if (td && st && String(st.experimentType || '').includes('2P')) {
@@ -309,7 +339,7 @@ export class ExperimentManager {
             }
           } catch (_) { /* noop */ }
         }
-      } else if (p2Type === 'vlm' || p2Type === 'vlm-ToM') {
+      } else if (normalizedType === 'vlm' || normalizedType === 'vlm-tom') {
         const resp = await fetch(`${base}/api/ai/vlm/config`);
         if (resp.ok) {
           const info = await resp.json();
@@ -375,20 +405,21 @@ export class ExperimentManager {
     let gptError = null;
 
     // Determine which side is AI and its configured type
-    const aiType = (this.aiPlayerNumber === 1)
+    const aiTypeRaw = (this.aiPlayerNumber === 1)
       ? CONFIG.game.players.player1.type
       : CONFIG.game.players.player2.type;
+    const aiType = this.normalizeAgentType(aiTypeRaw);
 
-    if ((aiType === 'gpt' || aiType === 'gpt-ToM') && isGptAllowed) {
+    if ((aiType === 'llm' || aiType === 'llm-tom') && isGptAllowed) {
       try {
-        aiDirection = await this.gptClient.getNextAction(
+        aiDirection = await this.llmClient.getNextAction(
           {
             ...gameState,
             trialData: this.gameStateManager.getCurrentTrialData()
           },
           // IMPORTANT: do NOT overload `model` as a mode switch.
-          // `gpt` and `gpt-ToM` share the same GPT model/config; ToM is selected via a boolean.
-          { aiPlayerNumber: this.aiPlayerNumber, tom: (aiType === 'gpt-ToM') }
+          // `llm` and `llm-tom` share the same LLM model/config; ToM is selected via a boolean.
+          { aiPlayerNumber: this.aiPlayerNumber, tom: (aiType === 'llm-tom') }
         );
         if (aiDirection && typeof aiDirection === 'object') {
           if (Object.prototype.hasOwnProperty.call(aiDirection, 'inferredGoal')) {
@@ -398,9 +429,9 @@ export class ExperimentManager {
         }
       } catch (e) {
         gptError = e;
-        console.warn('GPT agent request failed during synchronized move; falling back to RL:', e?.message || e);
+        console.warn('LLM agent request failed during synchronized move; falling back to RL:', e?.message || e);
       }
-    } else if ((aiType === 'vlm' || aiType === 'vlm-ToM') && isGptAllowed) {
+    } else if ((aiType === 'vlm' || aiType === 'vlm-tom') && isGptAllowed) {
       try {
         aiDirection = await this.vlmClient.getNextAction(
           {
@@ -408,8 +439,8 @@ export class ExperimentManager {
             trialData: this.gameStateManager.getCurrentTrialData()
           },
           // IMPORTANT: do NOT overload `model` as a mode switch.
-          // `vlm` and `vlm-ToM` share the same VLM model/config; ToM is selected via a boolean.
-          { aiPlayerNumber: this.aiPlayerNumber, tom: (aiType === 'vlm-ToM') }
+          // `vlm` and `vlm-tom` share the same VLM model/config; ToM is selected via a boolean.
+          { aiPlayerNumber: this.aiPlayerNumber, tom: (aiType === 'vlm-tom') }
         );
         if (aiDirection && typeof aiDirection === 'object') {
           if (Object.prototype.hasOwnProperty.call(aiDirection, 'inferredGoal')) {
@@ -525,23 +556,24 @@ export class ExperimentManager {
 
     // Decide action depending on agent type
     let direction = null;
-    const aiType = (this.aiPlayerNumber === 1)
+    const aiTypeRaw = (this.aiPlayerNumber === 1)
       ? CONFIG.game.players.player1.type
       : CONFIG.game.players.player2.type;
+    const aiType = this.normalizeAgentType(aiTypeRaw);
     const isGptAllowed = (gameState.experimentType === '2P2G' || gameState.experimentType === '2P3G');
     let gptError = null;
 
 
-    if ((aiType === 'gpt' || aiType === 'gpt-ToM') && isGptAllowed) {
+    if ((aiType === 'llm' || aiType === 'llm-tom') && isGptAllowed) {
       try {
-        direction = await this.gptClient.getNextAction(
+        direction = await this.llmClient.getNextAction(
           {
             ...gameState,
             trialData: this.gameStateManager.getCurrentTrialData()
           },
           // IMPORTANT: do NOT overload `model` as a mode switch.
-          // `gpt` and `gpt-ToM` share the same GPT model/config; ToM is selected via a boolean.
-          { aiPlayerNumber: this.aiPlayerNumber, tom: (aiType === 'gpt-ToM') }
+          // `llm` and `llm-tom` share the same LLM model/config; ToM is selected via a boolean.
+          { aiPlayerNumber: this.aiPlayerNumber, tom: (aiType === 'llm-tom') }
         );
         // If ToM variant, store inferred goal and use only the action for movement
         if (direction && typeof direction === 'object') {
@@ -552,9 +584,9 @@ export class ExperimentManager {
         }
       } catch (err) {
         gptError = err;
-        console.warn('GPT agent failed, falling back to RL. Reason:', err?.message || err);
+        console.warn('LLM agent failed, falling back to RL. Reason:', err?.message || err);
       }
-    } else if ((aiType === 'vlm' || aiType === 'vlm-ToM') && isGptAllowed) {
+    } else if ((aiType === 'vlm' || aiType === 'vlm-tom') && isGptAllowed) {
       try {
         direction = await this.vlmClient.getNextAction(
           {
@@ -562,8 +594,8 @@ export class ExperimentManager {
             trialData: this.gameStateManager.getCurrentTrialData()
           },
           // IMPORTANT: do NOT overload `model` as a mode switch.
-          // `vlm` and `vlm-ToM` share the same VLM model/config; ToM is selected via a boolean.
-          { aiPlayerNumber: this.aiPlayerNumber, tom: (aiType === 'vlm-ToM') }
+          // `vlm` and `vlm-tom` share the same VLM model/config; ToM is selected via a boolean.
+          { aiPlayerNumber: this.aiPlayerNumber, tom: (aiType === 'vlm-tom') }
         );
         if (direction && typeof direction === 'object') {
           if (Object.prototype.hasOwnProperty.call(direction, 'inferredGoal')) {

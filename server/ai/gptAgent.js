@@ -67,7 +67,8 @@ function findAllCoords(matrix, value) {
   return coords;
 }
 
-function buildPrompt({ matrix, currentPlayer, goals, memory, guidance /*, relativeInfo */ }) {
+// Shared prompt context derivation (no prompt-specific strings here).
+function derivePromptContext({ matrix, currentPlayer, goals }) {
   const legend = `Legend: 0=blank, 1=traveler1, 2=traveler2, 3=restaurant`;
   const matrixStr = formatMatrix(matrix);
   // Derive coordinates for players and goals
@@ -78,52 +79,69 @@ function buildPrompt({ matrix, currentPlayer, goals, memory, guidance /*, relati
   const p1Str = p1 ? `(${p1[0]}, ${p1[1]})` : 'unknown';
   const p2Str = p2 ? `(${p2[0]}, ${p2[1]})` : 'unknown';
   const goalsStr = goalsList.length ? goalsList.map(g => `(${g[0]}, ${g[1]})`).join('; ') : 'none';
+  const isPlayer1 = Boolean(currentPlayer && currentPlayer.label === 'player1');
+  return { legend, matrixStr, p1Str, p2Str, goalsStr, isPlayer1 };
+}
 
+function appendTrajectories(lines, memory) {
+  if (!(memory && memory.enabled && memory.trajectories)) return;
+  const p1t = Array.isArray(memory.trajectories.player1) ? memory.trajectories.player1 : [];
+  const p2t = Array.isArray(memory.trajectories.player2) ? memory.trajectories.player2 : [];
+  const fmt = (traj) => traj.map(c => `(${c[0]}, ${c[1]})`).join(' -> ');
+  lines.push('=== RECENT MOVEMENT HISTORY ===');
+  lines.push(`Traveler1 path: ${fmt(p1t) || 'n/a'}`);
+  lines.push(`Traveler2 path: ${fmt(p2t) || 'n/a'}`);
+  lines.push('');
+}
+
+function buildSectionedScaffold({ currentPlayer, matrix, goals, memory, guidance }) {
+  const { legend, matrixStr, p1Str, p2Str, goalsStr, isPlayer1 } = derivePromptContext({ matrix, currentPlayer, goals });
   const lines = [
-    'You are playing a navigation game in a 2d grid world with another player where you are hungry travelers need to reach restaurants as quickly as possible.',
+    '=== GAME CONTEXT ===',
+    'You are playing a navigation game in a 2D grid world with another player. You are hungry travelers who need to reach restaurants as quickly as possible.',
+    '',
     (typeof guidance === 'string' && guidance.trim().length > 0)
-      ? `Instructions for this game: ${guidance.trim()}`
-      : 'Instructions for this game: Collaborate to choose the same restaurant as the other traveler.',
-    'Here is current grid map and legend:',
+      ? `GAME RULES: ${guidance.trim()}`
+      : 'GAME RULES: Collaborate to choose the same restaurant as the other traveler.',
+    '',
+    '=== CURRENT STATE ===',
+    'Grid map and legend:',
     legend,
-    'Grid:',
+    'Grid matrix:',
     matrixStr,
     '',
-    `Traveler1 at ${p1Str}`,
-    `Traveler2 at ${p2Str}`,
-    `Restaurants: ${goalsStr}`,
-    // Identify which traveler the model controls based on the provided label
-    (currentPlayer && currentPlayer.label === 'player1')
-      ? 'You are traveler 1.'
-      : 'You are traveler 2.',
+    'Player positions:',
+    `  Traveler1 (red): ${p1Str}`,
+    `  Traveler2 (orange): ${p2Str}`,
+    `Restaurants (blue): ${goalsStr}`,
     '',
+    isPlayer1 ? 'YOU ARE: Traveler 1 (red)' : 'YOU ARE: Traveler 2 (orange)',
+    '',
+    '=== ACTIONS ===',
+    'Movement directions (coordinate deltas):',
+    '  left = [0, -1]  (move left, column decreases)',
+    '  right = [0, 1]  (move right, column increases)',
+    '  up = [-1, 0]    (move up, row decreases)',
+    '  down = [1, 0]   (move down, row increases)',
+    ''
   ];
 
-  // Intentionally omit relative hints like nearest goal/distance/delta to keep prompt minimal
+  appendTrajectories(lines, memory);
+  return lines;
+}
 
+function buildPrompt({ matrix, currentPlayer, goals, memory, guidance /*, relativeInfo */ }) {
+  const lines = buildSectionedScaffold({ matrix, currentPlayer, goals, memory, guidance });
   lines.push(
-    'Actions coordinate deltas:',
-    'left = [0, -1]',
-    'right = [0, 1]',
-    'up = [-1, 0]',
-    'down = [1, 0]',
+    '=== YOUR TASK ===',
+    'Choose the best single-step action.',
     '',
+    '=== OUTPUT FORMAT ===',
+    'Reply with exactly one action token:',
+    '  up | down | left | right',
+    '',
+    'Do NOT include any explanations, reasoning, JSON, or additional text.'
   );
-
-  // Append recent trajectories if provided and enabled
-  if (memory && memory.enabled && memory.trajectories) {
-    const p1t = Array.isArray(memory.trajectories.player1) ? memory.trajectories.player1 : [];
-    const p2t = Array.isArray(memory.trajectories.player2) ? memory.trajectories.player2 : [];
-    const fmt = (traj) => traj.map(c => `(${c[0]}, ${c[1]})`).join(' -> ');
-    lines.push('Recent trajectories:');
-    lines.push(`Traveler1: ${fmt(p1t) || 'n/a'}`);
-    lines.push(`Traveler2: ${fmt(p2t) || 'n/a'}`);
-    lines.push('');
-  }
-
-  // lines.push('Given the above information, infer the other player\'s current goal. Then choose the best action by replying with exactly one action token: up | down | left | right');
-
-  lines.push('Given the above information, choose the best action by replying with exactly one action token: up | down | left | right');
 
   const finalPrompt = lines.join('\n');
 
@@ -249,6 +267,22 @@ export function getGptConfigInfo() {
   };
 }
 
+// === Canonical LLM naming (backward compatible) ===
+// In this codebase:
+// - LLM == text-only chat completion (legacy name: GPT)
+// - VLM == vision chat completion (text + image)
+export async function decideLlmAction(payload) {
+  return await decideGptAction(payload);
+}
+
+export async function decideLlmTomAction(payload) {
+  return await decideGptTomAction(payload);
+}
+
+export function getLlmConfigInfo() {
+  return getGptConfigInfo();
+}
+
 // === Vision (VLM) variant ===
 
 function getVlmModel() {
@@ -362,7 +396,7 @@ export async function decideGptVlmTomAction(payload) {
   const { imageDataUrl } = payload || {};
   // Reuse ToM prompt content and add image
   const prompt = buildTomPrompt(payload);
-  const externalModel = payload?.model || 'vlm-ToM';
+  const externalModel = payload?.model || 'vlm-tom';
   const apiModel = getVlmModel();
   const temperature = typeof payload?.temperature === 'number' ? payload.temperature : 0;
 
@@ -405,7 +439,7 @@ export async function decideGptVlmTomAction(payload) {
     inferredGoal: Array.isArray(parsed.inferredGoal) ? parsed.inferredGoal : null,
     // Mirror GPT ToM behavior: if caller passed a real model name, don't overwrite it with the ToM label.
     // The underlying model actually used is always `baseModel`.
-    model: (externalModel && /^vlm-?tom$/i.test(String(externalModel))) ? 'vlm-ToM' : (externalModel || 'vlm-ToM'),
+    model: (externalModel && /^vlm-?tom$/i.test(String(externalModel))) ? 'vlm-tom' : (externalModel || 'vlm-tom'),
     baseModel: apiModel,
     usage: (result && result.usage) || null,
     latencyMs: (result && result.latencyMs) || null,
@@ -416,88 +450,33 @@ export async function decideGptVlmTomAction(payload) {
 // === Theory-of-Mind variant ===
 
 function buildTomPrompt({ matrix, currentPlayer, goals, memory, guidance }) {
-  const legend = `Legend: 0=blank, 1=traveler1, 2=traveler2, 3=restaurant`;
-  const matrixStr = formatMatrix(matrix);
-  const p1 = findFirstCoord(matrix, 1);
-  const inferredP2 = findFirstCoord(matrix, 2);
-  const p2 = (currentPlayer && Array.isArray(currentPlayer.pos)) ? currentPlayer.pos : inferredP2;
-  const goalsList = (Array.isArray(goals) && goals.length > 0) ? goals : findAllCoords(matrix, 3);
-  const p1Str = p1 ? `(${p1[0]}, ${p1[1]})` : 'unknown';
-  const p2Str = p2 ? `(${p2[0]}, ${p2[1]})` : 'unknown';
-  const goalsStr = goalsList.length ? goalsList.map(g => `(${g[0]}, ${g[1]})`).join('; ') : 'none';
-
-  const lines = [
-    '=== GAME CONTEXT ===',
-    'You are playing a navigation game in a 2D grid world with another player. You are hungry travelers who need to reach restaurants as quickly as possible.',
-    '',
-    (typeof guidance === 'string' && guidance.trim().length > 0)
-      ? `GAME RULES: ${guidance.trim()}`
-      : 'GAME RULES: Collaborate to choose the same restaurant as the other traveler.',
-    '',
-    '=== CURRENT STATE ===',
-    'Grid map and legend:',
-    legend,
-    'Grid matrix:',
-    matrixStr,
-    '',
-    `Player positions:`,
-    `  Traveler1 (red): ${p1Str}`,
-    `  Traveler2 (orange): ${p2Str}`,
-    `Restaurants (blue): ${goalsStr}`,
-    '',
-    (currentPlayer && currentPlayer.label === 'player1')
-      ? 'YOU ARE: Traveler 1 (red)'
-      : 'YOU ARE: Traveler 2 (orange)',
-    '',
-    '=== ACTIONS ===',
-    'Movement directions (coordinate deltas):',
-    '  left = [0, -1]  (move left, column decreases)',
-    '  right = [0, 1]  (move right, column increases)',
-    '  up = [-1, 0]    (move up, row decreases)',
-    '  down = [1, 0]   (move down, row increases)',
-    ''
-  ];
-
-  if (memory && memory.enabled && memory.trajectories) {
-    const p1t = Array.isArray(memory.trajectories.player1) ? memory.trajectories.player1 : [];
-    const p2t = Array.isArray(memory.trajectories.player2) ? memory.trajectories.player2 : [];
-    const fmt = (traj) => traj.map(c => `(${c[0]}, ${c[1]})`).join(' -> ');
-    lines.push('=== RECENT MOVEMENT HISTORY ===');
-    lines.push(`Traveler1 path: ${fmt(p1t) || 'n/a'}`);
-    lines.push(`Traveler2 path: ${fmt(p2t) || 'n/a'}`);
-    lines.push('');
-  }
+  const lines = buildSectionedScaffold({ matrix, currentPlayer, goals, memory, guidance });
 
   // Enhanced ToM-specific instruction
   lines.push(
     '=== YOUR TASK ===',
-    'STEP 1 - INFERENCE: Analyze the other traveler\'s recent movements and current position to infer which restaurant they are heading toward.',
-    '  - Consider their trajectory history (if available)',
-    '  - Consider their current position relative to each restaurant',
-    '  - Consider which restaurant would be most efficient for them to reach',
-    '  - If unclear, infer the closest restaurant to them',
+    'STEP 1 - INFERENCE: Using all available information (grid, positions, goals, trajectories if provided), infer the partner\'s intended restaurant.',
     '',
-    'STEP 2 - COLLABORATION: Choose your next action to move toward the same restaurant you inferred for the other traveler.',
-    '  - Your goal is to coordinate and both reach the same restaurant',
-    '  - Choose the most efficient single-step action (up, down, left, or right)',
-    '  - Consider both your own position and the other traveler\'s likely goal',
+    'STEP 2 - ACTION: Using all available information (including your inferred partner goal), choose your next single-step action.',
     '',
     '=== OUTPUT FORMAT ===',
-    'Reply with ONLY valid JSON in this exact format:',
-    '  {"inferred_goal": [row, col] or null, "action": "up"|"down"|"left"|"right"}',
-    '',
-    'Examples:',
-    '  {"inferred_goal": [5, 7], "action": "right"}',
-    '  {"inferred_goal": [2, 3], "action": "up"}',
-    '  {"inferred_goal": null, "action": "left"}',
-    '',
-    'Do NOT include any explanations, reasoning, or additional text. Only output the JSON object.'
+    'Reply with ONLY valid JSON in this exact format (no extra keys, no prose):',
+    '  {"inferred_goal": [row, col] or null, "action": "up"|"down"|"left"|"right"}'
   );
 
 
   const finalPrompt = lines.join('\n');
   logExactPrompt(finalPrompt);
   return finalPrompt;
+}
+
+// Debug-only prompt accessors (pure, no network). Useful for prompt snapshot comparisons.
+export function __debug_buildBasePrompt(payload) {
+  return buildPrompt(payload);
+}
+
+export function __debug_buildTomPrompt(payload) {
+  return buildTomPrompt(payload);
 }
 
 function parseTomResponse(raw) {
@@ -527,7 +506,7 @@ function parseTomResponse(raw) {
 export async function decideGptTomAction(payload) {
   const prompt = buildTomPrompt(payload);
   // External label triggers ToM; API calls always use env-configured base model
-  const externalModel = payload?.model || 'gpt-ToM';
+  const externalModel = payload?.model || 'llm-tom';
   const baseModel = getApiModel();
   const temperature = typeof payload?.temperature === 'number' ? payload.temperature : 0;
 
@@ -570,7 +549,7 @@ export async function decideGptTomAction(payload) {
     action,
     inferredGoal: Array.isArray(parsed.inferredGoal) ? parsed.inferredGoal : null,
     // Expose external label so client can record it; also return underlying base model for debugging if needed
-    model: (externalModel && /^gpt-?tom$/i.test(String(externalModel))) ? 'gpt-ToM' : externalModel || 'gpt-ToM',
+    model: (externalModel && /^(gpt-?tom|llm-?tom)$/i.test(String(externalModel))) ? 'llm-tom' : externalModel || 'llm-tom',
     baseModel,
     usage: (result && result.usage) || null,
     latencyMs: (result && result.latencyMs) || null,

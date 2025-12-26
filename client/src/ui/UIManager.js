@@ -78,6 +78,10 @@ export class UIManager {
   showMainScreen() {
     this.cleanupCanvas();
     this.currentScreen = 'main';
+    const preferFullscreen = !!(CONFIG?.fullscreen?.defaultEnabled);
+    const startHint = preferFullscreen
+      ? 'press the spacebar to enter the fullscreen and start the game!'
+      : 'press the spacebar to start the game!';
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
         <div style="text-align: center; max-width: 600px; padding: 20px;">
@@ -96,7 +100,7 @@ export class UIManager {
             </ul>
           </div>
           <div style="margin-bottom: 16px; color: #555; font-size: 18px; font-weight: bold;">
-            press the spacebar to enter the fullscreen and start the game!
+            ${startHint}
           </div>
           <button id="start-experiment" style="
             padding: 15px 30px;
@@ -115,23 +119,25 @@ export class UIManager {
 
     // Add event listener
     document.getElementById('start-experiment').addEventListener('click', async () => {
-      if (!document.fullscreenElement) {
+      if (preferFullscreen && !document.fullscreenElement) {
         await this.enterFullscreen().catch(() => {});
       }
       this.emit('start-experiment', CONFIG.game.experiments.order[0]);
     });
 
-    // Spacebar to enter fullscreen and start game on the whole document
+    // Spacebar start (optionally enter fullscreen first)
     if (this.fullscreenKeyHandler) {
       document.removeEventListener('keydown', this.fullscreenKeyHandler);
     }
     this.fullscreenKeyHandler = async (e) => {
       if (e.code === 'Space') {
         e.preventDefault();
-        // Enter fullscreen first
-        await this.enterFullscreen();
-        // Then start the experiment if fullscreen config allows it
-        if (CONFIG.fullscreen && CONFIG.fullscreen.autoStartOnFullscreen) {
+        if (preferFullscreen) {
+          // Enter fullscreen first, then start the experiment
+          await this.enterFullscreen();
+          this.emit('start-experiment', CONFIG.game.experiments.order[0]);
+        } else {
+          // Windowed default: start immediately
           this.emit('start-experiment', CONFIG.game.experiments.order[0]);
         }
       }
