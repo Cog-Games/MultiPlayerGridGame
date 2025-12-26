@@ -43,6 +43,13 @@ export class GameStateManager {
       distanceCondition: null,
       // GPT error logging per move
       gptErrorEvents: [],
+      // Convenience flags for analysis: whether/when GPT fell back to RL during this trial
+      gptFallbackToRlOccurred: false,
+      gptFallbackToRlCount: 0,
+      gptFallbackToRlFirstStep: null,
+      gptFallbackToRlFirstTimeMs: null,
+      gptFallbackToRlLastError: null,
+      gptFallbackToRlLastFallbackDirection: null,
       player1Trajectory: [],
       player2Trajectory: [],
       player1Actions: [],
@@ -94,7 +101,9 @@ export class GameStateManager {
         successHistory: []
       },
       // Experiment-level fallback event log
-      fallbackEvents: []
+      fallbackEvents: [],
+      // Experiment-level GPT→RL fallback log (subset of gptErrorEvents)
+      gptFallbackToRlEvents: []
     };
 
     this.stepCount = 0;
@@ -121,6 +130,12 @@ export class GameStateManager {
     this.trialData.player2RT = [];
     this.trialData.currentPlayerIndex = [];
     this.trialData.gptErrorEvents = [];
+    this.trialData.gptFallbackToRlOccurred = false;
+    this.trialData.gptFallbackToRlCount = 0;
+    this.trialData.gptFallbackToRlFirstStep = null;
+    this.trialData.gptFallbackToRlFirstTimeMs = null;
+    this.trialData.gptFallbackToRlLastError = null;
+    this.trialData.gptFallbackToRlLastFallbackDirection = null;
     this.trialData.player1StartPosition = null;
     this.trialData.player2StartPosition = null;
     this.trialData.initialGoalPositions = [];
@@ -321,6 +336,38 @@ export class GameStateManager {
         this.trialData.gptErrorEvents.push(event);
       } else {
         this.trialData.gptErrorEvents = [event];
+      }
+
+      // If we actually fell back to RL, add a clear per-trial note + experiment-level log
+      if (String(fallback || '').toLowerCase() === 'rl') {
+        // IMPORTANT: if a fallback happens, treat the partner as RL for analysis by flipping partnerAgentType.
+        // This makes the exported Excel reflect the effective agent behavior during the trial.
+        try {
+          const rlType = (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl';
+          if (this.trialData) {
+            this.trialData.partnerAgentType = rlType;
+          }
+        } catch (_) { /* noop */ }
+
+        this.trialData.gptFallbackToRlOccurred = true;
+        this.trialData.gptFallbackToRlCount = (Number(this.trialData.gptFallbackToRlCount) || 0) + 1;
+        if (this.trialData.gptFallbackToRlFirstStep == null) this.trialData.gptFallbackToRlFirstStep = event.step;
+        if (this.trialData.gptFallbackToRlFirstTimeMs == null) this.trialData.gptFallbackToRlFirstTimeMs = event.timeMs;
+        this.trialData.gptFallbackToRlLastError = event.error || null;
+        this.trialData.gptFallbackToRlLastFallbackDirection = event.fallbackDirection || null;
+
+        try {
+          if (this.experimentData) {
+            const trialIdx = (this.currentState && Number.isInteger(this.currentState.trialIndex)) ? this.currentState.trialIndex : -1;
+            const experimentType = (this.currentState && this.currentState.experimentType) || null;
+            const evt = { ...event, at: Date.now(), trialIndex: trialIdx, experimentType };
+            if (Array.isArray(this.experimentData.gptFallbackToRlEvents)) {
+              this.experimentData.gptFallbackToRlEvents.push(evt);
+            } else {
+              this.experimentData.gptFallbackToRlEvents = [evt];
+            }
+          }
+        } catch (_) { /* noop */ }
       }
     } catch (_) {
       // Swallow logging errors to avoid interfering with gameplay
@@ -752,11 +799,18 @@ export class GameStateManager {
     try {
       const is2P = this.currentState && String(this.currentState.experimentType || '').includes('2P');
       if (is2P) {
+        // If GPT fell back to RL at any point in this trial, lock partnerAgentType to RL for analysis.
+        // Otherwise, later "normalization" would overwrite it back to the cached GPT model string.
+        if (this.trialData?.gptFallbackToRlOccurred) {
+          const rlType = (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl';
+          this.trialData.partnerAgentType = rlType;
+        } else {
         const recorded = String(this.trialData.partnerAgentType || '').trim();
         const computed = this.getPartnerAgentType(this.currentState.experimentType);
         // If computed differs and is non-empty, prefer the computed (ensures exact GPT model string)
         if (computed && recorded !== computed) {
           this.trialData.partnerAgentType = computed;
+        }
         }
         // Upgrade fallback AI type to exact LLM model string if still generic ('llm' or legacy 'gpt')
         const model = CONFIG?.game?.agent?.llm?.model || CONFIG?.game?.agent?.gpt?.model;

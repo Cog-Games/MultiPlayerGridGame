@@ -334,7 +334,8 @@ export class ExperimentManager {
               const td = this.gameStateManager?.trialData;
               const st = this.gameStateManager?.currentState;
               if (td && st && String(st.experimentType || '').includes('2P')) {
-                td.partnerAgentType = model;
+                // Don't overwrite RL fallback labeling if a GPT→RL fallback happened this trial
+                if (!td.gptFallbackToRlOccurred) td.partnerAgentType = model;
               }
             }
           } catch (_) { /* noop */ }
@@ -351,7 +352,8 @@ export class ExperimentManager {
               const td = this.gameStateManager?.trialData;
               const st = this.gameStateManager?.currentState;
               if (td && st && String(st.experimentType || '').includes('2P')) {
-                td.partnerAgentType = model;
+                // Don't overwrite RL fallback labeling if a GPT→RL fallback happened this trial
+                if (!td.gptFallbackToRlOccurred) td.partnerAgentType = model;
               }
             }
           } catch (_) { /* noop */ }
@@ -479,11 +481,13 @@ export class ExperimentManager {
       );
       aiDirection = this.actionToDirection(aiAction);
 
-      // If GPT error occurred, record the event with fallback details
-      if (gptError) {
+      // Record any LLM/VLM → RL fallback (even if no explicit error was thrown)
+      const attemptedRemoteAgent =
+        (isGptAllowed && (aiType === 'llm' || aiType === 'llm-tom' || aiType === 'vlm' || aiType === 'vlm-tom'));
+      if (attemptedRemoteAgent) {
         this.gameStateManager.recordGptErrorEvent({
           phase: 'synchronized',
-          error: gptError?.message || String(gptError),
+          error: (gptError ? (gptError?.message || String(gptError)) : `No action returned from ${aiType}`),
           humanDirection,
           fallback: 'rl',
           fallbackDirection: aiDirection
@@ -638,11 +642,13 @@ export class ExperimentManager {
       }
       direction = this.actionToDirection(aiAction);
 
-      // If GPT error occurred, record the event with fallback details
-      if (gptError) {
+      // Record any LLM/VLM → RL fallback (even if no explicit error was thrown)
+      const attemptedRemoteAgent =
+        (isGptAllowed && (aiType === 'llm' || aiType === 'llm-tom' || aiType === 'vlm' || aiType === 'vlm-tom'));
+      if (attemptedRemoteAgent) {
         this.gameStateManager.recordGptErrorEvent({
           phase: 'independent',
-          error: gptError?.message || String(gptError),
+          error: (gptError ? (gptError?.message || String(gptError)) : `No action returned from ${aiType}`),
           humanDirection: null,
           fallback: 'rl',
           fallbackDirection: direction
