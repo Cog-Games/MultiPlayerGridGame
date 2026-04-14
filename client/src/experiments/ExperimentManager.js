@@ -1286,10 +1286,39 @@ export class ExperimentManager {
     const { success, experimentType, trialIndex, canvasContainer } = data;
     console.log(`📊 Showing trial feedback for ${experimentType} trial ${trialIndex}`);
 
-    // Determine message type based on experiment type
-    const messageType = experimentType.startsWith('1P') ? 'single' : 'collaboration';
+    let messageType;
 
-    // Create feedback display in the provided container
+    if (experimentType === 'StagHunt') {
+      const td = this.gameStateManager.getCurrentTrialData();
+      const goalTypes = this.gameStateManager.getCurrentState()?.currentGoalTypes || [];
+      const humanIdx = td?.humanPlayerIndex ?? 0;       // 0 = player1, 1 = player2
+      const p1Goal = td?.player1FinalReachedGoal;       // goal index, or -1/null = none
+      const p2Goal = td?.player2FinalReachedGoal;
+
+      const humanGoal  = humanIdx === 0 ? p1Goal  : p2Goal;
+      const partnerGoal = humanIdx === 0 ? p2Goal : p1Goal;
+
+      const humanReachedBig =
+        Number.isInteger(humanGoal) && humanGoal >= 0 &&
+        goalTypes[humanGoal] === 'big';
+      const partnerReachedBig =
+        Number.isInteger(partnerGoal) && partnerGoal >= 0 &&
+        goalTypes[partnerGoal] === 'big';
+      const humanReachedSmall =
+        Number.isInteger(humanGoal) && humanGoal >= 0 &&
+        goalTypes[humanGoal] === 'small';
+
+      if (humanReachedBig && partnerReachedBig && humanGoal === partnerGoal) {
+        messageType = 'stag-hunt-both-stag';
+      } else if (humanReachedSmall) {
+        messageType = 'stag-hunt-human-rabbit';
+      } else {
+        messageType = 'stag-hunt-human-nothing';
+      }
+    } else {
+      messageType = experimentType.startsWith('1P') ? 'single' : 'collaboration';
+    }
+
     this.uiManager.showTrialFeedbackInContainer(success, canvasContainer, messageType);
   }
 

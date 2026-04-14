@@ -93,9 +93,9 @@ export const CONFIG = {
     // These are read by the game logic but can be tuned per experiment.
     rewards: {
       // Reward for any small (solo-collectable) goal
-      smallGoalReward: 1,
+      smallGoalReward: 3,
       // Reward per player when BOTH players reach the same big joint goal
-      bigGoalJointReward: 3
+      bigGoalJointReward: 5
     },
 
     // Dual-goal mechanic configuration
@@ -109,7 +109,7 @@ export const CONFIG = {
     // Timing configurations
   timing: {
       trialToFeedbackDelay: 500,
-      feedbackDisplayDuration: 1000,
+      feedbackDisplayDuration: 2500,
       preTrialDisplayDuration: 2000,
       fixationDuration: 1000,
       newGoalMessageDuration: 0,

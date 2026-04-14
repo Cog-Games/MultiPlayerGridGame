@@ -470,14 +470,22 @@ export class UIManager {
     }
 
     // Validate messageType
-    if (messageType !== 'single' && messageType !== 'collaboration') {
-      console.warn('Invalid messageType. Must be "single" or "collaboration"');
+    const validTypes = ['single', 'collaboration', 'stag-hunt-both-stag', 'stag-hunt-human-rabbit', 'stag-hunt-human-nothing'];
+    if (!validTypes.includes(messageType)) {
+      console.warn(`Invalid messageType "${messageType}". Defaulting to "collaboration".`);
       messageType = 'collaboration';
     }
 
+    // For StagHunt, derive visual success from messageType
+    const visualSuccess = messageType === 'stag-hunt-both-stag' || messageType === 'stag-hunt-human-rabbit'
+      ? true
+      : messageType === 'stag-hunt-human-nothing'
+        ? false
+        : success;
+
     // Create visual feedback based on success
     let visualFeedback;
-    if (success) {
+    if (visualSuccess) {
       // Smile face for success
       visualFeedback = `
         <div style="display: flex; justify-content: center; margin: 30px 0;">
@@ -523,7 +531,14 @@ export class UIManager {
     let message;
     if (messageType === 'single') {
       message = success ? 'Goal reached!' : 'Time up!';
-    } else if (messageType === 'collaboration') {
+    } else if (messageType === 'stag-hunt-both-stag') {
+      message = 'You both caught the stag! You each earn 5 points.';
+    } else if (messageType === 'stag-hunt-human-rabbit') {
+      message = 'You caught a rabbit! You earn 3 points.';
+    } else if (messageType === 'stag-hunt-human-nothing') {
+      message = "Sorry, you didn't catch anything this round. No points.";
+    } else {
+      // 'collaboration' fallback
       message = success ? 'Collaboration succeeded!' : 'Collaboration failed!';
     }
 
@@ -533,13 +548,13 @@ export class UIManager {
       <div style="
         text-align: center;
         background: rgba(255, 255, 255, 0.95);
-        border: 3px solid ${success ? '#28a745' : '#dc3545'};
+        border: 3px solid ${visualSuccess ? '#28a745' : '#dc3545'};
         border-radius: 15px;
         padding: 30px 40px;
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
         backdrop-filter: blur(5px);
       ">
-        <div style="font-size: 32px; font-weight: bold; margin-bottom: 20px; color: ${success ? '#28a745' : '#dc3545'};">
+        <div style="font-size: 32px; font-weight: bold; margin-bottom: 20px; color: ${visualSuccess ? '#28a745' : '#dc3545'};">
           ${message}
         </div>
         ${visualFeedback}
