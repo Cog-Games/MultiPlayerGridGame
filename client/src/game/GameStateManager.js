@@ -32,7 +32,9 @@ export class GameStateManager {
       currentGoalTypes: [],
       experimentType: null,
       trialIndex: 0,
-      gameMode: 'human-ai'
+      gameMode: 'human-ai',
+      moveMode: null,
+      currentTurnPlayer: null
     };
 
     // Clear real-time synchronization state
@@ -193,8 +195,8 @@ export class GameStateManager {
       this.trialData.distanceCondition = cond; // legacy naming for saving
       this.currentState.newGoalConditionType = cond;
       this.currentState.distanceCondition = cond;
-    } else if (experimentType === '2P2G' || experimentType === 'StagHunt') {
-      // Explicitly tag no_new_goal for 2P2G/StagHunt to keep both players consistent
+    } else if (experimentType === '2P2G' || GameConfigUtils.isStagHuntExperiment(experimentType)) {
+      // Explicitly tag no_new_goal for fixed-goal two-player hunt games
       const noNew = CONFIG?.twoP3G?.distanceConditions?.NO_NEW_GOAL || 'no_new_goal';
       this.trialData.newGoalConditionType = noNew;
       this.trialData.distanceCondition = noNew;
@@ -217,6 +219,10 @@ export class GameStateManager {
     // Update current state
     this.currentState.experimentType = experimentType;
     this.currentState.trialIndex = trialIndex;
+    this.currentState.moveMode = GameConfigUtils.getMoveMode(experimentType);
+    this.currentState.currentTurnPlayer = GameConfigUtils.isTurnTakingEnabled(experimentType)
+      ? (CONFIG?.game?.turnTaking?.startingPlayer === 2 ? 2 : 1)
+      : null;
 
     // Record initial spatial layout for exports/analysis
     try {
@@ -678,6 +684,33 @@ export class GameStateManager {
     }
   }
 
+  getCurrentTurnPlayer() {
+    return this.currentState?.currentTurnPlayer || null;
+  }
+
+  setCurrentTurnPlayer(playerNumber) {
+    if (!this.currentState) return null;
+    const normalized = playerNumber === 2 ? 2 : 1;
+    this.currentState.currentTurnPlayer = normalized;
+    return normalized;
+  }
+
+  advanceTurnTakingPlayer() {
+    if (!this.currentState) return null;
+
+    const current = this.getCurrentTurnPlayer() || 1;
+    const next = current === 1 ? 2 : 1;
+    const p1AtGoal = GameHelpers.isGoalReached(this.currentState.player1, this.currentState.currentGoals);
+    const p2AtGoal = GameHelpers.isGoalReached(this.currentState.player2, this.currentState.currentGoals);
+
+    if (next === 1 && !p1AtGoal) return this.setCurrentTurnPlayer(1);
+    if (next === 2 && !p2AtGoal) return this.setCurrentTurnPlayer(2);
+    if (current === 1 && !p1AtGoal) return this.setCurrentTurnPlayer(1);
+    if (current === 2 && !p2AtGoal) return this.setCurrentTurnPlayer(2);
+
+    return this.setCurrentTurnPlayer(next);
+  }
+
   recordPlayerMove(playerIndex, action, reactionTime, currentPlayerIndex = null) {
     const player = playerIndex === 1 ? this.currentState.player1 : this.currentState.player2;
 
@@ -799,7 +832,11 @@ export class GameStateManager {
     if (player2AtGoal && (goalTypes[p2Idx] || 'small') === 'small') claimedSet.add(p2Idx);
 
     // Check completion conditions based on experiment type
-    if (this.currentState.experimentType.startsWith('1P')) {
+    if (GameConfigUtils.isStagHuntExperiment(this.currentState.experimentType)) {
+      const stagHuntOutcome = GameHelpers.evaluateStagHuntOutcome(this.currentState, this.trialData);
+      this.trialData.collaborationSucceeded = stagHuntOutcome.collaborationSucceeded;
+      return stagHuntOutcome.trialComplete || this.stepCount >= CONFIG.game.maxGameLength;
+    } else if (this.currentState.experimentType.startsWith('1P')) {
       // Single player experiments - just need player1 to reach any goal
       return player1AtGoal;
     } else {
@@ -833,10 +870,15 @@ export class GameStateManager {
     try {
       const is2P = this.currentState && typeof this.currentState.experimentType === 'string' && GameConfigUtils.isTwoPlayerExperiment(this.currentState.experimentType);
       if (is2P) {
-        const p1 = this.trialData.player1FinalReachedGoal;
-        const p2 = this.trialData.player2FinalReachedGoal;
-        const bothValid = Number.isInteger(p1) && p1 >= 0 && Number.isInteger(p2) && p2 >= 0;
-        this.trialData.collaborationSucceeded = !!(bothValid && p1 === p2);
+        if (GameConfigUtils.isStagHuntExperiment(this.currentState.experimentType)) {
+          const stagHuntOutcome = GameHelpers.evaluateStagHuntOutcome(this.currentState, this.trialData);
+          this.trialData.collaborationSucceeded = stagHuntOutcome.collaborationSucceeded;
+        } else {
+          const p1 = this.trialData.player1FinalReachedGoal;
+          const p2 = this.trialData.player2FinalReachedGoal;
+          const bothValid = Number.isInteger(p1) && p1 >= 0 && Number.isInteger(p2) && p2 >= 0;
+          this.trialData.collaborationSucceeded = !!(bothValid && p1 === p2);
+        }
       }
     } catch (_) { /* noop */ }
 

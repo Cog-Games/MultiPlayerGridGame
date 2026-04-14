@@ -47,6 +47,15 @@ export const CONFIG = {
     matrixSize: 9,
     maxGameLength: 60,
 
+    // Two-player move mode (applies to both human-AI and human-human games):
+    // - 'simultaneous': both players choose a move, then both apply together
+    // - 'turn-taking': players alternate moves one at a time
+    // - 'free': both players move independently in real time
+    moveMode: 'simultaneous',
+    turnTaking: {
+      startingPlayer: 1 // which player (1 or 2) moves first
+    },
+
     // Player configuration
     players: {
       player1: {
@@ -68,7 +77,8 @@ export const CONFIG = {
       // order: ['1P2G'],
       // order: [ '2P3G'],
       // order: ['1P2G','2P3G'],
-      order: ['StagHunt'],
+      // order: [ 'StagHuntTwoStags'],
+      order: ['StagHunt', 'StagHuntTwoStags'],
       // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
@@ -76,7 +86,8 @@ export const CONFIG = {
         '1P2G': 12, // 12
         '2P2G': 8, // 8
         '2P3G': 12, // 12
-        'StagHunt': 10
+        'StagHunt': 4,
+        'StagHuntTwoStags': 4
       }
     },
 
@@ -103,7 +114,7 @@ export const CONFIG = {
     dualGoals: {
       // Experiment types that use dual-goal maps and scoring
       // (others treat all goals as standard small goals)
-      enabledExperiments: ['2P2G', 'StagHunt']
+      enabledExperiments: ['2P2G', 'StagHunt', 'StagHuntTwoStags']
     },
 
     // Timing configurations
@@ -127,9 +138,6 @@ export const CONFIG = {
       type: 'joint',
       delay: 500,
       independentDelay: 300,
-      // When true, AI/GPT moves are synchronized with the human input
-      // i.e., on each human key press, AI/GPT generates a move and both apply before a single redraw
-      synchronizedMoves: true,
       // Optional GPT/VLM agent client defaults (non-sensitive)
       gpt: {
         // API model name used on server (e.g., 'gpt-4o-mini')
@@ -251,15 +259,13 @@ export const CONFIG = {
     }
   },
 
-  // Multiplayer settings for human-human mode
+  // Multiplayer networking settings for human-human mode
   multiplayer: {
     maxWaitTime: 60000,
     roomTimeout: 300000,
     reconnectAttempts: 3,
     syncInterval: 100,
     moveTimeout: 10000,
-    // Human-human synchronized turns: both players input a move, then both apply together
-    synchronizedHumanTurns: true, // false for free movement
     // Max wait (ms) on the "Game is Ready! Press SPACE" screen for the other
     // human to press space before falling back to AI partner
     matchPlayReadyTimeout: 10000,
@@ -335,7 +341,12 @@ export const DIRECTIONS = {
 export const GameConfigUtils = {
   isTwoPlayerExperiment(experimentType) {
     const exp = String(experimentType || '').toUpperCase();
-    return exp.includes('2P') || exp === 'STAGHUNT';
+    return exp.includes('2P') || this.isStagHuntExperiment(exp);
+  },
+
+  isStagHuntExperiment(experimentType) {
+    const exp = String(experimentType || '').toUpperCase();
+    return exp === 'STAGHUNT' || exp === 'STAGHUNTTWOSTAGS';
   },
 
   setPlayerType(playerIndex, type) {
@@ -373,14 +384,26 @@ export const GameConfigUtils = {
     return CONFIG.game.experiments.numTrials[experimentType] || 12;
   },
 
-  // Only enable synchronized human turns for two-player experiments
-  isSynchronizedHumanTurnsEnabled(experimentType) {
+  getMoveMode(experimentType) {
     try {
-      const exp = String(experimentType || '').toUpperCase();
-      const isTwoPlayer = exp.includes('2P') || exp === 'STAGHUNT';
-      return isTwoPlayer && !!(CONFIG?.multiplayer?.synchronizedHumanTurns);
+      const isTwoPlayer = this.isTwoPlayerExperiment(experimentType);
+      if (!isTwoPlayer) return null;
+
+      const mode = CONFIG?.game?.moveMode;
+      if (mode === 'simultaneous' || mode === 'turn-taking' || mode === 'free') {
+        return mode;
+      }
+      return 'simultaneous';
     } catch (_) {
-      return false;
+      return null;
     }
+  },
+
+  isSynchronizedHumanTurnsEnabled(experimentType) {
+    return this.getMoveMode(experimentType) === 'simultaneous';
+  },
+
+  isTurnTakingEnabled(experimentType) {
+    return this.getMoveMode(experimentType) === 'turn-taking';
   }
 };

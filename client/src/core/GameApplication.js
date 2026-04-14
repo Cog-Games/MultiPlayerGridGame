@@ -1010,14 +1010,16 @@ export class GameApplication {
       // Determine if the other player (not me) is AI/GPT
       const otherIdx = (this.playerIndex === 0) ? 1 : 0;
       const otherType = CONFIG.game?.players?.[otherIdx === 0 ? 'player1' : 'player2']?.type;
-      const sync = CONFIG.game?.agent?.synchronizedMoves;
       const isAIPartner = otherType !== 'human';
 
       // Human-human synchronized turns: intercept and coordinate
-      const hhSyncEnabled = GameConfigUtils.isSynchronizedHumanTurnsEnabled(this.gameStateManager?.getCurrentState?.()?.experimentType);
+      const experimentType = this.gameStateManager?.getCurrentState?.()?.experimentType;
+      const moveMode = GameConfigUtils.getMoveMode(experimentType);
+      const isSyncMode = moveMode === 'simultaneous';
+      const isTurnTakingMode = moveMode === 'turn-taking';
       const inNetworkedPlay = !!(this.networkManager && this.networkManager.isConnected);
       const isHumanHuman = !isAIPartner && inNetworkedPlay;
-      if (hhSyncEnabled && isHumanHuman) {
+      if (isSyncMode && isHumanHuman) {
         try {
           await this.handleHumanHumanSynchronizedMove(direction);
         } catch (e) {
@@ -1027,7 +1029,24 @@ export class GameApplication {
         return;
       }
 
-      if (isAIPartner && sync && this.experimentManager?.handleSynchronizedMove) {
+      if (isTurnTakingMode && isHumanHuman) {
+        try {
+          this.handleHumanHumanTurnTakingMove(direction);
+        } catch (e) {
+          console.warn('HH turn-taking move failed, falling back to immediate move:', e?.message || e);
+          this.handlePlayerMove(direction);
+        }
+        return;
+      }
+
+      if (isAIPartner && isTurnTakingMode && this.experimentManager?.handleTurnTakingMove) {
+        try {
+          await this.experimentManager.handleTurnTakingMove(direction);
+        } catch (e) {
+          console.warn('AI turn-taking move failed, falling back to local move:', e?.message || e);
+          this.handlePlayerMove(direction);
+        }
+      } else if (isAIPartner && isSyncMode && this.experimentManager?.handleSynchronizedMove) {
         try {
           await this.experimentManager.handleSynchronizedMove(direction);
         } catch (e) {
@@ -1113,12 +1132,12 @@ export class GameApplication {
                          CONFIG.game.players.player1.type === 'human' &&
                          CONFIG.game.players.player2.type === 'human';
 
-    const isSyncTurns = GameConfigUtils.isSynchronizedHumanTurnsEnabled(
-      this.gameStateManager?.getCurrentState?.()?.experimentType
-    );
+    const experimentType = this.gameStateManager?.getCurrentState?.()?.experimentType;
+    const isSyncTurns = GameConfigUtils.isSynchronizedHumanTurnsEnabled(experimentType);
+    const isTurnTaking = GameConfigUtils.isTurnTakingEnabled(experimentType);
 
     // Use real-time movement system for human-human free movement
-    if (isHumanHuman && !isSyncTurns) {
+    if (isHumanHuman && !isSyncTurns && !isTurnTaking) {
       // Process move with real-time synchronization
       const moveResult = this.gameStateManager.processPlayerMoveRealTime(
         playerNumber,
@@ -1204,14 +1223,14 @@ export class GameApplication {
         const isHumanHuman = CONFIG.game.players.player1.type === 'human' &&
                              CONFIG.game.players.player2.type === 'human';
 
-        const isSyncTurns = GameConfigUtils.isSynchronizedHumanTurnsEnabled(
-          this.gameStateManager?.getCurrentState?.()?.experimentType
-        );
+        const experimentType = this.gameStateManager?.getCurrentState?.()?.experimentType;
+        const isSyncTurns = GameConfigUtils.isSynchronizedHumanTurnsEnabled(experimentType);
+        const isTurnTaking = GameConfigUtils.isTurnTakingEnabled(experimentType);
 
         let moveResult;
 
         // Use real-time movement system for human-human free movement
-        if (isHumanHuman && !isSyncTurns) {
+        if (isHumanHuman && !isSyncTurns && !isTurnTaking) {
           // Process remote move immediately with throttling
           moveResult = this.gameStateManager.processPlayerMoveRealTime(
             remotePlayerNumber,
@@ -1220,6 +1239,17 @@ export class GameApplication {
             false, // isLocal = false
             action.playerIndex // currentPlayerIndex from remote player (0 or 1)
           );
+        } else if (isHumanHuman && isTurnTaking) {
+          const currentTurnPlayer = this.gameStateManager.getCurrentTurnPlayer() || 1;
+          if (remotePlayerNumber !== currentTurnPlayer) {
+            console.warn('Ignoring out-of-turn remote move from player', remotePlayerNumber);
+            return;
+          }
+
+          moveResult = this.gameStateManager.processPlayerMove(remotePlayerNumber, action.direction, action.playerIndex);
+          if (moveResult?.success) {
+            this.gameStateManager.advanceTurnTakingPlayer();
+          }
         } else {
           // Original synchronous processing for other modes
           moveResult = this.gameStateManager.processPlayerMove(remotePlayerNumber, action.direction, action.playerIndex);
@@ -1288,6 +1318,52 @@ export class GameApplication {
     const isHost = !!(typeof window !== 'undefined' && window.__IS_HOST__);
     if (isHost) {
       this.tryResolveHumanHumanTurn();
+    }
+  }
+
+  handleHumanHumanTurnTakingMove(direction) {
+    const experimentType = this.gameStateManager?.getCurrentState?.()?.experimentType;
+    if (!GameConfigUtils.isTurnTakingEnabled(experimentType)) {
+      this.handlePlayerMove(direction);
+      return;
+    }
+
+    const playerNumber = this.playerIndex + 1;
+    const currentTurnPlayer = this.gameStateManager.getCurrentTurnPlayer() || 1;
+    if (playerNumber !== currentTurnPlayer) {
+      if (this.uiManager?.showGameStatus) {
+        this.uiManager.showGameStatus('Waiting for partner to move...', 'info');
+      }
+      return;
+    }
+
+    const moveResult = this.gameStateManager.processPlayerMove(playerNumber, direction, this.playerIndex);
+    if (!moveResult?.success) {
+      if (moveResult?.reason === 'already_at_goal') {
+        this.gameStateManager.advanceTurnTakingPlayer();
+        if (this.networkManager && this.networkManager.isConnected) {
+          this.networkManager.syncGameState(this.gameStateManager.getCurrentState());
+        }
+      }
+      return;
+    }
+
+    this.gameStateManager.advanceTurnTakingPlayer();
+
+    if (this.networkManager && this.networkManager.isConnected) {
+      this.networkManager.sendGameAction({
+        type: 'move',
+        direction,
+        playerIndex: this.playerIndex,
+        timestamp: Date.now()
+      });
+      this.networkManager.syncGameState(this.gameStateManager.getCurrentState());
+    }
+
+    this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+
+    if (moveResult.trialComplete) {
+      this.handleTrialComplete(moveResult);
     }
   }
 
@@ -1365,6 +1441,8 @@ export class GameApplication {
       if (expType.startsWith('1P')) {
         const p1 = gameState.player1;
         success = !!GameHelpers.isGoalReached(p1, gameState.currentGoals);
+      } else if (GameConfigUtils.isStagHuntExperiment(expType)) {
+        success = !!GameHelpers.evaluateStagHuntOutcome(gameState, trialData).success;
       } else {
         // 2P experiments: deterministically recompute from final positions/goals
         success = !!GameHelpers.didBothPlayersReachSameGoal(gameState);

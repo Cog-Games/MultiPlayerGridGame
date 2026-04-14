@@ -1,6 +1,7 @@
 // Map loading and randomization utility based on legacy version
 import { CONFIG } from '../config/gameConfig.js';
 import { MapParser } from './MapParser.js';
+import { StagHuntTwoStagsMaps } from '../data/StagHuntTwoStagsMaps.js';
 
 export class MapLoader {
   constructor() {
@@ -60,7 +61,7 @@ export class MapLoader {
       return this.loadAllFallbackMaps();
     }
 
-    const experimentTypes = ['1P1G', '1P2G', '2P2G', '2P3G', 'StagHunt'];
+    const experimentTypes = ['1P1G', '1P2G', '2P2G', '2P3G', 'StagHunt', 'StagHuntTwoStags'];
     const maps = {};
 
     for (const expType of experimentTypes) {
@@ -103,7 +104,7 @@ export class MapLoader {
 
   async loadMapDataFromPythonJson() {
     const base = (CONFIG?.maps?.pythonJsonBasePath) || '/python/gameDesign/output';
-    const experimentTypes = ['1P1G', '1P2G', '2P2G', '2P3G', 'StagHunt'];
+    const experimentTypes = ['1P1G', '1P2G', '2P2G', '2P3G', 'StagHunt', 'StagHuntTwoStags'];
     const maps = {};
     for (const expType of experimentTypes) {
       try {
@@ -237,6 +238,10 @@ export class MapLoader {
     return maps;
   }
 
+  generateStagHuntTwoStagsMaps() {
+    return JSON.parse(JSON.stringify(StagHuntTwoStagsMaps));
+  }
+
   // Get maps for specific experiment type
   getMapsForExperiment(experimentType) {
     console.log(`🎯 Getting maps for experiment: ${experimentType}`);
@@ -269,6 +274,8 @@ export class MapLoader {
         return this.generate2P3GMaps();
       case 'StagHunt':
         return this.generateStagHuntMaps();
+      case 'StagHuntTwoStags':
+        return this.generateStagHuntTwoStagsMaps();
       default:
         console.error(`Unknown experiment type: ${experimentType}`);
         return {};
@@ -288,9 +295,15 @@ export class MapLoader {
       return [];
     }
 
+    const shuffledKeys = [...keys];
+    for (let i = shuffledKeys.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledKeys[i], shuffledKeys[j]] = [shuffledKeys[j], shuffledKeys[i]];
+    }
+
     const selectedMaps = [];
     for (let i = 0; i < nTrials; i++) {
-      const randomKey = keys[Math.floor(Math.random() * keys.length)];
+      const randomKey = shuffledKeys[i % shuffledKeys.length];
       // Map data structure is: { "key": [{ designObject }] }
       const mapArray = mapData[randomKey];
       if (Array.isArray(mapArray) && mapArray.length > 0) {
@@ -433,6 +446,15 @@ export class MapLoader {
         obstacles: [],
         gridSize: 9,
         mapType: 'StagHunt'
+      },
+      'StagHuntTwoStags': {
+        initPlayerGrid: [8, 0],
+        initAIGrid: [0, 4],
+        bigGoals: [[4, 8], [4, 0]],
+        smallGoals: [[5, 4], [7, 1]],
+        obstacles: [],
+        gridSize: 9,
+        mapType: 'StagHuntTwoStags'
       }
     };
 
@@ -460,7 +482,8 @@ export class MapLoader {
       '1P2G': this.getFallbackMaps('1P2G'),
       '2P2G': this.getFallbackMaps('2P2G'),
       '2P3G': this.getFallbackMaps('2P3G'),
-      'StagHunt': this.getFallbackMaps('StagHunt')
+      'StagHunt': this.getFallbackMaps('StagHunt'),
+      'StagHuntTwoStags': this.getFallbackMaps('StagHuntTwoStags')
     };
   }
 }

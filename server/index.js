@@ -115,7 +115,7 @@ app.get('/config/:mapFile', (req, res) => {
   const { mapFile } = req.params;
 
   // Validate map file name for security
-  if (!/^MapsFor([12]P[123]G|StagHunt)\.js$/.test(mapFile)) {
+  if (!/^MapsFor([12]P[123]G|StagHunt|StagHuntTwoStags)\.js$/.test(mapFile)) {
     return res.status(400).json({ error: 'Invalid map file name' });
   }
 
@@ -139,7 +139,8 @@ app.get('/api/maps/:experimentType', (req, res) => {
     '1P2G': 'MapsFor1P2G.js',
     '2P2G': 'MapsFor2P2G.js',
     '2P3G': 'MapsFor2P3G.js',
-    'StagHunt': 'MapsForStagHunt.js'
+    'StagHunt': 'MapsForStagHunt.js',
+    'StagHuntTwoStags': 'MapsForStagHuntTwoStags.js'
   };
 
   const mapFile = mapFiles[experimentType];

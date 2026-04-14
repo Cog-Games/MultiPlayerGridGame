@@ -95,6 +95,91 @@ export const GameHelpers = {
   },
 
   /**
+   * Evaluate Stag Hunt outcomes.
+   * A shared big goal (stag) is collaborative success.
+   * Any small goal (rabbit) ends the trial immediately, but only counts as
+   * success for the player who caught a rabbit.
+   */
+  evaluateStagHuntOutcome(gameState, trialData = {}) {
+    if (!gameState) {
+      return {
+        player1Goal: null,
+        player2Goal: null,
+        player1GoalType: null,
+        player2GoalType: null,
+        sameBigGoal: false,
+        differentBigGoals: false,
+        anyRabbitCaught: false,
+        trialComplete: false,
+        collaborationSucceeded: false,
+        success: false
+      };
+    }
+
+    const currentGoals = Array.isArray(gameState.currentGoals) ? gameState.currentGoals : [];
+    const goalTypes = Array.isArray(gameState.currentGoalTypes) ? gameState.currentGoalTypes : [];
+
+    const resolveGoalIndex = (playerNumber) => {
+      const recordedGoal = playerNumber === 1
+        ? trialData?.player1FinalReachedGoal
+        : trialData?.player2FinalReachedGoal;
+
+      if (Number.isInteger(recordedGoal) && recordedGoal >= 0 && recordedGoal < currentGoals.length) {
+        return recordedGoal;
+      }
+
+      const playerPos = playerNumber === 1 ? gameState.player1 : gameState.player2;
+      const goalIdx = this.whichGoalReached(playerPos, currentGoals);
+      return Number.isInteger(goalIdx) ? goalIdx : null;
+    };
+
+    const getGoalType = (goalIdx) => {
+      if (!Number.isInteger(goalIdx) || goalIdx < 0 || goalIdx >= currentGoals.length) {
+        return null;
+      }
+      return goalTypes[goalIdx] || 'small';
+    };
+
+    const player1Goal = resolveGoalIndex(1);
+    const player2Goal = resolveGoalIndex(2);
+    const player1GoalType = getGoalType(player1Goal);
+    const player2GoalType = getGoalType(player2Goal);
+
+    const sameBigGoal =
+      Number.isInteger(player1Goal) &&
+      Number.isInteger(player2Goal) &&
+      player1Goal === player2Goal &&
+      player1GoalType === 'big' &&
+      player2GoalType === 'big';
+
+    const differentBigGoals =
+      Number.isInteger(player1Goal) &&
+      Number.isInteger(player2Goal) &&
+      player1Goal !== player2Goal &&
+      player1GoalType === 'big' &&
+      player2GoalType === 'big';
+
+    const anyRabbitCaught = player1GoalType === 'small' || player2GoalType === 'small';
+    const humanPlayerIndex = trialData?.humanPlayerIndex ?? 0;
+    const humanGoal = humanPlayerIndex === 0 ? player1Goal : player2Goal;
+    const humanGoalType = humanPlayerIndex === 0 ? player1GoalType : player2GoalType;
+    const humanCaughtRabbit = humanGoalType === 'small';
+
+    return {
+      player1Goal,
+      player2Goal,
+      player1GoalType,
+      player2GoalType,
+      sameBigGoal,
+      differentBigGoals,
+      anyRabbitCaught,
+      trialComplete: sameBigGoal || differentBigGoals || anyRabbitCaught,
+      collaborationSucceeded: sameBigGoal,
+      success: sameBigGoal || humanCaughtRabbit
+    };
+  },
+
+  /**
    * Detect which goal a player is heading towards
    */
   detectPlayerGoal(playerPos, action, goals, goalHistory) {

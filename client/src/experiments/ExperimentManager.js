@@ -26,6 +26,7 @@ export class ExperimentManager {
     this.aiMoveInterval = null;
     this.newGoalIntervalId = null;
     this.aiPlayerNumber = 2; // 1 or 2; default assume AI is player 2
+    this.sampledMapsByExperiment = {};
 
     // Initialize map data with MapLoader
     this.mapLoader = mapLoader;
@@ -84,15 +85,13 @@ export class ExperimentManager {
         }
       } catch (_) { /* ignore */ }
 
-      // Set up AI movement listeners for the fallback AI
-      if (!CONFIG?.game?.agent?.synchronizedMoves) {
-        try { if (!CONFIG?.debug?.disableConsoleLogs) console.log('[DEBUG] Setting up AI movement (non-synchronized mode)'); } catch (_) {}
+      // Set up AI movement based on the game's move mode
+      const moveMode = CONFIG?.game?.moveMode || 'simultaneous';
+      if (moveMode === 'free') {
+        try { if (!CONFIG?.debug?.disableConsoleLogs) console.log('[DEBUG] Setting up AI movement (free/independent mode)'); } catch (_) {}
         this.setupAIMovement();
       } else {
-        // In synchronized mode, no extra setup needed; AI moves are generated on human input
-        console.log('🤖 AI fallback activated (synchronized moves)');
-        try { if (!CONFIG?.debug?.disableConsoleLogs) console.log('[DEBUG] Setting up independent AI movement after human goal'); } catch (_) {}
-        // But we still need to set up independent AI movement for when human reaches goal
+        console.log(`🤖 AI fallback activated (${moveMode} moves)`);
         this.setupIndependentAIAfterHumanGoal();
       }
 
@@ -127,6 +126,7 @@ export class ExperimentManager {
     this.currentExperimentSequence = experiments || CONFIG.game.experiments.order;
     this.currentExperimentIndex = 0;
     this.isRunning = true;
+    this.sampledMapsByExperiment = {};
 
     console.log('Starting experiment sequence:', this.currentExperimentSequence);
 
@@ -233,6 +233,7 @@ export class ExperimentManager {
         break;
       case '2P2G':
       case 'StagHunt':
+      case 'StagHuntTwoStags':
         this.runTrial2P2G();
         break;
       case '2P3G':
@@ -265,11 +266,12 @@ export class ExperimentManager {
       this.aiPlayerNumber = (p2Type !== 'human') ? 2 : 1;
       // Log current AI model/config for visibility
       this.logCurrentAIModel();
-      if (CONFIG.game.agent.synchronizedMoves) {
-        console.log('2P2G: Synchronized human-AI moves enabled');
-        this.setupIndependentAIAfterHumanGoal();
-      } else {
+      const moveMode = CONFIG?.game?.moveMode || 'simultaneous';
+      if (moveMode === 'free') {
         this.setupAIMovement();
+      } else {
+        console.log(`2P2G: ${moveMode} human-AI moves enabled`);
+        this.setupIndependentAIAfterHumanGoal();
       }
     } else {
       // Human-human mode - no AI movement setup needed
@@ -285,11 +287,12 @@ export class ExperimentManager {
       this.aiPlayerNumber = (p2Type !== 'human') ? 2 : 1;
       // Log current AI model/config for visibility
       this.logCurrentAIModel();
-      if (CONFIG.game.agent.synchronizedMoves) {
-        console.log('2P3G: Synchronized human-AI moves enabled');
-        this.setupIndependentAIAfterHumanGoal();
-      } else {
+      const moveMode = CONFIG?.game?.moveMode || 'simultaneous';
+      if (moveMode === 'free') {
         this.setupAIMovement();
+      } else {
+        console.log(`2P3G: ${moveMode} human-AI moves enabled`);
+        this.setupIndependentAIAfterHumanGoal();
       }
     } else {
       // Human-human mode - no AI movement setup needed
@@ -365,25 +368,11 @@ export class ExperimentManager {
     this.gameLoopInterval = checkPlayerGoal;
   }
 
-  // Handle synchronized move: apply human + AI/GPT moves together, then redraw once
-  async handleSynchronizedMove(humanDirection) {
-    // Active when either player is AI/GPT
-    const p1Type = CONFIG.game.players.player1.type;
-    const p2Type = CONFIG.game.players.player2.type;
-    if (p1Type === 'human' && p2Type === 'human') return;
-
-    const gameState = this.gameStateManager.getCurrentState();
-    if (!gameState.player1 || !gameState.player2) return;
-
-    // Determine human/AI mapping
-    const humanPlayerNumber = (this.aiPlayerNumber === 1) ? 2 : 1;
-
-    // Generate AI/GPT direction
+  async generateAIDirection(gameState) {
     let aiDirection = null;
     const isGptAllowed = GameConfigUtils.isTwoPlayerExperiment(gameState.experimentType);
     let gptError = null;
 
-    // Determine which side is AI and its configured type
     const aiType = (this.aiPlayerNumber === 1)
       ? CONFIG.game.players.player1.type
       : CONFIG.game.players.player2.type;
@@ -391,10 +380,7 @@ export class ExperimentManager {
     if ((aiType === 'gpt' || aiType === 'gpt-ToM') && isGptAllowed) {
       try {
         aiDirection = await this.gptClient.getNextAction(
-          {
-            ...gameState,
-            trialData: this.gameStateManager.getCurrentTrialData()
-          },
+          { ...gameState, trialData: this.gameStateManager.getCurrentTrialData() },
           { aiPlayerNumber: this.aiPlayerNumber, model: (aiType === 'gpt-ToM' ? 'gpt-ToM' : undefined) }
         );
         if (aiDirection && typeof aiDirection === 'object') {
@@ -405,15 +391,12 @@ export class ExperimentManager {
         }
       } catch (e) {
         gptError = e;
-        console.warn('GPT agent request failed during synchronized move; falling back to RL:', e?.message || e);
+        console.warn('GPT agent request failed; falling back to RL:', e?.message || e);
       }
     } else if ((aiType === 'vlm' || aiType === 'vlm-ToM') && isGptAllowed) {
       try {
         aiDirection = await this.vlmClient.getNextAction(
-          {
-            ...gameState,
-            trialData: this.gameStateManager.getCurrentTrialData()
-          },
+          { ...gameState, trialData: this.gameStateManager.getCurrentTrialData() },
           { aiPlayerNumber: this.aiPlayerNumber, model: (aiType === 'vlm-ToM' ? 'vlm-ToM' : undefined) }
         );
         if (aiDirection && typeof aiDirection === 'object') {
@@ -424,7 +407,7 @@ export class ExperimentManager {
         }
       } catch (e) {
         gptError = e;
-        console.warn('VLM agent request failed during synchronized move; falling back to RL:', e?.message || e);
+        console.warn('VLM agent request failed; falling back to RL:', e?.message || e);
       }
     } else if (aiType === 'we_intent_js') {
       try {
@@ -436,8 +419,9 @@ export class ExperimentManager {
         console.warn('WeIntentAgent failed, falling back to RL:', e?.message || e);
       }
     }
+
     if (!aiDirection) {
-      if (!this.rlAgent) return; // Safety
+      if (!this.rlAgent) return { aiDirection: null, gptError };
       const aiAction = this.rlAgent.getAIAction(
         gameState.gridMatrix,
         (this.aiPlayerNumber === 1) ? gameState.player1 : gameState.player2,
@@ -445,20 +429,35 @@ export class ExperimentManager {
         (this.aiPlayerNumber === 1) ? gameState.player2 : gameState.player1
       );
       aiDirection = this.actionToDirection(aiAction);
-
-      // If GPT error occurred, record the event with fallback details
-      if (gptError) {
-        this.gameStateManager.recordGptErrorEvent({
-          phase: 'synchronized',
-          error: gptError?.message || String(gptError),
-          humanDirection,
-          fallback: 'rl',
-          fallbackDirection: aiDirection
-        });
-      }
     }
 
-    // Apply both moves before a single redraw, mapped to correct players
+    return { aiDirection, gptError };
+  }
+
+  // Handle synchronized move: apply human + AI/GPT moves together, then redraw once
+  async handleSynchronizedMove(humanDirection) {
+    const p1Type = CONFIG.game.players.player1.type;
+    const p2Type = CONFIG.game.players.player2.type;
+    if (p1Type === 'human' && p2Type === 'human') return;
+
+    const gameState = this.gameStateManager.getCurrentState();
+    if (!gameState.player1 || !gameState.player2) return;
+
+    const humanPlayerNumber = (this.aiPlayerNumber === 1) ? 2 : 1;
+    const { aiDirection, gptError } = await this.generateAIDirection(gameState);
+
+    if (!aiDirection && !this.rlAgent) return;
+
+    if (gptError && aiDirection) {
+      this.gameStateManager.recordGptErrorEvent({
+        phase: 'synchronized',
+        error: gptError?.message || String(gptError),
+        humanDirection,
+        fallback: 'rl',
+        fallbackDirection: aiDirection
+      });
+    }
+
     let syncResult;
     if (humanPlayerNumber === 1) {
       syncResult = this.gameStateManager.processSynchronizedMoves(humanDirection, aiDirection);
@@ -466,10 +465,8 @@ export class ExperimentManager {
       syncResult = this.gameStateManager.processSynchronizedMovesMapped(2, humanDirection, aiDirection);
     }
 
-    // Redraw once with both positions updated
     this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
 
-    // If human reached a goal, ensure independent AI movement starts immediately
     try {
       const stateAfter = this.gameStateManager.getCurrentState();
       const humanPos = (humanPlayerNumber === 1) ? stateAfter.player1 : stateAfter.player2;
@@ -483,6 +480,67 @@ export class ExperimentManager {
 
     if (syncResult?.trialComplete) {
       this.handleTrialComplete(syncResult);
+    }
+  }
+
+  // Handle turn-taking move: apply human move, redraw, then AI move after delay, redraw
+  async handleTurnTakingMove(humanDirection) {
+    const p1Type = CONFIG.game.players.player1.type;
+    const p2Type = CONFIG.game.players.player2.type;
+    if (p1Type === 'human' && p2Type === 'human') return;
+
+    const gameState = this.gameStateManager.getCurrentState();
+    if (!gameState.player1 || !gameState.player2) return;
+
+    const humanPlayerNumber = (this.aiPlayerNumber === 1) ? 2 : 1;
+    const humanPlayerIndex = humanPlayerNumber - 1;
+
+    // Step 1: Apply only the human move
+    const humanResult = this.gameStateManager.processPlayerMove(humanPlayerNumber, humanDirection, humanPlayerIndex);
+    this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+
+    if (humanResult?.trialComplete) {
+      this.handleTrialComplete(humanResult);
+      return;
+    }
+
+    // If human reached a goal, start independent AI (timer-based) instead
+    const stateAfterHuman = this.gameStateManager.getCurrentState();
+    const humanPos = (humanPlayerNumber === 1) ? stateAfterHuman.player1 : stateAfterHuman.player2;
+    const humanAtGoal = GameHelpers.isGoalReached(humanPos, stateAfterHuman.currentGoals);
+    if (humanAtGoal && !this.aiMoveInterval) {
+      this.startIndependentAIMovement();
+      return;
+    }
+
+    // Step 2: Brief delay so the human move is visually distinct
+    const aiDelay = CONFIG.game.agent.delay || 500;
+    await new Promise(resolve => setTimeout(resolve, aiDelay));
+
+    // Step 3: Generate and apply AI move on the updated state
+    const freshState = this.gameStateManager.getCurrentState();
+    const aiPos = (this.aiPlayerNumber === 1) ? freshState.player1 : freshState.player2;
+    if (GameHelpers.isGoalReached(aiPos, freshState.currentGoals)) return;
+
+    const { aiDirection, gptError } = await this.generateAIDirection(freshState);
+    if (!aiDirection) return;
+
+    if (gptError) {
+      this.gameStateManager.recordGptErrorEvent({
+        phase: 'turn-taking',
+        error: gptError?.message || String(gptError),
+        humanDirection,
+        fallback: 'rl',
+        fallbackDirection: aiDirection
+      });
+    }
+
+    const aiPlayerIndex = this.aiPlayerNumber - 1;
+    const aiResult = this.gameStateManager.processPlayerMove(this.aiPlayerNumber, aiDirection, aiPlayerIndex);
+    this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+
+    if (aiResult?.trialComplete) {
+      this.handleTrialComplete(aiResult);
     }
   }
 
@@ -898,6 +956,10 @@ export class ExperimentManager {
       const st = this.gameStateManager.getCurrentState();
       const p1 = st.player1;
       success = !!(p1 && GameHelpers.isGoalReached(p1, st.currentGoals));
+    } else if (GameConfigUtils.isStagHuntExperiment(experimentType)) {
+      const st = this.gameStateManager.getCurrentState();
+      const td = this.gameStateManager.getCurrentTrialData();
+      success = !!GameHelpers.evaluateStagHuntOutcome(st, td).success;
     } else {
       // 2P experiments - recompute deterministically from final positions
       const st = this.gameStateManager.getCurrentState();
@@ -1016,13 +1078,14 @@ export class ExperimentManager {
         return this.mapLoader.createFallbackDesign(experimentType);
       }
 
-      // Select map based on trial index (or wrap around if more maps than trials)
-      const mapKeys = Object.keys(mapsForExperiment);
-      const selectedKey = mapKeys[trialIndex % mapKeys.length];
-      const selectedMapArray = mapsForExperiment[selectedKey];
+      const totalTrials = CONFIG.game.experiments.numTrials[experimentType] || 12;
+      if (!this.sampledMapsByExperiment[experimentType] || this.sampledMapsByExperiment[experimentType].length !== totalTrials) {
+        this.sampledMapsByExperiment[experimentType] = this.mapLoader.selectRandomMaps(mapsForExperiment, totalTrials);
+      }
+      const selectedDesign = this.sampledMapsByExperiment[experimentType][trialIndex];
 
-      if (Array.isArray(selectedMapArray) && selectedMapArray.length > 0) {
-        let design = { ...selectedMapArray[0] }; // Clone the design
+      if (selectedDesign) {
+        let design = { ...selectedDesign };
 
         // If this design is based on an ASCII map and has randomization enabled,
         // apply a fresh random rotation/mirroring for EACH trial.
@@ -1200,6 +1263,7 @@ export class ExperimentManager {
         break;
       case '2P2G':
       case 'StagHunt':
+      case 'StagHuntTwoStags':
         this.runTrial2P2G();
         break;
       case '2P3G':
@@ -1254,6 +1318,14 @@ export class ExperimentManager {
         const p1 = currentState.player1;
         return !!(p1 && GameHelpers.isGoalReached(p1, currentState.currentGoals));
       })();
+    } else if (GameConfigUtils.isStagHuntExperiment(experimentType)) {
+      const stagHuntOutcome = GameHelpers.evaluateStagHuntOutcome(currentState, currentTrialData);
+      success = hasAuthoritative ? !!result.success && stagHuntOutcome.success : stagHuntOutcome.success;
+      currentTrialData.collaborationSucceeded = !!stagHuntOutcome.collaborationSucceeded;
+      this.gameStateManager.trialData = {
+        ...this.gameStateManager.trialData,
+        collaborationSucceeded: !!stagHuntOutcome.collaborationSucceeded
+      };
     } else {
       // 2P experiments - deterministically recompute success from final positions
       const recomputed = !!GameHelpers.didBothPlayersReachSameGoal(currentState);
@@ -1288,7 +1360,7 @@ export class ExperimentManager {
 
     let messageType;
 
-    if (experimentType === 'StagHunt') {
+    if (GameConfigUtils.isStagHuntExperiment(experimentType)) {
       const td = this.gameStateManager.getCurrentTrialData();
       const goalTypes = this.gameStateManager.getCurrentState()?.currentGoalTypes || [];
       const humanIdx = td?.humanPlayerIndex ?? 0;       // 0 = player1, 1 = player2
@@ -1329,6 +1401,7 @@ export class ExperimentManager {
     this.currentExperimentIndex = 0;
     this.currentTrialIndex = 0;
     this.isRunning = false;
+    this.sampledMapsByExperiment = {};
   }
 
   pause() {

@@ -1501,6 +1501,28 @@ export class TimelineManager {
             </div>
           </div>
         `
+      },
+      'StagHuntTwoStags': {
+        html: `
+          <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+            <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
+              <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Two-Stag Hunt Game</h2>
+              <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 28px; margin-bottom: 30px;">
+                <p style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left;">
+                  In this game, you will collaborate with another player to hunt, but now there are two stags on the map.
+                </p>
+                <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
+                  <li>There are two <strong>stags</strong> (big blue goals) and two <strong>rabbits</strong> (small blue goals) on the map.</li>
+                  <li>If both players reach the <strong>same stag</strong>, you each earn <strong>5 points</strong>.</li>
+                  <li>Any player can catch a <strong>rabbit</strong> alone for <strong>3 points</strong>.</li>
+                  <li>Only <strong>one</strong> player can catch each rabbit — the first player to reach it claims it. The rabbit then disappears and the other player cannot collect it.</li>
+                  <li>Movement: Both players move one step at a time — the action takes effect only after both players have pressed their keys.</li>
+                </ul>
+              </div>
+              <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+            </div>
+          </div>
+        `
       }
     };
 
