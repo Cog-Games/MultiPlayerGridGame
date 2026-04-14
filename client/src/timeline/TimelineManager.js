@@ -1491,9 +1491,10 @@ export class TimelineManager {
                 </p>
                 <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
                   <li>There is one <strong>stag</strong> (big blue goal) and two <strong>rabbits</strong> (small blue goals) on the map.</li>
-                  <li>If both players reach the <strong>stag</strong>, you each earn <strong>3 points</strong>.</li>
-                  <li>Any player can catch a <strong>rabbit</strong> alone for <strong>1 point</strong>.</li>
-                  <li>Movement: Both players move one step at a time - the action will only take effect after both players have pressed their buttons.</li>
+                  <li>If both players reach the <strong>stag</strong>, you each earn <strong>5 points</strong>.</li>
+                  <li>Any player can catch a <strong>rabbit</strong> alone for <strong>3 points</strong>.</li>
+                  <li>Only <strong>one</strong> player can catch each rabbit — the first player to reach it claims it. The rabbit then disappears and the other player cannot collect it.</li>
+                  <li>Movement: Both players move one step at a time — the action takes effect only after both players have pressed their keys.</li>
                 </ul>
               </div>
               <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>

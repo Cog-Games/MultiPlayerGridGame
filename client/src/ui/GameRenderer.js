@@ -158,10 +158,14 @@ export class GameRenderer {
       const types = Array.isArray(this.gameState.currentGoalTypes)
         ? this.gameState.currentGoalTypes
         : [];
+      const claimed = this.gameState.claimedSmallGoals;
+      const isClaimed = (idx) => claimed && typeof claimed.has === 'function' && claimed.has(idx);
       this.gameState.currentGoals.forEach((goal, index) => {
         if (goal && Array.isArray(goal) && goal.length >= 2) {
           const [row, col] = goal;
           const type = types[index] || 'small';
+          // Skip rendering small goals that have been claimed — they are gone
+          if (type !== 'big' && isClaimed(index)) return;
           this.drawGoalWithPlayerCheck(row, col, type);
         }
       });

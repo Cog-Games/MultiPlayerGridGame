@@ -139,6 +139,10 @@ export class GameStateManager {
     this.trialData.firstDetectedSharedGoal = null;
     this.trialData.player1GoalReachedStep = -1;
     this.trialData.player2GoalReachedStep = -1;
+    // Small goals (rabbits) claimed by any player. Once claimed, the other
+    // player cannot claim the same small goal. Stored as a Set of goal indices.
+    this.trialData.claimedSmallGoals = new Set();
+    this.currentState.claimedSmallGoals = this.trialData.claimedSmallGoals;
 
     // Reset new goal variables
     this.trialData.newGoalPresentedTime = null;
@@ -355,6 +359,9 @@ export class GameStateManager {
     // Place goals
     this.currentState.currentGoals = [];
     this.currentState.currentGoalTypes = [];
+    // Reset claim tracker (parallel to currentGoals); exposed for renderer + agent
+    this.trialData.claimedSmallGoals = new Set();
+    this.currentState.claimedSmallGoals = this.trialData.claimedSmallGoals;
 
     const addGoalAt = (row, col, type = 'small') => {
       if (!Number.isInteger(row) || !Number.isInteger(col)) return;
@@ -752,24 +759,44 @@ export class GameStateManager {
   }
 
     checkTrialCompletion() {
-    const player1AtGoal = GameHelpers.isGoalReached(this.currentState.player1, this.currentState.currentGoals);
-    const player2AtGoal = this.currentState.player2 ?
-      GameHelpers.isGoalReached(this.currentState.player2, this.currentState.currentGoals) : true;
+    const goalTypes = Array.isArray(this.currentState.currentGoalTypes)
+      ? this.currentState.currentGoalTypes : [];
+    const claimedSet = this.trialData.claimedSmallGoals instanceof Set
+      ? this.trialData.claimedSmallGoals
+      : (this.trialData.claimedSmallGoals = new Set());
+
+    // A goal is "available" to a player iff it is big, OR it is a small goal
+    // not yet claimed by the other player in a previous step. (Ties — same-step
+    // arrival — are allowed because claims are committed AFTER both reads.)
+    const getAvailableGoalIdx = (pos) => {
+      if (!pos) return null;
+      const idx = GameHelpers.whichGoalReached(pos, this.currentState.currentGoals);
+      if (idx === null || idx === undefined) return null;
+      const type = goalTypes[idx] || 'small';
+      if (type === 'big') return idx;
+      if (claimedSet.has(idx)) return null;
+      return idx;
+    };
+
+    const p1Idx = getAvailableGoalIdx(this.currentState.player1);
+    const p2Idx = this.currentState.player2 ? getAvailableGoalIdx(this.currentState.player2) : null;
+    const player1AtGoal = p1Idx !== null;
+    const player2AtGoal = this.currentState.player2 ? p2Idx !== null : true;
 
     // Record when players reach goals
     if (player1AtGoal && this.trialData.player1GoalReachedStep === -1) {
       this.trialData.player1GoalReachedStep = this.stepCount;
-      this.trialData.player1FinalReachedGoal = GameHelpers.whichGoalReached(
-        this.currentState.player1, this.currentState.currentGoals
-      );
+      this.trialData.player1FinalReachedGoal = p1Idx;
     }
 
     if (this.currentState.player2 && player2AtGoal && this.trialData.player2GoalReachedStep === -1) {
       this.trialData.player2GoalReachedStep = this.stepCount;
-      this.trialData.player2FinalReachedGoal = GameHelpers.whichGoalReached(
-        this.currentState.player2, this.currentState.currentGoals
-      );
+      this.trialData.player2FinalReachedGoal = p2Idx;
     }
+
+    // Commit claims for any small goals reached this tick (allows ties)
+    if (player1AtGoal && (goalTypes[p1Idx] || 'small') === 'small') claimedSet.add(p1Idx);
+    if (player2AtGoal && (goalTypes[p2Idx] || 'small') === 'small') claimedSet.add(p2Idx);
 
     // Check completion conditions based on experiment type
     if (this.currentState.experimentType.startsWith('1P')) {

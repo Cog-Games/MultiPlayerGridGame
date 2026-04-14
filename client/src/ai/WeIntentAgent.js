@@ -41,7 +41,7 @@ export class WeIntentAgent {
   // Main entry point (preserves interface contract)
   // ────────────────────────────────────────
   getNextAction(gameState, { aiPlayerNumber = 2 } = {}) {
-    const { gridMatrix, currentGoals, currentGoalTypes, player1, player2, trialData } = gameState || {};
+    const { gridMatrix, currentGoals, currentGoalTypes, player1, player2, trialData, claimedSmallGoals } = gameState || {};
     if (!Array.isArray(gridMatrix) || !Array.isArray(currentGoals) || currentGoals.length === 0) return 'right';
 
     const myPos = (aiPlayerNumber === 1) ? player1 : player2;
@@ -56,6 +56,65 @@ export class WeIntentAgent {
     this.updatePartnerBelief(trialData, aiPlayerNumber, gridMatrix);
     this.updateSelfRevealedBelief(trialData, aiPlayerNumber, gridMatrix);
     this.updateWeIntentionBelief();
+
+    // --- Authoritative claim set (game rule: a claimed rabbit is off-limits) ---
+    const claimedSet = (claimedSmallGoals && typeof claimedSmallGoals.has === 'function')
+      ? claimedSmallGoals
+      : new Set();
+    const isClaimedSmall = (idx) => {
+      if (idx === null || idx === undefined || idx < 0) return false;
+      const t = this.goalTypes[idx] || 'small';
+      return t !== 'big' && claimedSet.has(idx);
+    };
+    const goalIdxOf = (pos) => {
+      if (!Array.isArray(pos)) return -1;
+      return this.goalKeys.indexOf(`${pos[0]},${pos[1]}`);
+    };
+
+    // Defensive: if currently committed to a claimed small goal, drop it
+    if (this.committedGoal) {
+      const cIdx = goalIdxOf(this.committedGoal);
+      if (isClaimedSmall(cIdx)) {
+        console.log(`[WeAgent] Committed goal [${this.committedGoal}] is claimed; de-committing`);
+        this.committedGoal = null;
+        this.sampledIntention = null;
+        this.phase = 'deliberating';
+      }
+    }
+
+    // --- Authoritative override: partner has reached a goal (ground truth) ---
+    // Prefer claimedSmallGoals + partner position; fall back to trialData fields.
+    let partnerReachedIdx = -1;
+    const partnerOnGoalIdx = goalIdxOf(partnerPos);
+    if (partnerOnGoalIdx >= 0) {
+      const t = this.goalTypes[partnerOnGoalIdx] || 'small';
+      if (t === 'big' || claimedSet.has(partnerOnGoalIdx)) {
+        partnerReachedIdx = partnerOnGoalIdx;
+      }
+    }
+    if (partnerReachedIdx < 0) {
+      const fromTrial = (aiPlayerNumber === 1)
+        ? trialData?.player2FinalReachedGoal
+        : trialData?.player1FinalReachedGoal;
+      if (Number.isInteger(fromTrial) && fromTrial >= 0 && fromTrial < currentGoals.length) {
+        partnerReachedIdx = fromTrial;
+      }
+    }
+
+    if (partnerReachedIdx >= 0) {
+      const reachedType = this.goalTypes[partnerReachedIdx] || 'small';
+      if (reachedType === 'big') {
+        this.committedGoal = [...currentGoals[partnerReachedIdx]];
+      } else {
+        this.committedGoal = this._pickBestSmallGoal(myPos, currentGoals, partnerReachedIdx, claimedSet);
+      }
+      if (this.committedGoal) {
+        this.phase = 'committed';
+        this.sampledIntention = null;
+        console.log(`[WeAgent] Partner at goal idx=${partnerReachedIdx} (${reachedType}); committing to [${this.committedGoal}]`);
+        return this.committedAction(myPos, partnerPos, gridMatrix);
+      }
+    }
 
     const weEntropy = this.entropy(this.goalKeys.map(k => this.weIntentionBelief[k]));
 
@@ -116,7 +175,7 @@ export class WeIntentAgent {
     if (this.currentRole === 'signal-giver') {
       // Sample intention if not yet chosen (Eq 6)
       if (!this.sampledIntention) {
-        this.sampledIntention = this.sampleIntention(currentGoals, this.goalTypes);
+        this.sampledIntention = this.sampleIntention(currentGoals, this.goalTypes, myPos, partnerPos, claimedSet);
       }
       // Signal-giver action (Eq 7)
       return this.signalGiverAction(myPos, currentGoals, gridMatrix);
@@ -280,7 +339,8 @@ export class WeIntentAgent {
   // Eq 6: Sample intention based on expected utilities
   // intention ~ P(intentions) ∝ exp[β * E(U(intentions))]
   // ────────────────────────────────────────
-  sampleIntention(goals, goalTypes) {
+  sampleIntention(goals, goalTypes, myPos = null, partnerPos = null, claimedSet = null) {
+    const hasClaim = claimedSet && typeof claimedSet.has === 'function';
     const beta = this.cfg.betaUtility ?? 3.0;
     const stagBonus = this.cfg.stagUtilityBonus ?? 2.0;
     const smallReward = CONFIG?.game?.rewards?.smallGoalReward ?? 1;
@@ -289,12 +349,26 @@ export class WeIntentAgent {
     const utilities = goals.map((g, i) => {
       const gk = `${g[0]},${g[1]}`;
       const type = (goalTypes && goalTypes[i]) || 'small';
+      // Claimed small goals are off-limits → zero utility
+      if (type !== 'big' && hasClaim && claimedSet.has(i)) return -1e9;
       if (type === 'big') {
         // Expected utility: joint reward * probability partner also heads there
         const pPartner = this.partnerBelief[gk] ?? 0;
         return bigReward * pPartner + stagBonus;
       } else {
-        return smallReward; // solo reward, always achievable
+        // Small goal: only one player can claim it (game rule).
+        // Discount by probability partner reaches first, weighted by belief.
+        const pPartner = this.partnerBelief[gk] ?? 0;
+        let raceFactor = 1;
+        if (Array.isArray(myPos) && Array.isArray(partnerPos)) {
+          const dMe = Math.abs(myPos[0] - g[0]) + Math.abs(myPos[1] - g[1]);
+          const dPartner = Math.abs(partnerPos[0] - g[0]) + Math.abs(partnerPos[1] - g[1]);
+          // If partner is strictly closer, assume they claim first when heading here
+          if (dPartner < dMe) raceFactor = 0;
+          else if (dPartner === dMe) raceFactor = 0.5;
+        }
+        const claimProb = 1 - pPartner * (1 - raceFactor); // partner claims with prob pPartner*(1-raceFactor)
+        return smallReward * claimProb;
       }
     });
 
@@ -524,6 +598,20 @@ export class WeIntentAgent {
       if (r <= acc) return actions[i];
     }
     return actions[actions.length - 1];
+  }
+
+  _pickBestSmallGoal(myPos, goals, excludeIdx, claimedSet = null) {
+    const hasClaim = claimedSet && typeof claimedSet.has === 'function';
+    let bestGoal = null, bestDist = Infinity;
+    for (let i = 0; i < goals.length; i++) {
+      if (i === excludeIdx) continue;
+      if ((this.goalTypes[i] || 'small') !== 'small') continue;
+      if (hasClaim && claimedSet.has(i)) continue; // already taken by someone
+      const g = goals[i];
+      const d = Math.abs(myPos[0] - g[0]) + Math.abs(myPos[1] - g[1]);
+      if (d < bestDist) { bestDist = d; bestGoal = [...g]; }
+    }
+    return bestGoal;
   }
 
   _bestDirectionToward(pos, goal, grid) {
