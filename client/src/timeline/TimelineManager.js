@@ -118,7 +118,7 @@ export class TimelineManager {
 
       // Waiting room only for true human-human multiplayer experiments
       // For human-AI mode, 2P experiments run with AI as the second player
-      const isMultiplayer = experimentType.includes('2P');
+      const isMultiplayer = GameConfigUtils.isTwoPlayerExperiment(experimentType);
       console.log(`🔍 Experiment ${experimentType}: isMultiplayer=${isMultiplayer}`);
 
       if (isMultiplayer) {
@@ -162,7 +162,7 @@ export class TimelineManager {
       }
 
       // Add trial stages (fixation -> trial -> feedback sequence)
-      if (experimentType.includes('2P') && CONFIG.game.successThreshold.enabled) {
+      if (GameConfigUtils.isTwoPlayerExperiment(experimentType) && CONFIG.game.successThreshold.enabled) {
         // Dynamic collaboration stages
         this.addCollaborationExperimentStages(experimentType, expIndex);
       } else {
@@ -812,7 +812,7 @@ export class TimelineManager {
     // This stays consistent even if mode switches to human-AI mid-session
     let playerColor = CONFIG.visual.colors.player1; // Default red
     let playerName = 'Player 1 (Red)';
-    if (experimentType.includes('2P')) {
+    if (GameConfigUtils.isTwoPlayerExperiment(experimentType)) {
       playerColor = this.playerIndex === 0 ? CONFIG.visual.colors.player1 : CONFIG.visual.colors.player2;
       playerName = this.playerIndex === 0 ? 'Player 1 (Red)' : 'Player 2 (Orange)';
     }
@@ -845,7 +845,7 @@ export class TimelineManager {
         this.experimentData.experiments[experimentType].push(result);
 
         // Update success threshold tracking for collaboration experiments
-        if (experimentType.includes('2P') && CONFIG.game.successThreshold.enabled) {
+        if (GameConfigUtils.isTwoPlayerExperiment(experimentType) && CONFIG.game.successThreshold.enabled) {
           this.updateSuccessThresholdTracking(result.success, trialIndex);
         }
 
@@ -897,7 +897,7 @@ export class TimelineManager {
       console.log(`📊 Post-trial feedback completed for trial ${trialIndex}`);
 
       // Check if we should continue to next trial or end the experiment
-      if (experimentType.includes('2P') && CONFIG.game.successThreshold.enabled) {
+      if (GameConfigUtils.isTwoPlayerExperiment(experimentType) && CONFIG.game.successThreshold.enabled) {
         // Dynamic trial progression for collaboration experiments
         if (this.shouldContinueToNextTrial(experimentType, trialIndex)) {
           console.log(`Continuing to next trial for ${experimentType}`);
@@ -932,7 +932,7 @@ export class TimelineManager {
       totalTimeMinutes = Math.round(totalMs / (1000 * 60));
     }
 
-    const hasCollaborationTrials = trials.some(t => String(t.experimentType || '').includes('2P'));
+    const hasCollaborationTrials = trials.some(t => GameConfigUtils.isTwoPlayerExperiment(t.experimentType));
     const hasSinglePlayerTrials = trials.some(t => String(t.experimentType || '').includes('1P'));
 
     // Single-player success: t.completed === true
@@ -946,7 +946,7 @@ export class TimelineManager {
     // Collaboration success: t.collaborationSucceeded === true
     let collaborationSuccessRate = 0;
     if (hasCollaborationTrials) {
-      const cp = trials.filter(t => String(t.experimentType || '').includes('2P'));
+      const cp = trials.filter(t => GameConfigUtils.isTwoPlayerExperiment(t.experimentType));
       const cpSuccess = cp.filter(t => t.collaborationSucceeded === true).length;
       collaborationSuccessRate = cp.length > 0 ? Math.round((cpSuccess / cp.length) * 100) : 0;
     }
@@ -983,7 +983,7 @@ export class TimelineManager {
                 <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #dc3545;">
                   <h4 style="color: #dc3545; margin-bottom: 10px; font-size: 18px;">🤝 Collaboration Success</h4>
                   <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${collaborationSuccessRate}%</p>
-                  <p style=\"font-size: 14px; color: #666; margin: 5px 0 0 0;\">(${trials.filter(t => String(t.experimentType || '').includes('2P')).length} collaboration trials)</p>
+                  <p style=\"font-size: 14px; color: #666; margin: 5px 0 0 0;\">(${trials.filter(t => GameConfigUtils.isTwoPlayerExperiment(t.experimentType)).length} collaboration trials)</p>
                 </div>
               ` : ''}
             </div>
@@ -1479,6 +1479,27 @@ export class TimelineManager {
             </div>
           </div>
         `
+      },
+      'StagHunt': {
+        html: `
+          <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+            <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
+              <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Stag Hunt Game</h2>
+              <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 28px; margin-bottom: 30px;">
+                <p style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left;">
+                  In this game, you will collaborate with another player to hunt.
+                </p>
+                <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
+                  <li>There is one <strong>stag</strong> (big blue goal) and two <strong>rabbits</strong> (small blue goals) on the map.</li>
+                  <li>If both players reach the <strong>stag</strong>, you each earn <strong>3 points</strong>.</li>
+                  <li>Any player can catch a <strong>rabbit</strong> alone for <strong>1 point</strong>.</li>
+                  <li>Movement: Both players move one step at a time - the action will only take effect after both players have pressed their buttons.</li>
+                </ul>
+              </div>
+              <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+            </div>
+          </div>
+        `
       }
     };
 
@@ -1577,7 +1598,7 @@ export class TimelineManager {
    */
   shouldContinueToNextTrial(experimentType, trialIndex) {
     // Only apply to collaboration games
-    if (!experimentType.includes('2P')) {
+    if (!GameConfigUtils.isTwoPlayerExperiment(experimentType)) {
       return trialIndex < CONFIG.game.experiments.numTrials[experimentType] - 1;
     }
 

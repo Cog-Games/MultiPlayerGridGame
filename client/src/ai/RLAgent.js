@@ -912,3 +912,6 @@ export class RLAgent {
   enableAutoPolicyPrecalculation() { /* compatibility */ }
   resetNewGoalPreCalculationFlag() { /* compatibility */ }
 }
+
+// Export internals for reuse by WeIntentAgent
+export { RunIndividualVI, JointPlanner4Action, softmax, RL_AGENT_CONFIG };

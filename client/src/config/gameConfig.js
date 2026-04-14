@@ -44,7 +44,7 @@ export const CONFIG = {
     version: '1.0.0',
     prolificCompletionCode: getEnvVar('VITE_PROLIFIC_COMPLETION_CODE', 'CTNDR8GV'),
     // Size of the square grid world (N x N)
-    matrixSize: 15,
+    matrixSize: 9,
     maxGameLength: 60,
 
     // Player configuration
@@ -56,7 +56,7 @@ export const CONFIG = {
       },
       player2: {
         // Types: 'human' | 'gpt' | 'gpt-ToM' | 'vlm' | 'vlm-ToM' | 'rl_individual' | 'rl_joint' | 'we_intent_js'
-        type: 'rl_joint',
+        type: 'we_intent_js',
         color: 'orange',
         description: 'Human, GPT, or RL partner'
       }
@@ -68,7 +68,7 @@ export const CONFIG = {
       // order: ['1P2G'],
       // order: [ '2P3G'],
       // order: ['1P2G','2P3G'],
-      order: ['2P2G', '2P3G'],
+      order: ['StagHunt'],
       // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
@@ -76,6 +76,7 @@ export const CONFIG = {
         '1P2G': 12, // 12
         '2P2G': 8, // 8
         '2P3G': 12, // 12
+        'StagHunt': 10
       }
     },
 
@@ -102,7 +103,7 @@ export const CONFIG = {
     dualGoals: {
       // Experiment types that use dual-goal maps and scoring
       // (others treat all goals as standard small goals)
-      enabledExperiments: ['2P2G']
+      enabledExperiments: ['2P2G', 'StagHunt']
     },
 
     // Timing configurations
@@ -149,6 +150,17 @@ export const CONFIG = {
           enabled: true,
           maxSteps: 50
         }
+      },
+      // WeAgent (collaborative agency model) parameters — maps to NSF proposal Eq 1-11
+      weAgent: {
+        betaUtility: 3.0,           // β: softmax weight for utility/intention sampling (Eq 6, 10)
+        alphaSignal: 2.0,           // α: intention-signaling weight (Eq 7, 11)
+        gammaWait: 1.0,             // γ: information-seeking weight for signal-waiter (Eq 8)
+        thetaRole: 1.0,             // θ: role selection sensitivity to EIG (Eq 5)
+        deltaCommit: 0.5,           // Δ: entropy threshold for we-intention commitment (Eq 9), in bits
+        likelihoodScale: 1.5,       // scale for Bayesian likelihood updates
+        continueSignalingAfterCommit: true,  // use Eq 11 vs Eq 10 after commitment
+        stagUtilityBonus: 2.0       // extra weight for big goals in intention prior (Eq 6)
       }
     }
   },
@@ -321,6 +333,11 @@ export const DIRECTIONS = {
 
 // Export utility functions
 export const GameConfigUtils = {
+  isTwoPlayerExperiment(experimentType) {
+    const exp = String(experimentType || '').toUpperCase();
+    return exp.includes('2P') || exp === 'STAGHUNT';
+  },
+
   setPlayerType(playerIndex, type) {
     // Normalize legacy alias
     const normalized = (type === 'ai') ? 'rl_joint' : type;
@@ -360,7 +377,7 @@ export const GameConfigUtils = {
   isSynchronizedHumanTurnsEnabled(experimentType) {
     try {
       const exp = String(experimentType || '').toUpperCase();
-      const isTwoPlayer = exp.includes('2P');
+      const isTwoPlayer = exp.includes('2P') || exp === 'STAGHUNT';
       return isTwoPlayer && !!(CONFIG?.multiplayer?.synchronizedHumanTurns);
     } catch (_) {
       return false;

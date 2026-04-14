@@ -1,4 +1,4 @@
-import { CONFIG, GAME_OBJECTS, DIRECTIONS } from '../config/gameConfig.js';
+import { CONFIG, GAME_OBJECTS, DIRECTIONS, GameConfigUtils } from '../config/gameConfig.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
 
 export class GameStateManager {
@@ -157,7 +157,7 @@ export class GameStateManager {
     this.trialData.partnerFallbackTime = null;
     // Initialize who is human vs AI at trial start (for 2P modes)
     try {
-      if (String(experimentType || '').includes('2P')) {
+      if (GameConfigUtils.isTwoPlayerExperiment(experimentType)) {
         const t1 = CONFIG?.game?.players?.player1?.type;
         const t2 = CONFIG?.game?.players?.player2?.type;
         if (t1 === 'human' && t2 !== 'human') {
@@ -189,8 +189,8 @@ export class GameStateManager {
       this.trialData.distanceCondition = cond; // legacy naming for saving
       this.currentState.newGoalConditionType = cond;
       this.currentState.distanceCondition = cond;
-    } else if (experimentType === '2P2G') {
-      // Explicitly tag no_new_goal for 2P2G to keep both players consistent
+    } else if (experimentType === '2P2G' || experimentType === 'StagHunt') {
+      // Explicitly tag no_new_goal for 2P2G/StagHunt to keep both players consistent
       const noNew = CONFIG?.twoP3G?.distanceConditions?.NO_NEW_GOAL || 'no_new_goal';
       this.trialData.newGoalConditionType = noNew;
       this.trialData.distanceCondition = noNew;
@@ -332,8 +332,8 @@ export class GameStateManager {
       return;
     }
 
-    // Initialize empty grid
-    const size = CONFIG.game.matrixSize;
+    // Initialize empty grid — use per-map gridSize if provided
+    const size = design.gridSize || CONFIG.game.matrixSize;
     this.currentState.gridMatrix = Array(size).fill(0).map(() => Array(size).fill(0));
 
     // Place player1
@@ -344,7 +344,7 @@ export class GameStateManager {
     }
 
     // Place player2 for 2P experiments
-    if (experimentType && experimentType.includes('2P') && design.initAIGrid && design.initAIGrid.length >= 2) {
+    if (experimentType && GameConfigUtils.isTwoPlayerExperiment(experimentType) && design.initAIGrid && design.initAIGrid.length >= 2) {
       const [row, col] = design.initAIGrid;
       this.currentState.gridMatrix[row][col] = GAME_OBJECTS.ai_player;
       this.currentState.player2 = [row, col];
@@ -804,7 +804,7 @@ export class GameStateManager {
 
     // Recompute collaboration success deterministically at finalization for 2P experiments
     try {
-      const is2P = this.currentState && typeof this.currentState.experimentType === 'string' && this.currentState.experimentType.includes('2P');
+      const is2P = this.currentState && typeof this.currentState.experimentType === 'string' && GameConfigUtils.isTwoPlayerExperiment(this.currentState.experimentType);
       if (is2P) {
         const p1 = this.trialData.player1FinalReachedGoal;
         const p2 = this.trialData.player2FinalReachedGoal;
@@ -819,7 +819,7 @@ export class GameStateManager {
 
     // Normalize partnerAgentType just before saving to ensure it reflects current AI model/mode
     try {
-      const is2P = this.currentState && String(this.currentState.experimentType || '').includes('2P');
+      const is2P = this.currentState && GameConfigUtils.isTwoPlayerExperiment(this.currentState.experimentType);
       if (is2P) {
         const recorded = String(this.trialData.partnerAgentType || '').trim();
         const computed = this.getPartnerAgentType(this.currentState.experimentType);
@@ -883,7 +883,7 @@ export class GameStateManager {
       : [];
 
     const experimentType = String(this.currentState?.experimentType || '');
-    const isTwoPlayer = experimentType.includes('2P');
+    const isTwoPlayer = GameConfigUtils.isTwoPlayerExperiment(experimentType);
 
     let p1Reward = 0;
     let p2Reward = 0;
@@ -936,7 +936,7 @@ export class GameStateManager {
     if (experimentType.startsWith('1P')) {
       // Set player2FinalReachedGoal to -1 (not applicable)
       this.trialData.player2FinalReachedGoal = -1;
-    } else if (experimentType.startsWith('2P')) {
+    } else if (GameConfigUtils.isTwoPlayerExperiment(experimentType)) {
       // For 2-player experiments, if a player didn't reach any goal, set to -1
       if (this.trialData.player1GoalReachedStep === -1 && this.trialData.player1FinalReachedGoal === null) {
         this.trialData.player1FinalReachedGoal = -1;
@@ -1026,7 +1026,7 @@ export class GameStateManager {
   getPartnerAgentType(experimentType) {
     // Determine partner agent description for recording/export
     try {
-      if (!String(experimentType || '').includes('2P')) return 'none';
+      if (!GameConfigUtils.isTwoPlayerExperiment(experimentType)) return 'none';
       const p1 = CONFIG?.game?.players?.player1?.type;
       const p2 = CONFIG?.game?.players?.player2?.type;
       // Prefer whichever side is non-human as the partner agent type

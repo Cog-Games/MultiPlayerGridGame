@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Game Server",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nodemon", "server/index.js"],
+      "port": 3001
+    },
+    {
+      "name": "Vite Dev Server",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite"],
+      "port": 3000
+    }
+  ]
+}

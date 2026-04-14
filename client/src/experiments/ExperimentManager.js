@@ -198,7 +198,7 @@ export class ExperimentManager {
     try {
       const p1Type = CONFIG?.game?.players?.player1?.type;
       const p2Type = CONFIG?.game?.players?.player2?.type;
-      if (String(experimentType || '').includes('2P') && (p1Type === 'gpt' || p2Type === 'gpt')) {
+      if (GameConfigUtils.isTwoPlayerExperiment(experimentType) && (p1Type === 'gpt' || p2Type === 'gpt')) {
         await this.logCurrentAIModel();
       }
     } catch (_) { /* noop */ }
@@ -209,6 +209,11 @@ export class ExperimentManager {
     // Update UI
     this.uiManager.updateGameInfo(this.currentExperimentIndex, this.currentTrialIndex, experimentType);
     this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+
+    // Reset WeIntentAgent beliefs at each trial start
+    if (this.weIntentAgent) {
+      this.weIntentAgent.reset();
+    }
 
     // Start trial based on experiment type
     this.startTrialExecution(experimentType);
@@ -227,6 +232,7 @@ export class ExperimentManager {
         this.runTrial1P2G();
         break;
       case '2P2G':
+      case 'StagHunt':
         this.runTrial2P2G();
         break;
       case '2P3G':
@@ -306,7 +312,7 @@ export class ExperimentManager {
               CONFIG.game.agent.gpt.model = model; // API model cache only
               const td = this.gameStateManager?.trialData;
               const st = this.gameStateManager?.currentState;
-              if (td && st && String(st.experimentType || '').includes('2P')) {
+              if (td && st && GameConfigUtils.isTwoPlayerExperiment(st.experimentType)) {
                 td.partnerAgentType = model;
               }
             }
@@ -323,7 +329,7 @@ export class ExperimentManager {
               CONFIG.game.agent.vlm.model = model; // API model cache only
               const td = this.gameStateManager?.trialData;
               const st = this.gameStateManager?.currentState;
-              if (td && st && String(st.experimentType || '').includes('2P')) {
+              if (td && st && GameConfigUtils.isTwoPlayerExperiment(st.experimentType)) {
                 td.partnerAgentType = model;
               }
             }
@@ -374,7 +380,7 @@ export class ExperimentManager {
 
     // Generate AI/GPT direction
     let aiDirection = null;
-    const isGptAllowed = (gameState.experimentType === '2P2G' || gameState.experimentType === '2P3G');
+    const isGptAllowed = GameConfigUtils.isTwoPlayerExperiment(gameState.experimentType);
     let gptError = null;
 
     // Determine which side is AI and its configured type
@@ -536,7 +542,7 @@ export class ExperimentManager {
     const aiType = (this.aiPlayerNumber === 1)
       ? CONFIG.game.players.player1.type
       : CONFIG.game.players.player2.type;
-    const isGptAllowed = (gameState.experimentType === '2P2G' || gameState.experimentType === '2P3G');
+    const isGptAllowed = GameConfigUtils.isTwoPlayerExperiment(gameState.experimentType);
     let gptError = null;
 
 
@@ -993,7 +999,7 @@ export class ExperimentManager {
 
     try {
       // For collaboration experiments after trial 12, use random maps
-      if (experimentType.includes('2P') && trialIndex >= CONFIG.game.successThreshold.randomSamplingAfterTrial) {
+      if (GameConfigUtils.isTwoPlayerExperiment(experimentType) && trialIndex >= CONFIG.game.successThreshold.randomSamplingAfterTrial) {
         const randomDesign = this.mapLoader.getRandomMapForCollaborationGame(experimentType, trialIndex);
         if (randomDesign) {
           console.log('✅ Loaded random map design:', randomDesign);
@@ -1193,6 +1199,7 @@ export class ExperimentManager {
         this.runTrial1P2G();
         break;
       case '2P2G':
+      case 'StagHunt':
         this.runTrial2P2G();
         break;
       case '2P3G':

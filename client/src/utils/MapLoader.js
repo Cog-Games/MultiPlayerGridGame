@@ -60,7 +60,7 @@ export class MapLoader {
       return this.loadAllFallbackMaps();
     }
 
-    const experimentTypes = ['1P1G', '1P2G', '2P2G', '2P3G'];
+    const experimentTypes = ['1P1G', '1P2G', '2P2G', '2P3G', 'StagHunt'];
     const maps = {};
 
     for (const expType of experimentTypes) {
@@ -103,7 +103,7 @@ export class MapLoader {
 
   async loadMapDataFromPythonJson() {
     const base = (CONFIG?.maps?.pythonJsonBasePath) || '/python/gameDesign/output';
-    const experimentTypes = ['1P1G', '1P2G', '2P2G', '2P3G'];
+    const experimentTypes = ['1P1G', '1P2G', '2P2G', '2P3G', 'StagHunt'];
     const maps = {};
     for (const expType of experimentTypes) {
       try {
@@ -220,6 +220,23 @@ export class MapLoader {
     return maps;
   }
 
+  generateStagHuntMaps() {
+    const maps = {};
+    // Simple fallback stag hunt map
+    for (let i = 0; i < 10; i++) {
+      maps[String(i)] = [{
+        initPlayerGrid: [8, 0],
+        initAIGrid: [0, 4],
+        bigGoals: [[4, 8]],
+        smallGoals: [[5, 4], [7, 1]],
+        obstacles: [],
+        gridSize: 9,
+        mapType: 'StagHunt'
+      }];
+    }
+    return maps;
+  }
+
   // Get maps for specific experiment type
   getMapsForExperiment(experimentType) {
     console.log(`🎯 Getting maps for experiment: ${experimentType}`);
@@ -250,6 +267,8 @@ export class MapLoader {
         return this.generate2P2GMaps();
       case '2P3G':
         return this.generate2P3GMaps();
+      case 'StagHunt':
+        return this.generateStagHuntMaps();
       default:
         console.error(`Unknown experiment type: ${experimentType}`);
         return {};
@@ -405,6 +424,15 @@ export class MapLoader {
         target1: [1, 8],
         target2: [14, 8],
         mapType: '2P3G'
+      },
+      'StagHunt': {
+        initPlayerGrid: [8, 0],
+        initAIGrid: [0, 4],
+        bigGoals: [[4, 8]],
+        smallGoals: [[5, 4], [7, 1]],
+        obstacles: [],
+        gridSize: 9,
+        mapType: 'StagHunt'
       }
     };
 
@@ -431,7 +459,8 @@ export class MapLoader {
       '1P1G': this.getFallbackMaps('1P1G'),
       '1P2G': this.getFallbackMaps('1P2G'),
       '2P2G': this.getFallbackMaps('2P2G'),
-      '2P3G': this.getFallbackMaps('2P3G')
+      '2P3G': this.getFallbackMaps('2P3G'),
+      'StagHunt': this.getFallbackMaps('StagHunt')
     };
   }
 }

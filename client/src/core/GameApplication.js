@@ -157,7 +157,7 @@ export class GameApplication {
     const skipNetwork = urlParams.get('skipNetwork') === 'true';
 
     // Default to configured fallback AI when not explicitly set
-    if (!['gpt', 'human', 'rl_joint', 'rl_individual', 'rl_individual_python'].includes(CONFIG.game.players.player2.type)) {
+    if (!['gpt', 'gpt-ToM', 'human', 'rl_joint', 'rl_individual', 'rl_individual_python', 'vlm', 'vlm-ToM', 'we_intent_js'].includes(CONFIG.game.players.player2.type)) {
       GameConfigUtils.setPlayerType(2, CONFIG.multiplayer.fallbackAIType || 'rl_joint');
     }
     this.uiManager.setPlayerInfo(0, 'human-ai');
@@ -538,7 +538,7 @@ export class GameApplication {
           // Calculate collaboration success statistics
           const allTrials = exportObj.allTrialsData || [];
           const collaborationTrials = allTrials.filter(trial =>
-            trial.experimentType && trial.experimentType.includes('2P')
+            trial.experimentType && GameConfigUtils.isTwoPlayerExperiment(trial.experimentType)
           );
           const collaborationSuccessCount = collaborationTrials.filter(trial =>
             trial.collaborationSucceeded === true
@@ -997,7 +997,7 @@ export class GameApplication {
       try {
         const state = this.gameStateManager?.getCurrentState?.();
         const expType = state?.experimentType || '';
-        const isTwoPlayerExperiment = String(expType).includes('2P');
+        const isTwoPlayerExperiment = GameConfigUtils.isTwoPlayerExperiment(expType);
         const hasTwoPlayersInState = !!(state?.player1 && state?.player2);
         if (!isTwoPlayerExperiment || !hasTwoPlayersInState) {
           // In 1P games (or before 2P players are fully set), ignore any sync logic
@@ -1646,11 +1646,11 @@ export class GameApplication {
 
     console.log('🔍 Is human-human:', isHumanHuman, 'Experiment type:', experimentType);
 
-    if (isHumanHuman && experimentType && experimentType.includes('2P')) {
+    if (isHumanHuman && experimentType && GameConfigUtils.isTwoPlayerExperiment(experimentType)) {
       console.log('🕐 Starting inactivity tracking for human-human trial');
       this.startInactivityTracking();
     } else {
-      console.log('⚠️ Not starting inactivity tracking - isHumanHuman:', isHumanHuman, 'is2P:', experimentType?.includes('2P'));
+      console.log('⚠️ Not starting inactivity tracking - isHumanHuman:', isHumanHuman, 'is2P:', GameConfigUtils.isTwoPlayerExperiment(experimentType));
     }
 
     // Reset trial completion guard at the start of each trial

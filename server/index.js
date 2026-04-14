@@ -105,12 +105,17 @@ app.get('/config/MapsFor2P3G.js', (req, res) => {
   res.sendFile(configPath);
 });
 
+app.get('/config/MapsForStagHunt.js', (req, res) => {
+  const configPath = path.join(__dirname, '..', 'config', 'MapsForStagHunt.js');
+  res.sendFile(configPath);
+});
+
 // Generic map config endpoint with better error handling
 app.get('/config/:mapFile', (req, res) => {
   const { mapFile } = req.params;
 
   // Validate map file name for security
-  if (!/^MapsFor[12]P[123]G\.js$/.test(mapFile)) {
+  if (!/^MapsFor([12]P[123]G|StagHunt)\.js$/.test(mapFile)) {
     return res.status(400).json({ error: 'Invalid map file name' });
   }
 
@@ -133,7 +138,8 @@ app.get('/api/maps/:experimentType', (req, res) => {
     '1P1G': 'MapsFor1P1G.js',
     '1P2G': 'MapsFor1P2G.js',
     '2P2G': 'MapsFor2P2G.js',
-    '2P3G': 'MapsFor2P3G.js'
+    '2P3G': 'MapsFor2P3G.js',
+    'StagHunt': 'MapsForStagHunt.js'
   };
 
   const mapFile = mapFiles[experimentType];
