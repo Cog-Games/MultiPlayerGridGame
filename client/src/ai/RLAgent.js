@@ -46,6 +46,27 @@ function softmax(values, beta) {
   return exps.map(e => e / sum);
 }
 
+const CARDINAL_ACTIONS = [
+  [0, -1],
+  [0, 1],
+  [-1, 0],
+  [1, 0]
+];
+
+function sampleIndexFromWeights(weights) {
+  const total = weights.reduce((sum, w) => sum + (isFinite(w) && w > 0 ? w : 0), 0);
+  if (!isFinite(total) || total <= 0) return -1;
+
+  const r = Math.random() * total;
+  let acc = 0;
+  for (let i = 0; i < weights.length; i++) {
+    const w = (isFinite(weights[i]) && weights[i] > 0) ? weights[i] : 0;
+    acc += w;
+    if (r <= acc) return i;
+  }
+  return weights.length - 1;
+}
+
 /**
  * Check if taking a step from the given position with the given delta
  * would result in a valid (non-obstacle, in-bounds) cell on the grid.
@@ -614,7 +635,23 @@ const JointPlanner4Action = {
   }
 };
 
-// ---------- BFS-based joint planner (16 joint actions, legacy port) ----------
+// ---------- Joint cooperative Value Iteration planner (Stag-Hunt aware) ----------
+//
+// State: joint position (aiIdx, partnerIdx) where each index is row*COLS + col.
+// Action space: 16 joint actions (AI_action × Partner_action, each in [L, R, U, D]).
+// Terminal: both players on any goal tile (matches StagHunt trial-end semantics).
+// Reward model (team utility):
+//   Per-step: -|stepCost| charged for each agent that actually moved.
+//   Terminal (evaluated once on arrival):
+//     * both on the SAME big goal → bigReward + bigReward (2 × stag_reward_each)
+//     * big goal reached alone    → 0 for that agent (stag requires partner)
+//     * small goal reached        → smallReward for that agent (solo-collectable)
+//     * both on SAME small goal   → only one agent can claim it (smallReward × 1)
+//
+// Reward parameters are sourced per planner call from (in order):
+//   1. map utility_summary (hare_reward_each, stag_reward_each, step_cost_per_move)
+//   2. CONFIG.game.rewards (smallGoalReward, bigGoalJointReward, stepPenalty)
+//   3. hard-coded fallbacks
 const JointBFSPlanner = {
   planners: new Map(),
 
@@ -635,6 +672,43 @@ const JointBFSPlanner = {
     return obstacles.map(([r,c]) => `${r},${c}`).sort().join('|');
   },
 
+  hashGoalTypes(goalTypes) {
+    if (!Array.isArray(goalTypes)) return '';
+    return goalTypes.map(t => (t === 'big' ? 'B' : 's')).join('');
+  },
+
+  hashRewards(rewards) {
+    if (!rewards) return '';
+    return `b${rewards.bigReward}|s${rewards.smallReward}|c${rewards.stepCost}|g${rewards.gamma}`;
+  },
+
+  resolveRewards(utilitySummary) {
+    const cfg = (typeof CONFIG !== 'undefined' && CONFIG?.game?.rewards) || {};
+    const util = utilitySummary || {};
+
+    // Negative stepCost (cost per moving agent per tick). map stores a negative value.
+    let stepCost = -1;
+    if (Number.isFinite(util.step_cost_per_move)) {
+      stepCost = util.step_cost_per_move <= 0 ? util.step_cost_per_move : -Math.abs(util.step_cost_per_move);
+    } else if (Number.isFinite(cfg.stepPenalty)) {
+      stepCost = -Math.abs(cfg.stepPenalty);
+    }
+
+    let smallReward = Number.isFinite(util.hare_reward_each)
+      ? util.hare_reward_each
+      : (Number.isFinite(cfg.smallGoalReward) ? cfg.smallGoalReward : 3);
+
+    let bigReward = Number.isFinite(util.stag_reward_each)
+      ? util.stag_reward_each
+      : (Number.isFinite(cfg.bigGoalJointReward) ? cfg.bigGoalJointReward : 10);
+
+    // Undiscounted (γ = 1) so the planner's V matches the map's
+    // utility_summary arithmetic exactly — the task is episodic with a
+    // finite maxGameLength, so no discounting is needed.
+    const gamma = 1.0;
+    return { stepCost, smallReward, bigReward, gamma };
+  },
+
   stepIdxWithObstacles(idx, a, obstacleSet, helpers) {
     const { rowOf, colOf, toIdx, inGrid } = helpers;
     const actionSpace = [[0, -1], [0, 1], [-1, 0], [1, 0]];
@@ -648,157 +722,250 @@ const JointBFSPlanner = {
     return toIdx(nr, nc);
   },
 
-  buildPlanner(goals, beta = 1.0, obstacles = []) {
-    const gridSize = RL_AGENT_CONFIG.gridSize || 15;
-    const helpers = this._getHelpers(gridSize);
-    const { toIdx, rowOf, colOf } = helpers;
-    const N = gridSize * gridSize;
-
-    const goalSet = new Set(goals.map(([r, c]) => toIdx(r, c)));
-    const S = N * N;
-    const Q = new Float32Array(S * 16);
-    const rewardGoal = RL_AGENT_CONFIG.goalReward;
-    const stepCost = RL_AGENT_CONFIG.stepCost;
-    const gamma = RL_AGENT_CONFIG.gamma || 0.9;
-
-    const obstacleSet = new Set((obstacles||[]).map(([r,c]) => `${r},${c}`));
-
-    // Precompute Manhattan distances to each goal for all positions
-    const goalDistances = new Array(N);
-    for (let pos = 0; pos < N; pos++) {
-      goalDistances[pos] = new Array(goals.length);
-      const r = rowOf(pos), c = colOf(pos);
-      for (let g = 0; g < goals.length; g++) {
-        const [gr, gc] = goals[g];
-        goalDistances[pos][g] = Math.abs(r - gr) + Math.abs(c - gc);
-      }
-    }
-
-    const proximityCache = new Map();
-    function getProximityReward(nextAI, nextPL, done) {
-      if (done) return 0;
-      const key = (nextAI <= nextPL)
-        ? `${nextAI}-${nextPL}`
-        : `${nextPL}-${nextAI}`;
-      if (proximityCache.has(key)) return proximityCache.get(key);
-
-      let minJoint = Infinity;
-      for (let g = 0; g < goals.length; g++) {
-        const d = goalDistances[nextAI][g] + goalDistances[nextPL][g];
-        if (d < minJoint) minJoint = d;
-      }
-      const reward = -RL_AGENT_CONFIG.proximityRewardWeight * minJoint;
-      proximityCache.set(key, reward);
-      return reward;
-    }
-
-    for (let s = 0; s < S; s++) {
-      const iAI = Math.floor(s / N);
-      const iPL = s % N;
-
-      if (goalSet.has(iAI) && goalSet.has(iPL) && iAI === iPL) {
-        for (let j = 0; j < 16; j++) Q[s * 16 + j] = 0;
-        continue;
-      }
-
-      for (let aAI = 0; aAI < 4; aAI++) {
-        const nextAI = goalSet.has(iAI) ? iAI : this.stepIdxWithObstacles(iAI, aAI, obstacleSet, helpers);
-
-        for (let aPL = 0; aPL < 4; aPL++) {
-          const nextPL = goalSet.has(iPL) ? iPL : this.stepIdxWithObstacles(iPL, aPL, obstacleSet, helpers);
-          const jointIdx = aAI * 4 + aPL;
-
-          const done = goalSet.has(nextAI) && goalSet.has(nextPL) && nextAI === nextPL;
-          const proximityReward = getProximityReward(nextAI, nextPL, done);
-          const r = done ? rewardGoal : stepCost + proximityReward;
-
-          let futureValue = 0;
-          if (!done) {
-            let minDist = Infinity;
-            for (let g = 0; g < goals.length; g++) {
-              const d = goalDistances[nextAI][g] + goalDistances[nextPL][g];
-              if (d < minDist) minDist = d;
-            }
-            futureValue = gamma * (rewardGoal + stepCost * minDist);
-          }
-          Q[s * 16 + jointIdx] = r + futureValue;
-        }
-      }
-    }
-    return { Q, goalSet, beta };
+  hasAuthoritativeUtilitySummary(utilitySummary) {
+    return Number.isFinite(utilitySummary?.step_cost_per_move) &&
+      Number.isFinite(utilitySummary?.hare_reward_each) &&
+      Number.isFinite(utilitySummary?.stag_reward_each);
   },
 
-  getAction(aiState, playerState, goals, beta = null, obstacles = []) {
-    if (beta == null) beta = RL_AGENT_CONFIG.softmaxBeta;
-    const key = hashGoals(goals) + '|' + beta + '|' + this.hashObstacles(obstacles);
+  assertUtilitySummary(utilitySummary, context = {}) {
+    const exp = String(context?.experimentType || '').toUpperCase();
+    if (exp === 'STAGHUNT' && !this.hasAuthoritativeUtilitySummary(utilitySummary)) {
+      throw new Error('StagHunt joint planner requires utility_summary with step_cost_per_move, hare_reward_each, and stag_reward_each');
+    }
+  },
 
-    if (!this.planners.has(key)) {
-      this.planners.set(key, this.buildPlanner(goals, beta, obstacles));
+  // Compute the team terminal reward assuming the trial ended with the
+  // given configuration. All inputs are goal indices (0..goals.length-1) or
+  // null if the agent is not on a goal.
+  terminalTeamReward(aiGoalIdx, plGoalIdx, goalTypes, rewards) {
+    if (aiGoalIdx == null || plGoalIdx == null) return 0;
+    const aiType = goalTypes[aiGoalIdx] || 'small';
+    const plType = goalTypes[plGoalIdx] || 'small';
+
+    if (aiType === 'big' && plType === 'big' && aiGoalIdx === plGoalIdx) {
+      return rewards.bigReward + rewards.bigReward;
     }
 
-    const { Q, goalSet } = this.planners.get(key);
+    let team = 0;
+    if (aiType === 'small') team += rewards.smallReward;
+    if (plType === 'small') team += rewards.smallReward;
+    if (aiType === 'small' && plType === 'small' && aiGoalIdx === plGoalIdx) {
+      team -= rewards.smallReward; // same small goal: only one claim
+    }
+    return team;
+  },
+
+  buildPlanner({ goals, goalTypes, obstacles = [], utilitySummary = null, beta = 1.0, context = {} }) {
+    this.assertUtilitySummary(utilitySummary, context);
 
     const gridSize = RL_AGENT_CONFIG.gridSize || 15;
     const helpers = this._getHelpers(gridSize);
     const { toIdx } = helpers;
     const N = gridSize * gridSize;
-    const actionSpace = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+    const S = N * N;
+
+    const rewards = this.resolveRewards(utilitySummary);
+    const { stepCost, gamma } = rewards;
+
+    // Map each goal cell index → goal array index, so we can look up types.
+    const goalIdxByCell = new Map();
+    goals.forEach(([r, c], i) => goalIdxByCell.set(toIdx(r, c), i));
+    const goalSet = new Set(goalIdxByCell.keys());
+    const types = (Array.isArray(goalTypes) && goalTypes.length === goals.length)
+      ? goalTypes.map(t => (t === 'big' ? 'big' : 'small'))
+      : goals.map(() => 'small');
+
+    const obstacleSet = new Set((obstacles || []).map(([r, c]) => `${r},${c}`));
+
+    // Precompute per-cell action transitions so the VI inner loop is tight.
+    const nextByAction = new Array(N);
+    const validActionsByCell = new Array(N);
+    for (let pos = 0; pos < N; pos++) {
+      nextByAction[pos] = [
+        this.stepIdxWithObstacles(pos, 0, obstacleSet, helpers),
+        this.stepIdxWithObstacles(pos, 1, obstacleSet, helpers),
+        this.stepIdxWithObstacles(pos, 2, obstacleSet, helpers),
+        this.stepIdxWithObstacles(pos, 3, obstacleSet, helpers)
+      ];
+      validActionsByCell[pos] = nextByAction[pos]
+        .map((nextPos, actionIdx) => (nextPos !== pos ? actionIdx : -1))
+        .filter(actionIdx => actionIdx !== -1);
+    }
+
+    const V = new Float32Array(S); // initial V = 0
+    const Q = new Float32Array(S * 16);
+    Q.fill(Number.NEGATIVE_INFINITY);
+
+    // Precompute terminal flag and terminal reward for every joint state.
+    const isTerminal = new Uint8Array(S);
+    const terminalR = new Float32Array(S);
+    for (let s = 0; s < S; s++) {
+      const aiIdx = (s / N) | 0;
+      const plIdx = s % N;
+      const aiOn = goalSet.has(aiIdx);
+      const plOn = goalSet.has(plIdx);
+      if (aiOn && plOn) {
+        isTerminal[s] = 1;
+        const aiG = goalIdxByCell.get(aiIdx);
+        const plG = goalIdxByCell.get(plIdx);
+        terminalR[s] = this.terminalTeamReward(aiG, plG, types, rewards);
+      }
+    }
+
+    // Value iteration.
+    const maxIterations = RL_AGENT_CONFIG.maxJointVIIter || 400;
+    const threshold = 1e-4;
+
+    for (let iter = 0; iter < maxIterations; iter++) {
+      let delta = 0;
+
+      for (let s = 0; s < S; s++) {
+        if (isTerminal[s]) {
+          if (V[s] !== 0) V[s] = 0;
+          continue;
+        }
+
+        const aiIdx = (s / N) | 0;
+        const plIdx = s % N;
+        const aiOn = goalSet.has(aiIdx);
+        const plOn = goalSet.has(plIdx);
+
+        let bestQ = -Infinity;
+        const aiActions = aiOn ? [0] : validActionsByCell[aiIdx];
+        const plActions = plOn ? [0] : validActionsByCell[plIdx];
+
+        for (const aAI of aiActions) {
+          const aiNext = aiOn ? aiIdx : nextByAction[aiIdx][aAI];
+          const aiMoved = aiNext !== aiIdx;
+
+          for (const aPL of plActions) {
+            const plNext = plOn ? plIdx : nextByAction[plIdx][aPL];
+            const plMoved = plNext !== plIdx;
+            const sNext = aiNext * N + plNext;
+
+            // Per-step move cost: applies to each agent that actually moved.
+            let r = 0;
+            if (aiMoved) r += stepCost;
+            if (plMoved) r += stepCost;
+
+            // Terminal arrival reward from the team's perspective.
+            if (isTerminal[sNext]) r += terminalR[sNext];
+
+            const q = isTerminal[sNext] ? r : (r + gamma * V[sNext]);
+            Q[s * 16 + aAI * 4 + aPL] = q;
+            if (q > bestQ) bestQ = q;
+          }
+        }
+
+        const diff = Math.abs(bestQ - V[s]);
+        if (diff > delta) delta = diff;
+        V[s] = bestQ;
+      }
+
+      if (delta < threshold) break;
+      if (iter === maxIterations - 1) {
+        console.warn(`JointVI did not fully converge after ${maxIterations} iters (Δ=${delta.toFixed(4)})`);
+      }
+    }
+
+    return { Q, V, goalSet, goalIdxByCell, goalTypes: types, rewards, beta, validActionsByCell };
+  },
+
+  getActionDistribution(aiState, playerState, goals, beta = null, obstacles = [], context = {}) {
+    if (beta == null) beta = RL_AGENT_CONFIG.softmaxBeta;
+    const goalTypes = Array.isArray(context.goalTypes) ? context.goalTypes : goals.map(() => 'small');
+    const utilitySummary = context.utilitySummary || null;
+
+    this.assertUtilitySummary(utilitySummary, context);
+
+    const rewards = this.resolveRewards(utilitySummary);
+    const key = hashGoals(goals) + '|' + this.hashGoalTypes(goalTypes) +
+                '|' + this.hashObstacles(obstacles) + '|' + this.hashRewards(rewards) +
+                '|' + beta;
+
+    if (!this.planners.has(key)) {
+      this.planners.set(key, this.buildPlanner({ goals, goalTypes, obstacles, utilitySummary, beta, context }));
+    }
+
+    const { Q, goalSet, validActionsByCell } = this.planners.get(key);
+
+    const gridSize = RL_AGENT_CONFIG.gridSize || 15;
+    const helpers = this._getHelpers(gridSize);
+    const { toIdx } = helpers;
+    const N = gridSize * gridSize;
 
     const idxAI = toIdx(aiState[0], aiState[1]);
     const idxPL = toIdx(playerState[0], playerState[1]);
+    const aiOnGoal = goalSet.has(idxAI);
+    const partnerOnGoal = goalSet.has(idxPL);
 
-    if (goalSet.has(idxAI) && goalSet.has(idxPL) && idxAI === idxPL) return null;
+    if (aiOnGoal) return null;
+
+    const aiActions = validActionsByCell[idxAI] || [];
+    if (aiActions.length === 0) return null;
+
+    const partnerActions = partnerOnGoal ? [0] : (validActionsByCell[idxPL] || []);
+    if (partnerActions.length === 0) return null;
 
     const s = idxAI * N + idxPL;
-    const base = s * 16;
-    const qValues = [
-      Q[base], Q[base + 1], Q[base + 2], Q[base + 3],
-      Q[base + 4], Q[base + 5], Q[base + 6], Q[base + 7],
-      Q[base + 8], Q[base + 9], Q[base + 10], Q[base + 11],
-      Q[base + 12], Q[base + 13], Q[base + 14], Q[base + 15]
-    ];
+    const jointEntries = [];
+    let maxQ = -Infinity;
 
-    // Optional slowdown when player already on a goal but AI not
-    const playerOnGoal = goalSet.has(idxPL);
-    const aiOnGoal = goalSet.has(idxAI);
-    if (playerOnGoal && !aiOnGoal) {
-      for (let j = 0; j < 16; j++) {
-        const aiActionIdx = Math.floor(j / 4);
-        if (aiActionIdx < 4) qValues[j] *= 0.5; // dampen movement
+    for (const aAI of aiActions) {
+      for (const aPL of partnerActions) {
+        const q = Q[s * 16 + aAI * 4 + aPL];
+        if (!isFinite(q)) continue;
+        jointEntries.push({ aAI, aPL, q });
+        if (q > maxQ) maxQ = q;
       }
     }
 
-    if (qValues.some(q => !isFinite(q))) {
-      return actionSpace[Math.floor(Math.random() * actionSpace.length)];
+    if (jointEntries.length === 0 || !isFinite(maxQ)) return null;
+
+    const massesByAI = new Map();
+    for (const entry of jointEntries) {
+      const mass = Math.exp(Math.max(-700, Math.min(700, beta * (entry.q - maxQ))));
+      entry.mass = mass;
+      massesByAI.set(entry.aAI, (massesByAI.get(entry.aAI) || 0) + mass);
     }
 
-    const maxQ = Math.max(...qValues);
-    const logPrefs = qValues.map(q => beta * (q - maxQ));
-    const clipped = logPrefs.map(lp => Math.max(-700, Math.min(700, lp)));
-    const prefs = clipped.map(lp => Math.exp(lp));
-    const sum = prefs.reduce((a, b) => a + b, 0);
+    const actionIndices = [...massesByAI.keys()];
+    const weights = actionIndices.map(actionIdx => massesByAI.get(actionIdx) || 0);
+    const total = weights.reduce((sum, weight) => sum + weight, 0) || 1;
+    const probabilities = weights.map(weight => weight / total);
 
-    if (!isFinite(sum) || sum === 0) {
-      return actionSpace[Math.floor(Math.random() * actionSpace.length)];
-    }
-
-    const r = Math.random() * sum;
-    let acc = 0;
-    for (let j = 0; j < 16; j++) {
-      acc += prefs[j];
-      if (r < acc) {
-        const aiActionIdx = Math.floor(j / 4);
-        return actionSpace[aiActionIdx];
-      }
-    }
-    return actionSpace[0];
+    return {
+      actionIndices,
+      weights,
+      probabilities,
+      entries: jointEntries,
+      actionDeltas: actionIndices.map(actionIdx => [...CARDINAL_ACTIONS[actionIdx]])
+    };
   },
 
-  precalc(goals, obstacles = []) {
+  getAction(aiState, playerState, goals, beta = null, obstacles = [], context = {}) {
+    const distribution = this.getActionDistribution(aiState, playerState, goals, beta, obstacles, context);
+    if (!distribution) return null;
+
+    const sampledIdx = sampleIndexFromWeights(distribution.weights);
+    if (sampledIdx < 0) return null;
+    return distribution.actionDeltas[sampledIdx];
+  },
+
+  precalc(goals, obstacles = [], context = {}) {
     const beta = RL_AGENT_CONFIG.softmaxBeta;
-    const key = hashGoals(goals) + '|' + beta + '|' + this.hashObstacles(obstacles);
+    const goalTypes = Array.isArray(context.goalTypes) ? context.goalTypes : goals.map(() => 'small');
+    const utilitySummary = context.utilitySummary || null;
+
+    this.assertUtilitySummary(utilitySummary, context);
+
+    const rewards = this.resolveRewards(utilitySummary);
+    const key = hashGoals(goals) + '|' + this.hashGoalTypes(goalTypes) +
+                '|' + this.hashObstacles(obstacles) + '|' + this.hashRewards(rewards) +
+                '|' + beta;
     if (!this.planners.has(key)) {
-      this.planners.set(key, this.buildPlanner(goals, beta, obstacles));
+      this.planners.set(key, this.buildPlanner({ goals, goalTypes, obstacles, utilitySummary, beta, context }));
     }
   },
 
@@ -812,12 +979,12 @@ export class RLAgent {
     this.isPreCalculating = false;
   }
 
-  getAIAction(gridMatrix, currentPos, goals, playerPos = null) {
-    if (!goals || goals.length === 0) return [0, 0];
+  getAIAction(gridMatrix, currentPos, goals, playerPos = null, context = {}) {
+    if (!goals || goals.length === 0) return null;
 
     try {
       if (playerPos && CONFIG.game.agent.type === 'joint') {
-        const impl = (RL_AGENT_CONFIG.jointRLImplementation || 'vi4').toLowerCase();
+        const impl = (RL_AGENT_CONFIG.jointRLImplementation || 'bfs').toLowerCase();
 
         // Extract obstacles from the current grid matrix (value 4)
         const obstacles = [];
@@ -831,16 +998,36 @@ export class RLAgent {
           }
         } catch (_) { /* ignore */ }
 
-        let action = (impl === 'bfs')
-          ? JointBFSPlanner.getAction(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta, obstacles)
-          : JointPlanner4Action.getAction(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta, obstacles);
-        if (!action) {
-          action = [0, 0];
-        }
+        let action;
+        if (impl === 'vi4') {
+          // Legacy 4-action joint planner (kept for backward compatibility).
+          action = JointPlanner4Action.getAction(
+            currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta, obstacles
+          );
+          if (!action) {
+            return null;
+          }
 
-        // Final safety: never return a move that would point into an obstacle
-        const safeAction = sanitizeDelta(gridMatrix, currentPos, action);
-        return safeAction;
+          return sanitizeDelta(gridMatrix, currentPos, action);
+        } else {
+          // Default: goal-type-aware cooperative joint VI (Stag-Hunt aware).
+          try {
+            action = JointBFSPlanner.getAction(
+              currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta, obstacles, context
+            );
+          } catch (plannerError) {
+            console.warn('Joint StagHunt planner unavailable; falling back explicitly to individual RL:', plannerError?.message || plannerError);
+            return this.getIndividualRLAction(gridMatrix, currentPos, goals);
+          }
+
+          if (!action) {
+            return null;
+          }
+          if (!isValidMoveOnGrid(gridMatrix, currentPos, action)) {
+            throw new Error(`Joint planner produced non-executable action ${JSON.stringify(action)} from ${JSON.stringify(currentPos)}`);
+          }
+          return action;
+        }
       }
 
       return this.getIndividualRLAction(gridMatrix, currentPos, goals);
@@ -894,15 +1081,15 @@ export class RLAgent {
     return safeDelta;
   }
 
-  precalculatePolicyForGoals(goals, _experimentType) {
+  precalculatePolicyForGoals(goals, _experimentType, context = {}) {
     if (this.isPreCalculating) return;
     this.isPreCalculating = true;
 
     setTimeout(() => {
       try {
-        const impl = (RL_AGENT_CONFIG.jointRLImplementation || 'vi4').toLowerCase();
-        if (impl === 'bfs') JointBFSPlanner.precalc(goals);
-        else JointPlanner4Action.precalc(goals);
+        const impl = (RL_AGENT_CONFIG.jointRLImplementation || 'bfs').toLowerCase();
+        if (impl === 'vi4') JointPlanner4Action.precalc(goals);
+        else JointBFSPlanner.precalc(goals, context.obstacles || [], context);
       } finally {
         this.isPreCalculating = false;
       }
@@ -913,5 +1100,5 @@ export class RLAgent {
   resetNewGoalPreCalculationFlag() { /* compatibility */ }
 }
 
-// Export internals for reuse by WeIntentAgent
-export { RunIndividualVI, JointPlanner4Action, softmax, RL_AGENT_CONFIG };
+// Export internals for reuse by WeIntentAgent and for testing
+export { RunIndividualVI, JointPlanner4Action, JointBFSPlanner, softmax, RL_AGENT_CONFIG };

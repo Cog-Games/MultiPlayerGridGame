@@ -55,6 +55,9 @@ export const CONFIG = {
     turnTaking: {
       startingPlayer: 1 // which player (1 or 2) moves first
     },
+    // Counterbalance two-player maps by swapping red/orange starting positions
+    // on every other trial.
+    swapPlayerStartPositionsHalfTime: true,
 
     // Player configuration
     players: {
@@ -65,7 +68,7 @@ export const CONFIG = {
       },
       player2: {
         // Types: 'human' | 'gpt' | 'gpt-ToM' | 'vlm' | 'vlm-ToM' | 'rl_individual' | 'rl_joint' | 'we_intent_js'
-        type: 'we_intent_js',
+        type: 'rl_joint',
         color: 'orange',
         description: 'Human, GPT, or RL partner'
       }
@@ -77,8 +80,8 @@ export const CONFIG = {
       // order: ['1P2G'],
       // order: [ '2P3G'],
       // order: ['1P2G','2P3G'],
-      // order: [ 'StagHuntTwoStags'],
-      order: ['StagHunt', 'StagHuntTwoStags'],
+      order: [ 'StagHunt'],
+      // order: ['StagHunt', 'StagHuntTwoStags'],
       // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
@@ -86,8 +89,30 @@ export const CONFIG = {
         '1P2G': 12, // 12
         '2P2G': 8, // 8
         '2P3G': 12, // 12
-        'StagHunt': 4,
+        'StagHunt': 18,
         'StagHuntTwoStags': 4
+      },
+
+      // Map ordering per experiment: 'fixed' (keys sorted numerically) or 'random' (shuffled).
+      // Default 'fixed' for StagHunt so all 18 maps run in order 1..18 for testing.
+      mapOrder: {
+        '1P1G': 'random',
+        '1P2G': 'random',
+        '2P2G': 'random',
+        '2P3G': 'random',
+        'StagHunt': 'fixed',
+        'StagHuntTwoStags': 'random'
+      },
+
+      // Optional per-experiment map filters for focused testing.
+      // Set to null to use all maps, a string for one path type, or an array
+      // to allow multiple path types.
+      // Examples:
+      //   'StagHunt': 'equal-optimal'
+      //   'StagHunt': ['costly-suboptimal']
+      signalingPathTypeFilter: {
+        'StagHunt': null,
+        'StagHuntTwoStags': null
       }
     },
 
@@ -103,10 +128,13 @@ export const CONFIG = {
     // Reward configuration (points paid by different goal types)
     // These are read by the game logic but can be tuned per experiment.
     rewards: {
+      // Each player's round score starts here and loses points per move
+      initialPointsPerTrial: 15,
+      stepPenalty: 1,
       // Reward for any small (solo-collectable) goal
       smallGoalReward: 3,
       // Reward per player when BOTH players reach the same big joint goal
-      bigGoalJointReward: 5
+      bigGoalJointReward: 10
     },
 
     // Dual-goal mechanic configuration
@@ -405,5 +433,15 @@ export const GameConfigUtils = {
 
   isTurnTakingEnabled(experimentType) {
     return this.getMoveMode(experimentType) === 'turn-taking';
+  },
+
+  shouldSwapPlayerStartPositions(experimentType, trialIndex) {
+    try {
+      if (!this.isTwoPlayerExperiment(experimentType)) return false;
+      if (!CONFIG?.game?.swapPlayerStartPositionsHalfTime) return false;
+      return (Number(trialIndex) % 2) === 1;
+    } catch (_) {
+      return false;
+    }
   }
 };

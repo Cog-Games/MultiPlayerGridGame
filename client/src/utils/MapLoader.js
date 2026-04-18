@@ -21,18 +21,42 @@ export class MapLoader {
     for (const [key, maps] of Object.entries(mapData)) {
       if (Array.isArray(maps)) {
         processed[key] = maps.map(mapDesign => {
-          if (mapDesign.asciiMap) {
-            const parsed = MapParser.parseAsciiMap(mapDesign.asciiMap);
+          // Normalize new StagHunt 18-map format (orange/red/stag/rabbits)
+          // to the legacy field names the rest of the client expects, while
+          // preserving all rich metadata (map_id, ascii, signaling, *_summary).
+          let design = this.normalizeStagHuntMap(mapDesign);
+
+          if (design.asciiMap) {
+            const parsed = MapParser.parseAsciiMap(design.asciiMap);
             // Merge any extra properties from the original object (e.g. mapType)
-            return { ...mapDesign, ...parsed };
+            return { ...design, ...parsed };
           }
-          return mapDesign;
+          return design;
         });
       } else {
         processed[key] = maps;
       }
     }
     return processed;
+  }
+
+  // If a map uses the new StagHunt schema (orange/red/stag/rabbits), add the
+  // legacy alias fields the client consumes downstream, while keeping all
+  // metadata fields intact for export.
+  normalizeStagHuntMap(m) {
+    if (!m || typeof m !== 'object') return m;
+    const hasNew = Array.isArray(m.orange) && Array.isArray(m.red) &&
+      Array.isArray(m.stag) && Array.isArray(m.rabbits);
+    if (!hasNew) return m;
+    return {
+      ...m,
+      initPlayerGrid: [...m.red],   // Non-Signaler (red) start
+      initAIGrid: [...m.orange],    // Signaler (orange) start
+      bigGoals: [[...m.stag]],
+      smallGoals: m.rabbits.map(r => [...r]),
+      gridSize: m.grid_size ?? m.gridSize ?? 9,
+      mapType: m.mapType || 'StagHunt'
+    };
   }
 
   // Load map data from server API
@@ -257,8 +281,43 @@ export class MapLoader {
       return this.getFallbackMaps(experimentType);
     }
 
-    console.log(`✅ Found ${Object.keys(mapData).length} maps for ${experimentType}`);
-    return mapData;
+    const filteredMapData = this.filterMapsForExperiment(mapData, experimentType);
+    console.log(`✅ Found ${Object.keys(filteredMapData).length} maps for ${experimentType}`);
+    return filteredMapData;
+  }
+
+  getConfiguredSignalingPathTypes(experimentType) {
+    const raw = CONFIG?.game?.experiments?.signalingPathTypeFilter?.[experimentType];
+    if (raw == null) return null;
+
+    const values = Array.isArray(raw) ? raw : [raw];
+    const normalized = values
+      .map(value => String(value || '').trim())
+      .filter(Boolean);
+
+    return normalized.length > 0 ? new Set(normalized) : null;
+  }
+
+  filterMapsForExperiment(mapData, experimentType) {
+    if (!mapData || typeof mapData !== 'object') return mapData;
+
+    const allowedPathTypes = this.getConfiguredSignalingPathTypes(experimentType);
+    if (!allowedPathTypes) return mapData;
+
+    const filteredEntries = Object.entries(mapData).filter(([, mapArray]) => {
+      const design = Array.isArray(mapArray) ? mapArray[0] : null;
+      const pathType = design?.signaling?.path_type;
+      return allowedPathTypes.has(String(pathType || '').trim());
+    });
+
+    const filteredMapData = Object.fromEntries(filteredEntries);
+    console.log(
+      `🧪 Applied signaling.path_type filter for ${experimentType}: ` +
+      `${Array.from(allowedPathTypes).join(', ')} ` +
+      `(${filteredEntries.length}/${Object.keys(mapData).length} maps kept)`
+    );
+
+    return filteredMapData;
   }
 
   // Get fallback maps when config files are not available
@@ -282,8 +341,10 @@ export class MapLoader {
     }
   }
 
-  // Select random maps from map data (legacy compatible)
-  selectRandomMaps(mapData, nTrials) {
+  // Select maps from map data. Order is controlled by CONFIG.game.experiments.mapOrder[experimentType]:
+  //   'fixed'  -> maps returned in ascending numeric key order (1, 2, 3, ...)
+  //   'random' -> shuffled (default, legacy behavior)
+  selectRandomMaps(mapData, nTrials, experimentType) {
     if (!mapData || typeof mapData !== 'object') {
       console.error('Invalid map data provided:', mapData);
       return [];
@@ -295,15 +356,28 @@ export class MapLoader {
       return [];
     }
 
-    const shuffledKeys = [...keys];
-    for (let i = shuffledKeys.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffledKeys[i], shuffledKeys[j]] = [shuffledKeys[j], shuffledKeys[i]];
+    const orderMode = (experimentType && CONFIG?.game?.experiments?.mapOrder?.[experimentType]) || 'random';
+
+    let orderedKeys;
+    if (orderMode === 'fixed') {
+      // Sort numerically so "1","2",...,"10","18" instead of lexical "1","10","11",...
+      orderedKeys = [...keys].sort((a, b) => {
+        const na = Number(a), nb = Number(b);
+        if (Number.isFinite(na) && Number.isFinite(nb)) return na - nb;
+        return String(a).localeCompare(String(b));
+      });
+      console.log(`📜 Using FIXED map order for ${experimentType}: ${orderedKeys.join(', ')}`);
+    } else {
+      orderedKeys = [...keys];
+      for (let i = orderedKeys.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [orderedKeys[i], orderedKeys[j]] = [orderedKeys[j], orderedKeys[i]];
+      }
     }
 
     const selectedMaps = [];
     for (let i = 0; i < nTrials; i++) {
-      const randomKey = shuffledKeys[i % shuffledKeys.length];
+      const randomKey = orderedKeys[i % orderedKeys.length];
       // Map data structure is: { "key": [{ designObject }] }
       const mapArray = mapData[randomKey];
       if (Array.isArray(mapArray) && mapArray.length > 0) {
@@ -326,7 +400,7 @@ export class MapLoader {
       }
     }
 
-    console.log(`Selected ${selectedMaps.length} random maps from ${keys.length} available maps`);
+    console.log(`Selected ${selectedMaps.length} maps (order=${orderMode}) from ${keys.length} available maps`);
     return selectedMaps;
   }
 
@@ -367,6 +441,10 @@ export class MapLoader {
 
   // Get random map for collaboration games (post trial 12)
   getRandomMapForCollaborationGame(experimentType, trialIndex) {
+    if (!CONFIG.game.successThreshold.enabled) {
+      return null;
+    }
+
     // After trial 12, use random sampling
     if (trialIndex >= CONFIG.game.successThreshold.randomSamplingAfterTrial) {
       const mapData = this.getMapsForExperiment(experimentType);

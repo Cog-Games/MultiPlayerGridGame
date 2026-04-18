@@ -1,4 +1,4 @@
-import { CONFIG, GAME_OBJECTS } from '../config/gameConfig.js';
+import { CONFIG, GAME_OBJECTS, GameConfigUtils } from '../config/gameConfig.js';
 import { GameRenderer } from './GameRenderer.js';
 
 export class UIManager {
@@ -211,6 +211,7 @@ export class UIManager {
         <div style="text-align: center;">
           <h3 id="game-title" style="margin-bottom: 10px;">Game</h3>
           <h4 id="trial-info" style="margin-bottom: 20px;">Round 1</h4>
+          ${this.getScoreboardHtml()}
           <div id="gameCanvas" style="margin-bottom: 20px;"></div>
           <p style="font-size: 20px;">You are ${playerName} <span style="display: inline-block; width: 18px; height: 18px; background-color: ${playerColor}; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
         </div>
@@ -312,7 +313,52 @@ export class UIManager {
     if (this.gameCanvas && gameState) {
       this.lastGameState = gameState;
       this.renderer.render(this.gameCanvas, gameState);
+      this.updateScoreboard(gameState);
     }
+  }
+
+  updateScoreboard(gameState) {
+    const currentPoints = this.playerIndex === 0
+      ? gameState?.player1CurrentPoints
+      : gameState?.player2CurrentPoints;
+    const totalPoints = this.playerIndex === 0
+      ? gameState?.player1TotalPoints
+      : gameState?.player2TotalPoints;
+
+    const currentEl = document.getElementById('controlled-current-points');
+    const totalEl = document.getElementById('controlled-total-points');
+
+    if (currentEl) {
+      const next = String(currentPoints ?? 0);
+      // Flash a brief scale-pop animation when the value changes
+      if (currentEl.textContent !== next) {
+        currentEl.textContent = next;
+        currentEl.animate
+          ? currentEl.animate(
+              [{ transform: 'scale(1.35)', opacity: 0.7 }, { transform: 'scale(1)', opacity: 1 }],
+              { duration: 220, easing: 'ease-out' }
+            )
+          : null;
+      }
+    }
+    if (totalEl) totalEl.textContent = String(totalPoints ?? 0);
+  }
+
+  getRoundLabel(trialIndex, experimentType) {
+    const currentRound = Number.isFinite(trialIndex) ? trialIndex + 1 : 1;
+    if (!experimentType) {
+      return `Round ${currentRound}`;
+    }
+
+    const configuredTrials = GameConfigUtils.getNumTrials(experimentType);
+    const totalRounds = (
+      CONFIG.game.successThreshold.enabled &&
+      GameConfigUtils.isTwoPlayerExperiment(experimentType)
+    )
+      ? Math.max(configuredTrials, CONFIG.game.successThreshold.maxTrials || configuredTrials)
+      : configuredTrials;
+
+    return `Round ${currentRound} / ${totalRounds}`;
   }
 
   updateGameInfo(experimentIndex, trialIndex, experimentType) {
@@ -324,7 +370,7 @@ export class UIManager {
     }
 
     if (trialInfo) {
-      trialInfo.textContent = `Round ${trialIndex + 1}`;
+      trialInfo.textContent = this.getRoundLabel(trialIndex, experimentType);
     }
   }
 
@@ -532,7 +578,7 @@ export class UIManager {
     if (messageType === 'single') {
       message = success ? 'Goal reached!' : 'Time up!';
     } else if (messageType === 'stag-hunt-both-stag') {
-      message = 'You both caught the stag! You each earn 5 points.';
+      message = 'You both caught the stag! You each earn 10 points.';
     } else if (messageType === 'stag-hunt-human-rabbit') {
       message = 'You caught a rabbit! You earn 3 points.';
     } else if (messageType === 'stag-hunt-human-nothing') {
@@ -606,8 +652,12 @@ export class UIManager {
     const canvas = this.renderer.createCanvas();
     canvas.id = 'gameCanvas';
 
-    // Clear container and add canvas
+    // Clear container and add scoreboard plus canvas
     container.innerHTML = '';
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.alignItems = 'center';
+    container.insertAdjacentHTML('beforeend', this.getScoreboardHtml());
     container.appendChild(canvas);
 
     // Store reference to canvas
@@ -623,11 +673,38 @@ export class UIManager {
     this.handleResize = () => doResize();
     window.addEventListener('resize', this.handleResize);
     setTimeout(doResize, 0);
+    this.updateScoreboard(this.lastGameState);
 
     // Set up keyboard controls for the game
     this.setupKeyboardControls();
 
     console.log('✅ Game canvas set up in timeline container');
+  }
+
+  getScoreboardHtml() {
+    const playerColor = this.playerIndex === 0 ? CONFIG.visual.colors.player1 : CONFIG.visual.colors.player2;
+    const playerLabel = this.playerIndex === 0 ? 'Red' : 'Orange';
+
+    return `
+      <div id="scoreboard" style="display: flex; gap: 12px; justify-content: center; margin-bottom: 16px;">
+        <div style="min-width: 220px; background: #fff; border: 2px solid ${playerColor}; border-radius: 10px; padding: 10px 14px; text-align: center;">
+          <div style="font-weight: bold; color: ${playerColor}; margin-bottom: 8px; font-size: 13px; letter-spacing: 0.03em;">
+            Your points (${playerLabel})
+          </div>
+          <!-- Current round points — large, salient -->
+          <div style="background: ${playerColor}18; border: 1.5px solid ${playerColor}55; border-radius: 8px; padding: 6px 10px; margin-bottom: 6px;">
+            <div style="font-size: 11px; color: #555; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.06em;">This round</div>
+            <div style="font-size: 28px; font-weight: 800; color: ${playerColor}; line-height: 1.1;">
+              <span id="controlled-current-points">0</span>
+            </div>
+          </div>
+          <!-- Total points — smaller, secondary -->
+          <div style="font-size: 12px; color: #777;">
+            Total: <span id="controlled-total-points" style="font-weight: 600; color: #444;">0</span>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   // Connection lost error with retry option

@@ -34,6 +34,11 @@ export class GameStateManager {
       trialIndex: 0,
       gameMode: 'human-ai',
       moveMode: null,
+      playerStartPositionsSwapped: false,
+      player1CurrentPoints: 0,
+      player2CurrentPoints: 0,
+      player1TotalPoints: 0,
+      player2TotalPoints: 0,
       currentTurnPlayer: null
     };
 
@@ -84,12 +89,28 @@ export class GameStateManager {
       partnerFallbackAIType: null, // 'gpt' | 'joint-rl' | 'individual-rl' | etc.
       // Which side is controlled by human vs AI (0-based index for consistency with app)
       humanPlayerIndex: null,
-      aiPlayerIndex: null
+      aiPlayerIndex: null,
+      playerStartPositionsSwapped: false,
+      player1CurrentPoints: 0,
+      player2CurrentPoints: 0,
+      player1OutcomeBonus: 0,
+      player2OutcomeBonus: 0,
+      player1OutcomeApplied: false,
+      player2OutcomeApplied: false,
+      player1RoundPoints: 0,
+      player2RoundPoints: 0,
+      player1TotalPoints: 0,
+      player2TotalPoints: 0,
+      player1TotalCommitted: false,
+      player2TotalCommitted: false
     };
 
     this.experimentData = {
       allTrialsData: [],
       currentExperiment: null,
+      player1TotalPoints: 0,
+      player2TotalPoints: 0,
+      totalScore: 0,
       successThreshold: {
         consecutiveSuccesses: 0,
         totalTrialsCompleted: 0,
@@ -108,6 +129,10 @@ export class GameStateManager {
   }
 
   initializeTrial(trialIndex, experimentType, design) {
+    // Retain the full map design for this trial so downstream consumers
+    // (RL planner, reward calculator) can read per-map fields like
+    // `utility_summary`, `stag`, `rabbits`, etc.
+    this.currentMapDesign = design || null;
     this.trialData.trialIndex = trialIndex;
     this.trialData.experimentType = experimentType;
     this.trialData.partnerAgentType = this.getPartnerAgentType(experimentType);
@@ -161,6 +186,8 @@ export class GameStateManager {
     this.trialData.partnerFallbackReason = null;
     this.trialData.partnerFallbackStage = null;
     this.trialData.partnerFallbackTime = null;
+    this.trialData.playerStartPositionsSwapped = !!design?.playerStartPositionsSwapped;
+    this.initializeScoreStateForTrial(experimentType);
     // Initialize who is human vs AI at trial start (for 2P modes)
     try {
       if (GameConfigUtils.isTwoPlayerExperiment(experimentType)) {
@@ -220,6 +247,7 @@ export class GameStateManager {
     this.currentState.experimentType = experimentType;
     this.currentState.trialIndex = trialIndex;
     this.currentState.moveMode = GameConfigUtils.getMoveMode(experimentType);
+    this.currentState.playerStartPositionsSwapped = !!design?.playerStartPositionsSwapped;
     this.currentState.currentTurnPlayer = GameConfigUtils.isTurnTakingEnabled(experimentType)
       ? (CONFIG?.game?.turnTaking?.startingPlayer === 2 ? 2 : 1)
       : null;
@@ -243,6 +271,100 @@ export class GameStateManager {
     } catch (_) {
       // Best effort only; export will fall back to null/empty if this fails
     }
+
+    // --- StagHunt 18-map metadata & Signaler/Non-Signaler role assignment ---
+    // Preserve rich map metadata on trialData so it flows into the Excel
+    // export automatically via the flattener in GameApplication.js.
+    try {
+      if (design && typeof design === 'object') {
+        this.trialData.mapId = design.map_id ?? null;
+        this.trialData.mapAscii = Array.isArray(design.ascii) ? design.ascii.slice() : (design.ascii ?? null);
+        this.trialData.signaling = design.signaling ? { ...design.signaling } : null;
+        this.trialData.distanceSummary = design.distance_summary ? { ...design.distance_summary } : null;
+        this.trialData.utilitySummary = design.utility_summary ? { ...design.utility_summary } : null;
+        this.trialData.stagPosition = Array.isArray(design.stag)
+          ? [...design.stag]
+          : (Array.isArray(design.bigGoals?.[0]) ? [...design.bigGoals[0]] : null);
+        this.trialData.rabbitPositions = Array.isArray(design.rabbits)
+          ? design.rabbits.map(r => [...r])
+          : (Array.isArray(design.smallGoals) ? design.smallGoals.map(r => [...r]) : null);
+        // Original (pre-swap) positions for Signaler/Non-Signaler start coords.
+        this.trialData.signalerStartPosition = Array.isArray(design.orange)
+          ? [...design.orange]
+          : null;
+        this.trialData.nonSignalerStartPosition = Array.isArray(design.red)
+          ? [...design.red]
+          : null;
+      }
+
+      // Role assignment (Signaler = orange, Non-Signaler = red).
+      // Without swap: player1 starts at red (Non-Signaler), player2 at orange (Signaler).
+      // With swap:    player1 starts at orange (Signaler),     player2 at red (Non-Signaler).
+      if (GameConfigUtils.isStagHuntExperiment(experimentType)) {
+        const swapped = this.trialData.playerStartPositionsSwapped === true;
+        this.trialData.player1Role = swapped ? 'Signaler' : 'Non-Signaler';
+        this.trialData.player2Role = swapped ? 'Non-Signaler' : 'Signaler';
+      } else {
+        this.trialData.player1Role = null;
+        this.trialData.player2Role = null;
+      }
+    } catch (e) {
+      console.warn('⚠️ Failed to attach StagHunt metadata to trialData:', e?.message || e);
+    }
+  }
+
+  initializeScoreStateForTrial(experimentType) {
+    const rewardsCfg = CONFIG?.game?.rewards || {};
+    const initialPoints = Number.isFinite(rewardsCfg.initialPointsPerTrial)
+      ? rewardsCfg.initialPointsPerTrial
+      : 15;
+    const isTwoPlayer = GameConfigUtils.isTwoPlayerExperiment(experimentType);
+
+    this.currentState.player1CurrentPoints = initialPoints;
+    this.currentState.player2CurrentPoints = isTwoPlayer ? initialPoints : 0;
+    this.currentState.player1TotalPoints = Number(this.experimentData?.player1TotalPoints || 0);
+    this.currentState.player2TotalPoints = Number(this.experimentData?.player2TotalPoints || 0);
+
+    this.trialData.player1CurrentPoints = this.currentState.player1CurrentPoints;
+    this.trialData.player2CurrentPoints = this.currentState.player2CurrentPoints;
+    this.trialData.player1OutcomeBonus = 0;
+    this.trialData.player2OutcomeBonus = 0;
+    this.trialData.player1OutcomeApplied = false;
+    this.trialData.player2OutcomeApplied = false;
+    this.trialData.player1RoundPoints = this.currentState.player1CurrentPoints;
+    this.trialData.player2RoundPoints = this.currentState.player2CurrentPoints;
+    this.trialData.player1TotalPoints = this.currentState.player1TotalPoints;
+    this.trialData.player2TotalPoints = this.currentState.player2TotalPoints;
+    this.trialData.player1TotalCommitted = false;
+    this.trialData.player2TotalCommitted = false;
+  }
+
+  applyStepPenalty(playerIndex) {
+    if (!this.currentState) return;
+    const rewardsCfg = CONFIG?.game?.rewards || {};
+    const stepPenalty = this.getStepPenaltyForCurrentTrial(rewardsCfg);
+    const currentKey = playerIndex === 1 ? 'player1CurrentPoints' : 'player2CurrentPoints';
+    const nextPoints = Math.max(0, Number(this.currentState[currentKey] || 0) - stepPenalty);
+    this.currentState[currentKey] = nextPoints;
+    this.trialData[currentKey] = nextPoints;
+  }
+
+  // For StagHunt trials, prefer the per-map `utility_summary.step_cost_per_move`
+  // (stored as a negative number in the map file) over the global config default.
+  getStepPenaltyForCurrentTrial(rewardsCfg = CONFIG?.game?.rewards || {}) {
+    const globalPenalty = Number.isFinite(rewardsCfg.stepPenalty) ? rewardsCfg.stepPenalty : 1;
+    try {
+      const exp = String(this.currentState?.experimentType || this.trialData?.experimentType || '');
+      if (GameConfigUtils.isStagHuntExperiment(exp)) {
+        const perStep = this.currentMapDesign?.utility_summary?.step_cost_per_move;
+        if (Number.isFinite(perStep)) return Math.abs(perStep);
+      }
+    } catch (_) { /* fall through to default */ }
+    return globalPenalty;
+  }
+
+  getCurrentMapDesign() {
+    return this.currentMapDesign || null;
   }
 
   // Record a human→AI fallback event for the current run (and current trial if any)
@@ -519,6 +641,7 @@ export class GameStateManager {
       }
       const reactionTime = Date.now() - this.gameStartTime;
       this.recordPlayerMove(playerIndex, movement, reactionTime, currentPlayerIndex);
+      this.applyStepPenalty(playerIndex);
 
       // Calculate new position
       const realAction = GameHelpers.isValidMove(this.currentState.gridMatrix, player, movement);
@@ -576,6 +699,7 @@ export class GameStateManager {
       let next1 = p1;
       if (p1 && move1 && !GameHelpers.isGoalReached(p1, this.currentState.currentGoals)) {
         this.recordPlayerMove(1, move1, reactionTime);
+        this.applyStepPenalty(1);
         const real1 = GameHelpers.isValidMove(this.currentState.gridMatrix, p1, move1);
         next1 = GameHelpers.transition(p1, real1);
       }
@@ -583,6 +707,7 @@ export class GameStateManager {
       let next2 = p2;
       if (p2 && move2 && !GameHelpers.isGoalReached(p2, this.currentState.currentGoals)) {
         this.recordPlayerMove(2, move2, reactionTime);
+        this.applyStepPenalty(2);
         const real2 = GameHelpers.isValidMove(this.currentState.gridMatrix, p2, move2);
         next2 = GameHelpers.transition(p2, real2);
       }
@@ -640,6 +765,7 @@ export class GameStateManager {
       if (p1 && move1 && !GameHelpers.isGoalReached(p1, this.currentState.currentGoals)) {
         // Record as player1 move regardless of human/AI
         this.recordPlayerMove(1, move1, reactionTime);
+        this.applyStepPenalty(1);
         const real1 = GameHelpers.isValidMove(this.currentState.gridMatrix, p1, move1);
         next1 = GameHelpers.transition(p1, real1);
       }
@@ -647,6 +773,7 @@ export class GameStateManager {
       let next2 = p2;
       if (p2 && move2 && !GameHelpers.isGoalReached(p2, this.currentState.currentGoals)) {
         this.recordPlayerMove(2, move2, reactionTime);
+        this.applyStepPenalty(2);
         const real2 = GameHelpers.isValidMove(this.currentState.gridMatrix, p2, move2);
         next2 = GameHelpers.transition(p2, real2);
       }
@@ -833,6 +960,9 @@ export class GameStateManager {
 
     // Check completion conditions based on experiment type
     if (GameConfigUtils.isStagHuntExperiment(this.currentState.experimentType)) {
+      // Apply rewards and update totals as soon as a rabbit is caught or the
+      // stag is jointly caught, rather than waiting until trial finalization.
+      this.computeRewardsForTrial({ commitResolvedOnly: true });
       const stagHuntOutcome = GameHelpers.evaluateStagHuntOutcome(this.currentState, this.trialData);
       this.trialData.collaborationSucceeded = stagHuntOutcome.collaborationSucceeded;
       return stagHuntOutcome.trialComplete || this.stepCount >= CONFIG.game.maxGameLength;
@@ -937,15 +1067,10 @@ export class GameStateManager {
     this.updateSuccessThreshold(success);
   }
 
-  computeRewardsForTrial() {
-    // Initialize reward fields if missing
-    if (typeof this.trialData.player1Reward !== 'number') this.trialData.player1Reward = 0;
-    if (typeof this.trialData.player2Reward !== 'number') this.trialData.player2Reward = 0;
-    if (typeof this.trialData.totalReward !== 'number') this.trialData.totalReward = 0;
-
+  computeRewardsForTrial({ commitResolvedOnly = false } = {}) {
     const rewardsCfg = (CONFIG?.game?.rewards) || {};
-    const smallReward = Number.isFinite(rewardsCfg.smallGoalReward) ? rewardsCfg.smallGoalReward : 1;
-    const bigJointReward = Number.isFinite(rewardsCfg.bigGoalJointReward) ? rewardsCfg.bigGoalJointReward : 3;
+    let smallReward = Number.isFinite(rewardsCfg.smallGoalReward) ? rewardsCfg.smallGoalReward : 3;
+    let bigJointReward = Number.isFinite(rewardsCfg.bigGoalJointReward) ? rewardsCfg.bigGoalJointReward : 10;
 
     const types = Array.isArray(this.currentState?.currentGoalTypes)
       ? this.currentState.currentGoalTypes
@@ -953,6 +1078,14 @@ export class GameStateManager {
 
     const experimentType = String(this.currentState?.experimentType || '');
     const isTwoPlayer = GameConfigUtils.isTwoPlayerExperiment(experimentType);
+
+    // For StagHunt: source rewards from the active map's utility_summary so
+    // scoreboard values match the per-map economics advertised in the design.
+    if (GameConfigUtils.isStagHuntExperiment(experimentType)) {
+      const util = this.currentMapDesign?.utility_summary || {};
+      if (Number.isFinite(util.hare_reward_each)) smallReward = util.hare_reward_each;
+      if (Number.isFinite(util.stag_reward_each)) bigJointReward = util.stag_reward_each;
+    }
 
     let p1Reward = 0;
     let p2Reward = 0;
@@ -986,16 +1119,61 @@ export class GameStateManager {
       if (valid1) p1Reward = smallReward;
     }
 
-    this.trialData.player1Reward = p1Reward;
-    this.trialData.player2Reward = p2Reward;
-    this.trialData.totalReward = p1Reward + p2Reward;
+    const baseP1 = Number(this.trialData.player1CurrentPoints ?? this.currentState?.player1CurrentPoints ?? 0);
+    const baseP2 = Number(this.trialData.player2CurrentPoints ?? this.currentState?.player2CurrentPoints ?? 0);
 
-    // Accumulate into experiment-level total score
-    if (this.experimentData && typeof this.experimentData.totalScore === 'number') {
-      this.experimentData.totalScore += this.trialData.totalReward;
-    } else if (this.experimentData) {
-      this.experimentData.totalScore = this.trialData.totalReward;
+    const p1Resolved = commitResolvedOnly
+      ? (valid1 && (type1 === 'small' || (valid2 && p1Idx === p2Idx && type1 === 'big' && type2 === 'big')))
+      : true;
+    const p2Resolved = commitResolvedOnly
+      ? (valid2 && (type2 === 'small' || (valid1 && p1Idx === p2Idx && type1 === 'big' && type2 === 'big')))
+      : true;
+
+    const p1RewardToApply = (p1Resolved && p1Reward > 0 && !this.trialData.player1OutcomeApplied) ? p1Reward : 0;
+    const p2RewardToApply = (p2Resolved && p2Reward > 0 && !this.trialData.player2OutcomeApplied) ? p2Reward : 0;
+
+    const p1RoundPoints = baseP1 + p1RewardToApply;
+    const p2RoundPoints = baseP2 + p2RewardToApply;
+
+    if (p1RewardToApply > 0) {
+      this.trialData.player1OutcomeApplied = true;
+      this.trialData.player1OutcomeBonus = Number(this.trialData.player1OutcomeBonus || 0) + p1RewardToApply;
     }
+    if (p2RewardToApply > 0) {
+      this.trialData.player2OutcomeApplied = true;
+      this.trialData.player2OutcomeBonus = Number(this.trialData.player2OutcomeBonus || 0) + p2RewardToApply;
+    }
+
+    this.trialData.player1Reward = Number(this.trialData.player1OutcomeBonus || 0);
+    this.trialData.player2Reward = Number(this.trialData.player2OutcomeBonus || 0);
+    this.trialData.totalReward = this.trialData.player1Reward + this.trialData.player2Reward;
+    this.trialData.player1RoundPoints = p1RoundPoints;
+    this.trialData.player2RoundPoints = p2RoundPoints;
+
+    this.currentState.player1CurrentPoints = p1RoundPoints;
+    this.currentState.player2CurrentPoints = isTwoPlayer ? p2RoundPoints : 0;
+
+    if (this.experimentData) {
+      const shouldCommitP1 = commitResolvedOnly ? p1Resolved : true;
+      const shouldCommitP2 = isTwoPlayer && (commitResolvedOnly ? p2Resolved : true);
+
+      if (shouldCommitP1 && !this.trialData.player1TotalCommitted) {
+        this.experimentData.player1TotalPoints = Number(this.experimentData.player1TotalPoints || 0) + p1RoundPoints;
+        this.trialData.player1TotalCommitted = true;
+      }
+      if (shouldCommitP2 && !this.trialData.player2TotalCommitted) {
+        this.experimentData.player2TotalPoints = Number(this.experimentData.player2TotalPoints || 0) + p2RoundPoints;
+        this.trialData.player2TotalCommitted = true;
+      }
+      this.experimentData.totalScore = this.experimentData.player1TotalPoints + this.experimentData.player2TotalPoints;
+    }
+
+    this.currentState.player1TotalPoints = Number(this.experimentData?.player1TotalPoints || 0);
+    this.currentState.player2TotalPoints = Number(this.experimentData?.player2TotalPoints || 0);
+    this.trialData.player1CurrentPoints = this.currentState.player1CurrentPoints;
+    this.trialData.player2CurrentPoints = this.currentState.player2CurrentPoints;
+    this.trialData.player1TotalPoints = this.currentState.player1TotalPoints;
+    this.trialData.player2TotalPoints = this.currentState.player2TotalPoints;
   }
 
   fixMissingGoalValues() {

@@ -432,7 +432,10 @@ export class GameApplication {
       const enableGDrive = CONFIG.server.enableGoogleDriveSave;
       const hasXlsx = typeof window !== 'undefined' && typeof window.XLSX !== 'undefined';
 
-      if (enableGDrive && scriptUrl && hasXlsx) {
+      // Build the Excel workbook whenever SheetJS is available. The Google Drive
+      // upload below is still gated on enableGDrive + scriptUrl, but the local
+      // .xlsx download runs unconditionally so users always get a file.
+      if (hasXlsx) {
         try {
           const XLSX = window.XLSX;
           const wb = XLSX.utils.book_new();
@@ -589,6 +592,83 @@ export class GameApplication {
           const collaborationSheet = XLSX.utils.aoa_to_sheet(collaborationSummaryRows);
           XLSX.utils.book_append_sheet(wb, collaborationSheet, 'CollaborationSummary');
 
+          // MapConfig sheet — one row per StagHunt trial with map metadata that
+          // mirrors the structure of config/MapsForStagHunt.js (the 18-map file).
+          try {
+            const stagHuntTrials = (exportObj.allTrialsData || []).filter(t =>
+              String(t.experimentType || '').toLowerCase().includes('staghunt')
+            );
+            if (stagHuntTrials.length > 0) {
+              const mcHeaders = [
+                'trialIndex', 'mapId', 'experimentType',
+                'gridSize', 'orange', 'red', 'stag', 'rabbit_1', 'rabbit_2', 'obstacles',
+                'player1Role', 'player2Role', 'playerStartPositionsSwapped',
+                'path_type', 'indicate_action', 'indicate_step_count', 'indicate_position',
+                'orange_to_hare', 'red_to_hare', 'orange_to_stag', 'red_to_stag',
+                'step_cost_per_move',
+                'hare_reward_each', 'hare_reward_total',
+                'stag_reward_each', 'stag_reward_total',
+                'hare_distance_cost_total', 'stag_distance_cost_total',
+                'hare_final_utility', 'stag_final_utility',
+                'ascii'
+              ];
+              const tryParse = (v) => {
+                if (v == null) return null;
+                if (typeof v === 'string') { try { return JSON.parse(v); } catch (_) { return null; } }
+                return v;
+              };
+              const stringifyCell = (v) => (v == null ? '' : (typeof v === 'object' ? JSON.stringify(v) : v));
+              const mcRows = [mcHeaders];
+              stagHuntTrials.forEach(t => {
+                const sig = tryParse(t.signaling) || {};
+                const util = tryParse(t.utilitySummary) || {};
+                const dist = tryParse(t.distanceSummary) || {};
+                const rabbits = tryParse(t.rabbitPositions) || [];
+                const signalerStart = tryParse(t.signalerStartPosition);
+                const nonSignalerStart = tryParse(t.nonSignalerStartPosition);
+                const ascii = tryParse(t.mapAscii);
+                const obstacles = tryParse(t.obstacles);
+                mcRows.push([
+                  t.trialIndex ?? '',
+                  t.mapId ?? '',
+                  t.experimentType ?? '',
+                  9,
+                  stringifyCell(signalerStart),
+                  stringifyCell(nonSignalerStart),
+                  stringifyCell(tryParse(t.stagPosition)),
+                  stringifyCell(rabbits[0] ?? null),
+                  stringifyCell(rabbits[1] ?? null),
+                  stringifyCell(obstacles),
+                  t.player1Role ?? '',
+                  t.player2Role ?? '',
+                  t.playerStartPositionsSwapped ?? '',
+                  sig.path_type ?? '',
+                  sig.indicate_action ?? '',
+                  sig.indicate_step_count ?? '',
+                  stringifyCell(sig.indicate_position),
+                  dist.orange_to_hare ?? '',
+                  dist.red_to_hare ?? '',
+                  dist.orange_to_stag ?? '',
+                  dist.red_to_stag ?? '',
+                  util.step_cost_per_move ?? '',
+                  util.hare_reward_each ?? '',
+                  util.hare_reward_total ?? '',
+                  util.stag_reward_each ?? '',
+                  util.stag_reward_total ?? '',
+                  util.hare_distance_cost_total ?? '',
+                  util.stag_distance_cost_total ?? '',
+                  util.hare_final_utility ?? '',
+                  util.stag_final_utility ?? '',
+                  Array.isArray(ascii) ? ascii.join('\n') : stringifyCell(ascii)
+                ]);
+              });
+              const mapSheet = XLSX.utils.aoa_to_sheet(mcRows);
+              XLSX.utils.book_append_sheet(wb, mapSheet, 'MapConfig');
+            }
+          } catch (e) {
+            console.warn('⚠️ Failed to build MapConfig sheet:', e?.message || e);
+          }
+
           // Questionnaire sheet
           const q = exportObj.questionnaireData || exportObj.questionnaire || {};
           let qSheet;
@@ -603,40 +683,63 @@ export class GameApplication {
           }
           XLSX.utils.book_append_sheet(wb, qSheet, 'Questionnaire');
 
-          // Write workbook and send to Apps Script
+          // Write workbook
           const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-          const base64 = btoa(String.fromCharCode.apply(null, new Uint8Array(wbout)));
           const ts = new Date().toISOString().replace(/[:.]/g, '-');
           const safeId = String(exportObj.participantId).replace(/[^a-zA-Z0-9_-]/g, '_');
           const safeRoom = String(exportObj.roomId || 'no-room').replace(/[^a-zA-Z0-9_-]/g, '_');
           const excelFilename = `experiment_data_${safeId}_room_${safeRoom}_${ts}.xlsx`;
 
-          const formData = new FormData();
-          formData.append('filename', excelFilename);
-          formData.append('filedata', base64);
-          formData.append('filetype', 'excel');
+          // Local browser download (always-on when XLSX is available)
+          try {
+            const blob = new Blob([wbout], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = excelFilename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            console.log(`💾 Local Excel download triggered: ${excelFilename}`);
+          } catch (e) {
+            console.warn('⚠️ Local Excel download failed:', e?.message || e);
+          }
 
-          fetch(scriptUrl, { method: 'POST', mode: 'no-cors', body: formData })
-            .then(() => {
-              console.log('✅ Google Drive save attempted via Apps Script');
-              // Provide user feedback like legacy and notify timeline
-              try {
-                if (this.timelineManager) {
-                  this.timelineManager.emit('data-save-success');
-                }
-                alert('Data saved successfully!');
-              } catch (e) {
-                // Ignore UI feedback errors
+          // Google Drive upload via Apps Script (only if configured)
+          if (enableGDrive && scriptUrl) {
+            const base64 = btoa(String.fromCharCode.apply(null, new Uint8Array(wbout)));
+            const formData = new FormData();
+            formData.append('filename', excelFilename);
+            formData.append('filedata', base64);
+            formData.append('filetype', 'excel');
+
+            fetch(scriptUrl, { method: 'POST', mode: 'no-cors', body: formData })
+              .then(() => {
+                console.log('✅ Google Drive save attempted via Apps Script');
+                try {
+                  if (this.timelineManager) {
+                    this.timelineManager.emit('data-save-success');
+                  }
+                  alert('Data saved successfully!');
+                } catch (e) { /* Ignore UI feedback errors */ }
+              })
+              .catch(err => {
+                console.warn('⚠️ Google Drive save failed.', err);
+              });
+          } else {
+            console.log('ℹ️ Google Drive save disabled or not configured; local download only.');
+            try {
+              if (this.timelineManager) {
+                this.timelineManager.emit('data-save-success');
               }
-            })
-            .catch(err => {
-              console.warn('⚠️ Google Drive save failed. Local saving is disabled.', err);
-            });
+            } catch (_) { /* noop */ }
+          }
         } catch (e) {
-          console.warn('⚠️ Excel/Apps Script save failed. Local saving is disabled.', e);
+          console.warn('⚠️ Excel export failed:', e);
         }
       } else {
-        console.warn('⚠️ Google Drive save disabled or XLSX not available. Local saving is disabled.');
+        console.warn('⚠️ XLSX library not available; no Excel export produced.');
       }
     } catch (error) {
       console.error('Failed to save/export experiment data:', error);

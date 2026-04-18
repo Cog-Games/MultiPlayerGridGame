@@ -426,12 +426,28 @@ export class ExperimentManager {
         gameState.gridMatrix,
         (this.aiPlayerNumber === 1) ? gameState.player1 : gameState.player2,
         gameState.currentGoals,
-        (this.aiPlayerNumber === 1) ? gameState.player2 : gameState.player1
+        (this.aiPlayerNumber === 1) ? gameState.player2 : gameState.player1,
+        this.buildRLContext(gameState)
       );
       aiDirection = this.actionToDirection(aiAction);
     }
 
     return { aiDirection, gptError };
+  }
+
+  // Build an extra-context object for the joint RL planner so rewards and
+  // goal types reflect the current map's utility structure.
+  buildRLContext(gameState) {
+    const design = this.gameStateManager?.getCurrentMapDesign?.() || null;
+    const goalTypes = Array.isArray(gameState?.currentGoalTypes)
+      ? gameState.currentGoalTypes
+      : null;
+    const utilitySummary = design?.utility_summary || null;
+    return {
+      goalTypes,
+      utilitySummary,
+      experimentType: gameState?.experimentType || null
+    };
   }
 
   // Handle synchronized move: apply human + AI/GPT moves together, then redraw once
@@ -664,9 +680,10 @@ export class ExperimentManager {
         gameState.gridMatrix,
         (this.aiPlayerNumber === 1) ? gameState.player1 : gameState.player2,
         gameState.currentGoals,
-        (this.aiPlayerNumber === 1) ? gameState.player2 : gameState.player1
+        (this.aiPlayerNumber === 1) ? gameState.player2 : gameState.player1,
+        this.buildRLContext(gameState)
       );
-      if (aiAction[0] === 0 && aiAction[1] === 0) {
+      if (!aiAction) {
         return; // No movement
       }
       direction = this.actionToDirection(aiAction);
@@ -694,7 +711,8 @@ export class ExperimentManager {
         if (usingRL && this.rlAgent && typeof this.rlAgent.precalculatePolicyForGoals === 'function') {
           const goals = Array.isArray(st?.currentGoals) ? st.currentGoals : [];
           if (goals.length > 0) {
-            setTimeout(() => this.rlAgent.precalculatePolicyForGoals(goals, experimentType), 0);
+            const ctx = this.buildRLContext(st);
+            setTimeout(() => this.rlAgent.precalculatePolicyForGoals(goals, experimentType, ctx), 0);
           }
         }
       } catch (_) { /* best-effort only */ }
@@ -778,7 +796,8 @@ export class ExperimentManager {
         if (usingRL2 && this.rlAgent && typeof this.rlAgent.precalculatePolicyForGoals === 'function') {
           const goals2 = Array.isArray(st2?.currentGoals) ? st2.currentGoals : [];
           if (goals2.length > 0) {
-            setTimeout(() => this.rlAgent.precalculatePolicyForGoals(goals2, st2?.experimentType || null), 0);
+            const ctx2 = this.buildRLContext(st2);
+            setTimeout(() => this.rlAgent.precalculatePolicyForGoals(goals2, st2?.experimentType || null, ctx2), 0);
           }
         }
       } catch (_) { /* best-effort only */ }
@@ -791,7 +810,8 @@ export class ExperimentManager {
         if (usingRL && this.rlAgent && typeof this.rlAgent.precalculatePolicyForGoals === 'function') {
           const goals = Array.isArray(st?.currentGoals) ? st.currentGoals : [];
           if (goals.length > 0) {
-            setTimeout(() => this.rlAgent.precalculatePolicyForGoals(goals, st?.experimentType || null), 0);
+            const ctx = this.buildRLContext(st);
+            setTimeout(() => this.rlAgent.precalculatePolicyForGoals(goals, st?.experimentType || null, ctx), 0);
           }
         }
       } catch (_) { /* best-effort only */ }
@@ -911,6 +931,7 @@ export class ExperimentManager {
   }
 
   actionToDirection(action) {
+    if (!Array.isArray(action) || action.length < 2) return null;
     const [deltaRow, deltaCol] = action;
 
     if (deltaRow === -1 && deltaCol === 0) return 'up';
@@ -1060,8 +1081,13 @@ export class ExperimentManager {
     await this.ensureMapDataLoaded();
 
     try {
-      // For collaboration experiments after trial 12, use random maps
-      if (GameConfigUtils.isTwoPlayerExperiment(experimentType) && trialIndex >= CONFIG.game.successThreshold.randomSamplingAfterTrial) {
+      // Only use post-threshold random sampling when success-threshold mode is enabled.
+      // Otherwise fixed-order experiments like StagHunt round 13 should still load map 13.
+      if (
+        CONFIG.game.successThreshold.enabled &&
+        GameConfigUtils.isTwoPlayerExperiment(experimentType) &&
+        trialIndex >= CONFIG.game.successThreshold.randomSamplingAfterTrial
+      ) {
         const randomDesign = this.mapLoader.getRandomMapForCollaborationGame(experimentType, trialIndex);
         if (randomDesign) {
           console.log('✅ Loaded random map design:', randomDesign);
@@ -1080,7 +1106,7 @@ export class ExperimentManager {
 
       const totalTrials = CONFIG.game.experiments.numTrials[experimentType] || 12;
       if (!this.sampledMapsByExperiment[experimentType] || this.sampledMapsByExperiment[experimentType].length !== totalTrials) {
-        this.sampledMapsByExperiment[experimentType] = this.mapLoader.selectRandomMaps(mapsForExperiment, totalTrials);
+        this.sampledMapsByExperiment[experimentType] = this.mapLoader.selectRandomMaps(mapsForExperiment, totalTrials, experimentType);
       }
       const selectedDesign = this.sampledMapsByExperiment[experimentType][trialIndex];
 
@@ -1098,6 +1124,26 @@ export class ExperimentManager {
           } catch (e) {
             console.warn('⚠️ Failed to apply ASCII randomization, using base design:', e?.message || e);
           }
+        }
+
+        const shouldSwapStarts = GameConfigUtils.shouldSwapPlayerStartPositions(experimentType, trialIndex);
+        if (
+          shouldSwapStarts &&
+          Array.isArray(design.initPlayerGrid) &&
+          Array.isArray(design.initAIGrid)
+        ) {
+          design = {
+            ...design,
+            initPlayerGrid: [...design.initAIGrid],
+            initAIGrid: [...design.initPlayerGrid],
+            playerStartPositionsSwapped: true
+          };
+          console.log(`🔄 Swapped red/orange start positions for trial ${trialIndex}`);
+        } else {
+          design = {
+            ...design,
+            playerStartPositionsSwapped: false
+          };
         }
 
         console.log(`✅ Loaded map design for trial ${trialIndex}:`, design);

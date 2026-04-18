@@ -97,8 +97,8 @@ export const GameHelpers = {
   /**
    * Evaluate Stag Hunt outcomes.
    * A shared big goal (stag) is collaborative success.
-   * Any small goal (rabbit) ends the trial immediately, but only counts as
-   * success for the player who caught a rabbit.
+   * The trial ends only after BOTH players have reached some goal
+   * (rabbit or stag).
    */
   evaluateStagHuntOutcome(gameState, trialData = {}) {
     if (!gameState) {
@@ -107,6 +107,7 @@ export const GameHelpers = {
         player2Goal: null,
         player1GoalType: null,
         player2GoalType: null,
+        bothPlayersReachedGoal: false,
         sameBigGoal: false,
         differentBigGoals: false,
         anyRabbitCaught: false,
@@ -144,17 +145,18 @@ export const GameHelpers = {
     const player2Goal = resolveGoalIndex(2);
     const player1GoalType = getGoalType(player1Goal);
     const player2GoalType = getGoalType(player2Goal);
+    const bothPlayersReachedGoal =
+      Number.isInteger(player1Goal) &&
+      Number.isInteger(player2Goal);
 
     const sameBigGoal =
-      Number.isInteger(player1Goal) &&
-      Number.isInteger(player2Goal) &&
+      bothPlayersReachedGoal &&
       player1Goal === player2Goal &&
       player1GoalType === 'big' &&
       player2GoalType === 'big';
 
     const differentBigGoals =
-      Number.isInteger(player1Goal) &&
-      Number.isInteger(player2Goal) &&
+      bothPlayersReachedGoal &&
       player1Goal !== player2Goal &&
       player1GoalType === 'big' &&
       player2GoalType === 'big';
@@ -170,10 +172,11 @@ export const GameHelpers = {
       player2Goal,
       player1GoalType,
       player2GoalType,
+      bothPlayersReachedGoal,
       sameBigGoal,
       differentBigGoals,
       anyRabbitCaught,
-      trialComplete: sameBigGoal || differentBigGoals || anyRabbitCaught,
+      trialComplete: bothPlayersReachedGoal,
       collaborationSucceeded: sameBigGoal,
       success: sameBigGoal || humanCaughtRabbit
     };

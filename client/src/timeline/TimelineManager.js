@@ -821,7 +821,8 @@ export class TimelineManager {
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
         <div style="text-align: center; max-width: 800px; width: 100%;">
-          <h3 style="margin-bottom: 20px;">Game ${experimentIndex + 1}</h3>
+          <h3 id="game-title" style="margin-bottom: 10px;">Game ${experimentIndex + 1}</h3>
+          <h4 id="trial-info" style="margin-bottom: 20px;">Round ${trialIndex + 1}</h4>
           <div id="game-canvas-container" style="margin: 0 auto; position: relative; display: flex; justify-content: center;">
             <!-- Game canvas will be inserted here by ExperimentManager -->
           </div>
@@ -843,6 +844,18 @@ export class TimelineManager {
           this.experimentData.experiments[experimentType] = [];
         }
         this.experimentData.experiments[experimentType].push(result);
+
+        // Keep summary totals in sync with the authoritative per-trial score snapshot.
+        const td = result?.trialData || {};
+        if (Number.isFinite(td.player1TotalPoints)) {
+          this.experimentData.player1TotalPoints = Number(td.player1TotalPoints);
+        }
+        if (Number.isFinite(td.player2TotalPoints)) {
+          this.experimentData.player2TotalPoints = Number(td.player2TotalPoints);
+        }
+        this.experimentData.totalScore =
+          Number(this.experimentData.player1TotalPoints || 0) +
+          Number(this.experimentData.player2TotalPoints || 0);
 
         // Update success threshold tracking for collaboration experiments
         if (GameConfigUtils.isTwoPlayerExperiment(experimentType) && CONFIG.game.successThreshold.enabled) {
@@ -951,6 +964,25 @@ export class TimelineManager {
       collaborationSuccessRate = cp.length > 0 ? Math.round((cpSuccess / cp.length) * 100) : 0;
     }
 
+    const latestTrial = trials[trials.length - 1] || {};
+    const player1TotalPoints = Number(
+      this.experimentData?.player1TotalPoints ??
+      latestTrial?.player1TotalPoints ??
+      0
+    );
+    const player2TotalPoints = Number(
+      this.experimentData?.player2TotalPoints ??
+      latestTrial?.player2TotalPoints ??
+      0
+    );
+    const totalScore = Number(
+      this.experimentData?.totalScore ??
+      latestTrial?.totalScore ??
+      (player1TotalPoints + player2TotalPoints)
+    );
+    const displayedFinalPoints = this.playerIndex === 0 ? player1TotalPoints : player2TotalPoints;
+    const finalPointsLabel = hasCollaborationTrials ? '🏁 Your Final Points' : '🏁 Final Points';
+
     // Render legacy UI and content
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
@@ -961,6 +993,12 @@ export class TimelineManager {
             <h3 style="color: #666; margin-bottom: 20px;">Your Results</h3>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
+              <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #6f42c1;">
+                <h4 style="color: #6f42c1; margin-bottom: 10px; font-size: 18px;">${finalPointsLabel}</h4>
+                <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${displayedFinalPoints}</p>
+                ${hasCollaborationTrials ? `<p style="font-size: 14px; color: #666; margin: 5px 0 0 0;">Team total: ${totalScore}</p>` : ''}
+              </div>
+
               <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff;">
                 <h4 style="color: #007bff; margin-bottom: 10px; font-size: 18px;">📊 Total Trials</h4>
                 <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${totalTrials}</p>
@@ -979,13 +1017,8 @@ export class TimelineManager {
                 </div>
               ` : ''}
 
-              ${hasCollaborationTrials ? `
-                <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #dc3545;">
-                  <h4 style="color: #dc3545; margin-bottom: 10px; font-size: 18px;">🤝 Collaboration Success</h4>
-                  <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${collaborationSuccessRate}%</p>
-                  <p style=\"font-size: 14px; color: #666; margin: 5px 0 0 0;\">(${trials.filter(t => GameConfigUtils.isTwoPlayerExperiment(t.experimentType)).length} collaboration trials)</p>
-                </div>
-              ` : ''}
+              ${/* Collaboration Success rate intentionally hidden for now.
+                  Keep the metric computation above so it can be restored easily. */''}
             </div>
           </div>
 
@@ -1491,8 +1524,10 @@ export class TimelineManager {
                 </p>
                 <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
                   <li>There is one <strong>stag</strong> (big blue goal) and two <strong>rabbits</strong> (small blue goals) on the map.</li>
-                  <li>If both players reach the <strong>stag</strong>, you each earn <strong>5 points</strong>.</li>
+                  <li>Each player starts the round with <strong>15 points</strong> and loses <strong>1 point per step</strong>.</li>
+                  <li>If both players reach the <strong>stag</strong>, you each earn <strong>10 points</strong>.</li>
                   <li>Any player can catch a <strong>rabbit</strong> alone for <strong>3 points</strong>.</li>
+                  <li>The round ends only after <strong>both players</strong> have reached a goal.</li>
                   <li>Only <strong>one</strong> player can catch each rabbit — the first player to reach it claims it. The rabbit then disappears and the other player cannot collect it.</li>
                   <li>Movement: Both players move one step at a time — the action takes effect only after both players have pressed their keys.</li>
                 </ul>
@@ -1513,8 +1548,10 @@ export class TimelineManager {
                 </p>
                 <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
                   <li>There are two <strong>stags</strong> (big blue goals) and two <strong>rabbits</strong> (small blue goals) on the map.</li>
-                  <li>If both players reach the <strong>same stag</strong>, you each earn <strong>5 points</strong>.</li>
+                  <li>Each player starts the round with <strong>15 points</strong> and loses <strong>1 point per step</strong>.</li>
+                  <li>If both players reach the <strong>same stag</strong>, you each earn <strong>10 points</strong>.</li>
                   <li>Any player can catch a <strong>rabbit</strong> alone for <strong>3 points</strong>.</li>
+                  <li>The round ends only after <strong>both players</strong> have reached a goal.</li>
                   <li>Only <strong>one</strong> player can catch each rabbit — the first player to reach it claims it. The rabbit then disappears and the other player cannot collect it.</li>
                   <li>Movement: Both players move one step at a time — the action takes effect only after both players have pressed their keys.</li>
                 </ul>
