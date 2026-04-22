@@ -388,12 +388,12 @@ export class GameStateManager {
             if (model && String(model).trim().length > 0) {
               aiTypeDesc = String(model);
             } else {
-              console.warn('⚠️ GPT model not cached in CONFIG for fallback recording, using configured default');
-              aiTypeDesc = 'gpt-4o'; // matches the configured GPT_MODEL in .env
+              console.warn('⚠️ GPT model not cached in CONFIG for fallback recording, using agent label');
+              aiTypeDesc = t;
             }
           } else if (t === 'vlm' || t === 'vlm-ToM') {
             const vmodel = CONFIG?.game?.agent?.vlm?.model;
-            aiTypeDesc = (vmodel && String(vmodel).trim()) ? String(vmodel) : 'gpt-4o-mini';
+            aiTypeDesc = (vmodel && String(vmodel).trim()) ? String(vmodel) : t;
           } else if (t === 'rl_joint') {
             aiTypeDesc = 'joint-rl';
           } else if (t === 'rl_individual') {
@@ -1206,20 +1206,20 @@ export class GameStateManager {
       case 'gpt':
         // Try to get specific GPT model
         const model = CONFIG?.game?.agent?.gpt?.model;
-        return (model && String(model).trim()) ? String(model) : 'gpt-4o';
+        return (model && String(model).trim()) ? String(model) : 'gpt';
       case 'gpt-tom':
       case 'gpttom':
         // Map ToM label to underlying GPT API model
         const modelTom = CONFIG?.game?.agent?.gpt?.model;
-        return (modelTom && String(modelTom).trim()) ? String(modelTom) : 'gpt-4o';
+        return (modelTom && String(modelTom).trim()) ? String(modelTom) : 'gpt-ToM';
       case 'vlm':
         // Try to get specific VLM model
         const vmodel = CONFIG?.game?.agent?.vlm?.model;
-        return (vmodel && String(vmodel).trim()) ? String(vmodel) : 'gpt-4o-mini';
+        return (vmodel && String(vmodel).trim()) ? String(vmodel) : 'vlm';
       case 'vlm-tom':
       case 'vlmtom':
         const vmodelTom = CONFIG?.game?.agent?.vlm?.model;
-        return (vmodelTom && String(vmodelTom).trim()) ? String(vmodelTom) : 'gpt-4o-mini';
+        return (vmodelTom && String(vmodelTom).trim()) ? String(vmodelTom) : 'vlm-ToM';
       case 'rl_joint':
       case 'joint':
         return 'joint-rl';
@@ -1240,11 +1240,11 @@ export class GameStateManager {
         if (defaultFallback === 'rl_individual') return 'individual-rl';
         if (defaultFallback === 'gpt') {
           const model = CONFIG?.game?.agent?.gpt?.model;
-          return (model && String(model).trim()) ? String(model) : 'gpt-4o';
+          return (model && String(model).trim()) ? String(model) : 'gpt';
         }
         return 'joint-rl'; // ultimate fallback
       default:
-        // Return as-is for specific models (e.g., 'gpt-4o-mini')
+        // Return as-is for specific runtime model names once cached from the server.
         return aiType;
     }
   }
@@ -1285,11 +1285,8 @@ export class GameStateManager {
         if (model && String(model).trim().length > 0) {
           return String(model);
         } else {
-          // If model not cached, try to fetch it synchronously as fallback
-          console.warn('⚠️ GPT model not cached in CONFIG, using fallback logic');
-          // For now, return a more specific default that matches the configured model
-          // This should be rarely hit if logCurrentAIModel() is properly awaited
-          return 'gpt-4o'; // matches the configured GPT_MODEL in .env
+          console.warn('⚠️ GPT model not cached in CONFIG, falling back to agent label');
+          return t;
         }
       }
       if (t === 'vlm' || t === 'vlm-ToM') {
@@ -1297,7 +1294,7 @@ export class GameStateManager {
         if (model && String(model).trim().length > 0) {
           return String(model);
         }
-        return 'gpt-4o-mini';
+        return t;
       }
       if (t === 'rl_joint') return 'joint-rl';
       if (t === 'rl_individual') return 'individual-rl';

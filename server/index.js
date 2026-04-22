@@ -185,7 +185,7 @@ app.get('/api/ai/gpt/config', (req, res) => {
 
 app.post('/api/ai/gpt/action', async (req, res) => {
   try {
-    const { guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory } = req.body || {};
+    const { guidance, matrix, currentPlayer, goals, relativeInfo, model, apiModel, temperature, memory } = req.body || {};
 
 
     if (!Array.isArray(matrix) || matrix.length === 0) {
@@ -197,9 +197,9 @@ app.post('/api/ai/gpt/action', async (req, res) => {
     // Route to ToM variant if requested via model label
     let result;
     if (model && /^gpt-?tom$/i.test(String(model))) {
-      result = await decideGptTomAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory });
+      result = await decideGptTomAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, apiModel, temperature, memory });
     } else {
-      result = await decideGptAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory });
+      result = await decideGptAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, apiModel, temperature, memory });
     }
 
 
@@ -222,9 +222,35 @@ app.get('/api/ai/vlm/config', (req, res) => {
 
 app.post('/api/ai/vlm/action', async (req, res) => {
   try {
-    const { guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory, imageDataUrl } = req.body || {};
-    if (!Array.isArray(matrix) || matrix.length === 0) {
-      return res.status(400).json({ error: 'Invalid matrix' });
+    const {
+      guidance,
+      matrix,
+      currentPlayer,
+      goals,
+      relativeInfo,
+      model,
+      provider,
+      apiModel,
+      temperature,
+      memory,
+      imageDataUrl,
+      experimentType,
+      currentGoalTypes,
+      utilitySummary,
+      stagPosition,
+      stagPositions,
+      availableRabbitPositions,
+      claimedSmallGoalIndices,
+      validActions,
+      player1Pos,
+      player2Pos,
+      maxOutputTokens
+    } = req.body || {};
+    const hasMatrix = Array.isArray(matrix) && matrix.length > 0;
+    const hasPair = Array.isArray(player1Pos) && player1Pos.length >= 2 &&
+      Array.isArray(player2Pos) && player2Pos.length >= 2;
+    if (!hasMatrix && !hasPair) {
+      return res.status(400).json({ error: 'Invalid matrix or player positions; send matrix or both player1Pos and player2Pos' });
     }
     if (!currentPlayer || !Array.isArray(currentPlayer.pos)) {
       return res.status(400).json({ error: 'Invalid currentPlayer' });
@@ -232,11 +258,64 @@ app.post('/api/ai/vlm/action', async (req, res) => {
     if (!imageDataUrl || typeof imageDataUrl !== 'string') {
       return res.status(400).json({ error: 'Missing imageDataUrl' });
     }
+    if (!hasMatrix && (!Array.isArray(goals) || goals.length === 0)) {
+      const exp = String(experimentType || '');
+      const isStag = exp === 'StagHunt' || exp === 'StagHuntTwoStags';
+      if (!isStag) {
+        return res.status(400).json({ error: 'goals required when matrix is omitted' });
+      }
+    }
     let result;
     if (model && /^vlm-?tom$/i.test(String(model))) {
-      result = await decideGptVlmTomAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory, imageDataUrl });
+      result = await decideGptVlmTomAction({
+        guidance,
+        matrix,
+        currentPlayer,
+        goals,
+        relativeInfo,
+        model,
+        provider,
+        apiModel,
+        temperature,
+        memory,
+        imageDataUrl,
+        experimentType,
+        currentGoalTypes,
+        utilitySummary,
+        stagPosition,
+        stagPositions,
+        availableRabbitPositions,
+        claimedSmallGoalIndices,
+        validActions,
+        player1Pos,
+        player2Pos,
+        maxOutputTokens
+      });
     } else {
-      result = await decideGptVlmAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory, imageDataUrl });
+      result = await decideGptVlmAction({
+        guidance,
+        matrix,
+        currentPlayer,
+        goals,
+        relativeInfo,
+        model,
+        provider,
+        apiModel,
+        temperature,
+        memory,
+        imageDataUrl,
+        experimentType,
+        currentGoalTypes,
+        utilitySummary,
+        stagPosition,
+        stagPositions,
+        availableRabbitPositions,
+        claimedSmallGoalIndices,
+        validActions,
+        player1Pos,
+        player2Pos,
+        maxOutputTokens
+      });
     }
     res.json(result);
   } catch (err) {

@@ -75,9 +75,14 @@ export class UIManager {
   }
 
   // Screen management
-  showMainScreen() {
+  /**
+   * Welcome / instructions screen. When the user continues, we emit `start-experiment`
+   * with `preferredExperimentType` if provided (e.g. from URL), else first entry in CONFIG order.
+   */
+  showMainScreen(preferredExperimentType = null) {
     this.cleanupCanvas();
     this.currentScreen = 'main';
+    const experimentToStart = preferredExperimentType || CONFIG.game.experiments.order[0];
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
         <div style="text-align: center; max-width: 600px; padding: 20px;">
@@ -118,7 +123,7 @@ export class UIManager {
       if (!document.fullscreenElement) {
         await this.enterFullscreen().catch(() => {});
       }
-      this.emit('start-experiment', CONFIG.game.experiments.order[0]);
+      this.emit('start-experiment', experimentToStart);
     });
 
     // Spacebar to enter fullscreen and start game on the whole document
@@ -137,7 +142,7 @@ export class UIManager {
         // Then start the experiment if fullscreen config allows it OR if fullscreen is disabled (so we just start)
         const shouldStart = (!CONFIG.fullscreen?.enabled) || (CONFIG.fullscreen?.autoStartOnFullscreen);
         if (shouldStart) {
-          this.emit('start-experiment', CONFIG.game.experiments.order[0]);
+          this.emit('start-experiment', experimentToStart);
         }
       }
     };
@@ -211,7 +216,7 @@ export class UIManager {
         <div style="text-align: center;">
           <h3 id="game-title" style="margin-bottom: 10px;">Game</h3>
           <h4 id="trial-info" style="margin-bottom: 20px;">Round 1</h4>
-          ${this.getScoreboardHtml()}
+          ${this.shouldShowScoreboard() ? this.getScoreboardHtml() : ''}
           <div id="gameCanvas" style="margin-bottom: 20px;"></div>
           <p style="font-size: 20px;">You are ${playerName} <span style="display: inline-block; width: 18px; height: 18px; background-color: ${playerColor}; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
         </div>
@@ -318,6 +323,10 @@ export class UIManager {
   }
 
   updateScoreboard(gameState) {
+    if (!this.shouldShowScoreboard()) {
+      return;
+    }
+
     const currentPoints = this.playerIndex === 0
       ? gameState?.player1CurrentPoints
       : gameState?.player2CurrentPoints;
@@ -657,7 +666,9 @@ export class UIManager {
     container.style.display = 'flex';
     container.style.flexDirection = 'column';
     container.style.alignItems = 'center';
-    container.insertAdjacentHTML('beforeend', this.getScoreboardHtml());
+    if (this.shouldShowScoreboard()) {
+      container.insertAdjacentHTML('beforeend', this.getScoreboardHtml());
+    }
     container.appendChild(canvas);
 
     // Store reference to canvas
@@ -679,6 +690,10 @@ export class UIManager {
     this.setupKeyboardControls();
 
     console.log('✅ Game canvas set up in timeline container');
+  }
+
+  shouldShowScoreboard() {
+    return CONFIG.visual.showScoreboard === true;
   }
 
   getScoreboardHtml() {
