@@ -68,7 +68,7 @@ export const CONFIG = {
       },
       player2: {
         // Types: 'human' | 'gpt' | 'gpt-ToM' | 'vlm' | 'vlm-ToM' | 'rl_individual' | 'rl_joint' | 'we_intent_js'
-        type: 'rl_joint',
+        type: 'vlm',
         color: 'orange',
         description: 'Human, GPT, or RL partner'
       }

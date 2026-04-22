@@ -2,6 +2,7 @@
 // Outputs one of: up | down | left | right
 // Server-side only. Reads config via process.env at call time.
 
+import fs from 'fs';
 import { vlmLimiter, estimateVlmPromptTokens, LOW_DETAIL_IMAGE_TOKENS_EST } from './rateLimiter.js';
 
 function sleep(ms) {
@@ -80,6 +81,19 @@ function logGptOutput({ kind = 'base', modelLabel, baseModel, content, action, i
     console.log(`rate: ${JSON.stringify(rate)}`);
   }
   console.log(`${'-'.repeat(80)}\n`);
+}
+
+function maybeSaveDebugImageDataUrl(imageDataUrl) {
+  if (process.env.ENABLE_GPT_DEBUG !== 'true') return;
+  if (typeof imageDataUrl !== 'string') return;
+  const match = imageDataUrl.match(/^data:image\/png;base64,(.+)$/);
+  if (!match) return;
+  try {
+    fs.writeFileSync('/tmp/latest-vlm-debug.png', Buffer.from(match[1], 'base64'));
+    console.log('[VLM DEBUG] Saved latest request image to /tmp/latest-vlm-debug.png');
+  } catch (err) {
+    console.warn('[VLM DEBUG] Failed to save latest request image:', err?.message || err);
+  }
 }
 
 // Build a compact matrix string for the prompt
@@ -604,6 +618,7 @@ export function getVlmConfigInfo() {
 async function callOpenAIChatVision({ text, imageDataUrl, model = getVlmModel(), temperature = 0, systemMessage, maxTokens = 8 } = {}) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error('OPENAI_API_KEY is not set on the server');
+  maybeSaveDebugImageDataUrl(imageDataUrl);
 
   const userContent = [];
   if (text) userContent.push({ type: 'text', text });
@@ -628,7 +643,9 @@ async function callOpenAIChatVision({ text, imageDataUrl, model = getVlmModel(),
         body: JSON.stringify({
           model,
           temperature,
-          max_tokens: cap,
+          // OpenAI now expects max_completion_tokens for models that reject
+          // the deprecated max_tokens field.
+          max_completion_tokens: cap,
           messages: [
             { role: 'system', content: systemMessage || 'You output only one token: up, down, left, or right.' },
             { role: 'user', content: userContent }

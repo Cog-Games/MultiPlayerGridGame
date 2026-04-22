@@ -2,6 +2,7 @@
 // Sends text prompt plus an offscreen-rendered image of the grid
 
 import { CONFIG } from '../config/gameConfig.js';
+import { GameRenderer } from '../ui/GameRenderer.js';
 
 export class VlmAgentClient {
   constructor() {
@@ -102,68 +103,45 @@ export class VlmAgentClient {
       .map(([name]) => name);
   }
 
-  // Render the matrix into an offscreen canvas and return a PNG data URL
-  static matrixToImageDataURL(matrix) {
-    if (!Array.isArray(matrix) || matrix.length === 0) return null;
-    const gridSize = matrix.length;
-    const padding = 1; // 1px gap grid lines
-    // Gemini is noticeably less reliable with the tiny 12px browser render.
-    // Match the larger simulation renderer so Google VLM requests get a
-    // clearer grid without making the payload excessively large.
-    const cell = 18;
-    const W = gridSize * cell + (gridSize + 1) * padding;
-    const H = W;
-    const canvas = document.createElement('canvas');
-    canvas.width = W;
-    canvas.height = H;
-    const ctx = canvas.getContext('2d');
+  static getVisibleGameCanvas() {
+    if (typeof document === 'undefined') return null;
+    const canvases = Array.from(document.querySelectorAll('canvas'));
+    if (canvases.length === 0) return null;
 
-    const colors = {
-      background: CONFIG.visual.colors.background || '#ffffff',
-      grid: CONFIG.visual.colors.grid || '#cccccc',
-      player1: CONFIG.visual.colors.player1 || '#ff0000',
-      player2: CONFIG.visual.colors.player2 || '#ff8800',
-      goal: CONFIG.visual.colors.goal || '#0066ff',
-      obstacle: CONFIG.visual.colors.obstacle || '#333333'
-    };
+    // Prefer the largest visible canvas. In this app that is the live game
+    // canvas the participant is looking at.
+    const visible = canvases.filter((canvas) => {
+      const rect = canvas.getBoundingClientRect?.();
+      return rect && rect.width > 0 && rect.height > 0;
+    });
+    if (visible.length === 0) return null;
 
-    // fill background
-    ctx.fillStyle = colors.background;
-    ctx.fillRect(0, 0, W, H);
+    visible.sort((a, b) => {
+      const ar = a.getBoundingClientRect();
+      const br = b.getBoundingClientRect();
+      return (br.width * br.height) - (ar.width * ar.height);
+    });
+    return visible[0] || null;
+  }
 
-    // draw cells
-    for (let r = 0; r < gridSize; r++) {
-      for (let c = 0; c < gridSize; c++) {
-        const x = padding + c * (cell + padding);
-        const y = padding + r * (cell + padding);
-        let fill = colors.background;
-        switch (matrix[r][c]) {
-          case 1: fill = colors.player1; break;
-          case 2: fill = colors.player2; break;
-          case 3: fill = colors.goal; break;
-          case 4: fill = colors.obstacle; break;
-          default: fill = '#f9f9f9';
-        }
-        ctx.fillStyle = fill;
-        ctx.fillRect(x, y, cell, cell);
-      }
-    }
-
-    // Optional subtle grid overlay
-    ctx.strokeStyle = colors.grid;
-    for (let i = 0; i <= gridSize; i++) {
-      const pos = i * (cell + padding) + 0.5;
-      ctx.beginPath();
-      ctx.moveTo(0, pos);
-      ctx.lineTo(W, pos);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(pos, 0);
-      ctx.lineTo(pos, H);
-      ctx.stroke();
-    }
-
+  static renderStateToImageDataURL(state) {
+    if (typeof document === 'undefined' || !state?.gridMatrix) return null;
+    const renderer = new GameRenderer();
+    const canvas = renderer.createCanvas();
+    renderer.render(canvas, state);
     return canvas.toDataURL('image/png');
+  }
+
+  // Prefer the exact on-screen canvas so the VLM sees the same board the
+  // participant sees. Fall back to an offscreen render using GameRenderer.
+  static stateToImageDataURL(state) {
+    const liveCanvas = VlmAgentClient.getVisibleGameCanvas();
+    if (liveCanvas && typeof liveCanvas.toDataURL === 'function') {
+      try {
+        return liveCanvas.toDataURL('image/png');
+      } catch (_) { /* ignore and fall back */ }
+    }
+    return VlmAgentClient.renderStateToImageDataURL(state);
   }
 
   async getNextAction(state, options = {}) {
@@ -182,7 +160,7 @@ export class VlmAgentClient {
     const p2Traj = Array.isArray(trialData?.player2Trajectory) ? trialData.player2Trajectory : [];
     const sliceTail = (arr) => (maxSteps > 0 ? arr.slice(-maxSteps) : arr);
 
-    const imageDataUrl = VlmAgentClient.matrixToImageDataURL(state.gridMatrix);
+    const imageDataUrl = VlmAgentClient.stateToImageDataURL(state);
     const utilitySummary = trialData?.utilitySummary || null;
     const currentGoalTypes = Array.isArray(state?.currentGoalTypes) ? state.currentGoalTypes : [];
     const availableRabbitPositions = VlmAgentClient.getAvailableRabbitPositions(state);
