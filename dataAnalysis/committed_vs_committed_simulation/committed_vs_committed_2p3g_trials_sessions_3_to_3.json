@@ -1,0 +1,19 @@
+[
+  {
+    "sessionIndex": 3,
+    "trialIndex": 0,
+    "mapId": "297",
+    "distanceCondition": "closer_to_player2",
+    "totalSteps": 13,
+    "newGoalPresented": true,
+    "newGoalStep": 2,
+    "firstDetectedSharedGoal": 1,
+    "player1FinalReachedGoal": 1,
+    "player2FinalReachedGoal": 1,
+    "collaborationSucceeded": true,
+    "commitmentEligible": true,
+    "player1Committed": true,
+    "player2Committed": true,
+    "bothCommitted": true
+  }
+]

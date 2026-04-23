@@ -1,22 +1,20 @@
 import { RLAgent } from './RLAgent.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
 
-// Bayesian goal selection with one-parameter commitment bias.
+// Bayesian goal selection with one fitted reliance parameter on inferred intent.
 // - Maintain P_intent(goal) inferred from observed actions using RL policy likelihood.
-// - Combine with EU to sample goals: P(goal) ∝ Softmax(EU(goal)) * P_intent(goal)
-// - After joint goal detected and a new goal appears, bias toward the old joint goal with:
-//     P(choose_old)=σ(logit(0.8) + κ * ΔS)
-//   where ΔS compares old vs best alternative using S(g)=EU(g)+log P_intent(g).
+// - After joint goal detected and a new goal appears, sample goals using:
+//     W_lambda(g) ∝ exp(beta * EU(g)) * P_intent(goal)^lambda
 // - Before joint detection/new-goal, act using joint-RL policy.
 
 export class CommittedAgent {
   constructor(options = {}) {
     this.rl = options.rlAgent || new RLAgent();
-    // Single free commitment parameter (sensitivity). logit(0.8) is fixed.
-    this.kappa = (typeof options.kappa === 'number') ? options.kappa : 0.5;
-    // Non-free constants (can be adjusted later but not fit as "commitment" params)
+    // lambda controls how strongly the model relies on the inferred intent posterior.
+    this.lambda = (typeof options.lambda === 'number') ? options.lambda : 1.0;
+    // beta controls the sharpness of the joint-distance utility term.
+    this.beta = (typeof options.beta === 'number') ? options.beta : 1.0;
     this.eps = 1e-6;
-    this.euBeta = 1.0; // softmax temperature for EU weighting
     this.reset();
   }
 
@@ -63,19 +61,18 @@ export class CommittedAgent {
     const hasNewGoal = !!trialData?.newGoalPresented && goals.length >= 3;
     const jointDetected = Number.isInteger(this._detectedJointGoalIdx) && this._detectedJointGoalIdx >= 0;
 
-    // Before joint detection/new-goal, keep using joint-RL for movement (legacy behavior)
+    // Before joint detection/new-goal, keep using joint-RL for movement.
     if (!hasNewGoal || !jointDetected) {
       return this.rl.getAIAction(
         gameState?.gridMatrix,
         aiPos,
         goals,
-        humanPos,
-        { forceJoint: true }
+        humanPos
       );
     }
 
-    // After joint detection + new-goal: sample a goal using Bayes+EU + commitment bias
-    const goalIdx = this._sampleGoalIndexWithCommitmentBias(goals, aiPos, humanPos);
+    // After joint detection + new-goal: sample a goal using exp(beta * EU) * P_intent^lambda
+    const goalIdx = this._sampleGoalIndex(goals, aiPos, humanPos);
     const goal = goals[goalIdx];
     if (!Array.isArray(goal) || goal.length < 2) return [0, 0];
 
@@ -193,69 +190,26 @@ export class CommittedAgent {
     for (let i = 0; i < this._pIntent.length; i++) this._pIntent[i] = this._pIntent[i] / sum;
   }
 
-  _sampleGoalIndexWithCommitmentBias(goals, aiPos, humanPos) {
-    const weights = this._combinedWeights(goals, aiPos, humanPos);
-    const oldIdx = this._detectedJointGoalIdx;
-    const validOld = Number.isInteger(oldIdx) && oldIdx >= 0 && oldIdx < goals.length;
-
-    if (!validOld) {
-      return this._sampleFromWeights(weights);
-    }
-
-    // Commitment-biased selection toward old goal
-    const logit08 = Math.log(0.8 / 0.2);
-    const sigmoid = (x) => 1 / (1 + Math.exp(-x));
-
-    const score = (i) => {
-      const eu = this._euJointDistance(aiPos, humanPos, goals[i]);
-      const pi = (this._pIntent && this._pIntent[i] != null) ? this._pIntent[i] : (1 / goals.length);
-      return eu + Math.log(Math.max(this.eps, pi));
-    };
-
-    let bestOther = -Infinity;
-    for (let i = 0; i < goals.length; i++) {
-      if (i === oldIdx) continue;
-      const s = score(i);
-      if (s > bestOther) bestOther = s;
-    }
-    const deltaS = score(oldIdx) - bestOther;
-    const pOld = sigmoid(logit08 + this.kappa * deltaS);
-
-    const chooseOld = Math.random() < pOld;
-    if (chooseOld) return oldIdx;
-
-    // Else sample among remaining goals proportional to weights
-    const w2 = weights.slice();
-    w2[oldIdx] = 0;
-    return this._sampleFromWeights(w2);
+  _sampleGoalIndex(goals, aiPos, humanPos) {
+    return this._sampleFromWeights(this._combinedWeights(goals, aiPos, humanPos));
   }
 
   _combinedWeights(goals, aiPos, humanPos) {
-    // Softmax(EU) * P_intent
-    const eus = goals.map(g => this._euJointDistance(aiPos, humanPos, g));
-    const euW = this._softmax(eus, this.euBeta);
+    // W_lambda(g) ∝ exp(beta * EU(g)) * P_intent(g)^lambda
+    const eus = goals.map((g) => this._euJointDistance(aiPos, humanPos, g));
+    const scaled = eus.map((eu) => (isFinite(eu) ? this.beta * eu : -Infinity));
+    const finiteScaled = scaled.filter((v) => isFinite(v));
+    const maxScaled = finiteScaled.length ? Math.max(...finiteScaled) : 0;
     const out = new Array(goals.length).fill(0);
     for (let i = 0; i < goals.length; i++) {
       const pi = (this._pIntent && this._pIntent[i] != null) ? this._pIntent[i] : (1 / goals.length);
-      out[i] = (euW[i] || 0) * pi;
+      const euWeight = isFinite(scaled[i]) ? Math.exp(Math.max(-700, Math.min(700, scaled[i] - maxScaled))) : 0;
+      out[i] = euWeight * Math.pow(Math.max(this.eps, pi), this.lambda);
     }
     // Normalize weights to sum to 1 for sampling
     const sum = out.reduce((a, b) => a + b, 0) || 0;
     if (sum > 0) return out.map(w => w / sum);
     return new Array(goals.length).fill(1 / goals.length);
-  }
-
-  _softmax(values, beta = 1.0) {
-    if (!Array.isArray(values) || values.length === 0) return [];
-    const maxV = Math.max(...values.filter(v => isFinite(v)));
-    const exps = values.map(v => {
-      if (!isFinite(v)) return 0;
-      const z = beta * (v - maxV);
-      const clipped = Math.max(-700, Math.min(700, z));
-      return Math.exp(clipped);
-    });
-    const sum = exps.reduce((a, b) => a + b, 0) || 1;
-    return exps.map(e => e / sum);
   }
 
   _sampleFromWeights(weights) {
@@ -280,5 +234,3 @@ export class CommittedAgent {
     return -joint;
   }
 }
-
-

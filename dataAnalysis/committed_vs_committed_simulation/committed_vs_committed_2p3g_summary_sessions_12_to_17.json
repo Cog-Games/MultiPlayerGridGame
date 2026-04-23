@@ -1,0 +1,119 @@
+{
+  "seed": 42,
+  "sessionOffset": 12,
+  "sessions": 6,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 72,
+  "lambda": 5.153457713936546,
+  "beta": 1,
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 72,
+  "successfulTrials": 72,
+  "successRate": 1,
+  "totalSessions": 6,
+  "meanSessionSuccessRate": 1,
+  "meanSessionCommitmentRate": 0.648148148148148,
+  "newGoalPresentedTrials": 54,
+  "commitmentEligibleTrials": 54,
+  "commitmentEligibleAgents": 108,
+  "committedAgents": 70,
+  "commitmentRate": 0.6481481481481481,
+  "bothCommittedTrials": 35,
+  "bothCommittedRate": 0.6481481481481481,
+  "sessionSummaries": [
+    {
+      "sessionIndex": 12,
+      "totalTrials": 12,
+      "successRate": 1,
+      "commitmentEligibleTrials": 9,
+      "commitmentRate": 0.8888888888888888,
+      "bothCommittedRate": 0.8888888888888888
+    },
+    {
+      "sessionIndex": 13,
+      "totalTrials": 12,
+      "successRate": 1,
+      "commitmentEligibleTrials": 9,
+      "commitmentRate": 0.6666666666666666,
+      "bothCommittedRate": 0.6666666666666666
+    },
+    {
+      "sessionIndex": 14,
+      "totalTrials": 12,
+      "successRate": 1,
+      "commitmentEligibleTrials": 9,
+      "commitmentRate": 0.7777777777777778,
+      "bothCommittedRate": 0.7777777777777778
+    },
+    {
+      "sessionIndex": 15,
+      "totalTrials": 12,
+      "successRate": 1,
+      "commitmentEligibleTrials": 9,
+      "commitmentRate": 0.4444444444444444,
+      "bothCommittedRate": 0.4444444444444444
+    },
+    {
+      "sessionIndex": 16,
+      "totalTrials": 12,
+      "successRate": 1,
+      "commitmentEligibleTrials": 9,
+      "commitmentRate": 0.5555555555555556,
+      "bothCommittedRate": 0.5555555555555556
+    },
+    {
+      "sessionIndex": 17,
+      "totalTrials": 12,
+      "successRate": 1,
+      "commitmentEligibleTrials": 9,
+      "commitmentRate": 0.5555555555555556,
+      "bothCommittedRate": 0.5555555555555556
+    }
+  ],
+  "byCondition": {
+    "closer_to_player2": {
+      "trials": 18,
+      "successes": 18,
+      "commitmentEligibleTrials": 18,
+      "committedAgents": 24,
+      "totalEligibleAgents": 36,
+      "bothCommittedTrials": 12,
+      "successRate": 1,
+      "commitmentRate": 0.6666666666666666,
+      "bothCommittedRate": 0.6666666666666666
+    },
+    "closer_to_player1": {
+      "trials": 18,
+      "successes": 18,
+      "commitmentEligibleTrials": 18,
+      "committedAgents": 16,
+      "totalEligibleAgents": 36,
+      "bothCommittedTrials": 8,
+      "successRate": 1,
+      "commitmentRate": 0.4444444444444444,
+      "bothCommittedRate": 0.4444444444444444
+    },
+    "no_new_goal": {
+      "trials": 18,
+      "successes": 18,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "equal_to_both": {
+      "trials": 18,
+      "successes": 18,
+      "commitmentEligibleTrials": 18,
+      "committedAgents": 30,
+      "totalEligibleAgents": 36,
+      "bothCommittedTrials": 15,
+      "successRate": 1,
+      "commitmentRate": 0.8333333333333334,
+      "bothCommittedRate": 0.8333333333333334
+    }
+  }
+}

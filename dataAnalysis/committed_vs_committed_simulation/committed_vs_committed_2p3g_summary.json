@@ -1,0 +1,86 @@
+{
+  "seed": 42,
+  "sessions": 2,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 24,
+  "lambda": 5.153457713936546,
+  "beta": 1,
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 24,
+  "successfulTrials": 24,
+  "successRate": 1,
+  "totalSessions": 2,
+  "meanSessionSuccessRate": 1,
+  "meanSessionCommitmentRate": 0.6111111111111112,
+  "newGoalPresentedTrials": 18,
+  "commitmentEligibleTrials": 18,
+  "commitmentEligibleAgents": 36,
+  "committedAgents": 22,
+  "commitmentRate": 0.6111111111111112,
+  "bothCommittedTrials": 11,
+  "bothCommittedRate": 0.6111111111111112,
+  "sessionSummaries": [
+    {
+      "sessionIndex": 0,
+      "totalTrials": 12,
+      "successRate": 1,
+      "commitmentEligibleTrials": 9,
+      "commitmentRate": 0.5555555555555556,
+      "bothCommittedRate": 0.5555555555555556
+    },
+    {
+      "sessionIndex": 1,
+      "totalTrials": 12,
+      "successRate": 1,
+      "commitmentEligibleTrials": 9,
+      "commitmentRate": 0.6666666666666666,
+      "bothCommittedRate": 0.6666666666666666
+    }
+  ],
+  "byCondition": {
+    "equal_to_both": {
+      "trials": 6,
+      "successes": 6,
+      "commitmentEligibleTrials": 6,
+      "committedAgents": 12,
+      "totalEligibleAgents": 12,
+      "bothCommittedTrials": 6,
+      "successRate": 1,
+      "commitmentRate": 1,
+      "bothCommittedRate": 1
+    },
+    "no_new_goal": {
+      "trials": 6,
+      "successes": 6,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 6,
+      "successes": 6,
+      "commitmentEligibleTrials": 6,
+      "committedAgents": 4,
+      "totalEligibleAgents": 12,
+      "bothCommittedTrials": 2,
+      "successRate": 1,
+      "commitmentRate": 0.3333333333333333,
+      "bothCommittedRate": 0.3333333333333333
+    },
+    "closer_to_player2": {
+      "trials": 6,
+      "successes": 6,
+      "commitmentEligibleTrials": 6,
+      "committedAgents": 6,
+      "totalEligibleAgents": 12,
+      "bothCommittedTrials": 3,
+      "successRate": 1,
+      "commitmentRate": 0.5,
+      "bothCommittedRate": 0.5
+    }
+  }
+}

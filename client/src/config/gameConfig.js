@@ -73,7 +73,7 @@ export const CONFIG = {
         // - 'vlm' | 'vlm-tom'
         // - 'rl_individual' | 'rl_joint' | 'committedAgent'
         // Legacy aliases still accepted: 'gpt'|'gpt-ToM' (-> llm/llm-tom), 'vlm-ToM' (-> vlm-tom)
-        type: 'vlm-tom',
+        type: 'committedAgent',
         color: 'orange',
         description: 'Human, GPT, or RL partner'
       }
@@ -81,21 +81,21 @@ export const CONFIG = {
 
     // Experiment configuration
     experiments: {
-      // order: ['2P3G'],
+      order: ['2P3G'],
       // order: ['1P2G','2P3G'],
       // order: ['2P2G', '2P3G'],
-      order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
+      // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
         '1P1G': 1, // 3
         '1P2G': 1, // 12
         '2P2G': 1, // 8
-        '2P3G': 1, // 12
+        '2P3G': 12, // 12
       }
     },
 
     // Fullscreen settings
-    fullscreen: { defaultEnabled: true},
+    fullscreen: { defaultEnabled: false},
 
     // Success threshold for collaboration games
     successThreshold: {
@@ -143,6 +143,13 @@ export const CONFIG = {
       fallbackPolicy: {
         llm: 'committedAgent',
         vlm: 'committedAgent'
+      },
+      committed: {
+        // Goal-selection model after new-goal presentation:
+        // W_lambda(g) ∝ exp(beta * EU(g)) * P_t(g)^lambda
+        // Fitted on combined pure human-human 2P3G post-new-goal decisions.
+        lambda: 5.153457713936546,
+        beta: 1.0
       },
       vlm: {
         // Vision API model name used on server (e.g., 'gpt-4o-mini')
@@ -243,7 +250,7 @@ export const CONFIG = {
     matchPlayReadyTimeout: 10000,
     // Fallback AI partner type when human-human matching fails
     // Allowed (canonical): 'llm' | 'llm-tom' | 'vlm' | 'vlm-tom' | 'rl_individual' | 'rl_joint' | 'committedAgent'
-    fallbackAIType: 'vlm-tom',
+    fallbackAIType: 'committedAgent',
     // Partner inactivity settings
     inactivityFallback: {
       // Enable automatic fallback to AI when partner is inactive

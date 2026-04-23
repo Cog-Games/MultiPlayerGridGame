@@ -88,6 +88,61 @@ class SoftmaxRLPolicy { constructor(Q_dict, beta = 1) { this.Q = Q_dict; this.be
 
 function chooseBestAction(probsMap) { const actions = Object.keys(probsMap); const values = Object.values(probsMap); const maxValue = Math.max(...values); const ties = actions.filter((a, i) => values[i] === maxValue); const pick = ties[Math.floor(Math.random() * ties.length)]; return pick.split(',').map(Number); }
 
+// ---------- Individual RL policy cache ----------
+const IndividualPolicyCache = (() => {
+  const planners = new Map();
+  const actionSpace = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+  const noiseActionSpace = [...actionSpace];
+  const obstacles = [];
+
+  function normalizeGoals(goals) {
+    if (!Array.isArray(goals)) return [];
+    return Array.isArray(goals[0]) ? goals : [goals];
+  }
+
+  function getKey(goals) {
+    const normalizedGoals = normalizeGoals(goals);
+    return [
+      hashGoals(normalizedGoals),
+      RL_AGENT_CONFIG.gridSize,
+      RL_AGENT_CONFIG.noise,
+      RL_AGENT_CONFIG.gamma,
+      RL_AGENT_CONFIG.goalReward,
+      RL_AGENT_CONFIG.softmaxBeta
+    ].join('|');
+  }
+
+  function buildPolicy(goals) {
+    const normalizedGoals = normalizeGoals(goals);
+    const runner = new RunIndividualVI(
+      RL_AGENT_CONFIG.gridSize,
+      actionSpace,
+      noiseActionSpace,
+      RL_AGENT_CONFIG.noise,
+      RL_AGENT_CONFIG.gamma,
+      RL_AGENT_CONFIG.goalReward,
+      RL_AGENT_CONFIG.softmaxBeta
+    );
+    return runner.call(normalizedGoals, obstacles).policy;
+  }
+
+  function getPolicy(goals) {
+    const key = getKey(goals);
+    if (!planners.has(key)) planners.set(key, buildPolicy(goals));
+    return planners.get(key);
+  }
+
+  function precalc(goals) {
+    getPolicy(goals);
+  }
+
+  function clear() {
+    planners.clear();
+  }
+
+  return { getPolicy, precalc, clear };
+})();
+
 // ---------- Joint RL (4‑action space) from legacy ----------
 const JointPlanner4Action = (() => {
   const ROWS = 15, COLS = 15, N = ROWS * COLS; const actionSpace = [[0, -1], [0, 1], [-1, 0], [1, 0]];
@@ -283,10 +338,13 @@ export class RLAgent {
       return this.getIndividualRLAction(currentPos, goals);
     } catch (e) { console.error('Error in RL agent:', e); return [0, 0]; }
   }
+  getIndividualActionProbabilities(currentPos, goals) {
+    const policy = IndividualPolicyCache.getPolicy(goals);
+    return policy.call(currentPos);
+  }
   getIndividualRLAction(currentPos, goals) {
-    const actionSpace = [[0, -1], [0, 1], [-1, 0], [1, 0]]; const noiseActionSpace = [...actionSpace]; const obstacles = [];
-    const runner = new RunIndividualVI(RL_AGENT_CONFIG.gridSize, actionSpace, noiseActionSpace, RL_AGENT_CONFIG.noise, RL_AGENT_CONFIG.gamma, RL_AGENT_CONFIG.goalReward, RL_AGENT_CONFIG.softmaxBeta);
-    const { policy } = runner.call(goals, obstacles); const probs = policy.call(currentPos); return chooseBestAction(probs);
+    const probs = this.getIndividualActionProbabilities(currentPos, goals);
+    return chooseBestAction(probs);
   }
   precalculatePolicyForGoals(goals, _experimentType) {
     if (this.isPreCalculating) return;
@@ -296,6 +354,10 @@ export class RLAgent {
         const impl = (RL_AGENT_CONFIG.jointRLImplementation || 'vi4').toLowerCase();
         if (impl === 'bfs') JointBFSPlanner.precalc(goals);
         else JointPlanner4Action.precalc(goals);
+        if (Array.isArray(goals) && goals.length) {
+          IndividualPolicyCache.precalc(goals);
+          for (const goal of goals) IndividualPolicyCache.precalc(goal);
+        }
       } finally { this.isPreCalculating = false; }
     }, 0);
   }

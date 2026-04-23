@@ -13,8 +13,7 @@ export class ExperimentManager {
     this.uiManager = uiManager;
     this.timelineManager = timelineManager;
     this.rlAgent = new RLAgent();
-    // Use committed agent as the fallback policy when GPT/VLM fails (wraps RL with commitment bias logic)
-    this.committedAgent = new CommittedAgent({ rlAgent: this.rlAgent });
+    this.committedAgent = this.createCommittedAgent();
     this.llmClient = new LlmAgentClient();
     this.vlmClient = new VlmAgentClient();
 
@@ -36,6 +35,15 @@ export class ExperimentManager {
 
     // Set up timeline event handlers if timeline manager is provided
     this.setupTimelineIntegration();
+  }
+
+  createCommittedAgent() {
+    const committedCfg = CONFIG?.game?.agent?.committed || {};
+    return new CommittedAgent({
+      rlAgent: this.rlAgent,
+      lambda: (typeof committedCfg.lambda === 'number') ? committedCfg.lambda : undefined,
+      beta: (typeof committedCfg.beta === 'number') ? committedCfg.beta : undefined
+    });
   }
 
   // Normalize agent type strings across legacy and new naming.
@@ -73,6 +81,9 @@ export class ExperimentManager {
       // Ensure RL agent exists for fallback when GPT is unavailable
       if (!this.rlAgent) {
         this.rlAgent = new RLAgent();
+      }
+      if (!this.committedAgent) {
+        this.committedAgent = this.createCommittedAgent();
       }
 
       // Update current trial's recorded partner agent type

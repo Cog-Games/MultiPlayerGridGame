@@ -37,6 +37,9 @@ export class TimelineManager {
     this.sharedMapData = {};
     this.isMapHost = false;
     this.pendingMapSync = false;
+    this.stageAdvanceHandler = null;
+    this.stageAdvanceButtonHandler = null;
+    this.stageAdvanceButtonId = null;
 
     // Player information for multiplayer games
     this.playerIndex = 0; // Default to player 0 (red)
@@ -263,6 +266,7 @@ export class TimelineManager {
     }
 
     const stage = this.stages[this.currentStageIndex];
+    this.clearStageAdvanceControls();
     console.log(`🎬 Running stage ${this.currentStageIndex}: ${stage.type}`);
 
     try {
@@ -285,6 +289,93 @@ export class TimelineManager {
   /**
    * Stage Implementations
    */
+
+  clearStageAdvanceControls() {
+    if (this.stageAdvanceHandler) {
+      window.removeEventListener('keydown', this.stageAdvanceHandler, true);
+      document.removeEventListener('keydown', this.stageAdvanceHandler, true);
+      this.stageAdvanceHandler = null;
+    }
+
+    if (this.stageAdvanceButtonId && this.stageAdvanceButtonHandler) {
+      const button = document.getElementById(this.stageAdvanceButtonId);
+      if (button) {
+        button.removeEventListener('click', this.stageAdvanceButtonHandler);
+      }
+    }
+
+    this.stageAdvanceButtonHandler = null;
+    this.stageAdvanceButtonId = null;
+  }
+
+  setupStageAdvanceControls({ buttonId, onAdvance, focusSelector = '[data-stage-focus="true"]' }) {
+    this.clearStageAdvanceControls();
+
+    let advancing = false;
+    const advance = async (event) => {
+      if (event) {
+        event.preventDefault();
+        if (typeof event.stopPropagation === 'function') {
+          event.stopPropagation();
+        }
+      }
+
+      if (advancing) return;
+      advancing = true;
+
+      try {
+        await onAdvance();
+      } catch (error) {
+        console.error('❌ Error advancing timeline stage:', error);
+        advancing = false;
+      }
+    };
+
+    this.stageAdvanceHandler = (event) => {
+      if (event.code === 'Space' || event.key === ' ' || event.key === 'Spacebar') {
+        advance(event);
+      }
+    };
+
+    window.addEventListener('keydown', this.stageAdvanceHandler, true);
+    document.addEventListener('keydown', this.stageAdvanceHandler, true);
+
+    if (buttonId) {
+      const button = document.getElementById(buttonId);
+      if (button) {
+        this.stageAdvanceButtonId = buttonId;
+        this.stageAdvanceButtonHandler = () => advance();
+        button.addEventListener('click', this.stageAdvanceButtonHandler);
+      }
+    }
+
+    const focusTarget = this.container.querySelector(focusSelector);
+    if (focusTarget && typeof focusTarget.focus === 'function') {
+      if (!focusTarget.hasAttribute('tabindex')) {
+        focusTarget.setAttribute('tabindex', '-1');
+      }
+
+      const focus = () => focusTarget.focus({ preventScroll: true });
+      if (typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(focus);
+      } else {
+        setTimeout(focus, 0);
+      }
+    }
+  }
+
+  tryEnterFullscreen() {
+    try {
+      if (!document.fullscreenElement && document.documentElement && document.documentElement.requestFullscreen) {
+        const maybePromise = document.documentElement.requestFullscreen();
+        if (maybePromise && typeof maybePromise.catch === 'function') {
+          maybePromise.catch(() => {});
+        }
+      }
+    } catch (_) {
+      // Ignore fullscreen failures in embedded browsers and continue windowed.
+    }
+  }
 
   showConsentStage() {
     this.container.innerHTML = `
@@ -369,7 +460,7 @@ export class TimelineManager {
     const promptText = preferFullscreen ? 'enter the fullscreen and start the game' : 'start the game';
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-        <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
+        <div data-stage-focus="true" tabindex="-1" style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
           <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Welcome to the Game!</h2>
 
           <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
@@ -392,51 +483,53 @@ export class TimelineManager {
             <p style="font-size: 22px; font-weight: bold; color: #333; margin-bottom: 20px;">
               Press the <span style="background-color: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-family: monospace; border: 1px solid #ccc;">spacebar</span> to ${promptText}!
             </p>
+            <button id="welcome-continue-btn" style="background: #007bff; color: white; border: none; padding: 14px 28px; font-size: 18px; border-radius: 6px; cursor: pointer;">
+              Continue
+            </button>
           </div>
         </div>
       </div>
     `;
 
-    // Handle spacebar to enter fullscreen and continue
-    const handleSpacebar = async (event) => {
-      if (event.code === 'Space' || event.key === ' ') {
-        event.preventDefault();
-        document.removeEventListener('keydown', handleSpacebar);
+    this.setupStageAdvanceControls({
+      buttonId: 'welcome-continue-btn',
+      onAdvance: async () => {
         if (preferFullscreen) {
-          try {
-            if (!document.fullscreenElement && document.documentElement && document.documentElement.requestFullscreen) {
-              await document.documentElement.requestFullscreen();
-            }
-          } catch (_) {
-            // Ignore fullscreen failures and continue
-          }
+          this.tryEnterFullscreen();
         }
         console.log('🎮 Starting game sequence');
         this.nextStage();
       }
-    };
-
-    document.addEventListener('keydown', handleSpacebar);
-    document.body.focus();
+    });
   }
 
   showInstructionsStage(experimentType, experimentIndex) {
     const instructions = this.getInstructionsForExperiment(experimentType);
 
     this.container.innerHTML = instructions.html;
+    const instructionCard = this.container.firstElementChild?.firstElementChild;
+    if (instructionCard) {
+      instructionCard.setAttribute('data-stage-focus', 'true');
+      instructionCard.setAttribute('tabindex', '-1');
+      instructionCard.insertAdjacentHTML(
+        'beforeend',
+        `
+          <div style="margin-top: 24px;">
+            <button id="instruction-continue-btn" style="background: #007bff; color: white; border: none; padding: 14px 28px; font-size: 18px; border-radius: 6px; cursor: pointer;">
+              Continue
+            </button>
+          </div>
+        `
+      );
+    }
 
-    // Handle spacebar to continue (matching legacy)
-    const handleSpacebar = (event) => {
-      if (event.code === 'Space' || event.key === ' ') {
-        event.preventDefault();
-        document.removeEventListener('keydown', handleSpacebar);
+    this.setupStageAdvanceControls({
+      buttonId: 'instruction-continue-btn',
+      onAdvance: async () => {
         console.log(`📋 Instructions completed for ${experimentType}`);
         this.nextStage();
       }
-    };
-
-    document.addEventListener('keydown', handleSpacebar);
-    document.body.focus();
+    });
   }
 
   checkPartnerPresenceAndProceed(experimentType, experimentIndex) {
@@ -685,7 +778,7 @@ export class TimelineManager {
 
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-        <div style="max-width: 600px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
+        <div data-stage-focus="true" tabindex="-1" style="max-width: 600px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
           <h1 style="color: #28a745; margin-bottom: 30px;">✅ Game is Ready!</h1>
           <div style="font-size: 20px; color: #333; margin-bottom: 20px;">
             ${partnerMsgHtml}
@@ -695,17 +788,18 @@ export class TimelineManager {
             </p>
             <p>Press SPACE to start the game!</p>
             <p style="font-size: 14px;">${this.isHumanHumanMode() ? 'Both players must press SPACE to begin.' : ''}</p>
-
-          <div id="match-status" style="font-size: 14px; color: #666; display: none;">Waiting for the other player to press space...</div>
+            <button id="match-play-start-btn" style="background: #28a745; color: white; border: none; padding: 14px 28px; font-size: 18px; border-radius: 6px; cursor: pointer; margin-top: 12px;">
+              Start
+            </button>
+            <div id="match-status" style="font-size: 14px; color: #666; display: none; margin-top: 12px;">Waiting for the other player to press space...</div>
+          </div>
         </div>
       </div>
     `;
 
-    const handleSpacebar = (event) => {
-      if (event.code === 'Space' || event.key === ' ') {
-        event.preventDefault();
-        document.removeEventListener('keydown', handleSpacebar);
-
+    this.setupStageAdvanceControls({
+      buttonId: 'match-play-start-btn',
+      onAdvance: async () => {
         // Signal match-play readiness
         this.emit('match-play-ready');
 
@@ -759,9 +853,7 @@ export class TimelineManager {
           this.nextStage();
         }
       }
-    };
-    document.addEventListener('keydown', handleSpacebar);
-    document.body.focus();
+    });
   }
 
   showFixationStage(experimentType, experimentIndex, trialIndex) {
