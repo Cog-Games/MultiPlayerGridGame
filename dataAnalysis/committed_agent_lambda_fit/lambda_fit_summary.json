@@ -4,12 +4,12 @@
   "unique_2p3g_room_trials": 189,
   "fit_eligible_room_trials": 142,
   "step_level_observations": 1532,
-  "fitted_lambda": 5.153457713936546,
-  "negative_log_likelihood": 1970.9283679392481,
-  "log_likelihood": -1970.9283679392481,
+  "fitted_lambda": 6.36701374103809,
+  "negative_log_likelihood": 1095.8853170907087,
+  "log_likelihood": -1095.8853170907087,
   "beta_fixed": 1.0,
-  "std_error": 0.271505549366935,
-  "ci95_lower": 4.621306837177353,
-  "ci95_upper": 5.685608590695739,
+  "std_error": 0.2662513628785118,
+  "ci95_lower": 5.845161069796206,
+  "ci95_upper": 6.888866412279973,
   "optimizer_success": true
 }

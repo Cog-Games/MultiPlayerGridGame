@@ -238,18 +238,8 @@ export class NewGoalGenerator {
       return selectedGoalData;
     }
 
-    // If no strict matches found, try relaxed constraints
-    // console.log('generateNewGoal: No valid goals found with strict constraints, trying relaxed constraints');
-    const relaxedValidPositions = this.findRelaxedValidPositions(
-      player1Pos, player2Pos, oldGoals, distanceCondition
-    );
-
-    if (relaxedValidPositions.length > 0) {
-      const selectedRelaxedGoalData = relaxedValidPositions[Math.floor(Math.random() * relaxedValidPositions.length)];
-      // console.log('generateNewGoal: Selected relaxed position:', selectedRelaxedGoalData.position);
-      return selectedRelaxedGoalData;
-    }
-
+    // Do not relax constraints in 2P3G. All new-goal conditions are defined with
+    // equal joint distance utility between the old shared goal and the new goal.
     return null;
   }
 
@@ -288,12 +278,10 @@ export class NewGoalGenerator {
     const gc = (CONFIG && CONFIG.twoP3G && CONFIG.twoP3G.goalConstraints) || {};
     const closerThreshold = Number.isFinite(dc.closerThreshold) ? dc.closerThreshold : 1;
     const allowEqualDistance = Boolean(dc.allowEqualDistance);
-    const maxDistanceIncrease = Number.isFinite(dc.maxDistanceIncrease) ? dc.maxDistanceIncrease : 0; // 0 = do not allow increase by default
-
-    const maintainEqualSum = Boolean(gc.maintainDistanceSum);
-    const equalSumOk = maintainEqualSum
-      ? (newDistanceSum === oldDistanceSum) // Manhattan distances are integers
-      : (newDistanceSum <= (oldDistanceSum + maxDistanceIncrease));
+    // All 2P3G new-goal conditions preserve joint distance utility:
+    // EU(g) = -(d(player1, g) + d(player2, g)).
+    // The closer_to_player conditions only redistribute distance between players.
+    const equalSumOk = newDistanceSum === oldDistanceSum;
 
     switch (condition) {
       case this.DISTANCE_CONDITIONS.CLOSER_TO_PLAYER2: {
@@ -381,9 +369,14 @@ export class NewGoalGenerator {
     const player1CurrentGoal = this.getPlayerCurrentGoal(trialData.player1CurrentGoal);
     const player2CurrentGoal = this.getPlayerCurrentGoal(trialData.player2CurrentGoal);
 
-    // Check if both players are heading to the same goal
+    // Check if both players are heading to the same original shared goal.
+    const anchoredSharedGoal = Number.isInteger(trialData.firstDetectedSharedGoal)
+      ? trialData.firstDetectedSharedGoal
+      : player1CurrentGoal;
+
     if (player1CurrentGoal !== null && player2CurrentGoal !== null &&
-        player1CurrentGoal === player2CurrentGoal) {
+        player1CurrentGoal === player2CurrentGoal &&
+        player1CurrentGoal === anchoredSharedGoal) {
 
       console.log('=== SHARED GOAL DETECTED ===');
       console.log('Player1 goal:', player1CurrentGoal, 'Player2 goal:', player2CurrentGoal);
@@ -391,7 +384,7 @@ export class NewGoalGenerator {
       // Generate new goal based on distance condition
       const newGoalResult = this.generateNewGoal(
         player2, player1, currentGoals,
-        player1CurrentGoal, distanceCondition
+        anchoredSharedGoal, distanceCondition
       );
 
       if (newGoalResult) {

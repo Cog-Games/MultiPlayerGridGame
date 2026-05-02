@@ -1,429 +1,418 @@
-# Committed Agent: Mathematical Specification
+# CommittedAgent Math and Parameter Fitting
 
-This document explains the math implemented by the committed agent in the current codebase. The main implementation lives in [client/src/ai/CommittedAgent.js](/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/client/src/ai/CommittedAgent.js) and depends on the base RL planners in [client/src/ai/RLAgent.js](/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/client/src/ai/RLAgent.js).
+This document describes the current `CommittedAgent` model implemented in [client/src/ai/CommittedAgent.js](/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/client/src/ai/CommittedAgent.js), together with the fitting procedure for its free parameter `lambda`.
 
-## 1. High-level idea
+It reflects the current branch implementation, not the earlier sigmoid-bias version.
 
-The committed agent is not a separately trained network or policy table. It is a wrapper around the existing RL agent with three extra pieces of decision logic:
+## 1. Model Summary
 
-1. Infer which goal is currently intended from observed player actions.
-2. Combine that inferred intent with a simple joint-distance utility over goals.
-3. After a shared goal has been detected and a new goal appears, add a commitment bias toward the old shared goal.
+The current committed agent has two regimes:
 
-So the committed agent is best understood as:
+1. Before a shared goal is detected, or before the new goal appears:
+   it behaves like the existing joint RL agent.
+2. After a shared goal has been detected and a new goal appears:
+   at each step it re-samples a joint goal using
 
 \[
-\text{CommittedAgent} = \text{Base RL motion model} + \text{Bayesian goal inference} + \text{commitment gate}.
+W_\lambda(g) \propto \exp(\beta \, EU(g)) \, P_t(g)^\lambda
+\]
+
+and then generates that step's movement from the AI component of a joint RL policy that only considers the sampled joint goal.
+
+So the model is:
+
+\[
+\text{CommittedAgent}
+=
+\text{joint-RL before switch}
++
+\text{Bayesian posterior over goals}
++
+\text{utility-posterior weighted goal sampling after switch}.
 \]
 
 ## 2. Notation
 
 Let:
 
-- \(G = \{g_1, \dots, g_n\}\) be the set of currently available goals.
-- \(x_t^{A}\) be the AI position at time \(t\).
-- \(x_t^{H}\) be the human position at time \(t\).
-- \(a_t^{A}\) and \(a_t^{H}\) be the observed actions of AI and human.
-- \(g_{\mathrm{old}}\) be the first detected shared goal before the new goal appears.
-- \(d(x, g)\) be Manhattan distance from grid position \(x\) to goal \(g\).
+- \(G_t = \{g_1,\dots,g_n\}\) be the currently available goals at time \(t\)
+- \(x_t^A\) be the AI position
+- \(x_t^H\) be the human position
+- \(a_t^A, a_t^H\) be the observed actions at step \(t\)
+- \(P_t(g)\) be the posterior probability that joint goal \(g\) is the currently intended/shared goal
+- \(d(x,g)\) be Manhattan distance from position \(x\) to goal \(g\)
+- \(EU(g)\) be the joint-distance utility of joint goal \(g\)
+- \(\beta\) be the fixed utility sensitivity
+- \(\lambda\) be the fitted reliance on inferred intent
 
-The code uses Manhattan distance through `GameHelpers.calculateGridDistance(...)`.
+In the current config:
 
-## 3. Base RL math under the committed agent
+- \(\beta = 1.0\)
+- `lambda` is the only fitted free parameter
 
-The committed agent delegates actual movement to the existing RL agent.
+## 3. Pre-switch Behavior
 
-### 3.1 Individual RL policy
+Before commitment logic becomes active, `CommittedAgent` just calls the base RL agent in joint mode:
 
-The individual planner in [client/src/ai/RLAgent.js](/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/client/src/ai/RLAgent.js) builds a goal-conditioned MDP with:
+\[
+a_t^A \sim \pi_{\text{joint}}(\cdot \mid x_t^A, x_t^H, G_t).
+\]
 
+Operationally, the switch has not happened yet if either:
+
+- no new goal has been presented, or
+- `firstDetectedSharedGoal` has not been set yet.
+
+So:
+
+\[
+\text{if } \neg \texttt{newGoalPresented} \text{ or no shared goal detected, use joint RL.}
+\]
+
+## 4. Posterior Over Goal Intent
+
+The model maintains a posterior over goals:
+
+\[
+P_t(g) = P(g \mid \text{observed actions up to step } t).
+\]
+
+### 4.1 Initial prior
+
+At trial start, if there are \(n\) goals:
+
+\[
+P_0(g_i) = \frac{1}{n}.
+\]
+
+### 4.2 Posterior expansion when a new goal appears
+
+If a new goal is added, the posterior vector is resized.
+
+- existing goal masses are copied over
+- the new goal is initialized with mass \(1/n\)
+- the whole vector is renormalized
+
+This matches `_ensurePosterior(...)` in [CommittedAgent.js](/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/client/src/ai/CommittedAgent.js).
+
+### 4.3 Likelihood model
+
+For each candidate joint goal \(g\), the model evaluates how likely the observed actions are under the joint RL policy restricted to \(\{g\}\):
+
+\[
+L_t(g)
+=
+\pi_{\text{joint}}^A(a_t^A \mid x_t^A, x_t^H, \{g\})
+\cdot
+\pi_{\text{joint}}^H(a_t^H \mid x_t^H, x_t^A, \{g\}).
+\]
+
+If only one player has an action at that step, only the available factor is used.
+
+The posterior update is:
+
+\[
+P_t(g) \propto P_{t-1}(g)\,L_t(g),
+\]
+
+followed by normalization:
+
+\[
+P_t(g) =
+\frac{P_t(g)}
+{\sum_{g' \in G_t} P_t(g')}.
+\]
+
+The implementation uses a small floor \(\varepsilon\) for numerical stability when an action probability is missing or zero:
+
+\[
+\pi_{\text{joint}}(a \mid x^A,x^H,\{g\}) \leftarrow
+\max(\pi_{\text{joint}}(a \mid x^A,x^H,\{g\}), \varepsilon).
+\]
+
+## 5. Restricted Joint RL Policy For Intent Inference
+
+The posterior likelihood model uses the focal player's own action component from the joint RL policy restricted to one candidate joint goal:
+
+\[
+\pi_{\text{joint}}^A(a \mid x^A,x^H,\{g\}).
+\]
+
+This policy is computed in [client/src/ai/RLAgent.js](/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/client/src/ai/RLAgent.js) by:
+
+1. evaluating the joint RL action values for the restricted goal set \(\{g\}\)
+2. applying a softmax over joint action values
+3. marginalizing or extracting the focal player's own action component
+
+The focal action distribution can be written as:
+
+\[
+\pi_{\text{joint}}^A(a^A \mid x^A,x^H,\{g\})
+=
+\sum_{a^H}
+\frac{\exp(\beta_{\text{RL}} Q_{\{g\}}(x^A,x^H,a^A,a^H))}
+{\sum_{\tilde a^A,\tilde a^H}
+\exp(\beta_{\text{RL}} Q_{\{g\}}(x^A,x^H,\tilde a^A,\tilde a^H))}.
+\]
+
+Current RL constants:
+
+- grid size: `15`
 - discount factor: \(\gamma = 0.9\)
-- goal reward: \(R_{\text{goal}} = 30\)
-- step cost: \(c_{\text{step}} = -1\)
-- action noise: \(0\)
-- softmax inverse temperature: \(\beta_{\text{RL}} = 3.0\)
+- goal reward: `30`
+- step cost: `-1`
+- RL softmax inverse temperature: \(\beta_{\text{RL}} = 3.0\)
 
-For a state \(s\), action \(a\), and next state \(s'\), the one-step reward is:
+## 6. Utility Term Over Goals
+
+After the switch, each candidate goal gets a utility based on total joint distance:
 
 \[
-R(s,a,s') =
-\begin{cases}
--1 + 30, & \text{if } s' \text{ is a goal state} \\
--1, & \text{otherwise.}
-\end{cases}
+EU(g) = -\bigl(d(x_t^A,g) + d(x_t^H,g)\bigr).
 \]
 
-The value iteration update is the standard Bellman optimality update:
+So:
+
+- closer joint goals have larger \(EU(g)\)
+- farther joint goals have smaller \(EU(g)\)
+
+The exponential utility term used by the model is:
 
 \[
-V(s) = \max_a \sum_{s'} T(s' \mid s,a)\left[R(s,a,s') + \gamma V(s')\right].
+\exp(\beta\,EU(g)).
 \]
 
-Then the code constructs action values
+In the current branch, \(\beta = 1.0\).
+
+## 7. Post-switch Goal Selection Model
+
+At every post-switch step where:
+
+- `newGoalPresented == true`
+- `firstDetectedSharedGoal` is defined
+
+the agent uses the current posterior and current positions to compute:
 
 \[
-Q(s,a) = \sum_{s'} T(s' \mid s,a)\left[R(s,a,s') + \gamma V(s')\right]
+W_\lambda(g) \propto \exp(\beta \, EU(g)) \, P_t(g)^\lambda.
 \]
 
-and turns them into a stochastic policy with softmax:
+Normalized:
 
 \[
-\pi_{\text{ind}}(a \mid s,g) =
-\frac{\exp(\beta_{\text{RL}} Q_g(s,a))}
-{\sum_{a'} \exp(\beta_{\text{RL}} Q_g(s,a'))}.
-\]
-
-When the committed agent has selected a concrete goal \(g\), it moves with this individual policy toward that goal.
-
-### 3.2 Joint RL policy before commitment takes over
-
-Before commitment logic becomes active, the committed agent behaves like the joint RL planner.
-
-In the current configuration, `RLAgent` uses the BFS-style joint planner by default. The joint state is:
-
-\[
-s_t = (x_t^{A}, x_t^{H}).
-\]
-
-For every pair of next actions, the planner evaluates a joint action value using:
-
-\[
-Q_{\text{joint}}(s, a^{A}, a^{H}) = r(s, a^{A}, a^{H}) + \gamma \cdot \text{futureValue}(s').
-\]
-
-The immediate reward is approximately:
-
-\[
-r =
-\begin{cases}
-30, & \text{if both agents reach the same goal now} \\
--1 - \lambda \min_{g \in G}\left[d(x'^{A}, g) + d(x'^{H}, g)\right], & \text{otherwise}
-\end{cases}
-\]
-
-with \(\lambda = 0.01\).
-
-This means the joint RL planner prefers actions that reduce the total distance of the two players to some common goal. The planner then applies a softmax over joint \(Q\)-values and returns the AI component of the sampled joint action.
-
-## 4. State machine of the committed agent
-
-The main branch condition is in [client/src/ai/CommittedAgent.js](/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/client/src/ai/CommittedAgent.js).
-
-The committed agent has two regimes.
-
-### Regime A: before commitment matters
-
-If either of the following is true:
-
-- no new goal has appeared yet, or
-- no shared goal has been detected yet,
-
-then the agent simply uses joint RL.
-
-Formally:
-
-\[
-\text{if } \neg \texttt{newGoalPresented} \;\; \text{or} \;\; g_{\mathrm{old}} \text{ is undefined,}
-\quad a_t^{A} \sim \pi_{\text{joint}}(\cdot \mid x_t^{A}, x_t^{H}, G).
-\]
-
-### Regime B: after shared-goal detection and new-goal presentation
-
-Once:
-
-- a shared goal has been identified, and
-- a new goal has appeared,
-
-the committed agent switches from direct joint RL control to goal selection with commitment bias, followed by individual RL motion toward the selected goal.
-
-## 5. Bayesian intent inference
-
-The agent stores a posterior over goals:
-
-\[
-P_t(g) = P(g \mid \text{observed actions up to time } t).
-\]
-
-### 5.1 Prior
-
-At the beginning of a trial, the posterior is initialized uniformly:
-
-\[
-P_0(g_i) = \frac{1}{|G|}.
-\]
-
-If a new goal is added later, the posterior vector is resized and renormalized.
-
-### 5.2 Likelihood model
-
-For each observed step \(t\), and for each candidate goal \(g\), the code multiplies together action likelihoods from whichever players have an action recorded:
-
-\[
-L_t(g) =
-\pi_{\text{ind}}(a_t^{H} \mid x_t^{H}, g)
-\times
-\pi_{\text{ind}}(a_t^{A} \mid x_t^{A}, g).
-\]
-
-More precisely, if one action is missing, only the available factor is used. The posterior update is:
-
-\[
-P_t(g) \propto P_{t-1}(g)\,L_t(g).
-\]
-
-Then normalize:
-
-\[
-P_t(g) = \frac{P_t(g)}{\sum_{g' \in G} P_t(g')}.
-\]
-
-The code uses a floor \(\varepsilon = 10^{-6}\) whenever an action probability is missing or zero, to prevent the posterior from collapsing numerically:
-
-\[
-\pi_{\text{ind}}(a \mid x,g) \leftarrow \max(\pi_{\text{ind}}(a \mid x,g), \varepsilon).
-\]
-
-### 5.3 Interpretation
-
-This posterior is not modeling "what goal is optimal in the abstract." It is modeling:
-
-\[
-\text{Which goal would make the observed actions look most consistent with the single-goal RL policy?}
-\]
-
-That is why the action likelihood is evaluated under the individual goal-conditioned RL policy.
-
-## 6. Goal utility term
-
-The committed agent also computes a simple utility for each goal based on joint distance:
-
-\[
-EU(g) = -\left[d(x^{A}, g) + d(x^{H}, g)\right].
-\]
-
-This is implemented as negative joint Manhattan distance, so:
-
-- a closer common goal has higher utility,
-- a farther common goal has lower utility.
-
-The utility values are transformed into a softmax distribution:
-
-\[
-W_{\text{EU}}(g) =
-\frac{\exp(\beta_{\text{EU}} EU(g))}
-{\sum_{g' \in G} \exp(\beta_{\text{EU}} EU(g'))},
-\]
-
-with \(\beta_{\text{EU}} = 1.0\).
-
-## 7. Combining utility and inferred intent
-
-Before the explicit commitment gate is applied, the agent forms a proposal distribution over goals:
-
-\[
-\tilde{W}(g) \propto W_{\text{EU}}(g)\,P_t(g).
-\]
-
-After normalization:
-
-\[
-W(g) = \frac{\tilde{W}(g)}{\sum_{g' \in G}\tilde{W}(g')}.
+W_\lambda(g)
+=
+\frac{\exp(\beta \, EU(g)) \, P_t(g)^\lambda}
+{\sum_{g' \in G_t} \exp(\beta \, EU(g')) \, P_t(g')^\lambda }.
 \]
 
 Interpretation:
 
-- \(P_t(g)\) says which goal best explains the observed behavior.
-- \(W_{\text{EU}}(g)\) says which goal is best in terms of current joint distance.
-- Their product prefers goals that are both inferred and jointly efficient.
+- \(\exp(\beta EU(g))\): current geometric attractiveness of goal \(g\)
+- \(P_t(g)\): how strongly observed behavior supports goal \(g\)
+- \(\lambda\): how strongly goal choice depends on inferred intent
 
-If there were no special commitment rule, the agent would simply sample:
+Special cases:
 
-\[
-g_t \sim W(g).
-\]
+- \(\lambda = 0\): ignore inferred intent, choose by utility only
+- \(\lambda = 1\): use the posterior exactly as written
+- \(\lambda > 1\): amplify inferred intent
+- \(0 < \lambda < 1\): weaken inferred intent
 
-## 8. Commitment bias after a new goal appears
+The sampled joint goal is not fixed across future steps. On the next step, the posterior is updated again from newly observed actions, \(EU(g)\) is recomputed from the new positions, and a new \(g_t\) is sampled from the updated \(W_\lambda\).
 
-This is the core committed-agent equation.
+## 8. Action Generation After Joint-Goal Selection
 
-Once an old shared goal \(g_{\mathrm{old}}\) exists and a new goal is present, the code computes a score:
-
-\[
-S(g) = EU(g) + \log P_t(g).
-\]
-
-In implementation, the log uses a floor:
+After sampling a joint goal \(g_t\) from \(W_\lambda(g)\) at step \(t\), the agent does not act directly in goal space. It converts that sampled joint goal into movement by calling the joint RL policy with the candidate goal set restricted to \(\{g_t\}\), then taking the agent's own action component:
 
 \[
-S(g) = EU(g) + \log(\max(P_t(g), \varepsilon)).
-\]
-
-Then it compares the old shared goal against the best available alternative:
-
-\[
-\Delta S = S(g_{\mathrm{old}}) - \max_{g \neq g_{\mathrm{old}}} S(g).
-\]
-
-The probability of sticking with the old goal is:
-
-\[
-P(\text{choose old}) =
-\sigma\left(\logit(0.8) + \kappa \Delta S\right),
-\]
-
-where:
-
-\[
-\sigma(z) = \frac{1}{1+e^{-z}},
+g_t \sim W_\lambda(g),
 \qquad
-\logit(0.8) = \log\frac{0.8}{0.2} = \log 4.
+a_t^A \sim \pi_{\text{joint}}^A(\cdot \mid x_t^A, x_t^H, \{g_t\}).
 \]
 
-The only free commitment parameter in the code is:
+So the full post-switch policy is a mixture:
 
 \[
-\kappa = 0.5
+P(a_t^A \mid x_t^A, x_t^H)
+=
+\sum_{g \in G_t}
+W_\lambda(g)\,
+\pi_{\text{joint}}^A(a_t^A \mid x_t^A, x_t^H, \{g\}).
 \]
 
-by default.
+Here, \(\pi_{\text{joint}}^A\) denotes the AI player's own action component extracted from the joint RL policy.
 
-### 8.1 Why the baseline is 0.8
+## 9. Free Parameter
 
-If \(\Delta S = 0\), then:
+The current model has one fitted free parameter:
 
 \[
-P(\text{choose old}) = \sigma(\logit(0.8)) = 0.8.
+\lambda.
 \]
 
-So even when the old goal and the best alternative are equally attractive under the score \(S(g)\), the agent still keeps an 80% tendency to remain committed.
+It measures how much the agent relies on inferred intent \(P_t(g)\) when choosing among goals after the new goal appears.
 
-### 8.2 Effect of \(\kappa\)
-
-- If \(\kappa = 0\), the agent ignores the score difference and always uses a fixed 80% commitment rate.
-- If \(\kappa > 0\), commitment becomes sensitive to evidence.
-- Larger \(\kappa\) means small changes in \(\Delta S\) produce larger changes in sticking probability.
-
-For example:
+`beta` is currently fixed:
 
 \[
-\Delta S = 2
-\quad \Rightarrow \quad
-P(\text{choose old}) = \sigma(\log 4 + 0.5 \cdot 2) \approx 0.916.
+\beta = 1.0.
 \]
+
+So the fit is one-dimensional.
+
+## 10. Data Used to Fit `lambda`
+
+The fitting pipeline is implemented in [dataAnalysis/scripts/fit_committed_lambda.py](/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/scripts/fit_committed_lambda.py).
+
+Data sources:
+
+- `human-human-locaked action-with-commitAgent-fallback`
+- `human-human-locaked action-with-vlm-tom-fallback`
+
+Filtering rules:
+
+1. keep only workbooks whose `partnerAgentType` values are restricted to `{none, human}`
+2. within those workbooks, keep only `experimentType == 2P3G` and `partnerAgentType == human`
+3. deduplicate duplicated participant exports at the `roomId + trialIndex` level
+4. fit only trials where:
+   - `newGoalPresented == true`
+   - `firstDetectedSharedGoal` is defined
+
+Counts from the saved fit summary in [lambda_fit_summary.json](/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/committed_agent_lambda_fit/lambda_fit_summary.json):
+
+- pure human workbooks: `30`
+- pure human `2P3G` participant rows: `357`
+- unique `2P3G` room-trials: `189`
+- fit-eligible room-trials: `142`
+- step-level observations: `1532`
+
+## 11. How the Fit Dataset Is Constructed
+
+The fitting is done at the step level, not just at the final-goal level.
+
+For each eligible post-new-goal decision step, the script records:
+
+- current candidate goals
+- current posterior \(P_t(g)\)
+- current utility vector \(EU(g)\)
+- observed focal-player action
+- per-joint-goal action probabilities under the AI component of the restricted joint RL policy
+
+For one observation \(o\), the script stores:
 
 \[
-\Delta S = -2
-\quad \Rightarrow \quad
-P(\text{choose old}) = \sigma(\log 4 - 1) \approx 0.595.
+\pi_{\text{joint}}^A(a_o \mid x_o^A,x_o^H,\{g_1\}),\dots,
+\pi_{\text{joint}}^A(a_o \mid x_o^A,x_o^H,\{g_n\}).
 \]
 
-So the old goal keeps a strong prior advantage, but sufficiently bad evidence can still reduce commitment.
+These are the `action_goal_probs` in the fitting script.
 
-## 9. Final action-selection algorithm
+## 12. Likelihood Used for Fitting
 
-Putting the pieces together, after shared-goal detection and new-goal presentation:
-
-1. Infer posterior \(P_t(g)\) from observed actions.
-2. Compute distance utility \(EU(g)\).
-3. Compute combined proposal weights \(W(g)\propto \text{Softmax}(EU(g))P_t(g)\).
-4. Compute the old-goal stickiness probability
-   \[
-   p_{\mathrm{old}} = \sigma(\logit(0.8) + \kappa \Delta S).
-   \]
-5. With probability \(p_{\mathrm{old}}\), choose \(g_{\mathrm{old}}\).
-6. Otherwise, sample among the remaining goals with weights proportional to \(W(g)\).
-7. Once a goal \(g_t\) is selected, move with the individual RL policy toward that goal:
-   \[
-   a_t^{A} \sim \pi_{\text{ind}}(\cdot \mid x_t^{A}, g_t).
-   \]
-
-This makes the committed agent a hybrid model:
-
-- joint RL early,
-- Bayesian goal inference in the middle,
-- commitment-biased goal choice after the environment changes,
-- individual RL motion once the goal has been chosen.
-
-## 10. What the model is really assuming
-
-The math encodes a specific cognitive story:
-
-1. Both agents' actions reveal which goal is currently intended.
-2. Jointly closer goals are more attractive.
-3. Once a shared plan has formed, the old shared goal gets inertia.
-4. That inertia is not absolute; it is modulated by evidence through \(\Delta S\).
-
-In plain language, the committed agent says:
-
-"I infer what goal we seemed to be coordinating on, I compare that to new alternatives, and I still favor staying with the old plan unless the evidence against it is strong."
-
-## 11. Important implementation caveats in the current code
-
-These points matter if you are using this document to interpret behavior from the live code.
-
-### 11.1 Missing likelihood helper in `RLAgent`
-
-The Bayesian update calls:
+Given a candidate \(\lambda\), the model first forms goal weights:
 
 \[
-\texttt{this.rl.getIndividualActionProbabilities(pos, goal)}
+W_\lambda(g \mid o)
+=
+\frac{\exp(\beta EU_o(g))\,P_o(g)^\lambda}
+{\sum_{g'} \exp(\beta EU_o(g'))\,P_o(g')^\lambda}.
 \]
 
-inside `CommittedAgent._actionLikelihood(...)`.
-
-However, the current `RLAgent` class does not define `getIndividualActionProbabilities(...)`. So the intended Bayesian math is clear, but the supporting helper is absent in the current implementation. In other words:
-
-- the probabilistic model is specified,
-- but one required RL likelihood API is currently missing from the live class.
-
-This is the single most important code-level caveat.
-
-### 11.2 The "forceJoint" extra argument is not used by `RLAgent`
-
-`CommittedAgent.getAIAction(...)` calls:
-
-```js
-this.rl.getAIAction(gameState?.gridMatrix, aiPos, goals, humanPos, { forceJoint: true })
-```
-
-but the current `RLAgent.getAIAction(...)` signature does not use that fifth argument. In practice the early-phase behavior is still joint because the config usually keeps `CONFIG.game.agent.type === 'joint'`, but mathematically the forced-joint behavior is relying on configuration rather than an explicit API guarantee.
-
-### 11.3 The committed agent is mainly used as fallback policy
-
-In the current experiment flow, the committed agent is typically used when LLM/VLM action generation fails and the fallback policy is set to `committedAgent`. So in the present system it is best described as:
+The probability of the actually observed action is then the mixture:
 
 \[
-\text{LLM/VLM fallback policy with commitment bias},
+P(a_o \mid \lambda)
+=
+\sum_{g \in G_o}
+W_\lambda(g \mid o)\,
+\pi_{\text{joint}}^A(a_o \mid x_o^A,x_o^H,\{g\}).
 \]
 
-not as the only default agent in all modes.
-
-## 12. Short summary
-
-The committed agent implements:
+The total log-likelihood over all step-level observations is:
 
 \[
-P_t(g) \propto P_{t-1}(g)\prod_{\text{observed players } i}\pi_{\text{ind}}(a_t^i \mid x_t^i, g),
+\log \mathcal{L}(\lambda)
+=
+\sum_{o=1}^{N}
+\log P(a_o \mid \lambda).
 \]
+
+Equivalently, the script minimizes the negative log-likelihood:
 
 \[
-EU(g) = -\left[d(x^{A}, g)+d(x^{H}, g)\right],
+\mathcal{J}(\lambda)
+=
+- \sum_{o=1}^{N}
+\log \left(
+\sum_{g \in G_o}
+W_\lambda(g \mid o)\,
+\pi_{\text{joint}}^A(a_o \mid x_o^A,x_o^H,\{g\})
+\right).
 \]
+
+This is implemented in `lambda_negative_log_likelihood(...)`.
+
+## 13. Optimization Procedure
+
+The script uses bounded scalar optimization:
+
+- optimizer: `scipy.optimize.minimize_scalar`
+- method: `bounded`
+- search interval: \([0, 10]\)
+
+So the fitted parameter is:
 
 \[
-W(g) \propto \text{Softmax}(EU(g))\,P_t(g),
+\hat{\lambda}
+=
+\arg\min_{\lambda \in [0,10]} \mathcal{J}(\lambda).
 \]
+
+The standard error is approximated from the local curvature of the negative log-likelihood around \(\hat{\lambda}\), using a finite-difference Hessian approximation.
+
+## 14. Current Fitted Result
+
+From [lambda_fit_summary.json](/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/committed_agent_lambda_fit/lambda_fit_summary.json):
 
 \[
-P(\text{choose old}) = \sigma\left(\logit(0.8) + \kappa\left[S(g_{\mathrm{old}})-\max_{g\neq g_{\mathrm{old}}}S(g)\right]\right),
+\hat{\lambda} = 6.36701374103809
 \]
 
-with
+with:
+
+- negative log-likelihood: `1095.8853170907087`
+- standard error: `0.2662513628785118`
+- 95% CI: `[5.845161069796206, 6.888866412279973]`
+
+This means the fitted model places substantially more weight on posterior intent than the \(\lambda = 1\) baseline.
+
+## 15. Interpretation
+
+The current committed-agent model says:
+
+1. infer which goal best explains the pair's observed behavior
+2. combine that with the current geometry of the scene
+3. after a new goal appears, choose goals using a posterior-weighted utility model
+4. use a single fitted parameter `lambda` to determine how strongly inferred intent should matter
+
+The main behavioral interpretation is:
 
 \[
-S(g) = EU(g) + \log P_t(g).
+\text{commitment}
+\approx
+\text{stronger reliance on inferred prior/shared intent after the switch}.
 \]
 
-After choosing a goal, it uses ordinary individual RL to move toward that goal.
+This is different from the earlier model family where commitment was represented as an extra old-goal intercept or sigmoid bias.
 
-That is the math of the committed agent in this repository.
+## 16. Code References
+
+- Model implementation:
+  [client/src/ai/CommittedAgent.js](/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/client/src/ai/CommittedAgent.js)
+- RL policies:
+  [client/src/ai/RLAgent.js](/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/client/src/ai/RLAgent.js)
+- Fit script:
+  [dataAnalysis/scripts/fit_committed_lambda.py](/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/scripts/fit_committed_lambda.py)
+- Fit result:
+  [dataAnalysis/committed_agent_lambda_fit/lambda_fit_summary.json](/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/committed_agent_lambda_fit/lambda_fit_summary.json)

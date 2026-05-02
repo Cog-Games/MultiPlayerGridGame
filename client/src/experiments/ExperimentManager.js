@@ -905,12 +905,16 @@ export class ExperimentManager {
       // synthesize the new goal directly from the recorded shared goal index
       if (!gen && typeof trial.firstDetectedSharedGoal === 'number' && trial.firstDetectedSharedGoal !== null) {
         try {
-          const direct = NewGoalGenerator.generateNewGoal(
-            state.player2, state.player1, state.currentGoals,
-            trial.firstDetectedSharedGoal, distanceCondition
-          );
-          if (direct && direct.position) {
-            gen = direct;
+          const p1CurrentGoal = NewGoalGenerator.getPlayerCurrentGoal(trial.player1CurrentGoal);
+          const p2CurrentGoal = NewGoalGenerator.getPlayerCurrentGoal(trial.player2CurrentGoal);
+          if (p1CurrentGoal === trial.firstDetectedSharedGoal && p2CurrentGoal === trial.firstDetectedSharedGoal) {
+            const direct = NewGoalGenerator.generateNewGoal(
+              state.player2, state.player1, state.currentGoals,
+              trial.firstDetectedSharedGoal, distanceCondition
+            );
+            if (direct && direct.position) {
+              gen = direct;
+            }
           }
         } catch (_) { /* ignore fallback errors */ }
       }

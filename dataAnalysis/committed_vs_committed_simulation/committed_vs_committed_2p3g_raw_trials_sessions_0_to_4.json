@@ -330,7 +330,23 @@
       ],
       [
         6,
+        9
+      ],
+      [
+        6,
+        8
+      ],
+      [
+        6,
         7
+      ],
+      [
+        6,
+        6
+      ],
+      [
+        5,
+        6
       ],
       [
         6,
@@ -386,11 +402,27 @@
       ],
       [
         0,
+        1
+      ],
+      [
+        0,
         -1
       ],
       [
         0,
         -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        1,
+        0
       ],
       [
         0,
@@ -427,7 +459,7 @@
       13,
       7
     ],
-    "totalSteps": 10,
+    "totalSteps": 14,
     "collaborationSucceeded": true
   },
   {
@@ -442,673 +474,6 @@
     "newGoalPresented": false,
     "newGoalPresentedTime": null,
     "newGoalPosition": null,
-    "firstDetectedSharedGoal": 1,
-    "player1FirstDetectedGoal": 1,
-    "player2FirstDetectedGoal": 1,
-    "player1FinalReachedGoal": 1,
-    "player2FinalReachedGoal": 1,
-    "player1Trajectory": [
-      [
-        0,
-        7
-      ],
-      [
-        0,
-        8
-      ],
-      [
-        1,
-        8
-      ],
-      [
-        2,
-        8
-      ],
-      [
-        2,
-        9
-      ],
-      [
-        3,
-        9
-      ],
-      [
-        3,
-        10
-      ],
-      [
-        4,
-        10
-      ],
-      [
-        4,
-        11
-      ],
-      [
-        4,
-        12
-      ],
-      [
-        5,
-        12
-      ],
-      [
-        5,
-        13
-      ],
-      [
-        6,
-        13
-      ],
-      [
-        7,
-        13
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        14,
-        7
-      ],
-      [
-        13,
-        7
-      ],
-      [
-        12,
-        7
-      ],
-      [
-        11,
-        7
-      ],
-      [
-        10,
-        7
-      ],
-      [
-        9,
-        7
-      ],
-      [
-        8,
-        7
-      ],
-      [
-        8,
-        8
-      ],
-      [
-        8,
-        9
-      ],
-      [
-        8,
-        10
-      ],
-      [
-        8,
-        11
-      ],
-      [
-        8,
-        12
-      ],
-      [
-        7,
-        12
-      ],
-      [
-        7,
-        13
-      ]
-    ],
-    "player1Actions": [
-      [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ]
-    ],
-    "player2Actions": [
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ]
-    ],
-    "player1StartPosition": [
-      0,
-      7
-    ],
-    "player2StartPosition": [
-      14,
-      7
-    ],
-    "initialGoalPositions": [
-      [
-        7,
-        0
-      ],
-      [
-        7,
-        14
-      ]
-    ],
-    "target1": [
-      7,
-      0
-    ],
-    "target2": [
-      7,
-      14
-    ],
-    "totalSteps": 14,
-    "collaborationSucceeded": true
-  },
-  {
-    "sessionIndex": 0,
-    "participantId_player1": "session_0_player1",
-    "participantId_player2": "session_0_player2",
-    "partnerType": "commitAgent",
-    "experimentType": "2P3G",
-    "trialIndex": 3,
-    "mapId": "300",
-    "distanceCondition": "equal_to_both",
-    "newGoalPresented": true,
-    "newGoalPresentedTime": 1,
-    "newGoalPosition": [
-      6,
-      11
-    ],
-    "firstDetectedSharedGoal": 0,
-    "player1FirstDetectedGoal": 0,
-    "player2FirstDetectedGoal": 0,
-    "player1FinalReachedGoal": 2,
-    "player2FinalReachedGoal": 2,
-    "player1Trajectory": [
-      [
-        7,
-        14
-      ],
-      [
-        6,
-        14
-      ],
-      [
-        6,
-        13
-      ],
-      [
-        6,
-        12
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        7,
-        0
-      ],
-      [
-        6,
-        0
-      ],
-      [
-        6,
-        1
-      ],
-      [
-        6,
-        2
-      ],
-      [
-        6,
-        3
-      ],
-      [
-        6,
-        4
-      ],
-      [
-        6,
-        5
-      ],
-      [
-        6,
-        6
-      ],
-      [
-        6,
-        7
-      ],
-      [
-        6,
-        8
-      ],
-      [
-        6,
-        9
-      ],
-      [
-        6,
-        10
-      ]
-    ],
-    "player1Actions": [
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ]
-    ],
-    "player2Actions": [
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ]
-    ],
-    "player1StartPosition": [
-      7,
-      14
-    ],
-    "player2StartPosition": [
-      7,
-      0
-    ],
-    "initialGoalPositions": [
-      [
-        0,
-        7
-      ],
-      [
-        14,
-        7
-      ]
-    ],
-    "target1": [
-      0,
-      7
-    ],
-    "target2": [
-      14,
-      7
-    ],
-    "totalSteps": 12,
-    "collaborationSucceeded": true
-  },
-  {
-    "sessionIndex": 0,
-    "participantId_player1": "session_0_player1",
-    "participantId_player2": "session_0_player2",
-    "partnerType": "commitAgent",
-    "experimentType": "2P3G",
-    "trialIndex": 4,
-    "mapId": "301",
-    "distanceCondition": "closer_to_player2",
-    "newGoalPresented": true,
-    "newGoalPresentedTime": 3,
-    "newGoalPosition": [
-      5,
-      6
-    ],
-    "firstDetectedSharedGoal": 0,
-    "player1FirstDetectedGoal": 0,
-    "player2FirstDetectedGoal": 0,
-    "player1FinalReachedGoal": 2,
-    "player2FinalReachedGoal": 2,
-    "player1Trajectory": [
-      [
-        7,
-        0
-      ],
-      [
-        7,
-        1
-      ],
-      [
-        7,
-        2
-      ],
-      [
-        6,
-        2
-      ],
-      [
-        5,
-        2
-      ],
-      [
-        5,
-        3
-      ],
-      [
-        5,
-        4
-      ],
-      [
-        5,
-        5
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        7,
-        14
-      ],
-      [
-        6,
-        14
-      ],
-      [
-        6,
-        13
-      ],
-      [
-        5,
-        13
-      ],
-      [
-        5,
-        12
-      ],
-      [
-        5,
-        11
-      ],
-      [
-        5,
-        10
-      ],
-      [
-        5,
-        9
-      ],
-      [
-        5,
-        8
-      ],
-      [
-        5,
-        7
-      ]
-    ],
-    "player1Actions": [
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ]
-    ],
-    "player2Actions": [
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ]
-    ],
-    "player1StartPosition": [
-      7,
-      0
-    ],
-    "player2StartPosition": [
-      7,
-      14
-    ],
-    "initialGoalPositions": [
-      [
-        0,
-        7
-      ],
-      [
-        14,
-        7
-      ]
-    ],
-    "target1": [
-      0,
-      7
-    ],
-    "target2": [
-      14,
-      7
-    ],
-    "totalSteps": 10,
-    "collaborationSucceeded": true
-  },
-  {
-    "sessionIndex": 0,
-    "participantId_player1": "session_0_player1",
-    "participantId_player2": "session_0_player2",
-    "partnerType": "commitAgent",
-    "experimentType": "2P3G",
-    "trialIndex": 5,
-    "mapId": "302",
-    "distanceCondition": "closer_to_player1",
-    "newGoalPresented": true,
-    "newGoalPresentedTime": 2,
-    "newGoalPosition": [
-      4,
-      9
-    ],
     "firstDetectedSharedGoal": 0,
     "player1FirstDetectedGoal": 0,
     "player2FirstDetectedGoal": 0,
@@ -1132,39 +497,59 @@
         5
       ],
       [
-        1,
-        4
-      ],
-      [
         2,
-        4
+        5
       ],
       [
         3,
-        4
-      ],
-      [
-        3,
-        3
-      ],
-      [
-        3,
-        2
-      ],
-      [
-        3,
-        1
+        5
       ],
       [
         4,
-        1
+        5
       ],
       [
         5,
-        1
+        5
       ],
       [
         6,
+        5
+      ],
+      [
+        5,
+        5
+      ],
+      [
+        6,
+        5
+      ],
+      [
+        6,
+        6
+      ],
+      [
+        6,
+        5
+      ],
+      [
+        6,
+        4
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        7,
+        3
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        7,
         1
       ]
     ],
@@ -1174,52 +559,56 @@
         7
       ],
       [
-        13,
-        7
+        14,
+        6
+      ],
+      [
+        14,
+        5
+      ],
+      [
+        14,
+        4
       ],
       [
         13,
-        6
+        4
       ],
       [
         12,
-        6
+        4
       ],
       [
         11,
-        6
+        4
       ],
       [
         10,
-        6
+        4
       ],
       [
         10,
-        5
-      ],
-      [
-        9,
-        5
-      ],
-      [
-        9,
-        4
-      ],
-      [
-        8,
-        4
-      ],
-      [
-        7,
-        4
-      ],
-      [
-        7,
         3
       ],
       [
-        7,
+        9,
+        3
+      ],
+      [
+        8,
+        3
+      ],
+      [
+        8,
         2
+      ],
+      [
+        8,
+        1
+      ],
+      [
+        8,
+        0
       ]
     ],
     "player1Actions": [
@@ -1236,11 +625,27 @@
         -1
       ],
       [
-        0,
-        -1
+        1,
+        0
       ],
       [
         1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        -1,
         0
       ],
       [
@@ -1249,7 +654,7 @@
       ],
       [
         0,
-        -1
+        1
       ],
       [
         0,
@@ -1264,15 +669,300 @@
         0
       ],
       [
-        1,
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ]
+    ],
+    "player2Actions": [
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
         0
       ],
       [
-        1,
+        -1,
         0
       ],
       [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
+        0
+      ]
+    ],
+    "player1StartPosition": [
+      0,
+      7
+    ],
+    "player2StartPosition": [
+      14,
+      7
+    ],
+    "initialGoalPositions": [
+      [
+        7,
+        0
+      ],
+      [
+        7,
+        14
+      ]
+    ],
+    "target1": [
+      7,
+      0
+    ],
+    "target2": [
+      7,
+      14
+    ],
+    "totalSteps": 18,
+    "collaborationSucceeded": true
+  },
+  {
+    "sessionIndex": 0,
+    "participantId_player1": "session_0_player1",
+    "participantId_player2": "session_0_player2",
+    "partnerType": "commitAgent",
+    "experimentType": "2P3G",
+    "trialIndex": 3,
+    "mapId": "300",
+    "distanceCondition": "equal_to_both",
+    "newGoalPresented": true,
+    "newGoalPresentedTime": 2,
+    "newGoalPosition": [
+      12,
+      7
+    ],
+    "firstDetectedSharedGoal": 0,
+    "player1FirstDetectedGoal": 0,
+    "player2FirstDetectedGoal": 0,
+    "player1FinalReachedGoal": 0,
+    "player2FinalReachedGoal": 0,
+    "player1Trajectory": [
+      [
+        7,
+        14
+      ],
+      [
+        7,
+        13
+      ],
+      [
+        6,
+        13
+      ],
+      [
+        6,
+        12
+      ],
+      [
+        6,
+        11
+      ],
+      [
+        5,
+        11
+      ],
+      [
+        4,
+        11
+      ],
+      [
+        3,
+        11
+      ],
+      [
+        3,
+        10
+      ],
+      [
+        3,
+        9
+      ],
+      [
+        3,
+        8
+      ],
+      [
+        3,
+        7
+      ],
+      [
+        2,
+        7
+      ],
+      [
         1,
+        7
+      ]
+    ],
+    "player2Trajectory": [
+      [
+        7,
+        0
+      ],
+      [
+        6,
+        0
+      ],
+      [
+        6,
+        1
+      ],
+      [
+        5,
+        1
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        3,
+        3
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        0,
+        4
+      ],
+      [
+        0,
+        5
+      ],
+      [
+        0,
+        6
+      ]
+    ],
+    "player1Actions": [
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
         0
       ]
     ],
@@ -1283,7 +973,27 @@
       ],
       [
         0,
-        -1
+        1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
       ],
       [
         -1,
@@ -1299,10 +1009,263 @@
       ],
       [
         0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "player1StartPosition": [
+      7,
+      14
+    ],
+    "player2StartPosition": [
+      7,
+      0
+    ],
+    "initialGoalPositions": [
+      [
+        0,
+        7
+      ],
+      [
+        14,
+        7
+      ]
+    ],
+    "target1": [
+      0,
+      7
+    ],
+    "target2": [
+      14,
+      7
+    ],
+    "totalSteps": 14,
+    "collaborationSucceeded": true
+  },
+  {
+    "sessionIndex": 0,
+    "participantId_player1": "session_0_player1",
+    "participantId_player2": "session_0_player2",
+    "partnerType": "commitAgent",
+    "experimentType": "2P3G",
+    "trialIndex": 4,
+    "mapId": "301",
+    "distanceCondition": "closer_to_player2",
+    "newGoalPresented": true,
+    "newGoalPresentedTime": 4,
+    "newGoalPosition": [
+      7,
+      7
+    ],
+    "firstDetectedSharedGoal": 1,
+    "player1FirstDetectedGoal": 1,
+    "player2FirstDetectedGoal": 1,
+    "player1FinalReachedGoal": 1,
+    "player2FinalReachedGoal": 1,
+    "player1Trajectory": [
+      [
+        7,
+        0
+      ],
+      [
+        7,
+        1
+      ],
+      [
+        8,
+        1
+      ],
+      [
+        8,
+        2
+      ],
+      [
+        9,
+        2
+      ],
+      [
+        10,
+        2
+      ],
+      [
+        10,
+        3
+      ],
+      [
+        11,
+        3
+      ],
+      [
+        12,
+        3
+      ],
+      [
+        12,
+        4
+      ],
+      [
+        13,
+        4
+      ],
+      [
+        13,
+        5
+      ],
+      [
+        14,
+        5
+      ],
+      [
+        14,
+        6
+      ]
+    ],
+    "player2Trajectory": [
+      [
+        7,
+        14
+      ],
+      [
+        7,
+        13
+      ],
+      [
+        7,
+        12
+      ],
+      [
+        7,
+        11
+      ],
+      [
+        8,
+        11
+      ],
+      [
+        9,
+        11
+      ],
+      [
+        9,
+        10
+      ],
+      [
+        9,
+        9
+      ],
+      [
+        10,
+        9
+      ],
+      [
+        11,
+        9
+      ],
+      [
+        11,
+        8
+      ],
+      [
+        12,
+        8
+      ],
+      [
+        12,
+        7
+      ],
+      [
+        13,
+        7
+      ]
+    ],
+    "player1Actions": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "player2Actions": [
+      [
+        0,
         -1
       ],
       [
-        -1,
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
         0
       ],
       [
@@ -1310,6 +1273,279 @@
         -1
       ],
       [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ]
+    ],
+    "player1StartPosition": [
+      7,
+      0
+    ],
+    "player2StartPosition": [
+      7,
+      14
+    ],
+    "initialGoalPositions": [
+      [
+        0,
+        7
+      ],
+      [
+        14,
+        7
+      ]
+    ],
+    "target1": [
+      0,
+      7
+    ],
+    "target2": [
+      14,
+      7
+    ],
+    "totalSteps": 14,
+    "collaborationSucceeded": true
+  },
+  {
+    "sessionIndex": 0,
+    "participantId_player1": "session_0_player1",
+    "participantId_player2": "session_0_player2",
+    "partnerType": "commitAgent",
+    "experimentType": "2P3G",
+    "trialIndex": 5,
+    "mapId": "302",
+    "distanceCondition": "closer_to_player1",
+    "newGoalPresented": true,
+    "newGoalPresentedTime": 1,
+    "newGoalPosition": [
+      5,
+      7
+    ],
+    "firstDetectedSharedGoal": 1,
+    "player1FirstDetectedGoal": 1,
+    "player2FirstDetectedGoal": 1,
+    "player1FinalReachedGoal": 1,
+    "player2FinalReachedGoal": 1,
+    "player1Trajectory": [
+      [
+        0,
+        7
+      ],
+      [
+        0,
+        8
+      ],
+      [
+        0,
+        9
+      ],
+      [
+        1,
+        9
+      ],
+      [
+        2,
+        9
+      ],
+      [
+        2,
+        10
+      ],
+      [
+        3,
+        10
+      ],
+      [
+        3,
+        11
+      ],
+      [
+        4,
+        11
+      ],
+      [
+        4,
+        12
+      ],
+      [
+        5,
+        12
+      ],
+      [
+        6,
+        12
+      ],
+      [
+        6,
+        13
+      ]
+    ],
+    "player2Trajectory": [
+      [
+        14,
+        7
+      ],
+      [
+        14,
+        8
+      ],
+      [
+        14,
+        9
+      ],
+      [
+        14,
+        10
+      ],
+      [
+        13,
+        10
+      ],
+      [
+        13,
+        11
+      ],
+      [
+        13,
+        12
+      ],
+      [
+        13,
+        13
+      ],
+      [
+        12,
+        13
+      ],
+      [
+        11,
+        13
+      ],
+      [
+        10,
+        13
+      ],
+      [
+        9,
+        13
+      ],
+      [
+        8,
+        13
+      ]
+    ],
+    "player1Actions": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ]
+    ],
+    "player2Actions": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
         -1,
         0
       ],
@@ -1318,16 +1554,20 @@
         0
       ],
       [
-        0,
-        -1
+        -1,
+        0
       ],
       [
-        0,
-        -1
+        -1,
+        0
       ],
       [
-        0,
-        -1
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
       ]
     ],
     "player1StartPosition": [
@@ -1369,10 +1609,10 @@
     "mapId": "303",
     "distanceCondition": "closer_to_player1",
     "newGoalPresented": true,
-    "newGoalPresentedTime": 2,
+    "newGoalPresentedTime": 3,
     "newGoalPosition": [
-      9,
-      5
+      6,
+      2
     ],
     "firstDetectedSharedGoal": 0,
     "player1FirstDetectedGoal": 0,
@@ -1385,12 +1625,12 @@
         2
       ],
       [
-        6,
-        2
+        7,
+        3
       ],
       [
-        6,
-        3
+        7,
+        4
       ],
       [
         6,
@@ -1401,8 +1641,8 @@
         5
       ],
       [
-        6,
-        6
+        5,
+        5
       ],
       [
         5,
@@ -1413,12 +1653,20 @@
         6
       ],
       [
-        4,
-        7
+        3,
+        6
       ],
       [
         3,
         7
+      ],
+      [
+        3,
+        6
+      ],
+      [
+        2,
+        6
       ],
       [
         2,
@@ -1435,8 +1683,8 @@
         14
       ],
       [
-        7,
-        13
+        6,
+        14
       ],
       [
         6,
@@ -1455,44 +1703,32 @@
         11
       ],
       [
-        5,
+        4,
+        11
+      ],
+      [
+        4,
         10
       ],
       [
-        5,
-        9
-      ],
-      [
-        4,
-        9
-      ],
-      [
-        4,
-        8
-      ],
-      [
         3,
-        8
+        10
       ],
       [
         2,
-        8
+        10
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        1,
+        9
       ]
     ],
     "player1Actions": [
       [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
         0,
         1
       ],
@@ -1503,6 +1739,10 @@
       [
         -1,
         0
+      ],
+      [
+        0,
+        1
       ],
       [
         -1,
@@ -1519,6 +1759,22 @@
       [
         -1,
         0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
       ],
       [
         -1,
@@ -1531,14 +1787,6 @@
     ],
     "player2Actions": [
       [
-        0,
-        -1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
         -1,
         0
       ],
@@ -1547,8 +1795,8 @@
         -1
       ],
       [
-        0,
-        -1
+        -1,
+        0
       ],
       [
         0,
@@ -1577,6 +1825,14 @@
       [
         -1,
         0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
       ]
     ],
     "player1StartPosition": [
@@ -1605,7 +1861,7 @@
       13,
       8
     ],
-    "totalSteps": 12,
+    "totalSteps": 14,
     "collaborationSucceeded": true
   },
   {
@@ -1618,16 +1874,16 @@
     "mapId": "304",
     "distanceCondition": "closer_to_player2",
     "newGoalPresented": true,
-    "newGoalPresentedTime": 3,
+    "newGoalPresentedTime": 2,
     "newGoalPosition": [
-      7,
-      6
+      10,
+      8
     ],
-    "firstDetectedSharedGoal": 0,
+    "firstDetectedSharedGoal": 1,
     "player1FirstDetectedGoal": 0,
-    "player2FirstDetectedGoal": 0,
-    "player1FinalReachedGoal": 0,
-    "player2FinalReachedGoal": 0,
+    "player2FirstDetectedGoal": 1,
+    "player1FinalReachedGoal": 2,
+    "player2FinalReachedGoal": 2,
     "player1Trajectory": [
       [
         7,
@@ -1638,51 +1894,47 @@
         0
       ],
       [
-        6,
+        7,
+        0
+      ],
+      [
+        8,
+        0
+      ],
+      [
+        9,
+        0
+      ],
+      [
+        9,
         1
       ],
       [
-        6,
+        9,
         2
       ],
       [
-        6,
+        9,
         3
       ],
       [
-        6,
+        10,
+        3
+      ],
+      [
+        10,
         4
       ],
       [
-        5,
-        4
-      ],
-      [
-        4,
-        4
-      ],
-      [
-        4,
+        10,
         5
       ],
       [
-        3,
-        5
-      ],
-      [
-        2,
-        5
-      ],
-      [
-        2,
+        10,
         6
       ],
       [
-        1,
-        6
-      ],
-      [
-        1,
+        10,
         7
       ]
     ],
@@ -1692,56 +1944,36 @@
         14
       ],
       [
-        7,
+        8,
+        14
+      ],
+      [
+        8,
         13
       ],
       [
-        7,
+        9,
+        13
+      ],
+      [
+        9,
         12
       ],
       [
-        6,
+        10,
         12
       ],
       [
-        6,
+        10,
         11
       ],
       [
-        6,
+        10,
         10
       ],
       [
-        5,
-        10
-      ],
-      [
-        4,
-        10
-      ],
-      [
-        3,
-        10
-      ],
-      [
-        3,
+        10,
         9
-      ],
-      [
-        2,
-        9
-      ],
-      [
-        1,
-        9
-      ],
-      [
-        1,
-        8
-      ],
-      [
-        0,
-        8
       ]
     ],
     "player1Actions": [
@@ -1750,27 +1982,15 @@
         0
       ],
       [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
+        1,
         0
       ],
       [
-        -1,
+        1,
+        0
+      ],
+      [
+        1,
         0
       ],
       [
@@ -1778,11 +1998,15 @@
         1
       ],
       [
-        -1,
-        0
+        0,
+        1
       ],
       [
-        -1,
+        0,
+        1
+      ],
+      [
+        1,
         0
       ],
       [
@@ -1790,20 +2014,44 @@
         1
       ],
       [
-        -1,
-        0
+        0,
+        1
       ],
       [
         0,
         1
       ],
       [
-        -1,
-        0
+        0,
+        1
+      ],
+      [
+        0,
+        1
       ]
     ],
     "player2Actions": [
       [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
         0,
         -1
       ],
@@ -1812,48 +2060,8 @@
         -1
       ],
       [
-        -1,
-        0
-      ],
-      [
         0,
         -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        -1,
-        0
       ],
       [
         0,
@@ -1886,7 +2094,7 @@
       14,
       7
     ],
-    "totalSteps": 14,
+    "totalSteps": 13,
     "collaborationSucceeded": true
   },
   {
@@ -1901,55 +2109,55 @@
     "newGoalPresented": false,
     "newGoalPresentedTime": null,
     "newGoalPosition": null,
-    "firstDetectedSharedGoal": 1,
-    "player1FirstDetectedGoal": 1,
+    "firstDetectedSharedGoal": 0,
+    "player1FirstDetectedGoal": 0,
     "player2FirstDetectedGoal": 0,
-    "player1FinalReachedGoal": 1,
-    "player2FinalReachedGoal": 1,
+    "player1FinalReachedGoal": 0,
+    "player2FinalReachedGoal": 0,
     "player1Trajectory": [
       [
         7,
         11
       ],
       [
-        8,
-        11
-      ],
-      [
-        9,
-        11
-      ],
-      [
-        9,
+        7,
         10
       ],
       [
-        9,
+        7,
         9
       ],
       [
-        9,
+        7,
         8
       ],
       [
-        10,
+        6,
         8
       ],
       [
-        11,
-        8
-      ],
-      [
-        12,
-        8
-      ],
-      [
-        13,
-        8
-      ],
-      [
-        13,
+        6,
         7
+      ],
+      [
+        6,
+        6
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        4,
+        6
+      ],
+      [
+        3,
+        6
+      ],
+      [
+        2,
+        6
       ]
     ],
     "player2Trajectory": [
@@ -1962,60 +2170,44 @@
         1
       ],
       [
-        7,
+        5,
         1
       ],
       [
-        8,
+        4,
         1
       ],
       [
-        9,
+        3,
         1
       ],
       [
-        10,
-        1
-      ],
-      [
-        11,
-        1
-      ],
-      [
-        11,
+        3,
         2
       ],
       [
-        11,
+        2,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
         3
       ],
       [
-        12,
-        3
-      ],
-      [
-        12,
+        1,
         4
       ],
       [
-        12,
+        1,
         5
-      ],
-      [
-        12,
-        6
       ]
     ],
     "player1Actions": [
       [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
         0,
         -1
       ],
@@ -2028,19 +2220,7 @@
         -1
       ],
       [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
+        -1,
         0
       ],
       [
@@ -2050,6 +2230,26 @@
       [
         0,
         -1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
       ]
     ],
     "player2Actions": [
@@ -2058,23 +2258,15 @@
         0
       ],
       [
-        1,
+        -1,
         0
       ],
       [
-        1,
+        -1,
         0
       ],
       [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
+        -1,
         0
       ],
       [
@@ -2082,11 +2274,11 @@
         1
       ],
       [
-        0,
-        1
+        -1,
+        0
       ],
       [
-        1,
+        -1,
         0
       ],
       [
@@ -2102,8 +2294,8 @@
         1
       ],
       [
-        1,
-        0
+        0,
+        1
       ]
     ],
     "player1StartPosition": [
@@ -2132,7 +2324,7 @@
       13,
       6
     ],
-    "totalSteps": 13,
+    "totalSteps": 11,
     "collaborationSucceeded": true
   },
   {
@@ -2147,8 +2339,8 @@
     "newGoalPresented": true,
     "newGoalPresentedTime": 3,
     "newGoalPosition": [
-      9,
-      11
+      8,
+      12
     ],
     "firstDetectedSharedGoal": 0,
     "player1FirstDetectedGoal": 0,
@@ -2161,48 +2353,48 @@
         7
       ],
       [
-        12,
-        7
+        13,
+        6
       ],
       [
         12,
         6
       ],
       [
-        12,
-        5
-      ],
-      [
-        12,
-        4
-      ],
-      [
-        12,
-        3
-      ],
-      [
-        12,
-        2
-      ],
-      [
-        12,
-        1
-      ],
-      [
-        12,
-        0
-      ],
-      [
         11,
-        0
+        6
       ],
       [
         10,
-        0
+        6
+      ],
+      [
+        10,
+        5
       ],
       [
         9,
-        0
+        5
+      ],
+      [
+        8,
+        5
+      ],
+      [
+        8,
+        4
+      ],
+      [
+        8,
+        3
+      ],
+      [
+        8,
+        2
+      ],
+      [
+        8,
+        1
       ]
     ],
     "player2Trajectory": [
@@ -2227,12 +2419,12 @@
         6
       ],
       [
-        6,
-        5
+        7,
+        6
       ],
       [
-        6,
-        4
+        7,
+        5
       ],
       [
         7,
@@ -2257,34 +2449,6 @@
     ],
     "player1Actions": [
       [
-        -1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
         0,
         -1
       ],
@@ -2301,8 +2465,36 @@
         0
       ],
       [
+        0,
+        -1
+      ],
+      [
         -1,
         0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
       ]
     ],
     "player2Actions": [
@@ -2323,16 +2515,16 @@
         0
       ],
       [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
         1,
         0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
       ],
       [
         0,
@@ -2394,48 +2586,64 @@
     "mapId": "307",
     "distanceCondition": "closer_to_player2",
     "newGoalPresented": true,
-    "newGoalPresentedTime": 2,
+    "newGoalPresentedTime": 3,
     "newGoalPosition": [
-      6,
-      9
+      4,
+      2
     ],
-    "firstDetectedSharedGoal": 1,
-    "player1FirstDetectedGoal": 1,
-    "player2FirstDetectedGoal": 1,
-    "player1FinalReachedGoal": 2,
-    "player2FinalReachedGoal": 2,
+    "firstDetectedSharedGoal": 0,
+    "player1FirstDetectedGoal": 0,
+    "player2FirstDetectedGoal": 0,
+    "player1FinalReachedGoal": 0,
+    "player2FinalReachedGoal": 0,
     "player1Trajectory": [
       [
         12,
         7
       ],
       [
-        12,
-        8
-      ],
-      [
         11,
-        8
+        7
       ],
       [
         10,
-        8
+        7
+      ],
+      [
+        10,
+        6
+      ],
+      [
+        10,
+        5
       ],
       [
         9,
-        8
+        5
       ],
       [
         8,
-        8
+        5
       ],
       [
         8,
-        9
+        4
       ],
       [
         7,
-        9
+        4
+      ],
+      [
+        7,
+        3
+      ],
+      [
+        6,
+        3
+      ],
+      [
+        6,
+        2
       ]
     ],
     "player2Trajectory": [
@@ -2444,48 +2652,52 @@
         7
       ],
       [
-        1,
-        7
+        0,
+        6
+      ],
+      [
+        0,
+        5
+      ],
+      [
+        0,
+        4
+      ],
+      [
+        0,
+        3
       ],
       [
         1,
-        8
-      ],
-      [
-        1,
-        9
+        3
       ],
       [
         2,
-        9
+        3
       ],
       [
         3,
-        9
+        3
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        3,
+        1
       ],
       [
         4,
-        9
+        1
       ],
       [
         5,
-        9
+        1
       ]
     ],
     "player1Actions": [
       [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
         -1,
         0
       ],
@@ -2495,7 +2707,11 @@
       ],
       [
         0,
-        1
+        -1
+      ],
+      [
+        0,
+        -1
       ],
       [
         -1,
@@ -2504,28 +2720,68 @@
       [
         -1,
         0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
       ]
     ],
     "player2Actions": [
       [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
         1,
         0
       ],
       [
         0,
-        1
+        -1
       ],
       [
         0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
+        -1
       ],
       [
         1,
@@ -2566,7 +2822,7 @@
       6,
       13
     ],
-    "totalSteps": 8,
+    "totalSteps": 12,
     "collaborationSucceeded": true
   },
   {
@@ -2581,8 +2837,8 @@
     "newGoalPresented": true,
     "newGoalPresentedTime": 2,
     "newGoalPosition": [
-      3,
-      8
+      2,
+      9
     ],
     "firstDetectedSharedGoal": 1,
     "player1FirstDetectedGoal": 1,
@@ -2615,20 +2871,20 @@
         12
       ],
       [
-        10,
+        11,
+        12
+      ],
+      [
+        12,
+        12
+      ],
+      [
+        12,
         11
       ],
       [
-        10,
+        12,
         10
-      ],
-      [
-        10,
-        9
-      ],
-      [
-        11,
-        9
       ],
       [
         12,
@@ -2645,36 +2901,36 @@
         4
       ],
       [
+        7,
+        5
+      ],
+      [
         8,
-        4
-      ],
-      [
-        9,
-        4
-      ],
-      [
-        9,
         5
       ],
       [
-        10,
-        5
-      ],
-      [
-        10,
+        8,
         6
       ],
       [
-        10,
+        8,
         7
       ],
       [
-        11,
-        7
-      ],
-      [
-        11,
+        8,
         8
+      ],
+      [
+        9,
+        8
+      ],
+      [
+        10,
+        8
+      ],
+      [
+        10,
+        9
       ],
       [
         11,
@@ -2711,24 +2967,24 @@
         0
       ],
       [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
         1,
         0
       ],
       [
         1,
         0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
       ],
       [
         1,
@@ -2741,14 +2997,6 @@
     ],
     "player2Actions": [
       [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
         0,
         1
       ],
@@ -2765,6 +3013,14 @@
         1
       ],
       [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
         1,
         0
       ],
@@ -2773,8 +3029,8 @@
         1
       ],
       [
-        0,
-        1
+        1,
+        0
       ],
       [
         1,
@@ -4187,8 +4443,8 @@
     "firstDetectedSharedGoal": 1,
     "player1FirstDetectedGoal": 1,
     "player2FirstDetectedGoal": 1,
-    "player1FinalReachedGoal": 2,
-    "player2FinalReachedGoal": 2,
+    "player1FinalReachedGoal": 1,
+    "player2FinalReachedGoal": 1,
     "player1Trajectory": [
       [
         0,
@@ -4211,32 +4467,36 @@
         10
       ],
       [
+        1,
+        11
+      ],
+      [
         2,
-        10
+        11
       ],
       [
         3,
-        10
+        11
       ],
       [
         4,
-        10
+        11
+      ],
+      [
+        4,
+        12
       ],
       [
         5,
-        10
+        12
       ],
       [
         6,
-        10
+        12
       ],
       [
-        7,
-        10
-      ],
-      [
-        8,
-        10
+        6,
+        13
       ]
     ],
     "player2Trajectory": [
@@ -4257,20 +4517,40 @@
         10
       ],
       [
+        14,
+        11
+      ],
+      [
         13,
-        10
+        11
+      ],
+      [
+        13,
+        12
       ],
       [
         12,
-        10
+        12
+      ],
+      [
+        12,
+        13
       ],
       [
         11,
-        10
+        13
       ],
       [
         10,
-        10
+        13
+      ],
+      [
+        9,
+        13
+      ],
+      [
+        8,
+        13
       ]
     ],
     "player1Actions": [
@@ -4291,8 +4571,8 @@
         1
       ],
       [
-        1,
-        0
+        0,
+        1
       ],
       [
         1,
@@ -4307,8 +4587,8 @@
         0
       ],
       [
-        1,
-        0
+        0,
+        1
       ],
       [
         1,
@@ -4317,6 +4597,10 @@
       [
         1,
         0
+      ],
+      [
+        0,
+        1
       ],
       [
         1,
@@ -4331,6 +4615,26 @@
       [
         0,
         1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
       ],
       [
         0,
@@ -4383,7 +4687,7 @@
       7,
       13
     ],
-    "totalSteps": 12,
+    "totalSteps": 13,
     "collaborationSucceeded": true
   },
   {
@@ -4396,63 +4700,63 @@
     "mapId": "303",
     "distanceCondition": "closer_to_player1",
     "newGoalPresented": true,
-    "newGoalPresentedTime": 2,
+    "newGoalPresentedTime": 4,
     "newGoalPosition": [
-      8,
-      2
+      5,
+      8
     ],
-    "firstDetectedSharedGoal": 1,
-    "player1FirstDetectedGoal": 1,
-    "player2FirstDetectedGoal": 1,
-    "player1FinalReachedGoal": 1,
-    "player2FinalReachedGoal": 1,
+    "firstDetectedSharedGoal": 0,
+    "player1FirstDetectedGoal": 0,
+    "player2FirstDetectedGoal": 0,
+    "player1FinalReachedGoal": 0,
+    "player2FinalReachedGoal": 0,
     "player1Trajectory": [
       [
         7,
         2
       ],
       [
-        8,
-        2
-      ],
-      [
-        9,
-        2
-      ],
-      [
-        9,
+        7,
         3
       ],
       [
-        10,
-        3
-      ],
-      [
-        10,
+        7,
         4
       ],
       [
-        11,
-        4
-      ],
-      [
-        12,
-        4
-      ],
-      [
-        13,
-        4
-      ],
-      [
-        13,
+        7,
         5
       ],
       [
-        13,
+        6,
+        5
+      ],
+      [
+        6,
         6
       ],
       [
-        13,
+        5,
+        6
+      ],
+      [
+        4,
+        6
+      ],
+      [
+        3,
+        6
+      ],
+      [
+        3,
+        7
+      ],
+      [
+        2,
+        7
+      ],
+      [
+        1,
         7
       ]
     ],
@@ -4462,84 +4766,52 @@
         14
       ],
       [
-        7,
+        6,
+        14
+      ],
+      [
+        5,
+        14
+      ],
+      [
+        5,
         13
       ],
       [
-        8,
+        4,
         13
       ],
       [
-        8,
+        3,
+        13
+      ],
+      [
+        2,
+        13
+      ],
+      [
+        1,
+        13
+      ],
+      [
+        1,
         12
       ],
       [
-        9,
-        12
-      ],
-      [
-        10,
-        12
-      ],
-      [
-        11,
-        12
-      ],
-      [
-        12,
-        12
-      ],
-      [
-        13,
-        12
-      ],
-      [
-        13,
+        1,
         11
       ],
       [
-        13,
+        1,
         10
       ],
       [
-        13,
+        1,
         9
       ]
     ],
     "player1Actions": [
       [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
         0,
         1
       ],
@@ -4550,6 +4822,38 @@
       [
         0,
         1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
       ],
       [
         0,
@@ -4558,11 +4862,11 @@
     ],
     "player2Actions": [
       [
-        0,
-        -1
+        -1,
+        0
       ],
       [
-        1,
+        -1,
         0
       ],
       [
@@ -4570,24 +4874,24 @@
         -1
       ],
       [
-        1,
+        -1,
         0
       ],
       [
-        1,
+        -1,
         0
       ],
       [
-        1,
+        -1,
         0
       ],
       [
-        1,
+        -1,
         0
       ],
       [
-        1,
-        0
+        0,
+        -1
       ],
       [
         0,
@@ -4686,6 +4990,14 @@
       ],
       [
         5,
+        3
+      ],
+      [
+        5,
+        4
+      ],
+      [
+        5,
         5
       ],
       [
@@ -4751,6 +5063,14 @@
       [
         0,
         1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        -1
       ],
       [
         0,
@@ -4833,7 +5153,7 @@
       14,
       7
     ],
-    "totalSteps": 9,
+    "totalSteps": 11,
     "collaborationSucceeded": true
   },
   {
@@ -4846,16 +5166,16 @@
     "mapId": "305",
     "distanceCondition": "closer_to_player1",
     "newGoalPresented": true,
-    "newGoalPresentedTime": 1,
+    "newGoalPresentedTime": 2,
     "newGoalPosition": [
-      11,
-      7
+      4,
+      10
     ],
     "firstDetectedSharedGoal": 1,
     "player1FirstDetectedGoal": 1,
     "player2FirstDetectedGoal": 1,
-    "player1FinalReachedGoal": 2,
-    "player2FinalReachedGoal": 2,
+    "player1FinalReachedGoal": 1,
+    "player2FinalReachedGoal": 1,
     "player1Trajectory": [
       [
         7,
@@ -4866,28 +5186,40 @@
         11
       ],
       [
-        9,
-        11
-      ],
-      [
-        10,
-        11
-      ],
-      [
-        10,
+        8,
         10
       ],
       [
-        11,
-        10
-      ],
-      [
-        11,
+        8,
         9
+      ],
+      [
+        9,
+        9
+      ],
+      [
+        9,
+        8
+      ],
+      [
+        10,
+        8
       ],
       [
         11,
         8
+      ],
+      [
+        12,
+        8
+      ],
+      [
+        13,
+        8
+      ],
+      [
+        13,
+        7
       ]
     ],
     "player2Trajectory": [
@@ -4896,39 +5228,43 @@
         1
       ],
       [
-        8,
-        1
+        7,
+        2
       ],
       [
         8,
         2
       ],
       [
-        8,
+        9,
+        2
+      ],
+      [
+        9,
         3
       ],
       [
-        8,
-        4
-      ],
-      [
         9,
         4
       ],
       [
         9,
         5
+      ],
+      [
+        9,
+        6
       ],
       [
         10,
-        5
+        6
       ],
       [
         11,
-        5
+        6
       ],
       [
-        11,
+        12,
         6
       ]
     ],
@@ -4938,12 +5274,8 @@
         0
       ],
       [
-        1,
-        0
-      ],
-      [
-        1,
-        0
+        0,
+        -1
       ],
       [
         0,
@@ -4956,6 +5288,22 @@
       [
         0,
         -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
       ],
       [
         0,
@@ -4968,26 +5316,6 @@
     ],
     "player2Actions": [
       [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
         0,
         1
       ],
@@ -5006,6 +5334,30 @@
       [
         0,
         1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
       ]
     ],
     "player1StartPosition": [
@@ -5034,7 +5386,7 @@
       13,
       6
     ],
-    "totalSteps": 10,
+    "totalSteps": 11,
     "collaborationSucceeded": true
   },
   {
@@ -5047,16 +5399,16 @@
     "mapId": "306",
     "distanceCondition": "equal_to_both",
     "newGoalPresented": true,
-    "newGoalPresentedTime": 5,
+    "newGoalPresentedTime": 1,
     "newGoalPosition": [
-      3,
-      11
+      8,
+      12
     ],
-    "firstDetectedSharedGoal": 1,
-    "player1FirstDetectedGoal": 1,
-    "player2FirstDetectedGoal": 1,
-    "player1FinalReachedGoal": 1,
-    "player2FinalReachedGoal": 1,
+    "firstDetectedSharedGoal": 0,
+    "player1FirstDetectedGoal": 0,
+    "player2FirstDetectedGoal": 0,
+    "player1FinalReachedGoal": 0,
+    "player2FinalReachedGoal": 0,
     "player1Trajectory": [
       [
         13,
@@ -5064,55 +5416,47 @@
       ],
       [
         13,
-        8
+        6
       ],
       [
         13,
-        9
-      ],
-      [
-        12,
-        9
+        5
       ],
       [
         13,
-        9
+        4
       ],
       [
         12,
-        9
+        4
       ],
       [
         12,
-        10
+        3
       ],
       [
         11,
-        10
+        3
       ],
       [
         11,
-        11
+        2
+      ],
+      [
+        11,
+        1
+      ],
+      [
+        11,
+        0
       ],
       [
         10,
-        11
-      ],
-      [
-        10,
-        12
-      ],
-      [
-        10,
-        13
+        0
       ],
       [
         9,
-        13
-      ],
-      [
-        8,
-        13
+        0
       ]
     ],
     "player2Trajectory": [
@@ -5121,74 +5465,62 @@
         7
       ],
       [
+        3,
+        6
+      ],
+      [
         4,
-        7
+        6
+      ],
+      [
+        4,
+        5
       ],
       [
         5,
-        7
+        5
+      ],
+      [
+        5,
+        4
+      ],
+      [
+        5,
+        3
       ],
       [
         6,
-        7
+        3
       ],
       [
         7,
-        7
+        3
       ],
       [
         7,
-        8
-      ],
-      [
-        7,
-        9
-      ],
-      [
-        7,
-        10
+        2
       ],
       [
         8,
-        10
+        2
       ],
       [
         8,
-        11
-      ],
-      [
-        8,
-        12
-      ],
-      [
-        8,
-        13
+        1
       ]
     ],
     "player1Actions": [
       [
         0,
-        1
+        -1
       ],
       [
         0,
-        1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
+        -1
       ],
       [
         0,
-        1
+        -1
       ],
       [
         -1,
@@ -5196,7 +5528,7 @@
       ],
       [
         0,
-        1
+        -1
       ],
       [
         -1,
@@ -5204,11 +5536,15 @@
       ],
       [
         0,
-        1
+        -1
       ],
       [
         0,
-        1
+        -1
+      ],
+      [
+        0,
+        -1
       ],
       [
         -1,
@@ -5219,12 +5555,36 @@
         0
       ],
       [
-        0,
-        1
+        -1,
+        0
       ]
     ],
     "player2Actions": [
       [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
         1,
         0
       ],
@@ -5233,24 +5593,8 @@
         0
       ],
       [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
         0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
+        -1
       ],
       [
         1,
@@ -5258,19 +5602,11 @@
       ],
       [
         0,
-        1
+        -1
       ],
       [
         0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
+        -1
       ]
     ],
     "player1StartPosition": [
@@ -5299,7 +5635,7 @@
       8,
       14
     ],
-    "totalSteps": 14,
+    "totalSteps": 12,
     "collaborationSucceeded": true
   },
   {
@@ -5314,62 +5650,62 @@
     "newGoalPresented": true,
     "newGoalPresentedTime": 2,
     "newGoalPosition": [
-      6,
-      11
+      11,
+      6
     ],
-    "firstDetectedSharedGoal": 0,
-    "player1FirstDetectedGoal": 0,
+    "firstDetectedSharedGoal": 1,
+    "player1FirstDetectedGoal": 1,
     "player2FirstDetectedGoal": 0,
-    "player1FinalReachedGoal": 0,
-    "player2FinalReachedGoal": 0,
+    "player1FinalReachedGoal": 1,
+    "player2FinalReachedGoal": 1,
     "player1Trajectory": [
       [
         12,
         7
       ],
       [
-        11,
-        7
+        12,
+        8
       ],
       [
         11,
-        6
-      ],
-      [
-        11,
-        5
+        8
       ],
       [
         10,
-        5
+        8
+      ],
+      [
+        10,
+        9
+      ],
+      [
+        10,
+        10
+      ],
+      [
+        10,
+        11
+      ],
+      [
+        10,
+        12
+      ],
+      [
+        10,
+        13
       ],
       [
         9,
-        5
-      ],
-      [
-        9,
-        4
+        13
       ],
       [
         8,
-        4
-      ],
-      [
-        8,
-        3
+        13
       ],
       [
         7,
-        3
-      ],
-      [
-        7,
-        2
-      ],
-      [
-        6,
-        2
+        13
       ]
     ],
     "player2Trajectory": [
@@ -5378,62 +5714,62 @@
         7
       ],
       [
-        1,
-        7
-      ],
-      [
-        1,
+        0,
         6
       ],
       [
+        0,
+        7
+      ],
+      [
+        0,
+        8
+      ],
+      [
         1,
-        5
+        8
+      ],
+      [
+        1,
+        9
       ],
       [
         2,
-        5
+        9
+      ],
+      [
+        2,
+        10
       ],
       [
         3,
-        5
+        10
       ],
       [
         3,
-        4
-      ],
-      [
-        3,
-        3
-      ],
-      [
-        3,
-        2
-      ],
-      [
-        3,
-        1
+        11
       ],
       [
         4,
-        1
+        11
+      ],
+      [
+        4,
+        12
       ],
       [
         5,
-        1
+        12
+      ],
+      [
+        6,
+        12
       ]
     ],
     "player1Actions": [
       [
-        -1,
-        0
-      ],
-      [
         0,
-        -1
-      ],
-      [
-        0,
-        -1
+        1
       ],
       [
         -1,
@@ -5445,81 +5781,97 @@
       ],
       [
         0,
-        -1
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
       ],
       [
         -1,
         0
       ],
       [
-        0,
-        -1
+        -1,
+        0
       ],
       [
         -1,
         0
       ],
       [
-        0,
-        -1
-      ],
-      [
         -1,
         0
-      ],
-      [
-        0,
-        -1
       ]
     ],
     "player2Actions": [
       [
-        1,
-        0
-      ],
-      [
         0,
         -1
       ],
       [
         0,
-        -1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
+        1
       ],
       [
         0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
+        1
       ],
       [
         1,
         0
       ],
       [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
         1,
         0
       ],
       [
         1,
         0
+      ],
+      [
+        0,
+        1
       ]
     ],
     "player1StartPosition": [
@@ -5548,7 +5900,7 @@
       6,
       13
     ],
-    "totalSteps": 12,
+    "totalSteps": 14,
     "collaborationSucceeded": true
   },
   {
@@ -5563,59 +5915,59 @@
     "newGoalPresented": false,
     "newGoalPresentedTime": null,
     "newGoalPosition": null,
-    "firstDetectedSharedGoal": 1,
-    "player1FirstDetectedGoal": 1,
-    "player2FirstDetectedGoal": 1,
-    "player1FinalReachedGoal": 1,
-    "player2FinalReachedGoal": 1,
+    "firstDetectedSharedGoal": 0,
+    "player1FirstDetectedGoal": 0,
+    "player2FirstDetectedGoal": 0,
+    "player1FinalReachedGoal": 0,
+    "player2FinalReachedGoal": 0,
     "player1Trajectory": [
       [
         7,
         14
       ],
       [
-        8,
-        14
-      ],
-      [
-        9,
-        14
-      ],
-      [
-        10,
-        14
-      ],
-      [
-        10,
+        7,
         13
       ],
       [
-        10,
+        7,
         12
       ],
       [
-        10,
+        6,
+        12
+      ],
+      [
+        5,
+        12
+      ],
+      [
+        4,
+        12
+      ],
+      [
+        3,
+        12
+      ],
+      [
+        2,
+        12
+      ],
+      [
+        1,
+        12
+      ],
+      [
+        1,
         11
       ],
       [
-        10,
+        0,
+        11
+      ],
+      [
+        0,
         10
-      ],
-      [
-        11,
-        10
-      ],
-      [
-        12,
-        10
-      ],
-      [
-        12,
-        9
-      ],
-      [
-        13,
-        9
       ]
     ],
     "player2Trajectory": [
@@ -5624,61 +5976,89 @@
         4
       ],
       [
-        8,
-        4
-      ],
-      [
-        8,
+        7,
         5
       ],
       [
-        8,
+        6,
+        5
+      ],
+      [
+        6,
         6
       ],
       [
-        9,
+        5,
         6
       ],
       [
-        10,
-        6
-      ],
-      [
-        11,
-        6
-      ],
-      [
-        12,
-        6
-      ],
-      [
-        12,
+        5,
         7
       ],
       [
-        13,
+        4,
         7
       ],
       [
-        13,
+        4,
         8
       ],
       [
-        14,
+        3,
         8
+      ],
+      [
+        2,
+        8
+      ],
+      [
+        2,
+        9
+      ],
+      [
+        1,
+        9
       ]
     ],
     "player1Actions": [
       [
-        1,
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
         0
       ],
       [
-        1,
+        -1,
         0
       ],
       [
-        1,
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
         0
       ],
       [
@@ -5688,39 +6068,15 @@
       [
         0,
         -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
       ]
     ],
     "player2Actions": [
       [
-        1,
+        0,
+        1
+      ],
+      [
+        -1,
         0
       ],
       [
@@ -5728,23 +6084,7 @@
         1
       ],
       [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
+        -1,
         0
       ],
       [
@@ -5752,7 +6092,7 @@
         1
       ],
       [
-        1,
+        -1,
         0
       ],
       [
@@ -5760,12 +6100,24 @@
         1
       ],
       [
-        1,
+        -1,
+        0
+      ],
+      [
+        -1,
         0
       ],
       [
         0,
         1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
       ]
     ],
     "player1StartPosition": [
@@ -6388,6 +6740,14 @@
         5
       ],
       [
+        8,
+        4
+      ],
+      [
+        8,
+        5
+      ],
+      [
         7,
         5
       ],
@@ -6460,6 +6820,14 @@
         0
       ],
       [
+        0,
+        -1
+      ],
+      [
+        0,
+        1
+      ],
+      [
         -1,
         0
       ],
@@ -6506,7 +6874,7 @@
       7,
       14
     ],
-    "totalSteps": 13,
+    "totalSteps": 15,
     "collaborationSucceeded": true
   },
   {
@@ -6519,68 +6887,72 @@
     "mapId": "300",
     "distanceCondition": "equal_to_both",
     "newGoalPresented": true,
-    "newGoalPresentedTime": 1,
+    "newGoalPresentedTime": 3,
     "newGoalPosition": [
-      6,
-      2
+      12,
+      7
     ],
     "firstDetectedSharedGoal": 0,
     "player1FirstDetectedGoal": 0,
     "player2FirstDetectedGoal": 0,
-    "player1FinalReachedGoal": 2,
-    "player2FinalReachedGoal": 2,
+    "player1FinalReachedGoal": 0,
+    "player2FinalReachedGoal": 0,
     "player1Trajectory": [
       [
         7,
         14
       ],
       [
-        6,
-        14
+        7,
+        13
       ],
       [
-        6,
-        13
+        7,
+        12
       ],
       [
         6,
         12
       ],
       [
-        6,
+        5,
+        12
+      ],
+      [
+        4,
+        12
+      ],
+      [
+        4,
         11
       ],
       [
-        6,
+        3,
+        11
+      ],
+      [
+        3,
         10
       ],
       [
-        6,
+        3,
         9
       ],
       [
-        6,
+        2,
+        9
+      ],
+      [
+        1,
+        9
+      ],
+      [
+        1,
         8
       ],
       [
-        6,
-        7
-      ],
-      [
-        6,
-        6
-      ],
-      [
-        6,
-        5
-      ],
-      [
-        6,
-        4
-      ],
-      [
-        6,
-        3
+        0,
+        8
       ]
     ],
     "player2Trajectory": [
@@ -6595,9 +6967,77 @@
       [
         6,
         1
+      ],
+      [
+        6,
+        2
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        0,
+        5
+      ],
+      [
+        0,
+        6
       ]
     ],
     "player1Actions": [
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
       [
         -1,
         0
@@ -6611,40 +7051,20 @@
         -1
       ],
       [
-        0,
-        -1
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
       ],
       [
         0,
         -1
       ],
       [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
+        -1,
+        0
       ],
       [
         0,
@@ -6652,6 +7072,50 @@
       ]
     ],
     "player2Actions": [
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
       [
         -1,
         0
@@ -6691,7 +7155,7 @@
       14,
       7
     ],
-    "totalSteps": 13,
+    "totalSteps": 14,
     "collaborationSucceeded": true
   },
   {
@@ -6725,48 +7189,48 @@
         1
       ],
       [
-        5,
-        1
-      ],
-      [
-        5,
+        6,
         2
       ],
       [
+        6,
+        3
+      ],
+      [
         5,
         3
       ],
       [
-        4,
-        3
-      ],
-      [
-        4,
+        5,
         4
       ],
       [
-        4,
+        5,
         5
       ],
       [
-        3,
-        5
+        5,
+        6
+      ],
+      [
+        4,
+        6
       ],
       [
         3,
         6
       ],
       [
-        3,
-        7
-      ],
-      [
         2,
-        7
+        6
       ],
       [
         1,
-        7
+        6
+      ],
+      [
+        0,
+        6
       ]
     ],
     "player2Trajectory": [
@@ -6779,48 +7243,56 @@
         14
       ],
       [
-        5,
-        14
-      ],
-      [
-        4,
-        14
-      ],
-      [
-        3,
-        14
-      ],
-      [
-        3,
+        6,
         13
       ],
       [
-        3,
+        6,
         12
       ],
       [
-        3,
+        6,
         11
       ],
       [
-        3,
+        6,
         10
       ],
       [
-        3,
+        6,
         9
       ],
       [
+        5,
+        9
+      ],
+      [
+        4,
+        9
+      ],
+      [
+        4,
+        8
+      ],
+      [
         3,
         8
       ],
       [
-        2,
-        8
+        3,
+        7
       ],
       [
-        1,
-        8
+        2,
+        7
+      ],
+      [
+        2,
+        6
+      ],
+      [
+        2,
+        7
       ],
       [
         1,
@@ -6837,10 +7309,6 @@
         0
       ],
       [
-        -1,
-        0
-      ],
-      [
         0,
         1
       ],
@@ -6861,14 +7329,6 @@
         1
       ],
       [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
         0,
         1
       ],
@@ -6883,6 +7343,18 @@
       [
         -1,
         0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
       ]
     ],
     "player2Actions": [
@@ -6891,22 +7363,6 @@
         0
       ],
       [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
         0,
         -1
       ],
@@ -6937,6 +7393,30 @@
       [
         0,
         -1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
       ],
       [
         -1,
@@ -6969,7 +7449,7 @@
       14,
       7
     ],
-    "totalSteps": 14,
+    "totalSteps": 16,
     "collaborationSucceeded": true
   },
   {
@@ -6982,16 +7462,16 @@
     "mapId": "302",
     "distanceCondition": "closer_to_player2",
     "newGoalPresented": true,
-    "newGoalPresentedTime": 6,
+    "newGoalPresentedTime": 4,
     "newGoalPosition": [
-      14,
-      11
+      10,
+      13
     ],
     "firstDetectedSharedGoal": 1,
     "player1FirstDetectedGoal": 1,
     "player2FirstDetectedGoal": 1,
     "player1FinalReachedGoal": 1,
-    "player2FinalReachedGoal": 1,
+    "player2FinalReachedGoal": 2,
     "player1Trajectory": [
       [
         0,
@@ -7010,40 +7490,40 @@
         7
       ],
       [
-        4,
-        7
-      ],
-      [
-        5,
-        7
-      ],
-      [
-        5,
+        3,
         8
       ],
       [
-        6,
-        8
-      ],
-      [
-        6,
+        3,
         9
       ],
       [
-        6,
+        3,
         10
       ],
       [
+        4,
+        10
+      ],
+      [
+        4,
+        11
+      ],
+      [
+        5,
+        11
+      ],
+      [
         6,
         11
       ],
       [
-        7,
-        11
+        6,
+        12
       ],
       [
-        7,
-        12
+        6,
+        13
       ]
     ],
     "player2Trajectory": [
@@ -7052,51 +7532,39 @@
         7
       ],
       [
-        14,
-        8
-      ],
-      [
-        14,
-        9
-      ],
-      [
-        14,
-        10
-      ],
-      [
-        14,
-        11
-      ],
-      [
-        14,
-        12
-      ],
-      [
-        14,
-        13
+        13,
+        7
       ],
       [
         13,
-        13
+        8
+      ],
+      [
+        13,
+        9
       ],
       [
         12,
-        13
+        9
       ],
       [
         11,
-        13
+        9
       ],
       [
-        10,
-        13
+        11,
+        10
       ],
       [
-        9,
-        13
+        11,
+        11
       ],
       [
-        8,
+        11,
+        12
+      ],
+      [
+        11,
         13
       ]
     ],
@@ -7114,22 +7582,6 @@
         0
       ],
       [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
         0,
         1
       ],
@@ -7150,26 +7602,30 @@
         1
       ],
       [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
         0,
         1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
       ]
     ],
     "player2Actions": [
       [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
+        -1,
+        0
       ],
       [
         0,
@@ -7188,20 +7644,20 @@
         0
       ],
       [
-        -1,
-        0
+        0,
+        1
       ],
       [
-        -1,
-        0
+        0,
+        1
       ],
       [
-        -1,
-        0
+        0,
+        1
       ],
       [
-        -1,
-        0
+        0,
+        1
       ],
       [
         -1,
@@ -7235,7 +7691,7 @@
       13
     ],
     "totalSteps": 13,
-    "collaborationSucceeded": true
+    "collaborationSucceeded": false
   },
   {
     "sessionIndex": 2,
@@ -7249,58 +7705,58 @@
     "newGoalPresented": false,
     "newGoalPresentedTime": null,
     "newGoalPosition": null,
-    "firstDetectedSharedGoal": 1,
-    "player1FirstDetectedGoal": 1,
-    "player2FirstDetectedGoal": 1,
-    "player1FinalReachedGoal": 1,
-    "player2FinalReachedGoal": 1,
+    "firstDetectedSharedGoal": 0,
+    "player1FirstDetectedGoal": 0,
+    "player2FirstDetectedGoal": 0,
+    "player1FinalReachedGoal": 0,
+    "player2FinalReachedGoal": 0,
     "player1Trajectory": [
       [
         7,
         2
       ],
       [
-        8,
-        2
-      ],
-      [
-        8,
+        7,
         3
       ],
       [
-        8,
+        7,
         4
       ],
       [
-        9,
+        6,
         4
       ],
       [
-        9,
+        6,
         5
       ],
       [
-        9,
+        6,
         6
       ],
       [
-        10,
-        6
-      ],
-      [
-        10,
+        6,
         7
       ],
       [
-        10,
+        6,
         8
       ],
       [
-        11,
+        5,
         8
       ],
       [
-        12,
+        4,
+        8
+      ],
+      [
+        3,
+        8
+      ],
+      [
+        2,
         8
       ]
     ],
@@ -7310,53 +7766,61 @@
         14
       ],
       [
-        8,
+        6,
         14
       ],
       [
-        9,
-        14
-      ],
-      [
-        9,
+        6,
         13
       ],
       [
-        10,
+        5,
         13
       ],
       [
-        10,
+        5,
         12
       ],
       [
-        10,
+        5,
         11
       ],
       [
-        11,
-        11
-      ],
-      [
-        12,
-        11
-      ],
-      [
-        13,
-        11
-      ],
-      [
-        13,
+        5,
         10
       ],
       [
-        13,
+        5,
         9
+      ],
+      [
+        4,
+        9
+      ],
+      [
+        3,
+        9
+      ],
+      [
+        3,
+        8
+      ],
+      [
+        2,
+        8
       ]
     ],
     "player1Actions": [
       [
-        1,
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
         0
       ],
       [
@@ -7368,10 +7832,6 @@
         1
       ],
       [
-        1,
-        0
-      ],
-      [
         0,
         1
       ],
@@ -7380,37 +7840,29 @@
         1
       ],
       [
-        1,
+        -1,
         0
       ],
       [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        1,
+        -1,
         0
       ],
       [
-        1,
+        -1,
         0
       ],
       [
-        1,
+        -1,
+        0
+      ],
+      [
+        -1,
         0
       ]
     ],
     "player2Actions": [
       [
-        1,
-        0
-      ],
-      [
-        1,
+        -1,
         0
       ],
       [
@@ -7418,27 +7870,7 @@
         -1
       ],
       [
-        1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
+        -1,
         0
       ],
       [
@@ -7452,6 +7884,30 @@
       [
         0,
         -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
       ]
     ],
     "player1StartPosition": [
@@ -7493,10 +7949,10 @@
     "mapId": "304",
     "distanceCondition": "equal_to_both",
     "newGoalPresented": true,
-    "newGoalPresentedTime": 4,
+    "newGoalPresentedTime": 2,
     "newGoalPosition": [
-      2,
-      7
+      3,
+      6
     ],
     "firstDetectedSharedGoal": 1,
     "player1FirstDetectedGoal": 1,
@@ -7509,32 +7965,36 @@
         0
       ],
       [
-        7,
-        1
-      ],
-      [
-        7,
-        2
-      ],
-      [
-        7,
-        3
-      ],
-      [
         8,
-        3
+        0
       ],
       [
         9,
-        3
+        0
       ],
       [
         10,
-        3
+        0
+      ],
+      [
+        10,
+        0
       ],
       [
         11,
-        3
+        0
+      ],
+      [
+        11,
+        1
+      ],
+      [
+        12,
+        1
+      ],
+      [
+        12,
+        2
       ],
       [
         12,
@@ -7549,12 +8009,20 @@
         4
       ],
       [
-        13,
-        5
+        14,
+        4
       ],
       [
         14,
         5
+      ],
+      [
+        13,
+        5
+      ],
+      [
+        13,
+        6
       ],
       [
         14,
@@ -7571,48 +8039,48 @@
         13
       ],
       [
-        7,
-        12
-      ],
-      [
-        7,
-        11
-      ],
-      [
         8,
-        11
+        13
       ],
       [
         9,
-        11
+        13
       ],
       [
         10,
-        11
+        13
       ],
       [
         10,
-        10
+        12
       ],
       [
         11,
-        10
+        12
+      ],
+      [
+        11,
+        11
+      ],
+      [
+        12,
+        11
       ],
       [
         12,
         10
       ],
       [
-        12,
-        9
+        13,
+        10
       ],
       [
         13,
         9
       ],
       [
-        13,
-        8
+        14,
+        9
       ],
       [
         14,
@@ -7621,32 +8089,20 @@
     ],
     "player1Actions": [
       [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
         0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
+        -1
       ],
       [
         1,
@@ -7665,12 +8121,36 @@
         1
       ],
       [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
         1,
         0
       ],
       [
         0,
         1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
       ],
       [
         0,
@@ -7683,28 +8163,8 @@
         -1
       ],
       [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
         1,
         0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        -1
       ],
       [
         1,
@@ -7729,6 +8189,26 @@
       [
         1,
         0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
       ],
       [
         0,
@@ -7761,7 +8241,7 @@
       14,
       7
     ],
-    "totalSteps": 14,
+    "totalSteps": 17,
     "collaborationSucceeded": true
   },
   {
@@ -7774,59 +8254,59 @@
     "mapId": "305",
     "distanceCondition": "equal_to_both",
     "newGoalPresented": true,
-    "newGoalPresentedTime": 2,
+    "newGoalPresentedTime": 3,
     "newGoalPosition": [
-      4,
-      7
+      11,
+      6
     ],
-    "firstDetectedSharedGoal": 1,
-    "player1FirstDetectedGoal": 1,
-    "player2FirstDetectedGoal": 1,
-    "player1FinalReachedGoal": 1,
-    "player2FinalReachedGoal": 1,
+    "firstDetectedSharedGoal": 0,
+    "player1FirstDetectedGoal": 0,
+    "player2FirstDetectedGoal": 0,
+    "player1FinalReachedGoal": 0,
+    "player2FinalReachedGoal": 0,
     "player1Trajectory": [
       [
         7,
         11
       ],
       [
-        8,
-        11
-      ],
-      [
-        9,
-        11
-      ],
-      [
-        9,
+        7,
         10
       ],
       [
-        10,
-        10
-      ],
-      [
-        10,
+        7,
         9
       ],
       [
-        10,
+        6,
+        9
+      ],
+      [
+        6,
         8
       ],
       [
-        11,
+        5,
         8
       ],
       [
-        11,
+        5,
         7
       ],
       [
-        11,
-        6
+        4,
+        7
       ],
       [
-        12,
+        3,
+        7
+      ],
+      [
+        2,
+        7
+      ],
+      [
+        2,
         6
       ]
     ],
@@ -7840,60 +8320,44 @@
         2
       ],
       [
-        8,
-        2
-      ],
-      [
-        8,
+        7,
         3
       ],
       [
-        8,
+        6,
+        3
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        3,
+        3
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
         4
       ],
       [
-        9,
-        4
-      ],
-      [
-        9,
+        1,
         5
-      ],
-      [
-        10,
-        5
-      ],
-      [
-        11,
-        5
-      ],
-      [
-        11,
-        6
-      ],
-      [
-        12,
-        6
       ]
     ],
     "player1Actions": [
       [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        1,
-        0
-      ],
-      [
         0,
         -1
       ],
@@ -7902,7 +8366,7 @@
         -1
       ],
       [
-        1,
+        -1,
         0
       ],
       [
@@ -7910,15 +8374,31 @@
         -1
       ],
       [
+        -1,
+        0
+      ],
+      [
         0,
         -1
       ],
       [
-        1,
+        -1,
         0
       ],
       [
-        1,
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
         0
       ]
     ],
@@ -7928,7 +8408,31 @@
         1
       ],
       [
-        1,
+        0,
+        1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
         0
       ],
       [
@@ -7940,32 +8444,8 @@
         1
       ],
       [
-        1,
-        0
-      ],
-      [
         0,
         1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
       ]
     ],
     "player1StartPosition": [
@@ -8007,64 +8487,64 @@
     "mapId": "306",
     "distanceCondition": "closer_to_player2",
     "newGoalPresented": true,
-    "newGoalPresentedTime": 4,
+    "newGoalPresentedTime": 2,
     "newGoalPosition": [
-      6,
-      8
+      7,
+      6
     ],
-    "firstDetectedSharedGoal": 0,
-    "player1FirstDetectedGoal": 0,
-    "player2FirstDetectedGoal": 0,
-    "player1FinalReachedGoal": 0,
-    "player2FinalReachedGoal": 0,
+    "firstDetectedSharedGoal": 1,
+    "player1FirstDetectedGoal": 1,
+    "player2FirstDetectedGoal": 1,
+    "player1FinalReachedGoal": 1,
+    "player2FinalReachedGoal": 1,
     "player1Trajectory": [
       [
         13,
         7
       ],
       [
-        13,
-        6
-      ],
-      [
-        13,
-        5
+        12,
+        7
       ],
       [
         12,
-        5
-      ],
-      [
-        12,
-        4
+        8
       ],
       [
         11,
-        4
+        8
       ],
       [
         11,
-        3
+        9
       ],
       [
         11,
-        2
+        10
       ],
       [
         10,
-        2
-      ],
-      [
-        10,
-        1
+        10
       ],
       [
         9,
-        1
+        10
       ],
       [
         8,
-        1
+        10
+      ],
+      [
+        8,
+        11
+      ],
+      [
+        8,
+        12
+      ],
+      [
+        8,
+        13
       ]
     ],
     "player2Trajectory": [
@@ -8077,54 +8557,58 @@
         7
       ],
       [
+        4,
+        8
+      ],
+      [
+        4,
+        9
+      ],
+      [
         5,
-        7
+        9
+      ],
+      [
+        5,
+        10
+      ],
+      [
+        5,
+        11
+      ],
+      [
+        5,
+        12
       ],
       [
         6,
-        7
+        12
       ],
       [
         6,
-        6
+        13
+      ],
+      [
+        6,
+        14
+      ],
+      [
+        6,
+        14
       ],
       [
         7,
-        6
-      ],
-      [
-        7,
-        5
-      ],
-      [
-        7,
-        4
-      ],
-      [
-        8,
-        4
-      ],
-      [
-        8,
-        3
-      ],
-      [
-        8,
-        2
-      ],
-      [
-        8,
-        1
+        14
       ]
     ],
     "player1Actions": [
       [
-        0,
-        -1
+        -1,
+        0
       ],
       [
         0,
-        -1
+        1
       ],
       [
         -1,
@@ -8132,27 +8616,15 @@
       ],
       [
         0,
-        -1
+        1
+      ],
+      [
+        0,
+        1
       ],
       [
         -1,
         0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        -1
       ],
       [
         -1,
@@ -8164,7 +8636,19 @@
       ],
       [
         0,
-        -1
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
       ]
     ],
     "player2Actions": [
@@ -8173,28 +8657,12 @@
         0
       ],
       [
-        1,
-        0
-      ],
-      [
-        1,
-        0
+        0,
+        1
       ],
       [
         0,
-        -1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
+        1
       ],
       [
         1,
@@ -8202,19 +8670,39 @@
       ],
       [
         0,
-        -1
+        1
       ],
       [
         0,
-        -1
+        1
       ],
       [
         0,
-        -1
+        1
+      ],
+      [
+        1,
+        0
       ],
       [
         0,
-        -1
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
       ]
     ],
     "player1StartPosition": [
@@ -8243,7 +8731,7 @@
       8,
       14
     ],
-    "totalSteps": 12,
+    "totalSteps": 13,
     "collaborationSucceeded": true
   },
   {
@@ -8258,62 +8746,62 @@
     "newGoalPresented": true,
     "newGoalPresentedTime": 2,
     "newGoalPosition": [
-      9,
-      5
+      8,
+      10
     ],
-    "firstDetectedSharedGoal": 1,
-    "player1FirstDetectedGoal": 1,
-    "player2FirstDetectedGoal": 1,
-    "player1FinalReachedGoal": 1,
-    "player2FinalReachedGoal": 1,
+    "firstDetectedSharedGoal": 0,
+    "player1FirstDetectedGoal": 0,
+    "player2FirstDetectedGoal": 0,
+    "player1FinalReachedGoal": 0,
+    "player2FinalReachedGoal": 0,
     "player1Trajectory": [
       [
         12,
         7
       ],
       [
-        12,
-        8
-      ],
-      [
-        12,
-        9
-      ],
-      [
-        12,
-        10
-      ],
-      [
-        12,
-        11
+        11,
+        7
       ],
       [
         11,
-        11
-      ],
-      [
-        11,
-        12
+        6
       ],
       [
         10,
-        12
+        6
+      ],
+      [
+        10,
+        5
+      ],
+      [
+        10,
+        4
+      ],
+      [
+        10,
+        3
       ],
       [
         9,
-        12
+        3
+      ],
+      [
+        9,
+        2
       ],
       [
         8,
-        12
+        2
       ],
       [
         7,
-        12
+        2
       ],
       [
         6,
-        12
+        2
       ]
     ],
     "player2Trajectory": [
@@ -8322,66 +8810,62 @@
         7
       ],
       [
-        1,
-        7
+        0,
+        6
+      ],
+      [
+        0,
+        6
+      ],
+      [
+        0,
+        5
+      ],
+      [
+        0,
+        4
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        0,
+        2
       ],
       [
         1,
-        8
+        2
       ],
       [
         2,
-        8
-      ],
-      [
-        2,
-        9
-      ],
-      [
-        2,
-        10
+        2
       ],
       [
         3,
-        10
-      ],
-      [
-        3,
-        11
+        2
       ],
       [
         4,
-        11
+        2
       ],
       [
         5,
-        11
+        2
       ],
       [
         5,
-        12
-      ],
-      [
-        5,
-        13
+        1
       ]
     ],
     "player1Actions": [
       [
-        0,
-        1
+        -1,
+        0
       ],
       [
         0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
+        -1
       ],
       [
         -1,
@@ -8389,15 +8873,23 @@
       ],
       [
         0,
-        1
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
       ],
       [
         -1,
         0
       ],
       [
-        -1,
-        0
+        0,
+        -1
       ],
       [
         -1,
@@ -8413,53 +8905,57 @@
       ],
       [
         0,
-        1
+        -1
       ]
     ],
     "player2Actions": [
       [
-        1,
+        0,
+        -1
+      ],
+      [
+        -1,
         0
       ],
       [
         0,
-        1
-      ],
-      [
-        1,
-        0
+        -1
       ],
       [
         0,
-        1
+        -1
       ],
       [
         0,
-        1
-      ],
-      [
-        1,
-        0
+        -1
       ],
       [
         0,
-        1
-      ],
-      [
-        1,
-        0
+        -1
       ],
       [
         1,
         0
       ],
       [
-        0,
-        1
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
       ],
       [
         0,
-        1
+        -1
       ],
       [
         1,
@@ -8492,7 +8988,7 @@
       6,
       13
     ],
-    "totalSteps": 12,
+    "totalSteps": 13,
     "collaborationSucceeded": true
   },
   {
@@ -8505,64 +9001,84 @@
     "mapId": "308",
     "distanceCondition": "closer_to_player2",
     "newGoalPresented": true,
-    "newGoalPresentedTime": 6,
+    "newGoalPresentedTime": 2,
     "newGoalPosition": [
-      7,
-      11
+      12,
+      6
     ],
-    "firstDetectedSharedGoal": 0,
-    "player1FirstDetectedGoal": 0,
-    "player2FirstDetectedGoal": 0,
-    "player1FinalReachedGoal": 0,
-    "player2FinalReachedGoal": 0,
+    "firstDetectedSharedGoal": 1,
+    "player1FirstDetectedGoal": 1,
+    "player2FirstDetectedGoal": 1,
+    "player1FinalReachedGoal": 2,
+    "player2FinalReachedGoal": 2,
     "player1Trajectory": [
       [
         7,
         14
       ],
       [
-        6,
-        14
-      ],
-      [
-        6,
+        7,
         13
       ],
       [
-        6,
+        8,
+        13
+      ],
+      [
+        8,
         12
       ],
       [
-        6,
+        8,
         11
       ],
       [
-        5,
-        11
-      ],
-      [
-        4,
-        11
-      ],
-      [
-        4,
+        8,
         10
       ],
       [
-        4,
+        8,
         9
       ],
       [
-        3,
-        9
+        8,
+        8
       ],
       [
-        2,
-        9
+        8,
+        7
       ],
       [
-        1,
-        9
+        9,
+        7
+      ],
+      [
+        10,
+        7
+      ],
+      [
+        10,
+        6
+      ],
+      [
+        9,
+        6
+      ],
+      [
+        8,
+        6
+      ],
+      [
+        9,
+        6
+      ],
+      [
+        10,
+        6
+      ],
+      [
+        11,
+        6
       ]
     ],
     "player2Trajectory": [
@@ -8575,49 +9091,33 @@
         5
       ],
       [
-        7,
+        8,
+        5
+      ],
+      [
+        9,
+        5
+      ],
+      [
+        10,
+        5
+      ],
+      [
+        11,
+        5
+      ],
+      [
+        11,
         6
-      ],
-      [
-        7,
-        7
-      ],
-      [
-        7,
-        8
-      ],
-      [
-        7,
-        9
-      ],
-      [
-        6,
-        9
-      ],
-      [
-        5,
-        9
-      ],
-      [
-        4,
-        9
-      ],
-      [
-        3,
-        9
-      ],
-      [
-        2,
-        9
-      ],
-      [
-        1,
-        9
       ]
     ],
     "player1Actions": [
       [
-        -1,
+        0,
+        -1
+      ],
+      [
+        1,
         0
       ],
       [
@@ -8633,14 +9133,6 @@
         -1
       ],
       [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
         0,
         -1
       ],
@@ -8649,8 +9141,20 @@
         -1
       ],
       [
-        -1,
+        0,
+        -1
+      ],
+      [
+        1,
         0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
       ],
       [
         -1,
@@ -8661,7 +9165,19 @@
         0
       ],
       [
-        -1,
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
         0
       ]
     ],
@@ -8671,47 +9187,27 @@
         1
       ],
       [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
         0,
         1
       ],
       [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
+        1,
         0
       ]
     ],
@@ -8741,7 +9237,7 @@
       14,
       9
     ],
-    "totalSteps": 12,
+    "totalSteps": 17,
     "collaborationSucceeded": true
   },
   {
@@ -9050,19 +9546,27 @@
       ],
       [
         9,
-        7
+        9
       ],
       [
         10,
-        7
+        9
       ],
       [
         11,
-        7
+        9
+      ],
+      [
+        11,
+        8
       ],
       [
         12,
-        7
+        8
+      ],
+      [
+        13,
+        8
       ]
     ],
     "player1Actions": [
@@ -9146,6 +9650,18 @@
       ],
       [
         0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
         -1
       ],
       [
@@ -9157,12 +9673,8 @@
         0
       ],
       [
-        1,
-        0
-      ],
-      [
-        1,
-        0
+        0,
+        -1
       ]
     ],
     "player1StartPosition": [
@@ -9191,7 +9703,7 @@
       13,
       7
     ],
-    "totalSteps": 12,
+    "totalSteps": 14,
     "collaborationSucceeded": true
   },
   {
@@ -9204,16 +9716,16 @@
     "mapId": "299",
     "distanceCondition": "closer_to_player1",
     "newGoalPresented": true,
-    "newGoalPresentedTime": 3,
+    "newGoalPresentedTime": 1,
     "newGoalPosition": [
-      6,
-      7
+      4,
+      6
     ],
     "firstDetectedSharedGoal": 0,
     "player1FirstDetectedGoal": 0,
     "player2FirstDetectedGoal": 0,
-    "player1FinalReachedGoal": 0,
-    "player2FinalReachedGoal": 0,
+    "player1FinalReachedGoal": 2,
+    "player2FinalReachedGoal": 2,
     "player1Trajectory": [
       [
         0,
@@ -9225,51 +9737,19 @@
       ],
       [
         0,
-        5
+        6
       ],
       [
         1,
-        5
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        1,
-        3
+        6
       ],
       [
         2,
-        3
-      ],
-      [
-        2,
-        2
-      ],
-      [
-        2,
-        1
-      ],
-      [
-        2,
-        0
+        6
       ],
       [
         3,
-        0
-      ],
-      [
-        4,
-        0
-      ],
-      [
-        5,
-        0
-      ],
-      [
-        6,
-        0
+        6
       ]
     ],
     "player2Trajectory": [
@@ -9278,56 +9758,44 @@
         7
       ],
       [
-        13,
-        7
+        14,
+        6
       ],
       [
-        12,
-        7
+        13,
+        6
       ],
       [
         12,
         6
       ],
       [
-        12,
-        5
-      ],
-      [
-        12,
-        4
-      ],
-      [
         11,
-        4
-      ],
-      [
-        11,
-        3
-      ],
-      [
-        11,
-        2
+        6
       ],
       [
         10,
-        2
+        6
       ],
       [
         9,
-        2
+        6
       ],
       [
         8,
-        2
+        6
       ],
       [
-        8,
-        1
+        7,
+        6
       ],
       [
-        8,
-        0
+        6,
+        6
+      ],
+      [
+        5,
+        6
       ]
     ],
     "player1Actions": [
@@ -9336,39 +9804,7 @@
         -1
       ],
       [
-        0,
-        -1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        1,
+        -1,
         0
       ],
       [
@@ -9390,34 +9826,6 @@
     ],
     "player2Actions": [
       [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
         0,
         -1
       ],
@@ -9434,12 +9842,28 @@
         0
       ],
       [
-        0,
-        -1
+        -1,
+        0
       ],
       [
-        0,
-        -1
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
       ],
       [
         -1,
@@ -9472,7 +9896,7 @@
       7,
       14
     ],
-    "totalSteps": 14,
+    "totalSteps": 11,
     "collaborationSucceeded": true
   },
   {
@@ -10004,12 +10428,16 @@
         7
       ],
       [
+        0,
+        7
+      ],
+      [
         1,
         7
       ],
       [
-        2,
-        7
+        1,
+        8
       ],
       [
         2,
@@ -10020,12 +10448,20 @@
         8
       ],
       [
-        4,
-        8
+        3,
+        9
       ],
       [
         4,
         9
+      ],
+      [
+        5,
+        9
+      ],
+      [
+        5,
+        10
       ],
       [
         5,
@@ -10070,6 +10506,10 @@
         9
       ],
       [
+        14,
+        9
+      ],
+      [
         13,
         9
       ],
@@ -10092,7 +10532,7 @@
         -1
       ],
       [
-        1,
+        -1,
         0
       ],
       [
@@ -10118,6 +10558,18 @@
       [
         1,
         0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        -1
       ],
       [
         1,
@@ -10156,6 +10608,10 @@
       [
         0,
         1
+      ],
+      [
+        1,
+        0
       ],
       [
         -1,
@@ -10200,7 +10656,7 @@
       7,
       13
     ],
-    "totalSteps": 14,
+    "totalSteps": 17,
     "collaborationSucceeded": true
   },
   {
@@ -10216,72 +10672,36 @@
     "newGoalPresentedTime": 3,
     "newGoalPosition": [
       9,
-      13
+      4
     ],
     "firstDetectedSharedGoal": 1,
-    "player1FirstDetectedGoal": 0,
+    "player1FirstDetectedGoal": 1,
     "player2FirstDetectedGoal": 1,
-    "player1FinalReachedGoal": 1,
-    "player2FinalReachedGoal": 1,
+    "player1FinalReachedGoal": 2,
+    "player2FinalReachedGoal": 2,
     "player1Trajectory": [
       [
         7,
         2
       ],
       [
-        7,
-        3
-      ],
-      [
-        6,
-        3
-      ],
-      [
-        7,
-        3
-      ],
-      [
-        7,
-        4
+        8,
+        2
       ],
       [
         8,
-        4
+        3
       ],
       [
         9,
-        4
-      ],
-      [
-        9,
-        5
-      ],
-      [
-        10,
-        5
-      ],
-      [
-        11,
-        5
-      ],
-      [
-        12,
-        5
-      ],
-      [
-        13,
-        5
-      ],
-      [
-        13,
-        6
-      ],
-      [
-        13,
-        7
+        3
       ]
     ],
     "player2Trajectory": [
+      [
+        7,
+        14
+      ],
       [
         7,
         14
@@ -10299,14 +10719,14 @@
         12
       ],
       [
-        8,
+        9,
+        12
+      ],
+      [
+        9,
         11
       ],
       [
-        8,
-        10
-      ],
-      [
         9,
         10
       ],
@@ -10315,32 +10735,24 @@
         9
       ],
       [
-        10,
-        9
-      ],
-      [
-        10,
+        9,
         8
       ],
       [
-        11,
-        8
+        9,
+        7
       ],
       [
-        12,
-        8
+        9,
+        6
+      ],
+      [
+        9,
+        5
       ]
     ],
     "player1Actions": [
       [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
         1,
         0
       ],
@@ -10351,38 +10763,6 @@
       [
         1,
         0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
       ],
       [
         0,
@@ -10392,19 +10772,7 @@
     "player2Actions": [
       [
         0,
-        -1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
+        1
       ],
       [
         0,
@@ -10427,16 +10795,32 @@
         -1
       ],
       [
-        1,
-        0
+        0,
+        -1
       ],
       [
-        1,
-        0
+        0,
+        -1
       ],
       [
-        1,
-        0
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
       ]
     ],
     "player1StartPosition": [
@@ -10465,7 +10849,7 @@
       13,
       8
     ],
-    "totalSteps": 14,
+    "totalSteps": 13,
     "collaborationSucceeded": true
   },
   {
@@ -10495,40 +10879,40 @@
         1
       ],
       [
-        7,
-        2
+        6,
+        1
       ],
       [
         6,
         2
       ],
       [
-        6,
-        3
-      ],
-      [
-        6,
-        4
-      ],
-      [
         5,
-        4
-      ],
-      [
-        5,
-        5
+        2
       ],
       [
         4,
-        5
+        2
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        3,
+        3
+      ],
+      [
+        3,
+        4
       ],
       [
         3,
         5
       ],
       [
-        2,
-        5
+        3,
+        6
       ],
       [
         2,
@@ -10554,59 +10938,51 @@
       ],
       [
         7,
-        14
-      ],
-      [
-        7,
-        13
-      ],
-      [
-        7,
         12
       ],
       [
-        7,
+        6,
+        12
+      ],
+      [
+        6,
         11
       ],
       [
-        7,
-        10
-      ],
-      [
-        6,
-        10
-      ],
-      [
-        6,
-        9
+        5,
+        11
       ],
       [
         5,
-        9
-      ],
-      [
-        5,
-        8
+        10
       ],
       [
         4,
-        8
+        10
       ],
       [
         3,
-        8
+        10
       ],
       [
         2,
-        8
+        10
       ],
       [
         2,
-        7
+        9
       ],
       [
         1,
-        7
+        9
+      ],
+      [
+        0,
+        9
+      ],
+      [
+        0,
+        8
       ]
     ],
     "player1Actions": [
@@ -10615,22 +10991,6 @@
         1
       ],
       [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
         -1,
         0
       ],
@@ -10653,6 +11013,22 @@
       [
         0,
         1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
       ],
       [
         0,
@@ -10674,22 +11050,6 @@
       ],
       [
         0,
-        1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
         -1
       ],
       [
@@ -10731,6 +11091,14 @@
       [
         -1,
         0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
       ]
     ],
     "player1StartPosition": [
@@ -10759,7 +11127,7 @@
       14,
       7
     ],
-    "totalSteps": 16,
+    "totalSteps": 14,
     "collaborationSucceeded": true
   },
   {
@@ -10774,57 +11142,57 @@
     "newGoalPresented": true,
     "newGoalPresentedTime": 1,
     "newGoalPosition": [
-      11,
+      3,
       6
     ],
-    "firstDetectedSharedGoal": 0,
-    "player1FirstDetectedGoal": 0,
-    "player2FirstDetectedGoal": 0,
-    "player1FinalReachedGoal": 0,
-    "player2FinalReachedGoal": 0,
+    "firstDetectedSharedGoal": 1,
+    "player1FirstDetectedGoal": 1,
+    "player2FirstDetectedGoal": 1,
+    "player1FinalReachedGoal": 1,
+    "player2FinalReachedGoal": 1,
     "player1Trajectory": [
       [
         7,
         11
       ],
       [
-        6,
+        8,
         11
       ],
       [
-        5,
-        11
-      ],
-      [
-        5,
+        8,
         10
       ],
       [
-        5,
+        8,
         9
       ],
       [
-        5,
+        8,
         8
       ],
       [
-        4,
+        9,
         8
       ],
       [
-        4,
+        9,
         7
       ],
       [
-        4,
+        9,
         6
       ],
       [
-        3,
+        10,
         6
       ],
       [
-        2,
+        11,
+        6
+      ],
+      [
+        12,
         6
       ]
     ],
@@ -10834,53 +11202,49 @@
         1
       ],
       [
-        6,
+        8,
         1
       ],
       [
-        6,
+        9,
+        1
+      ],
+      [
+        9,
         2
       ],
       [
-        5,
+        10,
         2
       ],
       [
-        5,
+        10,
         3
       ],
       [
-        4,
+        11,
         3
       ],
       [
-        4,
+        11,
         4
       ],
       [
-        3,
+        12,
         4
       ],
       [
-        3,
+        12,
         5
       ],
       [
-        2,
-        5
-      ],
-      [
-        2,
+        12,
         6
       ]
     ],
     "player1Actions": [
       [
-        -1,
-        0
-      ],
-      [
-        -1,
+        1,
         0
       ],
       [
@@ -10896,7 +11260,7 @@
         -1
       ],
       [
-        -1,
+        1,
         0
       ],
       [
@@ -10908,21 +11272,29 @@
         -1
       ],
       [
-        -1,
+        1,
         0
       ],
       [
-        -1,
+        1,
         0
       ],
       [
-        -1,
+        1,
+        0
+      ],
+      [
+        1,
         0
       ]
     ],
     "player2Actions": [
       [
-        -1,
+        1,
+        0
+      ],
+      [
+        1,
         0
       ],
       [
@@ -10930,7 +11302,7 @@
         1
       ],
       [
-        -1,
+        1,
         0
       ],
       [
@@ -10938,7 +11310,7 @@
         1
       ],
       [
-        -1,
+        1,
         0
       ],
       [
@@ -10946,7 +11318,7 @@
         1
       ],
       [
-        -1,
+        1,
         0
       ],
       [
@@ -10954,15 +11326,11 @@
         1
       ],
       [
-        -1,
-        0
-      ],
-      [
         0,
         1
       ],
       [
-        -1,
+        1,
         0
       ]
     ],
@@ -11005,16 +11373,16 @@
     "mapId": "306",
     "distanceCondition": "closer_to_player2",
     "newGoalPresented": true,
-    "newGoalPresentedTime": 3,
+    "newGoalPresentedTime": 1,
     "newGoalPosition": [
-      7,
-      10
+      8,
+      5
     ],
     "firstDetectedSharedGoal": 0,
     "player1FirstDetectedGoal": 0,
     "player2FirstDetectedGoal": 0,
-    "player1FinalReachedGoal": 0,
-    "player2FinalReachedGoal": 0,
+    "player1FinalReachedGoal": 2,
+    "player2FinalReachedGoal": 2,
     "player1Trajectory": [
       [
         13,
@@ -11029,8 +11397,8 @@
         6
       ],
       [
-        12,
-        5
+        11,
+        6
       ],
       [
         11,
@@ -11041,28 +11409,8 @@
         5
       ],
       [
-        10,
-        4
-      ],
-      [
         9,
-        4
-      ],
-      [
-        8,
-        4
-      ],
-      [
-        8,
-        3
-      ],
-      [
-        8,
-        2
-      ],
-      [
-        8,
-        1
+        5
       ]
     ],
     "player2Trajectory": [
@@ -11071,48 +11419,28 @@
         7
       ],
       [
+        3,
+        6
+      ],
+      [
         4,
-        7
-      ],
-      [
-        5,
-        7
-      ],
-      [
-        5,
         6
       ],
       [
-        6,
-        6
+        4,
+        5
+      ],
+      [
+        5,
+        5
       ],
       [
         6,
         5
       ],
       [
-        6,
-        4
-      ],
-      [
         7,
-        4
-      ],
-      [
-        7,
-        3
-      ],
-      [
-        8,
-        3
-      ],
-      [
-        8,
-        2
-      ],
-      [
-        8,
-        1
+        5
       ]
     ],
     "player1Actions": [
@@ -11125,14 +11453,6 @@
         0
       ],
       [
-        0,
-        -1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
         -1,
         0
       ],
@@ -11149,44 +11469,12 @@
         0
       ],
       [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
+        -1,
+        0
       ]
     ],
     "player2Actions": [
       [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
         0,
         -1
       ],
@@ -11203,16 +11491,16 @@
         0
       ],
       [
-        0,
-        -1
+        1,
+        0
       ],
       [
-        0,
-        -1
+        1,
+        0
       ],
       [
-        0,
-        -1
+        1,
+        0
       ]
     ],
     "player1StartPosition": [
@@ -11241,7 +11529,7 @@
       8,
       14
     ],
-    "totalSteps": 12,
+    "totalSteps": 7,
     "collaborationSucceeded": true
   },
   {
@@ -11256,34 +11544,62 @@
     "newGoalPresented": true,
     "newGoalPresentedTime": 2,
     "newGoalPosition": [
-      8,
-      8
+      10,
+      11
     ],
     "firstDetectedSharedGoal": 1,
     "player1FirstDetectedGoal": 1,
     "player2FirstDetectedGoal": 1,
-    "player1FinalReachedGoal": 2,
-    "player2FinalReachedGoal": 2,
+    "player1FinalReachedGoal": 1,
+    "player2FinalReachedGoal": 1,
     "player1Trajectory": [
       [
         12,
         7
       ],
       [
-        11,
-        7
+        12,
+        8
+      ],
+      [
+        12,
+        9
+      ],
+      [
+        12,
+        10
+      ],
+      [
+        12,
+        11
+      ],
+      [
+        12,
+        12
+      ],
+      [
+        12,
+        13
       ],
       [
         11,
-        8
+        13
       ],
       [
         10,
-        8
+        13
       ],
       [
         9,
-        8
+        13
+      ],
+      [
+        8,
+        13
+      ],
+      [
+        7,
+        13
       ]
     ],
     "player2Trajectory": [
@@ -11308,30 +11624,70 @@
         8
       ],
       [
+        3,
+        9
+      ],
+      [
+        3,
+        10
+      ],
+      [
         4,
-        8
+        10
       ],
       [
         5,
-        8
+        10
+      ],
+      [
+        5,
+        11
+      ],
+      [
+        5,
+        12
       ],
       [
         6,
-        8
-      ],
-      [
-        7,
-        8
+        12
       ]
     ],
     "player1Actions": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
       [
         -1,
         0
       ],
       [
-        0,
-        1
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
       ],
       [
         -1,
@@ -11364,8 +11720,12 @@
         0
       ],
       [
-        1,
-        0
+        0,
+        1
+      ],
+      [
+        0,
+        1
       ],
       [
         1,
@@ -11376,12 +11736,20 @@
         0
       ],
       [
-        1,
-        0
+        0,
+        1
+      ],
+      [
+        0,
+        1
       ],
       [
         1,
         0
+      ],
+      [
+        0,
+        1
       ]
     ],
     "player1StartPosition": [
@@ -11410,7 +11778,7 @@
       6,
       13
     ],
-    "totalSteps": 9,
+    "totalSteps": 12,
     "collaborationSucceeded": true
   },
   {
@@ -12208,20 +12576,36 @@
         12
       ],
       [
-        3,
+        1,
         12
       ],
       [
+        1,
+        13
+      ],
+      [
+        2,
+        13
+      ],
+      [
         3,
         13
       ],
       [
-        4,
-        13
+        3,
+        14
       ],
       [
-        5,
-        13
+        3,
+        14
+      ],
+      [
+        4,
+        14
+      ],
+      [
+        4,
+        14
       ],
       [
         5,
@@ -12320,7 +12704,7 @@
         1
       ],
       [
-        1,
+        -1,
         0
       ],
       [
@@ -12338,6 +12722,22 @@
       [
         0,
         1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
       ],
       [
         1,
@@ -12431,1052 +12831,6 @@
     "target2": [
       7,
       14
-    ],
-    "totalSteps": 14,
-    "collaborationSucceeded": true
-  },
-  {
-    "sessionIndex": 4,
-    "participantId_player1": "session_4_player1",
-    "participantId_player2": "session_4_player2",
-    "partnerType": "commitAgent",
-    "experimentType": "2P3G",
-    "trialIndex": 3,
-    "mapId": "300",
-    "distanceCondition": "closer_to_player1",
-    "newGoalPresented": true,
-    "newGoalPresentedTime": 3,
-    "newGoalPosition": [
-      6,
-      8
-    ],
-    "firstDetectedSharedGoal": 0,
-    "player1FirstDetectedGoal": 0,
-    "player2FirstDetectedGoal": 0,
-    "player1FinalReachedGoal": 2,
-    "player2FinalReachedGoal": 2,
-    "player1Trajectory": [
-      [
-        7,
-        14
-      ],
-      [
-        7,
-        13
-      ],
-      [
-        6,
-        13
-      ],
-      [
-        6,
-        12
-      ],
-      [
-        6,
-        11
-      ],
-      [
-        6,
-        10
-      ],
-      [
-        6,
-        9
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        7,
-        0
-      ],
-      [
-        7,
-        1
-      ],
-      [
-        7,
-        2
-      ],
-      [
-        6,
-        2
-      ],
-      [
-        6,
-        3
-      ],
-      [
-        6,
-        4
-      ],
-      [
-        6,
-        5
-      ],
-      [
-        6,
-        6
-      ],
-      [
-        6,
-        7
-      ]
-    ],
-    "player1Actions": [
-      [
-        0,
-        -1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ]
-    ],
-    "player2Actions": [
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ]
-    ],
-    "player1StartPosition": [
-      7,
-      14
-    ],
-    "player2StartPosition": [
-      7,
-      0
-    ],
-    "initialGoalPositions": [
-      [
-        0,
-        7
-      ],
-      [
-        14,
-        7
-      ]
-    ],
-    "target1": [
-      0,
-      7
-    ],
-    "target2": [
-      14,
-      7
-    ],
-    "totalSteps": 9,
-    "collaborationSucceeded": true
-  },
-  {
-    "sessionIndex": 4,
-    "participantId_player1": "session_4_player1",
-    "participantId_player2": "session_4_player2",
-    "partnerType": "commitAgent",
-    "experimentType": "2P3G",
-    "trialIndex": 4,
-    "mapId": "301",
-    "distanceCondition": "closer_to_player2",
-    "newGoalPresented": true,
-    "newGoalPresentedTime": 8,
-    "newGoalPosition": [
-      9,
-      10
-    ],
-    "firstDetectedSharedGoal": 1,
-    "player1FirstDetectedGoal": 1,
-    "player2FirstDetectedGoal": 0,
-    "player1FinalReachedGoal": 2,
-    "player2FinalReachedGoal": 2,
-    "player1Trajectory": [
-      [
-        7,
-        0
-      ],
-      [
-        8,
-        0
-      ],
-      [
-        9,
-        0
-      ],
-      [
-        10,
-        0
-      ],
-      [
-        9,
-        0
-      ],
-      [
-        8,
-        0
-      ],
-      [
-        8,
-        1
-      ],
-      [
-        9,
-        1
-      ],
-      [
-        9,
-        2
-      ],
-      [
-        9,
-        3
-      ],
-      [
-        9,
-        4
-      ],
-      [
-        9,
-        5
-      ],
-      [
-        9,
-        6
-      ],
-      [
-        9,
-        7
-      ],
-      [
-        9,
-        8
-      ],
-      [
-        9,
-        9
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        7,
-        14
-      ],
-      [
-        6,
-        14
-      ],
-      [
-        5,
-        14
-      ],
-      [
-        4,
-        14
-      ],
-      [
-        5,
-        14
-      ],
-      [
-        6,
-        14
-      ],
-      [
-        6,
-        14
-      ],
-      [
-        6,
-        13
-      ],
-      [
-        7,
-        13
-      ],
-      [
-        7,
-        12
-      ],
-      [
-        7,
-        11
-      ],
-      [
-        8,
-        11
-      ],
-      [
-        8,
-        10
-      ]
-    ],
-    "player1Actions": [
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ]
-    ],
-    "player2Actions": [
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        1,
-        0
-      ]
-    ],
-    "player1StartPosition": [
-      7,
-      0
-    ],
-    "player2StartPosition": [
-      7,
-      14
-    ],
-    "initialGoalPositions": [
-      [
-        0,
-        7
-      ],
-      [
-        14,
-        7
-      ]
-    ],
-    "target1": [
-      0,
-      7
-    ],
-    "target2": [
-      14,
-      7
-    ],
-    "totalSteps": 16,
-    "collaborationSucceeded": true
-  },
-  {
-    "sessionIndex": 4,
-    "participantId_player1": "session_4_player1",
-    "participantId_player2": "session_4_player2",
-    "partnerType": "commitAgent",
-    "experimentType": "2P3G",
-    "trialIndex": 5,
-    "mapId": "302",
-    "distanceCondition": "no_new_goal",
-    "newGoalPresented": false,
-    "newGoalPresentedTime": null,
-    "newGoalPosition": null,
-    "firstDetectedSharedGoal": 1,
-    "player1FirstDetectedGoal": 1,
-    "player2FirstDetectedGoal": 1,
-    "player1FinalReachedGoal": 1,
-    "player2FinalReachedGoal": 1,
-    "player1Trajectory": [
-      [
-        0,
-        7
-      ],
-      [
-        1,
-        7
-      ],
-      [
-        1,
-        8
-      ],
-      [
-        2,
-        8
-      ],
-      [
-        2,
-        9
-      ],
-      [
-        2,
-        10
-      ],
-      [
-        3,
-        10
-      ],
-      [
-        4,
-        10
-      ],
-      [
-        4,
-        11
-      ],
-      [
-        5,
-        11
-      ],
-      [
-        6,
-        11
-      ],
-      [
-        6,
-        12
-      ],
-      [
-        7,
-        12
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        14,
-        7
-      ],
-      [
-        14,
-        8
-      ],
-      [
-        14,
-        9
-      ],
-      [
-        14,
-        10
-      ],
-      [
-        14,
-        11
-      ],
-      [
-        13,
-        11
-      ],
-      [
-        13,
-        12
-      ],
-      [
-        12,
-        12
-      ],
-      [
-        12,
-        13
-      ],
-      [
-        11,
-        13
-      ],
-      [
-        10,
-        13
-      ],
-      [
-        9,
-        13
-      ],
-      [
-        8,
-        13
-      ]
-    ],
-    "player1Actions": [
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ]
-    ],
-    "player2Actions": [
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ]
-    ],
-    "player1StartPosition": [
-      0,
-      7
-    ],
-    "player2StartPosition": [
-      14,
-      7
-    ],
-    "initialGoalPositions": [
-      [
-        7,
-        1
-      ],
-      [
-        7,
-        13
-      ]
-    ],
-    "target1": [
-      7,
-      1
-    ],
-    "target2": [
-      7,
-      13
-    ],
-    "totalSteps": 13,
-    "collaborationSucceeded": true
-  },
-  {
-    "sessionIndex": 4,
-    "participantId_player1": "session_4_player1",
-    "participantId_player2": "session_4_player2",
-    "partnerType": "commitAgent",
-    "experimentType": "2P3G",
-    "trialIndex": 6,
-    "mapId": "303",
-    "distanceCondition": "no_new_goal",
-    "newGoalPresented": false,
-    "newGoalPresentedTime": null,
-    "newGoalPosition": null,
-    "firstDetectedSharedGoal": 0,
-    "player1FirstDetectedGoal": 0,
-    "player2FirstDetectedGoal": 1,
-    "player1FinalReachedGoal": 0,
-    "player2FinalReachedGoal": 0,
-    "player1Trajectory": [
-      [
-        7,
-        2
-      ],
-      [
-        6,
-        2
-      ],
-      [
-        6,
-        3
-      ],
-      [
-        6,
-        4
-      ],
-      [
-        5,
-        4
-      ],
-      [
-        4,
-        4
-      ],
-      [
-        4,
-        5
-      ],
-      [
-        4,
-        6
-      ],
-      [
-        4,
-        5
-      ],
-      [
-        3,
-        5
-      ],
-      [
-        2,
-        5
-      ],
-      [
-        2,
-        6
-      ],
-      [
-        2,
-        7
-      ],
-      [
-        2,
-        8
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        7,
-        14
-      ],
-      [
-        8,
-        14
-      ],
-      [
-        7,
-        14
-      ],
-      [
-        7,
-        14
-      ],
-      [
-        6,
-        14
-      ],
-      [
-        6,
-        14
-      ],
-      [
-        5,
-        14
-      ],
-      [
-        4,
-        14
-      ],
-      [
-        3,
-        14
-      ],
-      [
-        3,
-        13
-      ],
-      [
-        3,
-        12
-      ],
-      [
-        3,
-        11
-      ],
-      [
-        3,
-        10
-      ],
-      [
-        3,
-        9
-      ],
-      [
-        2,
-        9
-      ],
-      [
-        3,
-        9
-      ],
-      [
-        3,
-        8
-      ],
-      [
-        2,
-        8
-      ]
-    ],
-    "player1Actions": [
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ]
-    ],
-    "player2Actions": [
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ]
-    ],
-    "player1StartPosition": [
-      7,
-      2
-    ],
-    "player2StartPosition": [
-      7,
-      14
-    ],
-    "initialGoalPositions": [
-      [
-        1,
-        8
-      ],
-      [
-        13,
-        8
-      ]
-    ],
-    "target1": [
-      1,
-      8
-    ],
-    "target2": [
-      13,
-      8
     ],
     "totalSteps": 18,
     "collaborationSucceeded": true
@@ -13487,13 +12841,294 @@
     "participantId_player2": "session_4_player2",
     "partnerType": "commitAgent",
     "experimentType": "2P3G",
-    "trialIndex": 7,
-    "mapId": "304",
+    "trialIndex": 3,
+    "mapId": "300",
+    "distanceCondition": "closer_to_player1",
+    "newGoalPresented": true,
+    "newGoalPresentedTime": 1,
+    "newGoalPosition": [
+      9,
+      9
+    ],
+    "firstDetectedSharedGoal": 0,
+    "player1FirstDetectedGoal": 0,
+    "player2FirstDetectedGoal": 0,
+    "player1FinalReachedGoal": 0,
+    "player2FinalReachedGoal": 0,
+    "player1Trajectory": [
+      [
+        7,
+        14
+      ],
+      [
+        6,
+        14
+      ],
+      [
+        5,
+        14
+      ],
+      [
+        4,
+        14
+      ],
+      [
+        4,
+        13
+      ],
+      [
+        3,
+        13
+      ],
+      [
+        2,
+        13
+      ],
+      [
+        1,
+        13
+      ],
+      [
+        1,
+        12
+      ],
+      [
+        1,
+        11
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        1,
+        9
+      ],
+      [
+        1,
+        8
+      ],
+      [
+        1,
+        7
+      ]
+    ],
+    "player2Trajectory": [
+      [
+        7,
+        0
+      ],
+      [
+        6,
+        0
+      ],
+      [
+        5,
+        0
+      ],
+      [
+        4,
+        0
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        0,
+        4
+      ],
+      [
+        0,
+        5
+      ],
+      [
+        0,
+        6
+      ]
+    ],
+    "player1Actions": [
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
+        0
+      ]
+    ],
+    "player2Actions": [
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "player1StartPosition": [
+      7,
+      14
+    ],
+    "player2StartPosition": [
+      7,
+      0
+    ],
+    "initialGoalPositions": [
+      [
+        0,
+        7
+      ],
+      [
+        14,
+        7
+      ]
+    ],
+    "target1": [
+      0,
+      7
+    ],
+    "target2": [
+      14,
+      7
+    ],
+    "totalSteps": 14,
+    "collaborationSucceeded": true
+  },
+  {
+    "sessionIndex": 4,
+    "participantId_player1": "session_4_player1",
+    "participantId_player2": "session_4_player2",
+    "partnerType": "commitAgent",
+    "experimentType": "2P3G",
+    "trialIndex": 4,
+    "mapId": "301",
     "distanceCondition": "closer_to_player2",
     "newGoalPresented": true,
-    "newGoalPresentedTime": 2,
+    "newGoalPresentedTime": 1,
     "newGoalPosition": [
-      5,
+      3,
       8
     ],
     "firstDetectedSharedGoal": 0,
@@ -13507,8 +13142,8 @@
         0
       ],
       [
-        7,
-        1
+        6,
+        0
       ],
       [
         6,
@@ -13535,11 +13170,19 @@
         5
       ],
       [
-        5,
+        4,
+        5
+      ],
+      [
+        4,
         6
       ],
       [
-        5,
+        3,
+        6
+      ],
+      [
+        3,
         7
       ]
     ],
@@ -13553,40 +13196,40 @@
         14
       ],
       [
-        6,
+        5,
+        14
+      ],
+      [
+        4,
+        14
+      ],
+      [
+        4,
         13
       ],
       [
-        6,
+        3,
+        13
+      ],
+      [
+        3,
         12
       ],
       [
-        5,
-        12
-      ],
-      [
-        5,
+        3,
         11
       ],
       [
-        5,
+        3,
         10
       ],
       [
-        5,
+        3,
         9
       ]
     ],
     "player1Actions": [
       [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
         -1,
         0
       ],
@@ -13595,8 +13238,8 @@
         1
       ],
       [
-        0,
-        1
+        -1,
+        0
       ],
       [
         0,
@@ -13609,6 +13252,22 @@
       [
         0,
         1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
       ],
       [
         0,
@@ -13625,8 +13284,12 @@
         0
       ],
       [
-        0,
-        -1
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
       ],
       [
         0,
@@ -13635,6 +13298,10 @@
       [
         -1,
         0
+      ],
+      [
+        0,
+        -1
       ],
       [
         0,
@@ -13679,7 +13346,7 @@
       14,
       7
     ],
-    "totalSteps": 10,
+    "totalSteps": 12,
     "collaborationSucceeded": true
   },
   {
@@ -13688,15 +13355,274 @@
     "participantId_player2": "session_4_player2",
     "partnerType": "commitAgent",
     "experimentType": "2P3G",
-    "trialIndex": 8,
-    "mapId": "305",
-    "distanceCondition": "closer_to_player1",
-    "newGoalPresented": true,
-    "newGoalPresentedTime": 3,
-    "newGoalPosition": [
-      9,
+    "trialIndex": 5,
+    "mapId": "302",
+    "distanceCondition": "no_new_goal",
+    "newGoalPresented": false,
+    "newGoalPresentedTime": null,
+    "newGoalPosition": null,
+    "firstDetectedSharedGoal": 0,
+    "player1FirstDetectedGoal": 0,
+    "player2FirstDetectedGoal": 0,
+    "player1FinalReachedGoal": 0,
+    "player2FinalReachedGoal": 0,
+    "player1Trajectory": [
+      [
+        0,
+        7
+      ],
+      [
+        0,
+        6
+      ],
+      [
+        0,
+        5
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        5,
+        1
+      ],
+      [
+        6,
+        1
+      ]
+    ],
+    "player2Trajectory": [
+      [
+        14,
+        7
+      ],
+      [
+        13,
+        7
+      ],
+      [
+        12,
+        7
+      ],
+      [
+        12,
+        6
+      ],
+      [
+        12,
+        5
+      ],
+      [
+        12,
+        4
+      ],
+      [
+        12,
+        3
+      ],
+      [
+        12,
+        2
+      ],
+      [
+        11,
+        2
+      ],
+      [
+        10,
+        2
+      ],
+      [
+        10,
+        1
+      ],
+      [
+        9,
+        1
+      ],
+      [
+        8,
+        1
+      ]
+    ],
+    "player1Actions": [
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ]
+    ],
+    "player2Actions": [
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
+      ]
+    ],
+    "player1StartPosition": [
+      0,
+      7
+    ],
+    "player2StartPosition": [
+      14,
+      7
+    ],
+    "initialGoalPositions": [
+      [
+        7,
+        1
+      ],
+      [
+        7,
+        13
+      ]
+    ],
+    "target1": [
+      7,
+      1
+    ],
+    "target2": [
+      7,
       13
     ],
+    "totalSteps": 13,
+    "collaborationSucceeded": true
+  },
+  {
+    "sessionIndex": 4,
+    "participantId_player1": "session_4_player1",
+    "participantId_player2": "session_4_player2",
+    "partnerType": "commitAgent",
+    "experimentType": "2P3G",
+    "trialIndex": 6,
+    "mapId": "303",
+    "distanceCondition": "no_new_goal",
+    "newGoalPresented": false,
+    "newGoalPresentedTime": null,
+    "newGoalPosition": null,
     "firstDetectedSharedGoal": 1,
     "player1FirstDetectedGoal": 1,
     "player2FirstDetectedGoal": 1,
@@ -13705,11 +13631,73 @@
     "player1Trajectory": [
       [
         7,
-        11
+        2
+      ],
+      [
+        8,
+        2
+      ],
+      [
+        8,
+        3
+      ],
+      [
+        9,
+        3
+      ],
+      [
+        9,
+        4
+      ],
+      [
+        9,
+        5
+      ],
+      [
+        10,
+        5
+      ],
+      [
+        10,
+        6
+      ],
+      [
+        10,
+        7
+      ],
+      [
+        11,
+        7
+      ],
+      [
+        11,
+        8
+      ],
+      [
+        12,
+        8
+      ]
+    ],
+    "player2Trajectory": [
+      [
+        7,
+        14
       ],
       [
         7,
-        10
+        13
+      ],
+      [
+        7,
+        12
+      ],
+      [
+        8,
+        12
+      ],
+      [
+        8,
+        11
       ],
       [
         8,
@@ -13732,23 +13720,176 @@
         9
       ],
       [
+        11,
+        8
+      ],
+      [
         12,
-        9
+        8
+      ]
+    ],
+    "player1Actions": [
+      [
+        1,
+        0
       ],
       [
-        13,
-        9
+        0,
+        1
       ],
       [
-        13,
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ]
+    ],
+    "player2Actions": [
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ]
+    ],
+    "player1StartPosition": [
+      7,
+      2
+    ],
+    "player2StartPosition": [
+      7,
+      14
+    ],
+    "initialGoalPositions": [
+      [
+        1,
         8
       ],
       [
         13,
-        7
+        8
       ]
     ],
-    "player2Trajectory": [
+    "target1": [
+      1,
+      8
+    ],
+    "target2": [
+      13,
+      8
+    ],
+    "totalSteps": 12,
+    "collaborationSucceeded": true
+  },
+  {
+    "sessionIndex": 4,
+    "participantId_player1": "session_4_player1",
+    "participantId_player2": "session_4_player2",
+    "partnerType": "commitAgent",
+    "experimentType": "2P3G",
+    "trialIndex": 7,
+    "mapId": "304",
+    "distanceCondition": "closer_to_player2",
+    "newGoalPresented": true,
+    "newGoalPresentedTime": 3,
+    "newGoalPosition": [
+      12,
+      8
+    ],
+    "firstDetectedSharedGoal": 1,
+    "player1FirstDetectedGoal": 0,
+    "player2FirstDetectedGoal": 1,
+    "player1FinalReachedGoal": 1,
+    "player2FinalReachedGoal": 1,
+    "player1Trajectory": [
+      [
+        7,
+        0
+      ],
+      [
+        6,
+        0
+      ],
+      [
+        6,
+        1
+      ],
       [
         7,
         1
@@ -13774,6 +13915,14 @@
         3
       ],
       [
+        9,
+        3
+      ],
+      [
+        10,
+        3
+      ],
+      [
         10,
         4
       ],
@@ -13782,8 +13931,371 @@
         4
       ],
       [
-        11,
+        12,
+        4
+      ],
+      [
+        13,
+        4
+      ],
+      [
+        13,
         5
+      ],
+      [
+        13,
+        6
+      ],
+      [
+        13,
+        5
+      ],
+      [
+        13,
+        6
+      ],
+      [
+        14,
+        6
+      ]
+    ],
+    "player2Trajectory": [
+      [
+        7,
+        14
+      ],
+      [
+        8,
+        14
+      ],
+      [
+        9,
+        14
+      ],
+      [
+        9,
+        13
+      ],
+      [
+        10,
+        13
+      ],
+      [
+        10,
+        12
+      ],
+      [
+        11,
+        12
+      ],
+      [
+        12,
+        12
+      ],
+      [
+        13,
+        12
+      ],
+      [
+        14,
+        12
+      ],
+      [
+        14,
+        11
+      ],
+      [
+        14,
+        10
+      ],
+      [
+        14,
+        9
+      ],
+      [
+        14,
+        9
+      ],
+      [
+        14,
+        8
+      ]
+    ],
+    "player1Actions": [
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "player2Actions": [
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ]
+    ],
+    "player1StartPosition": [
+      7,
+      0
+    ],
+    "player2StartPosition": [
+      7,
+      14
+    ],
+    "initialGoalPositions": [
+      [
+        0,
+        7
+      ],
+      [
+        14,
+        7
+      ]
+    ],
+    "target1": [
+      0,
+      7
+    ],
+    "target2": [
+      14,
+      7
+    ],
+    "totalSteps": 20,
+    "collaborationSucceeded": true
+  },
+  {
+    "sessionIndex": 4,
+    "participantId_player1": "session_4_player1",
+    "participantId_player2": "session_4_player2",
+    "partnerType": "commitAgent",
+    "experimentType": "2P3G",
+    "trialIndex": 8,
+    "mapId": "305",
+    "distanceCondition": "closer_to_player1",
+    "newGoalPresented": true,
+    "newGoalPresentedTime": 4,
+    "newGoalPosition": [
+      7,
+      9
+    ],
+    "firstDetectedSharedGoal": 1,
+    "player1FirstDetectedGoal": 1,
+    "player2FirstDetectedGoal": 1,
+    "player1FinalReachedGoal": 1,
+    "player2FinalReachedGoal": 1,
+    "player1Trajectory": [
+      [
+        7,
+        11
+      ],
+      [
+        7,
+        10
+      ],
+      [
+        7,
+        9
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        9,
+        7
+      ],
+      [
+        9,
+        6
+      ],
+      [
+        10,
+        6
+      ],
+      [
+        11,
+        6
+      ],
+      [
+        12,
+        6
+      ]
+    ],
+    "player2Trajectory": [
+      [
+        7,
+        1
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        8,
+        2
+      ],
+      [
+        8,
+        3
+      ],
+      [
+        9,
+        3
+      ],
+      [
+        9,
+        4
+      ],
+      [
+        9,
+        5
+      ],
+      [
+        9,
+        6
+      ],
+      [
+        10,
+        6
       ],
       [
         11,
@@ -13800,8 +14312,20 @@
         -1
       ],
       [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
         1,
         0
+      ],
+      [
+        0,
+        -1
       ],
       [
         1,
@@ -13826,18 +14350,6 @@
       [
         1,
         0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
       ]
     ],
     "player2Actions": [
@@ -13846,18 +14358,6 @@
         1
       ],
       [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
         1,
         0
       ],
@@ -13876,6 +14376,18 @@
       [
         0,
         1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
       ],
       [
         1,
@@ -13925,16 +14437,16 @@
     "mapId": "306",
     "distanceCondition": "equal_to_both",
     "newGoalPresented": true,
-    "newGoalPresentedTime": 2,
+    "newGoalPresentedTime": 3,
     "newGoalPosition": [
       9,
-      11
+      3
     ],
-    "firstDetectedSharedGoal": 0,
-    "player1FirstDetectedGoal": 0,
-    "player2FirstDetectedGoal": 0,
-    "player1FinalReachedGoal": 0,
-    "player2FinalReachedGoal": 0,
+    "firstDetectedSharedGoal": 1,
+    "player1FirstDetectedGoal": 1,
+    "player2FirstDetectedGoal": 1,
+    "player1FinalReachedGoal": 1,
+    "player2FinalReachedGoal": 1,
     "player1Trajectory": [
       [
         13,
@@ -13942,47 +14454,47 @@
       ],
       [
         13,
-        6
-      ],
-      [
-        13,
-        5
-      ],
-      [
-        13,
-        4
-      ],
-      [
-        13,
-        3
-      ],
-      [
-        13,
-        2
+        8
       ],
       [
         12,
-        2
+        8
+      ],
+      [
+        12,
+        9
       ],
       [
         11,
-        2
-      ],
-      [
-        11,
-        1
-      ],
-      [
-        11,
-        0
+        9
       ],
       [
         10,
-        0
+        9
       ],
       [
         9,
-        0
+        9
+      ],
+      [
+        8,
+        9
+      ],
+      [
+        8,
+        10
+      ],
+      [
+        8,
+        11
+      ],
+      [
+        8,
+        12
+      ],
+      [
+        8,
+        13
       ]
     ],
     "player2Trajectory": [
@@ -13995,70 +14507,50 @@
         7
       ],
       [
-        4,
-        6
-      ],
-      [
-        4,
-        5
+        5,
+        7
       ],
       [
         5,
-        5
+        8
       ],
       [
         5,
-        4
+        9
+      ],
+      [
+        5,
+        10
       ],
       [
         6,
-        4
+        10
       ],
       [
         6,
-        3
+        11
       ],
       [
         7,
-        3
+        11
       ],
       [
         8,
-        3
+        11
       ],
       [
         8,
-        2
+        12
       ],
       [
         8,
-        1
+        13
       ]
     ],
     "player1Actions": [
       [
         0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        -1,
-        0
+        1
       ],
       [
         -1,
@@ -14066,11 +14558,7 @@
       ],
       [
         0,
-        -1
-      ],
-      [
-        0,
-        -1
+        1
       ],
       [
         -1,
@@ -14083,6 +14571,30 @@
       [
         -1,
         0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
       ]
     ],
     "player2Actions": [
@@ -14091,12 +14603,20 @@
         0
       ],
       [
-        0,
-        -1
+        1,
+        0
       ],
       [
         0,
-        -1
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
       ],
       [
         1,
@@ -14104,15 +14624,7 @@
       ],
       [
         0,
-        -1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        -1
+        1
       ],
       [
         1,
@@ -14124,15 +14636,15 @@
       ],
       [
         0,
-        -1
+        1
       ],
       [
         0,
-        -1
+        1
       ],
       [
         0,
-        -1
+        1
       ]
     ],
     "player1StartPosition": [
@@ -14174,64 +14686,100 @@
     "mapId": "307",
     "distanceCondition": "equal_to_both",
     "newGoalPresented": true,
-    "newGoalPresentedTime": 2,
+    "newGoalPresentedTime": 5,
     "newGoalPosition": [
-      7,
-      10
+      5,
+      11
     ],
-    "firstDetectedSharedGoal": 0,
+    "firstDetectedSharedGoal": 1,
     "player1FirstDetectedGoal": 0,
-    "player2FirstDetectedGoal": 0,
-    "player1FinalReachedGoal": 0,
-    "player2FinalReachedGoal": 0,
+    "player2FirstDetectedGoal": 1,
+    "player1FinalReachedGoal": 2,
+    "player2FinalReachedGoal": 2,
     "player1Trajectory": [
       [
         12,
         7
       ],
       [
-        12,
-        6
+        11,
+        7
       ],
       [
-        12,
-        5
+        11,
+        6
       ],
       [
         11,
         5
       ],
       [
+        11,
+        6
+      ],
+      [
+        11,
+        7
+      ],
+      [
         10,
-        5
+        7
+      ],
+      [
+        10,
+        8
+      ],
+      [
+        10,
+        9
       ],
       [
         9,
-        5
+        9
+      ],
+      [
+        9,
+        10
+      ],
+      [
+        9,
+        11
+      ],
+      [
+        10,
+        11
+      ],
+      [
+        9,
+        11
       ],
       [
         8,
-        5
+        11
       ],
       [
         8,
-        4
+        10
       ],
       [
         8,
-        3
+        9
       ],
       [
         8,
-        2
+        10
+      ],
+      [
+        8,
+        11
       ],
       [
         7,
-        2
+        11
       ],
       [
-        7,
-        1
+        6,
+        11
       ]
     ],
     "player2Trajectory": [
@@ -14245,67 +14793,35 @@
       ],
       [
         1,
-        6
+        8
       ],
       [
         2,
-        6
-      ],
-      [
-        2,
-        5
-      ],
-      [
-        2,
-        4
+        8
       ],
       [
         3,
-        4
-      ],
-      [
-        3,
-        3
-      ],
-      [
-        3,
-        2
-      ],
-      [
-        3,
-        1
+        8
       ],
       [
         4,
-        1
+        8
       ],
       [
-        5,
-        1
+        4,
+        9
+      ],
+      [
+        4,
+        10
+      ],
+      [
+        4,
+        11
       ]
     ],
     "player1Actions": [
       [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
         -1,
         0
       ],
@@ -14319,7 +14835,43 @@
       ],
       [
         0,
-        -1
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        -1,
+        0
       ],
       [
         -1,
@@ -14328,6 +14880,26 @@
       [
         0,
         -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        0
       ],
       [
         -1,
@@ -14341,35 +14913,7 @@
       ],
       [
         0,
-        -1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
-      ],
-      [
-        0,
-        -1
+        1
       ],
       [
         1,
@@ -14378,6 +14922,22 @@
       [
         1,
         0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
       ],
       [
         1,
@@ -14410,7 +14970,7 @@
       6,
       13
     ],
-    "totalSteps": 12,
+    "totalSteps": 21,
     "collaborationSucceeded": true
   },
   {
@@ -14423,10 +14983,10 @@
     "mapId": "308",
     "distanceCondition": "closer_to_player2",
     "newGoalPresented": true,
-    "newGoalPresentedTime": 2,
+    "newGoalPresentedTime": 1,
     "newGoalPosition": [
       10,
-      9
+      5
     ],
     "firstDetectedSharedGoal": 1,
     "player1FirstDetectedGoal": 1,
@@ -14439,24 +14999,24 @@
         14
       ],
       [
-        7,
-        13
-      ],
-      [
         8,
-        13
-      ],
-      [
-        8,
-        12
-      ],
-      [
-        8,
-        11
+        14
       ],
       [
         9,
-        11
+        14
+      ],
+      [
+        10,
+        14
+      ],
+      [
+        10,
+        13
+      ],
+      [
+        10,
+        12
       ],
       [
         10,
@@ -14465,6 +15025,22 @@
       [
         10,
         10
+      ],
+      [
+        10,
+        9
+      ],
+      [
+        10,
+        8
+      ],
+      [
+        10,
+        7
+      ],
+      [
+        10,
+        6
       ]
     ],
     "player2Trajectory": [
@@ -14481,30 +15057,18 @@
         5
       ],
       [
-        8,
-        6
-      ],
-      [
         9,
-        6
-      ],
-      [
-        10,
-        6
-      ],
-      [
-        10,
-        7
-      ],
-      [
-        10,
-        8
+        5
       ]
     ],
     "player1Actions": [
       [
-        0,
-        -1
+        1,
+        0
+      ],
+      [
+        1,
+        0
       ],
       [
         1,
@@ -14519,12 +15083,24 @@
         -1
       ],
       [
-        1,
-        0
+        0,
+        -1
       ],
       [
-        1,
-        0
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        -1
       ],
       [
         0,
@@ -14545,28 +15121,12 @@
         1
       ],
       [
-        0,
-        1
-      ],
-      [
         1,
         0
       ],
       [
         1,
         0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
       ]
     ],
     "player1StartPosition": [
@@ -14595,7 +15155,7 @@
       14,
       9
     ],
-    "totalSteps": 8,
+    "totalSteps": 12,
     "collaborationSucceeded": true
   }
 ]

@@ -148,7 +148,7 @@ export const CONFIG = {
         // Goal-selection model after new-goal presentation:
         // W_lambda(g) ∝ exp(beta * EU(g)) * P_t(g)^lambda
         // Fitted on combined pure human-human 2P3G post-new-goal decisions.
-        lambda: 5.153457713936546,
+        lambda: 6.36701374103809,
         beta: 1.0
       },
       vlm: {
@@ -231,7 +231,7 @@ export const CONFIG = {
       minDistanceFromHuman: 1,
       maxDistanceFromHuman: 12,
       avoidRectangleArea: false,
-      maintainDistanceSum: false,
+      maintainDistanceSum: true,
       blockPathCheck: false
     }
   },

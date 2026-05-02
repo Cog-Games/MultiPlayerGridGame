@@ -167,9 +167,20 @@ const JointPlanner4Action = (() => {
     const maxQ = Math.max(...qValues); const logPrefs = qValues.map(q => beta * (q - maxQ)); const clipped = logPrefs.map(lp => Math.max(-700, Math.min(700, lp))); const prefs = clipped.map(lp => Math.exp(lp)); const sum = prefs.reduce((a, b) => a + b, 0); if (!isFinite(sum) || sum === 0) { const i = qValues.indexOf(maxQ); return actionSpace[i]; }
     const r = Math.random() * sum; let acc = 0; for (let a = 0; a < prefs.length; a++) { acc += prefs[a]; if (r < acc) return actionSpace[a]; } const i = qValues.indexOf(maxQ); return actionSpace[i];
   }
+  function getActionProbabilities(aiState, playerState, goals, beta = null) {
+    if (beta == null) beta = RL_AGENT_CONFIG.softmaxBeta; const key = hashGoals(goals) + '|' + beta; if (!planners.has(key)) planners.set(key, buildPlanner(goals, beta));
+    const { Q, goalSet } = planners.get(key); const toIdxLocal = (r, c) => r * COLS + c; const aiIdx = toIdxLocal(aiState[0], aiState[1]); const plIdx = toIdxLocal(playerState[0], playerState[1]);
+    const aiOnGoal = goalSet.has(aiIdx); const plOnGoal = goalSet.has(plIdx); const bothOnSameGoal = aiOnGoal && plOnGoal && aiIdx === plIdx;
+    if (bothOnSameGoal) return Object.fromEntries(actionSpace.map(a => [a.toString(), 0.25]));
+    const s = aiIdx * N + plIdx; const o = s * 4; const qValues = [Q[o], Q[o + 1], Q[o + 2], Q[o + 3]];
+    if (qValues.some(q => !isFinite(q))) return Object.fromEntries(actionSpace.map(a => [a.toString(), 0.25]));
+    const maxQ = Math.max(...qValues); const logPrefs = qValues.map(q => beta * (q - maxQ)); const clipped = logPrefs.map(lp => Math.max(-700, Math.min(700, lp))); const prefs = clipped.map(lp => Math.exp(lp)); const sum = prefs.reduce((a, b) => a + b, 0);
+    if (!isFinite(sum) || sum === 0) return Object.fromEntries(actionSpace.map(a => [a.toString(), 0.25]));
+    return Object.fromEntries(actionSpace.map((a, i) => [a.toString(), prefs[i] / sum]));
+  }
   function precalc(goals) { const beta = RL_AGENT_CONFIG.softmaxBeta; const key = hashGoals(goals) + '|' + beta; if (!planners.has(key)) planners.set(key, buildPlanner(goals, beta)); }
   function clear() { planners.clear(); }
-  return { getAction, precalc, clear };
+  return { getAction, getActionProbabilities, precalc, clear };
 })();
 
 // ---------- BFS-based joint planner (16 joint actions, legacy port) ----------
@@ -313,6 +324,51 @@ const JointBFSPlanner = (() => {
     return actionSpace[0];
   }
 
+  function getActionProbabilities(aiState, playerState, goals, beta = null) {
+    if (beta == null) beta = RL_AGENT_CONFIG.softmaxBeta;
+    const key = hashGoals(goals) + '|' + beta;
+    if (!planners.has(key)) planners.set(key, buildPlanner(goals, beta));
+    const { Q, goalSet } = planners.get(key);
+
+    const idxAI = toIdx(aiState[0], aiState[1]);
+    const idxPL = toIdx(playerState[0], playerState[1]);
+    if (goalSet.has(idxAI) && goalSet.has(idxPL) && idxAI === idxPL) {
+      return Object.fromEntries(actionSpace.map(a => [a.toString(), 0.25]));
+    }
+
+    const s = idxAI * N + idxPL;
+    const base = s * 16;
+    const qValues = [
+      Q[base], Q[base + 1], Q[base + 2], Q[base + 3],
+      Q[base + 4], Q[base + 5], Q[base + 6], Q[base + 7],
+      Q[base + 8], Q[base + 9], Q[base + 10], Q[base + 11],
+      Q[base + 12], Q[base + 13], Q[base + 14], Q[base + 15]
+    ];
+
+    const playerOnGoal = goalSet.has(idxPL);
+    const aiOnGoal = goalSet.has(idxAI);
+    if (playerOnGoal && !aiOnGoal) {
+      for (let j = 0; j < 16; j++) qValues[j] *= 0.5;
+    }
+
+    if (qValues.some(q => !isFinite(q))) {
+      return Object.fromEntries(actionSpace.map(a => [a.toString(), 0.25]));
+    }
+
+    const maxQ = Math.max(...qValues);
+    const prefs = qValues.map(q => Math.exp(Math.max(-700, Math.min(700, beta * (q - maxQ)))));
+    const sum = prefs.reduce((a, b) => a + b, 0);
+    if (!isFinite(sum) || sum === 0) {
+      return Object.fromEntries(actionSpace.map(a => [a.toString(), 0.25]));
+    }
+
+    const marginal = [0, 0, 0, 0];
+    for (let j = 0; j < 16; j++) {
+      marginal[Math.floor(j / 4)] += prefs[j] / sum;
+    }
+    return Object.fromEntries(actionSpace.map((a, i) => [a.toString(), marginal[i]]));
+  }
+
   function precalc(goals) {
     const beta = RL_AGENT_CONFIG.softmaxBeta;
     const key = hashGoals(goals) + '|' + beta;
@@ -320,7 +376,7 @@ const JointBFSPlanner = (() => {
   }
 
   function clear() { planners.clear(); }
-  return { getAction, precalc, clear };
+  return { getAction, getActionProbabilities, precalc, clear };
 })();
 
 export class RLAgent {
@@ -329,14 +385,27 @@ export class RLAgent {
     if (!goals || goals.length === 0) return [0, 0];
     try {
       if (playerPos && CONFIG.game.agent.type === 'joint') {
-        const impl = (RL_AGENT_CONFIG.jointRLImplementation || 'vi4').toLowerCase();
-        const action = (impl === 'bfs')
-          ? JointBFSPlanner.getAction(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta)
-          : JointPlanner4Action.getAction(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta);
-        return action === null ? [0, 0] : action;
+        return this.getJointRLAction(currentPos, playerPos, goals);
       }
       return this.getIndividualRLAction(currentPos, goals);
     } catch (e) { console.error('Error in RL agent:', e); return [0, 0]; }
+  }
+  getJointRLAction(currentPos, playerPos, goals) {
+    if (!goals || goals.length === 0 || !playerPos) return [0, 0];
+    const impl = (RL_AGENT_CONFIG.jointRLImplementation || 'vi4').toLowerCase();
+    const action = (impl === 'bfs')
+      ? JointBFSPlanner.getAction(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta)
+      : JointPlanner4Action.getAction(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta);
+    return action === null ? [0, 0] : action;
+  }
+  getJointActionProbabilities(currentPos, playerPos, goals) {
+    if (!goals || goals.length === 0 || !playerPos) {
+      return { '0,-1': 0.25, '0,1': 0.25, '-1,0': 0.25, '1,0': 0.25 };
+    }
+    const impl = (RL_AGENT_CONFIG.jointRLImplementation || 'vi4').toLowerCase();
+    return (impl === 'bfs')
+      ? JointBFSPlanner.getActionProbabilities(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta)
+      : JointPlanner4Action.getActionProbabilities(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta);
   }
   getIndividualActionProbabilities(currentPos, goals) {
     const policy = IndividualPolicyCache.getPolicy(goals);

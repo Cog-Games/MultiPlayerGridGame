@@ -12,13 +12,16 @@ import { NewGoalGenerator } from '../../client/src/utils/NewGoalGenerator.js';
 const DEFAULT_SESSIONS = 30;
 const DEFAULT_TRIALS_PER_SESSION = 12;
 const DEFAULT_SEED = 42;
+const DEFAULT_OUTPUT_DIR = 'dataAnalysis/committed_vs_committed_simulation';
 
 function parseArgs(argv) {
   const out = {
     sessions: DEFAULT_SESSIONS,
     trialsPerSession: DEFAULT_TRIALS_PER_SESSION,
     seed: DEFAULT_SEED,
-    sessionOffset: 0
+    sessionOffset: 0,
+    lambda: null,
+    outputDir: DEFAULT_OUTPUT_DIR
   };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -30,9 +33,18 @@ function parseArgs(argv) {
       out.sessionOffset = Number(argv[++i]);
     } else if (arg === '--seed' && argv[i + 1]) {
       out.seed = Number(argv[++i]);
+    } else if (arg === '--lambda' && argv[i + 1]) {
+      out.lambda = Number(argv[++i]);
+    } else if (arg === '--output-dir' && argv[i + 1]) {
+      out.outputDir = argv[++i];
     }
   }
   return out;
+}
+
+function formatLambdaForPath(lambdaValue) {
+  if (!Number.isFinite(lambdaValue)) return null;
+  return String(lambdaValue).replace('-', 'neg').replace('.', 'p');
 }
 
 function createSeededRandom(seed) {
@@ -139,15 +151,19 @@ function maybePresentNewGoal(gameStateManager) {
 
   let generated = NewGoalGenerator.checkNewGoalPresentation2P3G(state, trial, distanceCondition);
   if (!generated && Number.isInteger(trial.firstDetectedSharedGoal)) {
-    const direct = NewGoalGenerator.generateNewGoal(
-      state.player2,
-      state.player1,
-      state.currentGoals,
-      trial.firstDetectedSharedGoal,
-      distanceCondition
-    );
-    if (direct && direct.position) {
-      generated = direct;
+    const p1CurrentGoal = NewGoalGenerator.getPlayerCurrentGoal(trial.player1CurrentGoal);
+    const p2CurrentGoal = NewGoalGenerator.getPlayerCurrentGoal(trial.player2CurrentGoal);
+    if (p1CurrentGoal === trial.firstDetectedSharedGoal && p2CurrentGoal === trial.firstDetectedSharedGoal) {
+      const direct = NewGoalGenerator.generateNewGoal(
+        state.player2,
+        state.player1,
+        state.currentGoals,
+        trial.firstDetectedSharedGoal,
+        distanceCondition
+      );
+      if (direct && direct.position) {
+        generated = direct;
+      }
     }
   }
 
@@ -189,6 +205,9 @@ function summarizeTrial(trialData, mapId, sessionIndex) {
     firstDetectedSharedGoal: trialData.firstDetectedSharedGoal,
     player1FinalReachedGoal: trialData.player1FinalReachedGoal,
     player2FinalReachedGoal: trialData.player2FinalReachedGoal,
+    player1SampledJointGoal: trialData.committedAgentPlayer1SampledJointGoal,
+    player2SampledJointGoal: trialData.committedAgentPlayer2SampledJointGoal,
+    commitmentDefinition: 'finalReachedGoal == firstDetectedSharedGoal',
     collaborationSucceeded: !!trialData.collaborationSucceeded,
     commitmentEligible: !!eligibleForCommitment,
     player1Committed,
@@ -218,6 +237,14 @@ function buildRawTrialRecord(trialData, mapId, sessionIndex, design) {
     player2FirstDetectedGoal: trialData.player2FirstDetectedGoal,
     player1FinalReachedGoal: trialData.player1FinalReachedGoal,
     player2FinalReachedGoal: trialData.player2FinalReachedGoal,
+    player1SampledJointGoal: trialData.committedAgentPlayer1SampledJointGoal,
+    player2SampledJointGoal: trialData.committedAgentPlayer2SampledJointGoal,
+    committedAgentPlayer1SampledJointGoal: trialData.committedAgentPlayer1SampledJointGoal,
+    committedAgentPlayer2SampledJointGoal: trialData.committedAgentPlayer2SampledJointGoal,
+    committedAgentPlayer1SampledJointGoalWeights: trialData.committedAgentPlayer1SampledJointGoalWeights,
+    committedAgentPlayer2SampledJointGoalWeights: trialData.committedAgentPlayer2SampledJointGoalWeights,
+    committedAgentPlayer1SampledJointGoalHistory: trialData.committedAgentPlayer1SampledJointGoalHistory,
+    committedAgentPlayer2SampledJointGoalHistory: trialData.committedAgentPlayer2SampledJointGoalHistory,
     player1Trajectory: trialData.player1Trajectory,
     player2Trajectory: trialData.player2Trajectory,
     player1Actions: trialData.player1Actions,
@@ -320,17 +347,19 @@ function computeSummary(trials, meta) {
   };
 }
 
-function runSimulation({ sessions, trialsPerSession, seed, sessionOffset }) {
+function runSimulation({ sessions, trialsPerSession, seed, sessionOffset, lambda }) {
   const originalPlayers = {
     player1: CONFIG.game.players.player1.type,
     player2: CONFIG.game.players.player2.type
   };
   const originalNumTrials = CONFIG.game.experiments.numTrials['2P3G'];
+  const originalLambda = CONFIG.game.agent.committed.lambda;
 
   CONFIG.game.players.player1.type = 'committedAgent';
   CONFIG.game.players.player2.type = 'committedAgent';
   CONFIG.game.experiments.order = ['2P3G'];
   CONFIG.game.experiments.numTrials['2P3G'] = trialsPerSession;
+  if (Number.isFinite(lambda)) CONFIG.game.agent.committed.lambda = lambda;
 
   try {
     const maps = loadMapsFor2P3G().slice(0, trialsPerSession);
@@ -369,7 +398,7 @@ function runSimulation({ sessions, trialsPerSession, seed, sessionOffset }) {
               maybePresentNewGoal(gameStateManager);
 
               const state = gameStateManager.getCurrentState();
-              const trialData = gameStateManager.getCurrentTrialData();
+              const trialData = gameStateManager.trialData;
               const action1 = agent1.getAIAction(state, trialData, 1);
               const action2 = agent2.getAIAction(state, trialData, 2);
               const direction1 = actionToDirection(action1);
@@ -408,17 +437,19 @@ function runSimulation({ sessions, trialsPerSession, seed, sessionOffset }) {
     CONFIG.game.players.player1.type = originalPlayers.player1;
     CONFIG.game.players.player2.type = originalPlayers.player2;
     CONFIG.game.experiments.numTrials['2P3G'] = originalNumTrials;
+    CONFIG.game.agent.committed.lambda = originalLambda;
   }
 }
 
 function main() {
-  const { sessions, trialsPerSession, seed, sessionOffset } = parseArgs(process.argv.slice(2));
-  const result = runSimulation({ sessions, trialsPerSession, seed, sessionOffset });
+  const { sessions, trialsPerSession, seed, sessionOffset, lambda, outputDir: outputDirArg } = parseArgs(process.argv.slice(2));
+  const result = runSimulation({ sessions, trialsPerSession, seed, sessionOffset, lambda });
 
-  const outputDir = path.resolve('dataAnalysis/committed_vs_committed_simulation');
+  const outputDir = path.resolve(outputDirArg);
   fs.mkdirSync(outputDir, { recursive: true });
 
-  const suffix = `sessions_${sessionOffset}_to_${sessionOffset + sessions - 1}`;
+  const lambdaPart = Number.isFinite(lambda) ? `lambda_${formatLambdaForPath(lambda)}_` : '';
+  const suffix = `${lambdaPart}sessions_${sessionOffset}_to_${sessionOffset + sessions - 1}`;
   const summaryPath = path.join(outputDir, `committed_vs_committed_2p3g_summary_${suffix}.json`);
   const trialsPath = path.join(outputDir, `committed_vs_committed_2p3g_trials_${suffix}.json`);
   const rawTrialsPath = path.join(outputDir, `committed_vs_committed_2p3g_raw_trials_${suffix}.json`);

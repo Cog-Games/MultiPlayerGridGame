@@ -35,6 +35,7 @@ STEP_COST = -1.0
 SOFTMAX_BETA = 3.0
 MODEL_BETA = 1.0
 EPS = 1e-12
+PROXIMITY_REWARD_WEIGHT = 0.01
 PURE_PARTNER_TYPES = {"none", "human"}
 ACTIONS: List[Tuple[int, int]] = [(0, -1), (0, 1), (-1, 0), (1, 0)]
 ACTION_TO_INDEX = {action: idx for idx, action in enumerate(ACTIONS)}
@@ -216,61 +217,43 @@ def canonical_core(row: Dict[str, Any]) -> Dict[str, Any]:
     return core
 
 
-def goal_policy(goal: Tuple[int, int]) -> np.ndarray:
-    if goal in goal_policy.cache:
-        return goal_policy.cache[goal]
-
-    goal_row, goal_col = goal
-    value = np.full((GRID_SIZE, GRID_SIZE), 0.1, dtype=np.float64)
-    value[goal_row, goal_col] = 0.0
-
-    def transition(state: Tuple[int, int], action: Tuple[int, int]) -> Tuple[int, int]:
-        nr = max(0, min(GRID_SIZE - 1, state[0] + action[0]))
-        nc = max(0, min(GRID_SIZE - 1, state[1] + action[1]))
-        return nr, nc
-
-    for _ in range(100):
-        prev = value.copy()
-        for row in range(GRID_SIZE):
-            for col in range(GRID_SIZE):
-                if (row, col) == goal:
-                    continue
-                q_values = []
-                for action in ACTIONS:
-                    nxt = transition((row, col), action)
-                    reward = STEP_COST + (GOAL_REWARD if nxt == goal else 0.0)
-                    q_values.append(reward + GAMMA * prev[nxt[0], nxt[1]])
-                value[row, col] = max(q_values)
-        if np.max(np.abs(value - prev)) < 1e-3:
-            break
-
-    value[goal_row, goal_col] = GOAL_REWARD
-
-    policy = np.zeros((GRID_SIZE, GRID_SIZE, len(ACTIONS)), dtype=np.float64)
-    for row in range(GRID_SIZE):
-        for col in range(GRID_SIZE):
-            q_values = np.zeros(len(ACTIONS), dtype=np.float64)
-            for idx, action in enumerate(ACTIONS):
-                nr = max(0, min(GRID_SIZE - 1, row + action[0]))
-                nc = max(0, min(GRID_SIZE - 1, col + action[1]))
-                reward = STEP_COST + (GOAL_REWARD if (nr, nc) == goal else 0.0)
-                q_values[idx] = reward + GAMMA * value[nr, nc]
-            max_q = np.max(q_values)
-            prefs = np.exp(np.clip(SOFTMAX_BETA * (q_values - max_q), -700, 700))
-            policy[row, col] = prefs / np.sum(prefs)
-
-    goal_policy.cache[goal] = policy
-    return policy
-
-
-goal_policy.cache = {}
-
-
-def action_probability(position: Tuple[int, int], action: Tuple[int, int], goal: Tuple[int, int]) -> float:
+def action_probability(
+    position: Tuple[int, int],
+    other_position: Tuple[int, int],
+    action: Tuple[int, int],
+    goal: Tuple[int, int],
+) -> float:
     if action not in ACTION_TO_INDEX:
         return EPS
-    policy = goal_policy(goal)
-    return max(EPS, float(policy[position[0], position[1], ACTION_TO_INDEX[action]]))
+
+    def transition(state: Tuple[int, int], move: Tuple[int, int]) -> Tuple[int, int]:
+        nr = max(0, min(GRID_SIZE - 1, state[0] + move[0]))
+        nc = max(0, min(GRID_SIZE - 1, state[1] + move[1]))
+        return nr, nc
+
+    q_values = []
+    for own_action in ACTIONS:
+        own_next = position if position == goal else transition(position, own_action)
+        for other_action in ACTIONS:
+            other_next = other_position if other_position == goal else transition(other_position, other_action)
+            done = own_next == goal and other_next == goal
+            if done:
+                reward = GOAL_REWARD
+                future_value = 0.0
+            else:
+                joint_distance = (
+                    abs(own_next[0] - goal[0]) + abs(own_next[1] - goal[1]) +
+                    abs(other_next[0] - goal[0]) + abs(other_next[1] - goal[1])
+                )
+                reward = STEP_COST - PROXIMITY_REWARD_WEIGHT * joint_distance
+                future_value = GAMMA * (GOAL_REWARD + STEP_COST * joint_distance)
+            q_values.append(reward + future_value)
+
+    q = np.array(q_values, dtype=np.float64)
+    prefs = np.exp(np.clip(SOFTMAX_BETA * (q - np.max(q)), -700, 700))
+    joint_probs = prefs / np.sum(prefs)
+    own_idx = ACTION_TO_INDEX[action]
+    return max(EPS, float(np.sum(joint_probs[own_idx * len(ACTIONS):(own_idx + 1) * len(ACTIONS)])))
 
 
 def ensure_posterior(posterior: np.ndarray, goal_count: int) -> np.ndarray:
@@ -356,7 +339,7 @@ def row_to_observations(row: Dict[str, Any], beta: float = MODEL_BETA) -> List[S
                 p1_pos = p1_traj[step]
                 p2_pos = p2_traj[step]
                 action_probs = np.array(
-                    [action_probability(p1_pos, p1_actions[step], goal) for goal in goals],
+                    [action_probability(p1_pos, p2_pos, p1_actions[step], goal) for goal in goals],
                     dtype=np.float64,
                 )
                 observations.append(
@@ -383,7 +366,7 @@ def row_to_observations(row: Dict[str, Any], beta: float = MODEL_BETA) -> List[S
                 p2_pos = p2_traj[step]
                 p1_pos = p1_traj[step]
                 action_probs = np.array(
-                    [action_probability(p2_pos, p2_actions[step], goal) for goal in goals],
+                    [action_probability(p2_pos, p1_pos, p2_actions[step], goal) for goal in goals],
                     dtype=np.float64,
                 )
                 observations.append(
@@ -407,14 +390,16 @@ def row_to_observations(row: Dict[str, Any], beta: float = MODEL_BETA) -> List[S
                 )
 
         like = np.ones(len(goals), dtype=np.float64)
-        if step < len(p1_actions) and step < len(p1_traj):
+        if step < len(p1_actions) and step < len(p1_traj) and step < len(p2_traj):
             pos = p1_traj[step]
+            other_pos = p2_traj[step]
             action = p1_actions[step]
-            like *= np.array([action_probability(pos, action, goal) for goal in goals], dtype=np.float64)
-        if step < len(p2_actions) and step < len(p2_traj):
+            like *= np.array([action_probability(pos, other_pos, action, goal) for goal in goals], dtype=np.float64)
+        if step < len(p2_actions) and step < len(p2_traj) and step < len(p1_traj):
             pos = p2_traj[step]
+            other_pos = p1_traj[step]
             action = p2_actions[step]
-            like *= np.array([action_probability(pos, action, goal) for goal in goals], dtype=np.float64)
+            like *= np.array([action_probability(pos, other_pos, action, goal) for goal in goals], dtype=np.float64)
         posterior = normalize_posterior(posterior * like)
 
     return observations
