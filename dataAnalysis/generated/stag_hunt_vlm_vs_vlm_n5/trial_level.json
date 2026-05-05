@@ -13,125 +13,17 @@
       4
     ],
     "player1FinalPosition": [
-      7,
-      2
+      8,
+      0
     ],
     "player2FinalPosition": [
-      4,
-      8
+      0,
+      4
     ],
-    "player1Actions": [
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ]
-    ],
-    "player2Actions": [
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ]
-    ],
-    "player1Trajectory": [
-      [
-        8,
-        0
-      ],
-      [
-        8,
-        1
-      ],
-      [
-        8,
-        2
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        4,
-        4
-      ],
-      [
-        4,
-        5
-      ],
-      [
-        4,
-        6
-      ],
-      [
-        4,
-        7
-      ]
-    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
     "goals": [
       [
         5,
@@ -178,19 +70,19 @@
       "red_to_stag": 12
     },
     "obstacles": [],
-    "outcomeCategory": "player1_rabbit",
+    "outcomeCategory": "nothing",
     "stagHuntSuccess": false,
     "collaborationSucceeded": false,
-    "teamRoundPoints": 22,
-    "teamUtility": -3,
-    "player1PromptTokens": 9926,
-    "player1CompletionTokens": 3,
-    "player2PromptTokens": 33381,
-    "player2CompletionTokens": 10,
-    "trialTotalPromptTokens": 43307,
-    "trialTotalCompletionTokens": 13,
-    "trialEstimatedCostUsd": 0.006504,
-    "pricingModel": "gpt-4o-mini"
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
   },
   {
     "runId": 1,
@@ -206,125 +98,17 @@
       0
     ],
     "player1FinalPosition": [
-      4,
-      8
-    ],
-    "player2FinalPosition": [
-      7,
+      0,
       4
     ],
-    "player1Actions": [
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ]
+    "player2FinalPosition": [
+      8,
+      0
     ],
-    "player2Actions": [
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ]
-    ],
-    "player1Trajectory": [
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        4,
-        4
-      ],
-      [
-        4,
-        5
-      ],
-      [
-        4,
-        6
-      ],
-      [
-        4,
-        7
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        8,
-        0
-      ],
-      [
-        8,
-        1
-      ],
-      [
-        8,
-        2
-      ],
-      [
-        8,
-        3
-      ],
-      [
-        8,
-        4
-      ]
-    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
     "goals": [
       [
         3,
@@ -371,19 +155,19 @@
       "red_to_stag": 12
     },
     "obstacles": [],
-    "outcomeCategory": "player2_rabbit",
+    "outcomeCategory": "nothing",
     "stagHuntSuccess": false,
     "collaborationSucceeded": false,
-    "teamRoundPoints": 22,
-    "teamUtility": -3,
-    "player1PromptTokens": 26709,
-    "player1CompletionTokens": 8,
-    "player2PromptTokens": 16608,
-    "player2CompletionTokens": 5,
-    "trialTotalPromptTokens": 43317,
-    "trialTotalCompletionTokens": 13,
-    "trialEstimatedCostUsd": 0.006505,
-    "pricingModel": "gpt-4o-mini"
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
   },
   {
     "runId": 1,
@@ -399,229 +183,17 @@
       4
     ],
     "player1FinalPosition": [
-      7,
-      3
+      8,
+      0
     ],
     "player2FinalPosition": [
-      4,
-      8
+      0,
+      4
     ],
-    "player1Actions": [
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ]
-    ],
-    "player2Actions": [
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ]
-    ],
-    "player1Trajectory": [
-      [
-        8,
-        0
-      ],
-      [
-        8,
-        1
-      ],
-      [
-        8,
-        2
-      ],
-      [
-        8,
-        3
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        4,
-        4
-      ],
-      [
-        4,
-        5
-      ],
-      [
-        4,
-        6
-      ],
-      [
-        4,
-        7
-      ]
-    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
     "goals": [
       [
         2,
@@ -668,19 +240,19 @@
       "red_to_stag": 12
     },
     "obstacles": [],
-    "outcomeCategory": "player1_rabbit",
+    "outcomeCategory": "nothing",
     "stagHuntSuccess": false,
     "collaborationSucceeded": false,
-    "teamRoundPoints": 16,
-    "teamUtility": -9,
-    "player1PromptTokens": 13260,
-    "player1CompletionTokens": 4,
-    "player2PromptTokens": 74523,
-    "player2CompletionTokens": 22,
-    "trialTotalPromptTokens": 87783,
-    "trialTotalCompletionTokens": 26,
-    "trialEstimatedCostUsd": 0.013183,
-    "pricingModel": "gpt-4o-mini"
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
   },
   {
     "runId": 1,
@@ -696,133 +268,17 @@
       0
     ],
     "player1FinalPosition": [
-      4,
-      8
+      0,
+      4
     ],
     "player2FinalPosition": [
-      7,
-      5
+      8,
+      0
     ],
-    "player1Actions": [
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ]
-    ],
-    "player2Actions": [
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ]
-    ],
-    "player1Trajectory": [
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        4,
-        4
-      ],
-      [
-        4,
-        5
-      ],
-      [
-        4,
-        6
-      ],
-      [
-        4,
-        7
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        8,
-        0
-      ],
-      [
-        8,
-        1
-      ],
-      [
-        8,
-        2
-      ],
-      [
-        8,
-        3
-      ],
-      [
-        8,
-        4
-      ],
-      [
-        7,
-        4
-      ]
-    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
     "goals": [
       [
         3,
@@ -869,19 +325,19 @@
       "red_to_stag": 12
     },
     "obstacles": [],
-    "outcomeCategory": "player2_rabbit",
+    "outcomeCategory": "nothing",
     "stagHuntSuccess": false,
     "collaborationSucceeded": false,
-    "teamRoundPoints": 21,
-    "teamUtility": -4,
-    "player1PromptTokens": 26729,
-    "player1CompletionTokens": 8,
-    "player2PromptTokens": 19974,
-    "player2CompletionTokens": 6,
-    "trialTotalPromptTokens": 46703,
-    "trialTotalCompletionTokens": 14,
-    "trialEstimatedCostUsd": 0.007014,
-    "pricingModel": "gpt-4o-mini"
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
   },
   {
     "runId": 1,
@@ -897,261 +353,17 @@
       4
     ],
     "player1FinalPosition": [
-      4,
-      8
+      8,
+      0
     ],
     "player2FinalPosition": [
-      4,
-      8
+      0,
+      4
     ],
-    "player1Actions": [
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ]
-    ],
-    "player2Actions": [
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ]
-    ],
-    "player1Trajectory": [
-      [
-        8,
-        0
-      ],
-      [
-        8,
-        1
-      ],
-      [
-        8,
-        2
-      ],
-      [
-        8,
-        3
-      ],
-      [
-        8,
-        4
-      ],
-      [
-        8,
-        5
-      ],
-      [
-        7,
-        5
-      ],
-      [
-        6,
-        5
-      ],
-      [
-        5,
-        5
-      ],
-      [
-        4,
-        5
-      ],
-      [
-        4,
-        6
-      ],
-      [
-        4,
-        7
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        4,
-        4
-      ],
-      [
-        4,
-        5
-      ],
-      [
-        4,
-        6
-      ],
-      [
-        4,
-        7
-      ]
-    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
     "goals": [
       [
         3,
@@ -1198,19 +410,19 @@
       "red_to_stag": 12
     },
     "obstacles": [],
-    "outcomeCategory": "both_stag",
-    "stagHuntSuccess": true,
-    "collaborationSucceeded": true,
-    "teamRoundPoints": 23,
-    "teamUtility": 13,
-    "player1PromptTokens": 40444,
-    "player1CompletionTokens": 12,
-    "player2PromptTokens": 61313,
-    "player2CompletionTokens": 18,
-    "trialTotalPromptTokens": 101757,
-    "trialTotalCompletionTokens": 30,
-    "trialEstimatedCostUsd": 0.015282,
-    "pricingModel": "gpt-4o-mini"
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
   },
   {
     "runId": 1,
@@ -1226,117 +438,17 @@
       0
     ],
     "player1FinalPosition": [
-      4,
-      8
+      0,
+      4
     ],
     "player2FinalPosition": [
-      7,
-      1
+      8,
+      0
     ],
-    "player1Actions": [
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ]
-    ],
-    "player2Actions": [
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ]
-    ],
-    "player1Trajectory": [
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        4,
-        4
-      ],
-      [
-        4,
-        5
-      ],
-      [
-        4,
-        6
-      ],
-      [
-        4,
-        7
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        8,
-        0
-      ],
-      [
-        8,
-        1
-      ]
-    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
     "goals": [
       [
         1,
@@ -1383,19 +495,19 @@
       "red_to_stag": 12
     },
     "obstacles": [],
-    "outcomeCategory": "player2_rabbit",
+    "outcomeCategory": "nothing",
     "stagHuntSuccess": false,
     "collaborationSucceeded": false,
-    "teamRoundPoints": 23,
-    "teamUtility": -2,
-    "player1PromptTokens": 33326,
-    "player1CompletionTokens": 10,
-    "player2PromptTokens": 6606,
-    "player2CompletionTokens": 2,
-    "trialTotalPromptTokens": 39932,
-    "trialTotalCompletionTokens": 12,
-    "trialEstimatedCostUsd": 0.005997,
-    "pricingModel": "gpt-4o-mini"
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
   },
   {
     "runId": 1,
@@ -1411,205 +523,17 @@
       4
     ],
     "player1FinalPosition": [
-      7,
-      2
+      8,
+      0
     ],
     "player2FinalPosition": [
-      4,
-      8
+      0,
+      4
     ],
-    "player1Actions": [
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ]
-    ],
-    "player2Actions": [
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ]
-    ],
-    "player1Trajectory": [
-      [
-        8,
-        0
-      ],
-      [
-        8,
-        1
-      ],
-      [
-        8,
-        2
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        4,
-        4
-      ],
-      [
-        4,
-        5
-      ],
-      [
-        4,
-        6
-      ],
-      [
-        4,
-        7
-      ]
-    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
     "goals": [
       [
         3,
@@ -1656,19 +580,19 @@
       "red_to_stag": 12
     },
     "obstacles": [],
-    "outcomeCategory": "player1_rabbit",
+    "outcomeCategory": "nothing",
     "stagHuntSuccess": false,
     "collaborationSucceeded": false,
-    "teamRoundPoints": 17,
-    "teamUtility": -8,
-    "player1PromptTokens": 9926,
-    "player1CompletionTokens": 3,
-    "player2PromptTokens": 67466,
-    "player2CompletionTokens": 20,
-    "trialTotalPromptTokens": 77392,
-    "trialTotalCompletionTokens": 23,
-    "trialEstimatedCostUsd": 0.011623,
-    "pricingModel": "gpt-4o-mini"
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
   },
   {
     "runId": 1,
@@ -1684,101 +608,17 @@
       0
     ],
     "player1FinalPosition": [
-      2,
-      5
+      0,
+      4
     ],
     "player2FinalPosition": [
-      7,
-      6
+      8,
+      0
     ],
-    "player1Actions": [
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ]
-    ],
-    "player2Actions": [
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        0,
-        1
-      ]
-    ],
-    "player1Trajectory": [
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        2,
-        4
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        8,
-        0
-      ],
-      [
-        8,
-        1
-      ],
-      [
-        8,
-        2
-      ],
-      [
-        8,
-        3
-      ],
-      [
-        8,
-        4
-      ],
-      [
-        8,
-        5
-      ],
-      [
-        7,
-        5
-      ]
-    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
     "goals": [
       [
         2,
@@ -1825,19 +665,19 @@
       "red_to_stag": 12
     },
     "obstacles": [],
-    "outcomeCategory": "both_rabbit",
+    "outcomeCategory": "nothing",
     "stagHuntSuccess": false,
     "collaborationSucceeded": false,
     "teamRoundPoints": 30,
-    "teamUtility": 10,
-    "player1PromptTokens": 9930,
-    "player1CompletionTokens": 3,
-    "player2PromptTokens": 23284,
-    "player2CompletionTokens": 7,
-    "trialTotalPromptTokens": 33214,
-    "trialTotalCompletionTokens": 10,
-    "trialEstimatedCostUsd": 0.004988,
-    "pricingModel": "gpt-4o-mini"
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
   },
   {
     "runId": 1,
@@ -1853,261 +693,17 @@
       4
     ],
     "player1FinalPosition": [
-      7,
-      4
+      8,
+      0
     ],
     "player2FinalPosition": [
-      7,
-      5
+      0,
+      4
     ],
-    "player1Actions": [
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        -1,
-        0
-      ]
-    ],
-    "player2Actions": [
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        -1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        1
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ],
-      [
-        0,
-        -1
-      ]
-    ],
-    "player1Trajectory": [
-      [
-        8,
-        0
-      ],
-      [
-        8,
-        1
-      ],
-      [
-        8,
-        2
-      ],
-      [
-        8,
-        3
-      ],
-      [
-        8,
-        4
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        3,
-        4
-      ],
-      [
-        4,
-        4
-      ],
-      [
-        4,
-        5
-      ],
-      [
-        5,
-        5
-      ],
-      [
-        6,
-        5
-      ],
-      [
-        7,
-        5
-      ]
-    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
     "goals": [
       [
         5,
@@ -2157,16 +753,16 @@
     "outcomeCategory": "nothing",
     "stagHuntSuccess": false,
     "collaborationSucceeded": false,
-    "teamRoundPoints": 15,
-    "teamUtility": -10,
-    "player1PromptTokens": 16608,
-    "player1CompletionTokens": 5,
-    "player2PromptTokens": 85078,
-    "player2CompletionTokens": 25,
-    "trialTotalPromptTokens": 101686,
-    "trialTotalCompletionTokens": 30,
-    "trialEstimatedCostUsd": 0.015271,
-    "pricingModel": "gpt-4o-mini"
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
   },
   {
     "runId": 1,
@@ -2251,7 +847,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 1,
@@ -2336,7 +932,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 1,
@@ -2359,30 +955,10 @@
       8,
       0
     ],
-    "player1Actions": [
-      [
-        1,
-        0
-      ]
-    ],
-    "player2Actions": [
-      [
-        0,
-        1
-      ]
-    ],
-    "player1Trajectory": [
-      [
-        0,
-        4
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        8,
-        0
-      ]
-    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
     "goals": [
       [
         2,
@@ -2432,16 +1008,16 @@
     "outcomeCategory": "nothing",
     "stagHuntSuccess": false,
     "collaborationSucceeded": false,
-    "teamRoundPoints": 28,
-    "teamUtility": -2,
-    "player1PromptTokens": 3300,
-    "player1CompletionTokens": 1,
-    "player2PromptTokens": 3296,
-    "player2CompletionTokens": 1,
-    "trialTotalPromptTokens": 6596,
-    "trialTotalCompletionTokens": 2,
-    "trialEstimatedCostUsd": 0.000991,
-    "pricingModel": "gpt-4o-mini"
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
   },
   {
     "runId": 1,
@@ -2526,7 +1102,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 1,
@@ -2611,7 +1187,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 1,
@@ -2696,7 +1272,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 1,
@@ -2781,7 +1357,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 1,
@@ -2866,7 +1442,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 1,
@@ -2951,7 +1527,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 2,
@@ -3036,7 +1612,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 2,
@@ -3121,7 +1697,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 2,
@@ -3206,7 +1782,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 2,
@@ -3291,7 +1867,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 2,
@@ -3376,7 +1952,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 2,
@@ -3461,7 +2037,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 2,
@@ -3546,7 +2122,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 2,
@@ -3631,7 +2207,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 2,
@@ -3716,7 +2292,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 2,
@@ -3801,7 +2377,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 2,
@@ -3886,7 +2462,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 2,
@@ -3902,53 +2478,17 @@
       0
     ],
     "player1FinalPosition": [
-      1,
+      0,
       4
     ],
     "player2FinalPosition": [
       8,
-      1
+      0
     ],
-    "player1Actions": [
-      [
-        1,
-        0
-      ],
-      [
-        1,
-        0
-      ]
-    ],
-    "player2Actions": [
-      [
-        0,
-        1
-      ],
-      [
-        0,
-        1
-      ]
-    ],
-    "player1Trajectory": [
-      [
-        0,
-        4
-      ],
-      [
-        1,
-        4
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        8,
-        0
-      ],
-      [
-        8,
-        1
-      ]
-    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
     "goals": [
       [
         2,
@@ -3998,16 +2538,16 @@
     "outcomeCategory": "nothing",
     "stagHuntSuccess": false,
     "collaborationSucceeded": false,
-    "teamRoundPoints": 26,
-    "teamUtility": -4,
-    "player1PromptTokens": 6606,
-    "player1CompletionTokens": 2,
-    "player2PromptTokens": 6602,
-    "player2CompletionTokens": 2,
-    "trialTotalPromptTokens": 13208,
-    "trialTotalCompletionTokens": 4,
-    "trialEstimatedCostUsd": 0.001984,
-    "pricingModel": "gpt-4o-mini"
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
   },
   {
     "runId": 2,
@@ -4092,7 +2632,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 2,
@@ -4115,30 +2655,10 @@
       8,
       0
     ],
-    "player1Actions": [
-      [
-        1,
-        0
-      ]
-    ],
-    "player2Actions": [
-      [
-        0,
-        1
-      ]
-    ],
-    "player1Trajectory": [
-      [
-        0,
-        4
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        8,
-        0
-      ]
-    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
     "goals": [
       [
         3,
@@ -4188,16 +2708,16 @@
     "outcomeCategory": "nothing",
     "stagHuntSuccess": false,
     "collaborationSucceeded": false,
-    "teamRoundPoints": 28,
-    "teamUtility": -2,
-    "player1PromptTokens": 3300,
-    "player1CompletionTokens": 1,
-    "player2PromptTokens": 3296,
-    "player2CompletionTokens": 1,
-    "trialTotalPromptTokens": 6596,
-    "trialTotalCompletionTokens": 2,
-    "trialEstimatedCostUsd": 0.000991,
-    "pricingModel": "gpt-4o-mini"
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
   },
   {
     "runId": 2,
@@ -4282,7 +2802,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 2,
@@ -4367,7 +2887,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 2,
@@ -4452,7 +2972,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 2,
@@ -4537,7 +3057,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 3,
@@ -4622,7 +3142,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 3,
@@ -4707,7 +3227,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 3,
@@ -4792,7 +3312,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 3,
@@ -4877,7 +3397,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 3,
@@ -4962,7 +3482,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 3,
@@ -5047,7 +3567,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 3,
@@ -5132,7 +3652,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 3,
@@ -5217,7 +3737,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 3,
@@ -5302,7 +3822,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 3,
@@ -5325,30 +3845,10 @@
       8,
       0
     ],
-    "player1Actions": [
-      [
-        1,
-        0
-      ]
-    ],
-    "player2Actions": [
-      [
-        0,
-        1
-      ]
-    ],
-    "player1Trajectory": [
-      [
-        0,
-        4
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        8,
-        0
-      ]
-    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
     "goals": [
       [
         5,
@@ -5398,16 +3898,16 @@
     "outcomeCategory": "nothing",
     "stagHuntSuccess": false,
     "collaborationSucceeded": false,
-    "teamRoundPoints": 28,
-    "teamUtility": -2,
-    "player1PromptTokens": 3300,
-    "player1CompletionTokens": 1,
-    "player2PromptTokens": 3296,
-    "player2CompletionTokens": 1,
-    "trialTotalPromptTokens": 6596,
-    "trialTotalCompletionTokens": 2,
-    "trialEstimatedCostUsd": 0.000991,
-    "pricingModel": "gpt-4o-mini"
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
   },
   {
     "runId": 3,
@@ -5492,7 +3992,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 3,
@@ -5577,7 +4077,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 3,
@@ -5662,7 +4162,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 3,
@@ -5747,7 +4247,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 3,
@@ -5832,7 +4332,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 3,
@@ -5917,7 +4417,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 3,
@@ -6002,7 +4502,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 3,
@@ -6087,7 +4587,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 4,
@@ -6172,7 +4672,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 4,
@@ -6257,7 +4757,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 4,
@@ -6342,7 +4842,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 4,
@@ -6427,7 +4927,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 4,
@@ -6512,7 +5012,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 4,
@@ -6597,7 +5097,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 4,
@@ -6682,7 +5182,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 4,
@@ -6767,7 +5267,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 4,
@@ -6852,7 +5352,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 4,
@@ -6937,7 +5437,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 4,
@@ -7022,7 +5522,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 4,
@@ -7107,7 +5607,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 4,
@@ -7192,7 +5692,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 4,
@@ -7277,7 +5777,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 4,
@@ -7362,7 +5862,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 4,
@@ -7447,7 +5947,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 4,
@@ -7532,7 +6032,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 4,
@@ -7617,7 +6117,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 5,
@@ -7702,7 +6202,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 5,
@@ -7787,7 +6287,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 5,
@@ -7872,7 +6372,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 5,
@@ -7957,7 +6457,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 5,
@@ -8042,7 +6542,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 5,
@@ -8127,7 +6627,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 5,
@@ -8212,7 +6712,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 5,
@@ -8297,7 +6797,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 5,
@@ -8382,7 +6882,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 5,
@@ -8467,7 +6967,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 5,
@@ -8552,7 +7052,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 5,
@@ -8637,7 +7137,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 5,
@@ -8660,30 +7160,10 @@
       0,
       4
     ],
-    "player1Actions": [
-      [
-        0,
-        1
-      ]
-    ],
-    "player2Actions": [
-      [
-        1,
-        0
-      ]
-    ],
-    "player1Trajectory": [
-      [
-        8,
-        0
-      ]
-    ],
-    "player2Trajectory": [
-      [
-        0,
-        4
-      ]
-    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
     "goals": [
       [
         3,
@@ -8733,16 +7213,16 @@
     "outcomeCategory": "nothing",
     "stagHuntSuccess": false,
     "collaborationSucceeded": false,
-    "teamRoundPoints": 28,
-    "teamUtility": -2,
-    "player1PromptTokens": 3296,
-    "player1CompletionTokens": 1,
-    "player2PromptTokens": 3300,
-    "player2CompletionTokens": 1,
-    "trialTotalPromptTokens": 6596,
-    "trialTotalCompletionTokens": 2,
-    "trialEstimatedCostUsd": 0.000991,
-    "pricingModel": "gpt-4o-mini"
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
   },
   {
     "runId": 5,
@@ -8827,7 +7307,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 5,
@@ -8912,7 +7392,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 5,
@@ -8997,7 +7477,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 5,
@@ -9082,7 +7562,7 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   },
   {
     "runId": 5,
@@ -9167,6 +7647,6 @@
     "trialTotalPromptTokens": 0,
     "trialTotalCompletionTokens": 0,
     "trialEstimatedCostUsd": 0,
-    "pricingModel": "gpt-4o-mini"
+    "pricingModel": "vlm"
   }
 ]

@@ -9,6 +9,7 @@ function parseArgs(argv) {
   const __dirname = dirname(fileURLToPath(import.meta.url));
   const args = {
     runs: 5,
+    trials: null,
     seedBase: 20260420,
     stepDelayMs: 0,
     /** null: derive from targetRpm via GameConfigUtils.applyModelExp */
@@ -26,6 +27,9 @@ function parseArgs(argv) {
     const next = argv[i + 1];
     if (arg === '--runs' && next) {
       args.runs = Number(next);
+      i++;
+    } else if (arg === '--trials' && next) {
+      args.trials = Number(next);
       i++;
     } else if (arg === '--seed-base' && next) {
       args.seedBase = Number(next);
@@ -59,6 +63,9 @@ function parseArgs(argv) {
 
   if (!Number.isInteger(args.runs) || args.runs <= 0) {
     throw new Error(`Invalid --runs value: ${args.runs}`);
+  }
+  if (args.trials != null && (!Number.isInteger(args.trials) || args.trials <= 0)) {
+    throw new Error(`Invalid --trials value: ${args.trials}`);
   }
   if (!Number.isInteger(args.seedBase)) {
     throw new Error(`Invalid --seed-base value: ${args.seedBase}`);
@@ -257,6 +264,10 @@ VlmAgentClient.matrixToImageDataURL = function matrixToImageDataURL(matrix) {
   }
 
   return rgbaToPngDataUrl(width, width, rgba);
+};
+
+VlmAgentClient.stateToImageDataURL = function stateToImageDataURL(state) {
+  return VlmAgentClient.matrixToImageDataURL(state?.gridMatrix);
 };
 
 function safePoint(value) {
@@ -748,6 +759,9 @@ async function main() {
   CONFIG.modelExp.maxStepsPerTrial = args.maxStepsPerTrial;
   CONFIG.modelExp.exportPrefix = 'vlm-vlm';
   CONFIG.game.experiments.order = ['StagHunt'];
+  if (args.trials != null) {
+    CONFIG.game.experiments.numTrials.StagHunt = args.trials;
+  }
   GameConfigUtils.applyModelExp();
   if (args.remoteAgentMinRequestSpacingMs != null) {
     CONFIG.modelExp.remoteAgentMinRequestSpacingMs = args.remoteAgentMinRequestSpacingMs;
