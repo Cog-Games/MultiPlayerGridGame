@@ -8,6 +8,9 @@ dist/
 build/
 
 # Environment variables
+.env
+.env.*
+!.env.example
 .env.local
 .env.production
 
@@ -41,9 +44,6 @@ jspm_packages/
 
 # Yarn Integrity file
 .yarn-integrity
-
-# dotenv environment variables file
-.env
 
 # IDE files
 .vscode/

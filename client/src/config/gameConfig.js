@@ -68,7 +68,7 @@ export const CONFIG = {
       },
       player2: {
         // Types: 'human' | 'gpt' | 'gpt-ToM' | 'vlm' | 'vlm-ToM' | 'rl_individual' | 'rl_joint' | 'we_intent_js'
-        type: 'rl_joint',
+        type: 'vlm',
         color: 'orange',
         description: 'Human, GPT, or RL partner'
       }
@@ -166,10 +166,10 @@ export const CONFIG = {
       type: 'joint',
       delay: 500,
       independentDelay: 300,
-      // Optional GPT/VLM agent client defaults (non-sensitive)
+      // Optional GPT/VLM client behavior defaults (non-sensitive).
+      // Runtime provider/model selection comes from the game server .env and
+      // is cached onto CONFIG.game.agent.{gpt,vlm}.model during play.
       gpt: {
-        // API model name used on server (e.g., 'gpt-4o-mini')
-        model: 'gpt-4.1-mini',
         temperature: 1,
         // Include past trajectories in GPT prompt
         memory: {
@@ -179,12 +179,10 @@ export const CONFIG = {
         }
       },
       vlm: {
-        // Vision API model name used on server (e.g., 'gpt-4o-mini')
-        model: 'gpt-4.1-mini',
         temperature: 0,
         memory: {
           enabled: true,
-          maxSteps: 50
+          maxSteps: 3
         }
       },
       // WeAgent (collaborative agency model) parameters — maps to NSF proposal Eq 1-11
@@ -217,6 +215,8 @@ export const CONFIG = {
     canvasSize: 380,
     cellSize: 40,
     padding: 2,
+    // Toggle the in-game scoreboard UI without affecting underlying point logic.
+    showScoreboard: false,
     colors: {
       background: '#ffffff',
       grid: '#cccccc',
@@ -285,6 +285,38 @@ export const CONFIG = {
       maintainDistanceSum: false,
       blockPathCheck: false
     }
+  },
+
+  // Model-vs-model (AI-vs-AI) simulation mode
+  // When enabled, both players are driven by AI agents with no human input.
+  // Enable via URL flag `?modelExp=1` or by setting `enabled: true` here.
+  modelExp: {
+    enabled: false,
+    // Agent types for each side. Accepted values:
+    //   'rl_individual' | 'rl_joint' | 'we_intent_js' | 'gpt' | 'gemini' | 'claude'
+    player1Agent: 'gpt',
+    player2Agent: 'gpt',
+    // RL mode applied to CONFIG.game.agent.type when either side is an RL agent
+    rlMode: 'joint',
+    // How many times to repeat each map
+    repetitionsPerMap: 1,
+    seed: 42,
+    // Pacing between joint steps in ms (0 = as fast as possible)
+    stepDelayMs: 250,
+    // Soft targets for API rate (server reads VLM_TARGET_RPM/TPM; client spacing derived here)
+    targetRpm: 400,
+    targetTpm: 160000,
+    vlmMaxOutputTokens: 8,
+    vlmTomMaxOutputTokens: 80,
+    // When true, remote LLM/VLM agent calls are issued one at a time so
+    // simultaneous-step simulations do not burst multiple API requests at once.
+    serializeRemoteAgentCalls: false,
+    // Minimum gap between dispatching remote LLM/VLM requests in ms.
+    remoteAgentMinRequestSpacingMs: 0,
+    // Safety cap on steps per trial to prevent runaway LLM calls
+    maxStepsPerTrial: 100,
+    // Filename prefix for the exported Excel/JSON
+    exportPrefix: 'modelExp'
   },
 
   // Multiplayer networking settings for human-human mode
@@ -380,14 +412,45 @@ export const GameConfigUtils = {
   setPlayerType(playerIndex, type) {
     // Normalize legacy alias
     const normalized = (type === 'ai') ? 'rl_joint' : type;
-    const allowed = ['human', 'gpt', 'gpt-ToM', 'vlm', 'vlm-ToM', 'rl_individual', 'rl_joint', 'rl_individual_python', 'we_intent_js'];
+    const allowed = [
+      'human', 'gpt', 'gpt-ToM', 'vlm', 'vlm-ToM',
+      'rl_individual', 'rl_joint', 'rl_individual_python', 'we_intent_js',
+      // Provider aliases for model-exp mode
+      'gemini', 'claude'
+    ];
     if (!allowed.includes(normalized)) return;
     CONFIG.game.players[`player${playerIndex}`].type = normalized;
 
-    // Keep RL agent mode consistent when setting player2 to RL types
-    if (playerIndex === 2) {
-      if (normalized === 'rl_joint') CONFIG.game.agent.type = 'joint';
-      if (normalized === 'rl_individual' || normalized === 'rl_individual_python') CONFIG.game.agent.type = 'individual';
+    // Keep RL agent mode consistent when setting either player to RL types
+    if (normalized === 'rl_joint') CONFIG.game.agent.type = 'joint';
+    if (normalized === 'rl_individual' || normalized === 'rl_individual_python') CONFIG.game.agent.type = 'individual';
+  },
+
+  isModelExpMode() {
+    return !!CONFIG?.modelExp?.enabled;
+  },
+
+  /**
+   * Apply the CONFIG.modelExp block to the rest of CONFIG so the existing
+   * agent-dispatch code (ExperimentManager, AiVsAiOrchestrator) sees a
+   * consistent player1/player2 type + agent.type + LLM model settings.
+   */
+  applyModelExp() {
+    const cfg = CONFIG.modelExp;
+    if (!cfg || !cfg.enabled) return;
+    this.setPlayerType(1, cfg.player1Agent);
+    this.setPlayerType(2, cfg.player2Agent);
+
+    const usesRL = [cfg.player1Agent, cfg.player2Agent].some(
+      t => t === 'rl_individual' || t === 'rl_joint' || t === 'rl_individual_python'
+    );
+    if (usesRL && (cfg.rlMode === 'joint' || cfg.rlMode === 'individual')) {
+      CONFIG.game.agent.type = cfg.rlMode;
+    }
+
+    const rpm = Number(cfg.targetRpm);
+    if (Number.isFinite(rpm) && rpm > 0) {
+      CONFIG.modelExp.remoteAgentMinRequestSpacingMs = Math.max(0, Math.ceil(60000 / rpm));
     }
   },
 

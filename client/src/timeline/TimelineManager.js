@@ -1526,7 +1526,7 @@ export class TimelineManager {
                   <li>There is one <strong>stag</strong> (big blue goal) and two <strong>rabbits</strong> (small blue goals) on the map.</li>
                   <li>Each player starts the round with <strong>15 points</strong> and loses <strong>1 point per step</strong>.</li>
                   <li>If both players reach the <strong>stag</strong>, you each earn <strong>10 points</strong>.</li>
-                  <li>Any player can catch a <strong>rabbit</strong> alone for <strong>3 points</strong>.</li>
+                  <li>Any player can catch a <strong>rabbit</strong> alone for <strong>5 points</strong>.</li>
                   <li>The round ends only after <strong>both players</strong> have reached a goal.</li>
                   <li>Only <strong>one</strong> player can catch each rabbit — the first player to reach it claims it. The rabbit then disappears and the other player cannot collect it.</li>
                   <li>Movement: Both players move one step at a time — the action takes effect only after both players have pressed their keys.</li>
@@ -1550,7 +1550,7 @@ export class TimelineManager {
                   <li>There are two <strong>stags</strong> (big blue goals) and two <strong>rabbits</strong> (small blue goals) on the map.</li>
                   <li>Each player starts the round with <strong>15 points</strong> and loses <strong>1 point per step</strong>.</li>
                   <li>If both players reach the <strong>same stag</strong>, you each earn <strong>10 points</strong>.</li>
-                  <li>Any player can catch a <strong>rabbit</strong> alone for <strong>3 points</strong>.</li>
+                  <li>Any player can catch a <strong>rabbit</strong> alone for <strong>5 points</strong>.</li>
                   <li>The round ends only after <strong>both players</strong> have reached a goal.</li>
                   <li>Only <strong>one</strong> player can catch each rabbit — the first player to reach it claims it. The rabbit then disappears and the other player cannot collect it.</li>
                   <li>Movement: Both players move one step at a time — the action takes effect only after both players have pressed their keys.</li>

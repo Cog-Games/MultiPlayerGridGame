@@ -5,6 +5,7 @@ import { ExperimentManager } from '../experiments/ExperimentManager.js';
 import { TimelineManager } from '../timeline/TimelineManager.js';
 import { CONFIG, GameConfigUtils } from '../config/gameConfig.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
+import { AiVsAiOrchestrator } from '../ai/AiVsAiOrchestrator.js';
 
 export class GameApplication {
   constructor(container) {
@@ -55,11 +56,64 @@ export class GameApplication {
       GameConfigUtils.setPlayerType(2, aiParam);
     }
 
+    const gptModelParam = urlParams.get('gptModel');
+    const vlmProviderParam = urlParams.get('vlmProvider');
+    const vlmModelParam = urlParams.get('vlmModel');
+    if (gptModelParam || vlmProviderParam || vlmModelParam) {
+      console.warn('Ignoring gptModel/vlmProvider/vlmModel URL overrides; runtime model/provider selection now comes only from the game server .env.');
+    }
+
+    // ------- Model-vs-model simulation URL flags -------
+    // `?modelExp=1` enables AI-vs-AI mode; `?p1=`/`?p2=` override agents;
+    // `?reps=` overrides repetitionsPerMap; `?seed=` overrides seed.
+    const modelExpParam = urlParams.get('modelExp');
+    if (modelExpParam === '1' || modelExpParam === 'true') {
+      CONFIG.modelExp.enabled = true;
+    }
+    if (CONFIG.modelExp.enabled) {
+      const p1 = urlParams.get('p1');
+      const p2 = urlParams.get('p2');
+      const reps = Number(urlParams.get('reps'));
+      const seed = Number(urlParams.get('seed'));
+      const stepDelay = Number(urlParams.get('stepDelay'));
+      const trialsCap = Number(urlParams.get('trials'));
+      if (Number.isFinite(trialsCap) && trialsCap > 0) {
+        (CONFIG.game.experiments.order || []).forEach((exp) => {
+          if (CONFIG.game.experiments.numTrials && Object.prototype.hasOwnProperty.call(CONFIG.game.experiments.numTrials, exp)) {
+            CONFIG.game.experiments.numTrials[exp] = trialsCap;
+          }
+        });
+      }
+      if (p1) CONFIG.modelExp.player1Agent = p1;
+      if (p2) CONFIG.modelExp.player2Agent = p2;
+      if (Number.isFinite(reps) && reps > 0) CONFIG.modelExp.repetitionsPerMap = reps;
+      if (Number.isFinite(seed)) CONFIG.modelExp.seed = seed;
+      if (Number.isFinite(stepDelay) && stepDelay >= 0) CONFIG.modelExp.stepDelayMs = stepDelay;
+      const p1Agent = p1 || CONFIG.modelExp.player1Agent;
+      const p2Agent = p2 || CONFIG.modelExp.player2Agent;
+      if (['vlm', 'vlm-ToM'].includes(String(p1Agent)) &&
+          ['vlm', 'vlm-ToM'].includes(String(p2Agent)) &&
+          urlParams.get('serialize') !== '0') {
+        CONFIG.modelExp.serializeRemoteAgentCalls = true;
+      }
+      // Project modelExp selections onto CONFIG.game.players / agent.
+      GameConfigUtils.applyModelExp();
+      // Timeline is a human-facing flow; skip it in AI-vs-AI sims.
+      this.useTimelineFlow = false;
+    }
+
     console.log(`Starting application with timeline flow: ${this.useTimelineFlow}`);
 
     try {
       // Initialize components
       await this.initialize(mode, experimentType, roomId);
+
+      // AI-vs-AI branch: hand control to the orchestrator and skip human flows.
+      if (CONFIG.modelExp.enabled) {
+        await this.startModelExpFlow();
+        console.log('Application started successfully (modelExp)');
+        return;
+      }
 
       // Start the appropriate flow
       if (this.useTimelineFlow) {
@@ -95,7 +149,8 @@ export class GameApplication {
     this.uiManager = new UIManager(this.container);
 
     // Initialize timeline manager if using timeline flow
-    if (this.useTimelineFlow) {
+    // (Skip entirely when running AI-vs-AI sims — the orchestrator drives trials itself.)
+    if (this.useTimelineFlow && !CONFIG?.modelExp?.enabled) {
       this.timelineManager = new TimelineManager(this.container);
       this.setupTimelineEventHandlers();
     }
@@ -109,7 +164,7 @@ export class GameApplication {
 
     // Initialize network manager if needed
     const urlParams = new URLSearchParams(window.location.search);
-    const skipNetwork = urlParams.get('skipNetwork') === 'true';
+    const skipNetwork = urlParams.get('skipNetwork') === 'true' || !!CONFIG?.modelExp?.enabled;
 
     if (!skipNetwork) {
       try {
@@ -147,6 +202,77 @@ export class GameApplication {
 
     // Proactively fetch and cache GPT model for accurate recording (e.g., partnerFallbackAIType)
     try { await this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
+  }
+
+  async startModelExpFlow() {
+    const cfg = CONFIG.modelExp;
+    console.log(`🤖🤖 Starting AI-vs-AI (modelExp) flow: p1=${cfg.player1Agent} p2=${cfg.player2Agent}`);
+
+    // Make sure the experiment manager's map data is primed before the
+    // orchestrator starts asking for designs.
+    try { await this.experimentManager?.ensureMapDataLoaded?.(); } catch (e) {
+      console.warn('[modelExp] ensureMapDataLoaded failed:', e);
+    }
+
+    // Orchestrator reuses the live managers; UI is optional (pass through for visualization).
+    // Pass uiManager only when the URL asks for a visual overlay (?render=1).
+    const urlParams = new URLSearchParams(window.location.search);
+    const withRender = urlParams.get('render') === '1' || urlParams.get('render') === 'true';
+    if (withRender && this.uiManager) {
+      // Surface the grid so the user can observe each AI step in real time.
+      try {
+        this.uiManager.setPlayerInfo(0, 'human-ai');
+        this.uiManager.showGameScreen();
+      } catch (e) {
+        console.warn('[modelExp] Failed to show game screen for render mode:', e);
+      }
+    }
+    this.modelExpOrchestrator = new AiVsAiOrchestrator({
+      gameStateManager: this.gameStateManager,
+      experimentManager: this.experimentManager,
+      rlAgent: this.experimentManager.rlAgent,
+      gptClient: this.experimentManager.gptClient,
+      vlmClient: this.experimentManager.vlmClient,
+      weIntentAgent: this.experimentManager.weIntentAgent,
+      uiManager: withRender ? this.uiManager : null
+    });
+
+    // On completion, reuse the standard Excel/JSON export path so sweep data
+    // matches the schema of human runs.
+    this.modelExpOrchestrator.onComplete = () => {
+      try {
+        const data = this.gameStateManager.getExperimentData();
+        const exportPayload = {
+          participantId: `${cfg.exportPrefix || 'modelExp'}-${cfg.player1Agent}-vs-${cfg.player2Agent}`,
+          modelExp: {
+            player1Agent: cfg.player1Agent,
+            player2Agent: cfg.player2Agent,
+            player1Model: (cfg.player1Agent === 'gpt' || cfg.player1Agent === 'gpt-ToM')
+              ? (CONFIG?.game?.agent?.gpt?.model || cfg.player1Agent)
+              : ((cfg.player1Agent === 'vlm' || cfg.player1Agent === 'vlm-ToM')
+                ? (CONFIG?.game?.agent?.vlm?.model || cfg.player1Agent)
+                : cfg.player1Agent),
+            player2Model: (cfg.player2Agent === 'gpt' || cfg.player2Agent === 'gpt-ToM')
+              ? (CONFIG?.game?.agent?.gpt?.model || cfg.player2Agent)
+              : ((cfg.player2Agent === 'vlm' || cfg.player2Agent === 'vlm-ToM')
+                ? (CONFIG?.game?.agent?.vlm?.model || cfg.player2Agent)
+                : cfg.player2Agent),
+            repetitionsPerMap: cfg.repetitionsPerMap,
+            seed: cfg.seed
+          },
+          experimentOrder: CONFIG.game.experiments.order,
+          allTrialsData: data.allTrialsData || [],
+          timestamp: Date.now(),
+          version: CONFIG.game.version
+        };
+        console.log(`[modelExp] Completed ${exportPayload.allTrialsData.length} trials, saving...`);
+        this.saveExperimentData(exportPayload);
+      } catch (e) {
+        console.error('[modelExp] Failed to save sweep data:', e);
+      }
+    };
+
+    await this.modelExpOrchestrator.run();
   }
 
   async startTimelineFlow(mode, experimentType, roomId) {
@@ -376,7 +502,7 @@ export class GameApplication {
         // Best-effort: ensure exact GPT model cached before recording
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
         this.gameStateManager?.recordPartnerFallback?.({ reason, stage, at, fallbackAIType });
-        // Proactively fetch and persist GPT model so fallback AI type can be exact (e.g., gpt-4o)
+        // Proactively fetch and persist the runtime model so fallback AI type can be exact.
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
       } catch (_) { /* noop */ }
     });
@@ -518,8 +644,8 @@ export class GameApplication {
               if (model && String(model).trim().length > 0) {
                 return String(model);
               } else {
-                console.warn('⚠️ GPT model not cached in CONFIG for export, using configured default');
-                return 'gpt-4o'; // matches the configured GPT_MODEL in .env
+                console.warn('⚠️ GPT model not cached in CONFIG for export, falling back to agent label');
+                return t;
               }
             }
             if (t === 'vlm' || t === 'vlm-ToM') {
@@ -527,7 +653,7 @@ export class GameApplication {
               if (model && String(model).trim().length > 0) {
                 return String(model);
               } else {
-                return 'gpt-4o-mini';
+                return t;
               }
             }
             if (t === 'rl_joint') return 'joint-rl';
@@ -669,6 +795,51 @@ export class GameApplication {
             console.warn('⚠️ Failed to build MapConfig sheet:', e?.message || e);
           }
 
+          try {
+            const stagHuntAnalysisRows = this._deriveStagHuntTrialAnalysisRows(
+              exportObj.allTrialsData || [],
+              exportObj.participantId,
+              exportObj.roomId,
+              partnerAgentType
+            );
+
+            if (stagHuntAnalysisRows.length > 0) {
+              const trialAnalysisSheet = this._makeSheetFromObjects(XLSX, stagHuntAnalysisRows, [
+                'participantId', 'roomId', 'trialIndex', 'mapId', 'experimentType', 'partnerAgentType',
+                'humanPlayerIndex', 'aiPlayerIndex', 'player1Role', 'player2Role', 'playerStartPositionsSwapped',
+                'humanRoundPoints', 'humanTotalPointsAfterTrial', 'partnerRoundPoints', 'partnerTotalPointsAfterTrial', 'teamRoundPoints',
+                'humanFinalGoalIndex', 'humanFinalGoal', 'humanFinalGoalType',
+                'partnerFinalGoalIndex', 'partnerFinalGoal', 'partnerFinalGoalType',
+                'stagHuntSuccess', 'collaborationSucceeded', 'outcomeCategory',
+                'signalerPlayer', 'signalerIsHuman', 'signalingPathType', 'signalingExpectedAction',
+                'signalingExpectedPosition', 'signalerFirstAction', 'signalerFirstPositionAfterMove',
+                'signalerChoseSignalingPath',
+                'hareFinalUtility', 'stagFinalUtility', 'utilityDeltaStagMinusHare', 'utilityStructure',
+                'signalingAndSuccess', 'signalingAndHighUtility'
+              ]);
+              XLSX.utils.book_append_sheet(wb, trialAnalysisSheet, 'StagHuntTrialAnalysis');
+
+              const participantSummaryRows = this._buildParticipantSummaryRows(stagHuntAnalysisRows, partnerAgentType);
+              const participantSummarySheet = this._makeSheetFromObjects(XLSX, participantSummaryRows, [
+                'participantId', 'partnerAgentType', 'stagHuntTrials',
+                'meanHumanRoundPoints', 'finalHumanTotalPoints',
+                'stagHuntSuccessCount', 'stagHuntSuccessRate',
+                'signalingPathChosenCount', 'signalingPathChosenRate',
+                'successWhenSignaling', 'successWhenNotSignaling',
+                'meanPointsWhenSignaling', 'meanPointsWhenNotSignaling'
+              ]);
+              XLSX.utils.book_append_sheet(wb, participantSummarySheet, 'ParticipantSummary');
+
+              const stagHuntSummaryRows = this._buildStagHuntAnalysisSummaryRows(stagHuntAnalysisRows);
+              const stagHuntSummarySheet = this._makeSheetFromObjects(XLSX, stagHuntSummaryRows, [
+                'utilityStructure', 'subset', 'trialCount', 'signalingRate', 'stagSuccessRate', 'meanHumanRoundPoints'
+              ]);
+              XLSX.utils.book_append_sheet(wb, stagHuntSummarySheet, 'StagHuntAnalysisSummary');
+            }
+          } catch (e) {
+            console.warn('⚠️ Failed to build StagHunt analysis sheets:', e?.message || e);
+          }
+
           // Questionnaire sheet
           const q = exportObj.questionnaireData || exportObj.questionnaire || {};
           let qSheet;
@@ -746,18 +917,328 @@ export class GameApplication {
     }
   }
 
+  _parseExportValue(value) {
+    if (value == null) return null;
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) return null;
+      try {
+        return JSON.parse(trimmed);
+      } catch (_) {
+        return value;
+      }
+    }
+    return value;
+  }
+
+  _stringifyExcelCell(value) {
+    if (value == null) return '';
+    return (typeof value === 'object') ? JSON.stringify(value) : value;
+  }
+
+  _toFiniteNumber(value) {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : null;
+  }
+
+  _toPercent(numerator, denominator) {
+    if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) return '';
+    return Math.round((numerator / denominator) * 10000) / 100;
+  }
+
+  _safeArray(value) {
+    const parsed = this._parseExportValue(value);
+    return Array.isArray(parsed) ? parsed : [];
+  }
+
+  _safePoint(value) {
+    const parsed = this._parseExportValue(value);
+    if (!Array.isArray(parsed) || parsed.length < 2) return null;
+    const row = Number(parsed[0]);
+    const col = Number(parsed[1]);
+    return Number.isFinite(row) && Number.isFinite(col) ? [row, col] : null;
+  }
+
+  _pointsEqual(a, b) {
+    return Array.isArray(a) && Array.isArray(b) && a.length >= 2 && b.length >= 2 &&
+      a[0] === b[0] && a[1] === b[1];
+  }
+
+  _actionDeltaToDirection(action) {
+    const delta = this._safePoint(action);
+    if (!delta) return null;
+    if (delta[0] === -1 && delta[1] === 0) return 'up';
+    if (delta[0] === 1 && delta[1] === 0) return 'down';
+    if (delta[0] === 0 && delta[1] === -1) return 'left';
+    if (delta[0] === 0 && delta[1] === 1) return 'right';
+    return null;
+  }
+
+  _addDelta(position, action) {
+    const pos = this._safePoint(position);
+    const delta = this._safePoint(action);
+    if (!pos || !delta) return null;
+    return [pos[0] + delta[0], pos[1] + delta[1]];
+  }
+
+  _getHumanPlayerIndexForExport(trial) {
+    const trialHumanIndex = Number(trial?.humanPlayerIndex);
+    if (Number.isInteger(trialHumanIndex) && trialHumanIndex >= 0 && trialHumanIndex <= 1) {
+      return trialHumanIndex;
+    }
+    const currentPlayerIndex = Number(this.playerIndex);
+    return Number.isInteger(currentPlayerIndex) ? currentPlayerIndex : 0;
+  }
+
+  _buildStagHuntGoalState(trial) {
+    const rabbits = this._safeArray(trial?.rabbitPositions)
+      .map(pos => this._safePoint(pos))
+      .filter(Boolean);
+    const stag = this._safePoint(trial?.stagPosition);
+    const currentGoals = [...rabbits];
+    const currentGoalTypes = rabbits.map(() => 'small');
+    if (stag) {
+      currentGoals.push(stag);
+      currentGoalTypes.push('big');
+    }
+    return { currentGoals, currentGoalTypes, player1: null, player2: null };
+  }
+
+  _makeSheetFromObjects(XLSX, rows, preferredOrder = []) {
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return XLSX.utils.aoa_to_sheet([['No data']]);
+    }
+
+    const headerSet = new Set();
+    rows.forEach(row => Object.keys(row).forEach(key => headerSet.add(key)));
+
+    const headers = [];
+    preferredOrder.forEach(key => {
+      if (headerSet.has(key)) {
+        headers.push(key);
+        headerSet.delete(key);
+      }
+    });
+    headers.push(...Array.from(headerSet).sort());
+
+    const data = [
+      headers,
+      ...rows.map(row => headers.map(header => this._stringifyExcelCell(row[header])))
+    ];
+    return XLSX.utils.aoa_to_sheet(data);
+  }
+
+  _deriveStagHuntTrialAnalysisRows(trials, participantId, roomId, partnerAgentTypeFallback = '') {
+    const stagHuntTrials = (Array.isArray(trials) ? trials : []).filter(trial =>
+      String(trial?.experimentType || '').toLowerCase() === 'staghunt'
+    );
+
+    return stagHuntTrials.map(trial => {
+      const humanPlayerIndex = this._getHumanPlayerIndexForExport(trial);
+      const partnerPlayerIndex = humanPlayerIndex === 0 ? 1 : 0;
+      const humanPlayerNumber = humanPlayerIndex + 1;
+      const partnerPlayerNumber = partnerPlayerIndex + 1;
+      const signalerPlayer =
+        String(trial?.player1Role || '').toLowerCase() === 'signaler' ? 'player1' :
+        (String(trial?.player2Role || '').toLowerCase() === 'signaler' ? 'player2' : '');
+      const signalerPlayerNumber = signalerPlayer === 'player1' ? 1 : (signalerPlayer === 'player2' ? 2 : null);
+      const signalerIsHuman = signalerPlayerNumber != null ? (signalerPlayerNumber === humanPlayerNumber) : null;
+
+      const signaling = this._parseExportValue(trial?.signaling) || {};
+      const utilitySummary = this._parseExportValue(trial?.utilitySummary) || {};
+      const goalState = this._buildStagHuntGoalState(trial);
+      const outcome = GameHelpers.evaluateStagHuntOutcome(goalState, trial || {});
+
+      const humanGoalIndex = humanPlayerNumber === 1 ? outcome.player1Goal : outcome.player2Goal;
+      const partnerGoalIndex = partnerPlayerNumber === 1 ? outcome.player1Goal : outcome.player2Goal;
+      const humanGoalType = humanPlayerNumber === 1 ? outcome.player1GoalType : outcome.player2GoalType;
+      const partnerGoalType = partnerPlayerNumber === 1 ? outcome.player1GoalType : outcome.player2GoalType;
+      const humanGoalPosition = Number.isInteger(humanGoalIndex) && humanGoalIndex >= 0
+        ? goalState.currentGoals[humanGoalIndex] || null
+        : null;
+      const partnerGoalPosition = Number.isInteger(partnerGoalIndex) && partnerGoalIndex >= 0
+        ? goalState.currentGoals[partnerGoalIndex] || null
+        : null;
+
+      const signalerActions = signalerPlayerNumber != null
+        ? this._safeArray(trial?.[`player${signalerPlayerNumber}Actions`])
+        : [];
+      const signalerFirstActionDelta = signalerActions.length > 0 ? this._safePoint(signalerActions[0]) : null;
+      const signalerFirstAction = this._actionDeltaToDirection(signalerFirstActionDelta);
+      const signalerStartPosition = signalerPlayerNumber != null
+        ? this._safePoint(trial?.[`player${signalerPlayerNumber}StartPosition`])
+        : null;
+      const signalerFirstPositionAfterMove = this._addDelta(signalerStartPosition, signalerFirstActionDelta);
+      const signalingExpectedPosition = this._safePoint(signaling.indicate_position);
+      const signalerChoseSignalingPath = Boolean(
+        signalerPlayerNumber != null &&
+        signalerFirstAction &&
+        signalerFirstAction === signaling.indicate_action &&
+        this._pointsEqual(signalerFirstPositionAfterMove, signalingExpectedPosition)
+      );
+
+      const humanRoundPoints = this._toFiniteNumber(trial?.[`player${humanPlayerNumber}RoundPoints`]) ?? 0;
+      const partnerRoundPoints = this._toFiniteNumber(trial?.[`player${partnerPlayerNumber}RoundPoints`]) ?? 0;
+      const humanTotalPointsAfterTrial = this._toFiniteNumber(trial?.[`player${humanPlayerNumber}TotalPoints`]);
+      const partnerTotalPointsAfterTrial = this._toFiniteNumber(trial?.[`player${partnerPlayerNumber}TotalPoints`]);
+      const aiPlayerIndex = this._toFiniteNumber(trial?.aiPlayerIndex);
+      const hareFinalUtility = this._toFiniteNumber(utilitySummary.hare_final_utility);
+      const stagFinalUtility = this._toFiniteNumber(utilitySummary.stag_final_utility);
+      const utilityDeltaStagMinusHare =
+        hareFinalUtility != null && stagFinalUtility != null ? stagFinalUtility - hareFinalUtility : null;
+      const utilityStructure =
+        utilityDeltaStagMinusHare == null ? '' :
+        (utilityDeltaStagMinusHare > 0 ? 'favor_stag' :
+          (utilityDeltaStagMinusHare < 0 ? 'favor_hare' : 'tie'));
+
+      let outcomeCategory = 'nothing';
+      if (outcome.sameBigGoal) outcomeCategory = 'both_stag';
+      else if (outcome.differentBigGoals) outcomeCategory = 'different_big_goals';
+      else if (humanGoalType === 'small' && partnerGoalType === 'small') outcomeCategory = 'both_rabbit';
+      else if (humanGoalType === 'small') outcomeCategory = 'human_rabbit';
+      else if (partnerGoalType === 'small') outcomeCategory = 'partner_rabbit';
+
+      return {
+        participantId,
+        roomId: roomId || '',
+        trialIndex: trial?.trialIndex ?? '',
+        mapId: trial?.mapId ?? '',
+        experimentType: trial?.experimentType ?? '',
+        partnerAgentType: trial?.partnerAgentType || partnerAgentTypeFallback,
+        humanPlayerIndex,
+        aiPlayerIndex: aiPlayerIndex != null ? aiPlayerIndex : '',
+        player1Role: trial?.player1Role ?? '',
+        player2Role: trial?.player2Role ?? '',
+        playerStartPositionsSwapped: !!trial?.playerStartPositionsSwapped,
+        humanRoundPoints,
+        humanTotalPointsAfterTrial: humanTotalPointsAfterTrial ?? '',
+        partnerRoundPoints,
+        partnerTotalPointsAfterTrial: partnerTotalPointsAfterTrial ?? '',
+        teamRoundPoints: humanRoundPoints + partnerRoundPoints,
+        humanFinalGoalIndex: Number.isInteger(humanGoalIndex) ? humanGoalIndex : '',
+        humanFinalGoal: humanGoalPosition,
+        humanFinalGoalType: humanGoalType || '',
+        partnerFinalGoalIndex: Number.isInteger(partnerGoalIndex) ? partnerGoalIndex : '',
+        partnerFinalGoal: partnerGoalPosition,
+        partnerFinalGoalType: partnerGoalType || '',
+        stagHuntSuccess: outcome.sameBigGoal === true,
+        collaborationSucceeded: trial?.collaborationSucceeded === true,
+        outcomeCategory,
+        signalerPlayer,
+        signalerIsHuman: signalerIsHuman == null ? '' : signalerIsHuman,
+        signalingPathType: signaling.path_type ?? '',
+        signalingExpectedAction: signaling.indicate_action ?? '',
+        signalingExpectedPosition,
+        signalerFirstAction: signalerFirstAction || '',
+        signalerFirstPositionAfterMove,
+        signalerChoseSignalingPath,
+        hareFinalUtility: hareFinalUtility ?? '',
+        stagFinalUtility: stagFinalUtility ?? '',
+        utilityDeltaStagMinusHare: utilityDeltaStagMinusHare ?? '',
+        utilityStructure,
+        signalingAndSuccess: signalerChoseSignalingPath && outcome.sameBigGoal === true,
+        signalingAndHighUtility: signalerChoseSignalingPath && utilityDeltaStagMinusHare != null && utilityDeltaStagMinusHare > 0
+      };
+    });
+  }
+
+  _buildParticipantSummaryRows(analysisRows, partnerAgentTypeFallback = '') {
+    const grouped = new Map();
+    (analysisRows || []).forEach(row => {
+      const key = String(row?.participantId || '');
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key).push(row);
+    });
+
+    return [...grouped.entries()].map(([participantId, rows]) => {
+      const sortedRows = [...rows].sort((a, b) => Number(a.trialIndex ?? 0) - Number(b.trialIndex ?? 0));
+      const partnerTypes = [...new Set(sortedRows.map(row => String(row.partnerAgentType || '').trim()).filter(Boolean))];
+      const signalingRows = sortedRows.filter(row => row.signalerChoseSignalingPath === true);
+      const nonSignalingRows = sortedRows.filter(row => row.signalerChoseSignalingPath === false);
+      const successCount = sortedRows.filter(row => row.stagHuntSuccess === true).length;
+      const totalPoints = sortedRows.reduce((sum, row) => sum + (Number(row.humanRoundPoints) || 0), 0);
+      const lastRowWithTotal = [...sortedRows].reverse().find(row => Number.isFinite(Number(row.humanTotalPointsAfterTrial)));
+
+      return {
+        participantId,
+        partnerAgentType: partnerTypes.length > 0 ? partnerTypes.join('|') : partnerAgentTypeFallback,
+        stagHuntTrials: sortedRows.length,
+        meanHumanRoundPoints: sortedRows.length > 0 ? Math.round((totalPoints / sortedRows.length) * 100) / 100 : '',
+        finalHumanTotalPoints: lastRowWithTotal ? Number(lastRowWithTotal.humanTotalPointsAfterTrial) : '',
+        stagHuntSuccessCount: successCount,
+        stagHuntSuccessRate: this._toPercent(successCount, sortedRows.length),
+        signalingPathChosenCount: signalingRows.length,
+        signalingPathChosenRate: this._toPercent(signalingRows.length, sortedRows.length),
+        successWhenSignaling: this._toPercent(
+          signalingRows.filter(row => row.stagHuntSuccess === true).length,
+          signalingRows.length
+        ),
+        successWhenNotSignaling: this._toPercent(
+          nonSignalingRows.filter(row => row.stagHuntSuccess === true).length,
+          nonSignalingRows.length
+        ),
+        meanPointsWhenSignaling: signalingRows.length > 0
+          ? Math.round((signalingRows.reduce((sum, row) => sum + (Number(row.humanRoundPoints) || 0), 0) / signalingRows.length) * 100) / 100
+          : '',
+        meanPointsWhenNotSignaling: nonSignalingRows.length > 0
+          ? Math.round((nonSignalingRows.reduce((sum, row) => sum + (Number(row.humanRoundPoints) || 0), 0) / nonSignalingRows.length) * 100) / 100
+          : ''
+      };
+    });
+  }
+
+  _buildStagHuntAnalysisSummaryRows(analysisRows) {
+    const utilityStructures = ['all', 'favor_stag', 'favor_hare', 'tie'];
+    const subsets = [
+      { key: 'all_trials', filter: rows => rows },
+      { key: 'signaling_path', filter: rows => rows.filter(row => row.signalerChoseSignalingPath === true) },
+      { key: 'non_signaling_path', filter: rows => rows.filter(row => row.signalerChoseSignalingPath === false) }
+    ];
+
+    const rows = [];
+    utilityStructures.forEach(structure => {
+      const baseRows = structure === 'all'
+        ? [...analysisRows]
+        : analysisRows.filter(row => row.utilityStructure === structure);
+
+      subsets.forEach(({ key, filter }) => {
+        const subsetRows = filter(baseRows);
+        const successCount = subsetRows.filter(row => row.stagHuntSuccess === true).length;
+        const signalingCount = subsetRows.filter(row => row.signalerChoseSignalingPath === true).length;
+        const meanHumanRoundPoints = subsetRows.length > 0
+          ? Math.round((subsetRows.reduce((sum, row) => sum + (Number(row.humanRoundPoints) || 0), 0) / subsetRows.length) * 100) / 100
+          : '';
+
+        rows.push({
+          utilityStructure: structure,
+          subset: key,
+          trialCount: subsetRows.length,
+          signalingRate: this._toPercent(signalingCount, subsetRows.length),
+          stagSuccessRate: this._toPercent(successCount, subsetRows.length),
+          meanHumanRoundPoints
+        });
+      });
+    });
+
+    return rows;
+  }
+
   async startSinglePlayerMode(experimentType) {
-    // Configure for human-AI mode
-    GameConfigUtils.setPlayerType(2, CONFIG.multiplayer.fallbackAIType || 'rl_joint');
+    // Configure for human-AI mode (preserve URL `?ai=vlm` etc.; only fill fallback if needed)
+    const p2 = CONFIG.game.players.player2.type;
+    const aiPartnerTypes = [
+      'gpt', 'gpt-ToM', 'vlm', 'vlm-ToM',
+      'rl_joint', 'rl_individual', 'rl_individual_python', 'we_intent_js'
+    ];
+    if (!aiPartnerTypes.includes(p2)) {
+      GameConfigUtils.setPlayerType(2, CONFIG.multiplayer.fallbackAIType || 'rl_joint');
+    }
 
     // Set player info for single player (always player 0 - red)
     this.uiManager.setPlayerInfo(0, 'human-ai');
 
-    // Show main UI
-    this.uiManager.showMainScreen();
-
-    // Start experiment sequence
-    await this.experimentManager.startExperimentSequence([experimentType]);
+    // Welcome screen only; first trial begins after "Start Experiment" (or spacebar)
+    this.uiManager.showMainScreen(experimentType);
   }
 
   async startMultiplayerMode(experimentType, roomId) {
@@ -1087,6 +1568,11 @@ export class GameApplication {
   }
 
   setupUIEventHandlers() {
+    // Model-vs-model sim doesn't need any human input plumbing.
+    if (CONFIG?.modelExp?.enabled) {
+      console.log('🤖🤖 Skipping UI event handlers (modelExp mode).');
+      return;
+    }
     // Player ready button
     this.uiManager.on('player-ready', () => {
       if (this.networkManager) {
@@ -1163,7 +1649,12 @@ export class GameApplication {
 
     // Experiment controls
     this.uiManager.on('start-experiment', (experimentType) => {
-      this.experimentManager.startExperiment(experimentType);
+      void this.experimentManager.startExperiment(experimentType).catch((err) => {
+        console.error('Failed to start experiment:', err);
+        try {
+          this.uiManager.showNotification?.(`Could not start: ${err?.message || err}`);
+        } catch (_) { /* noop */ }
+      });
     });
 
     this.uiManager.on('restart-experiment', () => {

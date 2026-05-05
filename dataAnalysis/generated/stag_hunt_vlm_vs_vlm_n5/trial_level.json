@@ -1,0 +1,7652 @@
+[
+  {
+    "runId": 1,
+    "trialIndexWithinRun": 1,
+    "mapId": 1,
+    "seed": 20261421,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -8,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 1,
+    "trialIndexWithinRun": 2,
+    "mapId": 2,
+    "seed": 20261422,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -12,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 1,
+    "trialIndexWithinRun": 3,
+    "mapId": 3,
+    "seed": 20261423,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        3
+      ],
+      [
+        7,
+        3
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -6,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 1,
+    "trialIndexWithinRun": 4,
+    "mapId": 4,
+    "seed": 20261424,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        5
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -14,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 1,
+    "trialIndexWithinRun": 5,
+    "mapId": 5,
+    "seed": 20261425,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -16,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 9,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 1,
+    "trialIndexWithinRun": 6,
+    "mapId": 6,
+    "seed": 20261426,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        1,
+        3
+      ],
+      [
+        7,
+        1
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -4,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 2,
+      "red_to_hare": 2,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 1,
+    "trialIndexWithinRun": 7,
+    "mapId": 7,
+    "seed": 20261427,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 1,
+    "trialIndexWithinRun": 8,
+    "mapId": 8,
+    "seed": 20261428,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        5
+      ],
+      [
+        7,
+        6
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 1,
+    "trialIndexWithinRun": 9,
+    "mapId": 9,
+    "seed": 20261429,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 1,
+    "trialIndexWithinRun": 10,
+    "mapId": 10,
+    "seed": 20261430,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -8,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 1,
+    "trialIndexWithinRun": 11,
+    "mapId": 11,
+    "seed": 20261431,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -12,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 1,
+    "trialIndexWithinRun": 12,
+    "mapId": 12,
+    "seed": 20261432,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        3
+      ],
+      [
+        7,
+        3
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -6,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 1,
+    "trialIndexWithinRun": 13,
+    "mapId": 13,
+    "seed": 20261433,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        5
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -14,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 1,
+    "trialIndexWithinRun": 14,
+    "mapId": 14,
+    "seed": 20261434,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -16,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 9,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 1,
+    "trialIndexWithinRun": 15,
+    "mapId": 15,
+    "seed": 20261435,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        1,
+        3
+      ],
+      [
+        7,
+        1
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -4,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 2,
+      "red_to_hare": 2,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 1,
+    "trialIndexWithinRun": 16,
+    "mapId": 16,
+    "seed": 20261436,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 1,
+    "trialIndexWithinRun": 17,
+    "mapId": 17,
+    "seed": 20261437,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        5
+      ],
+      [
+        7,
+        6
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 1,
+    "trialIndexWithinRun": 18,
+    "mapId": 18,
+    "seed": 20261438,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 2,
+    "trialIndexWithinRun": 1,
+    "mapId": 1,
+    "seed": 20262421,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -8,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 2,
+    "trialIndexWithinRun": 2,
+    "mapId": 2,
+    "seed": 20262422,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -12,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 2,
+    "trialIndexWithinRun": 3,
+    "mapId": 3,
+    "seed": 20262423,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        3
+      ],
+      [
+        7,
+        3
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -6,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 2,
+    "trialIndexWithinRun": 4,
+    "mapId": 4,
+    "seed": 20262424,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        5
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -14,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 2,
+    "trialIndexWithinRun": 5,
+    "mapId": 5,
+    "seed": 20262425,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -16,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 9,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 2,
+    "trialIndexWithinRun": 6,
+    "mapId": 6,
+    "seed": 20262426,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        1,
+        3
+      ],
+      [
+        7,
+        1
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -4,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 2,
+      "red_to_hare": 2,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 2,
+    "trialIndexWithinRun": 7,
+    "mapId": 7,
+    "seed": 20262427,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 2,
+    "trialIndexWithinRun": 8,
+    "mapId": 8,
+    "seed": 20262428,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        5
+      ],
+      [
+        7,
+        6
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 2,
+    "trialIndexWithinRun": 9,
+    "mapId": 9,
+    "seed": 20262429,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 2,
+    "trialIndexWithinRun": 10,
+    "mapId": 10,
+    "seed": 20262430,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -8,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 2,
+    "trialIndexWithinRun": 11,
+    "mapId": 11,
+    "seed": 20262431,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -12,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 2,
+    "trialIndexWithinRun": 12,
+    "mapId": 12,
+    "seed": 20262432,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        3
+      ],
+      [
+        7,
+        3
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -6,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 2,
+    "trialIndexWithinRun": 13,
+    "mapId": 13,
+    "seed": 20262433,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        5
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -14,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 2,
+    "trialIndexWithinRun": 14,
+    "mapId": 14,
+    "seed": 20262434,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -16,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 9,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 2,
+    "trialIndexWithinRun": 15,
+    "mapId": 15,
+    "seed": 20262435,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        1,
+        3
+      ],
+      [
+        7,
+        1
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -4,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 2,
+      "red_to_hare": 2,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 2,
+    "trialIndexWithinRun": 16,
+    "mapId": 16,
+    "seed": 20262436,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 2,
+    "trialIndexWithinRun": 17,
+    "mapId": 17,
+    "seed": 20262437,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        5
+      ],
+      [
+        7,
+        6
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 2,
+    "trialIndexWithinRun": 18,
+    "mapId": 18,
+    "seed": 20262438,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 3,
+    "trialIndexWithinRun": 1,
+    "mapId": 1,
+    "seed": 20263421,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -8,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 3,
+    "trialIndexWithinRun": 2,
+    "mapId": 2,
+    "seed": 20263422,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -12,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 3,
+    "trialIndexWithinRun": 3,
+    "mapId": 3,
+    "seed": 20263423,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        3
+      ],
+      [
+        7,
+        3
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -6,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 3,
+    "trialIndexWithinRun": 4,
+    "mapId": 4,
+    "seed": 20263424,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        5
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -14,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 3,
+    "trialIndexWithinRun": 5,
+    "mapId": 5,
+    "seed": 20263425,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -16,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 9,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 3,
+    "trialIndexWithinRun": 6,
+    "mapId": 6,
+    "seed": 20263426,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        1,
+        3
+      ],
+      [
+        7,
+        1
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -4,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 2,
+      "red_to_hare": 2,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 3,
+    "trialIndexWithinRun": 7,
+    "mapId": 7,
+    "seed": 20263427,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 3,
+    "trialIndexWithinRun": 8,
+    "mapId": 8,
+    "seed": 20263428,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        5
+      ],
+      [
+        7,
+        6
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 3,
+    "trialIndexWithinRun": 9,
+    "mapId": 9,
+    "seed": 20263429,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 3,
+    "trialIndexWithinRun": 10,
+    "mapId": 10,
+    "seed": 20263430,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -8,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 3,
+    "trialIndexWithinRun": 11,
+    "mapId": 11,
+    "seed": 20263431,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -12,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 3,
+    "trialIndexWithinRun": 12,
+    "mapId": 12,
+    "seed": 20263432,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        3
+      ],
+      [
+        7,
+        3
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -6,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 3,
+    "trialIndexWithinRun": 13,
+    "mapId": 13,
+    "seed": 20263433,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        5
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -14,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 3,
+    "trialIndexWithinRun": 14,
+    "mapId": 14,
+    "seed": 20263434,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -16,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 9,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 3,
+    "trialIndexWithinRun": 15,
+    "mapId": 15,
+    "seed": 20263435,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        1,
+        3
+      ],
+      [
+        7,
+        1
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -4,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 2,
+      "red_to_hare": 2,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 3,
+    "trialIndexWithinRun": 16,
+    "mapId": 16,
+    "seed": 20263436,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 3,
+    "trialIndexWithinRun": 17,
+    "mapId": 17,
+    "seed": 20263437,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        5
+      ],
+      [
+        7,
+        6
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 3,
+    "trialIndexWithinRun": 18,
+    "mapId": 18,
+    "seed": 20263438,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 4,
+    "trialIndexWithinRun": 1,
+    "mapId": 1,
+    "seed": 20264421,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -8,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 4,
+    "trialIndexWithinRun": 2,
+    "mapId": 2,
+    "seed": 20264422,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -12,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 4,
+    "trialIndexWithinRun": 3,
+    "mapId": 3,
+    "seed": 20264423,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        3
+      ],
+      [
+        7,
+        3
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -6,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 4,
+    "trialIndexWithinRun": 4,
+    "mapId": 4,
+    "seed": 20264424,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        5
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -14,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 4,
+    "trialIndexWithinRun": 5,
+    "mapId": 5,
+    "seed": 20264425,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -16,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 9,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 4,
+    "trialIndexWithinRun": 6,
+    "mapId": 6,
+    "seed": 20264426,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        1,
+        3
+      ],
+      [
+        7,
+        1
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -4,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 2,
+      "red_to_hare": 2,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 4,
+    "trialIndexWithinRun": 7,
+    "mapId": 7,
+    "seed": 20264427,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 4,
+    "trialIndexWithinRun": 8,
+    "mapId": 8,
+    "seed": 20264428,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        5
+      ],
+      [
+        7,
+        6
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 4,
+    "trialIndexWithinRun": 9,
+    "mapId": 9,
+    "seed": 20264429,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 4,
+    "trialIndexWithinRun": 10,
+    "mapId": 10,
+    "seed": 20264430,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -8,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 4,
+    "trialIndexWithinRun": 11,
+    "mapId": 11,
+    "seed": 20264431,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -12,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 4,
+    "trialIndexWithinRun": 12,
+    "mapId": 12,
+    "seed": 20264432,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        3
+      ],
+      [
+        7,
+        3
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -6,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 4,
+    "trialIndexWithinRun": 13,
+    "mapId": 13,
+    "seed": 20264433,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        5
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -14,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 4,
+    "trialIndexWithinRun": 14,
+    "mapId": 14,
+    "seed": 20264434,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -16,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 9,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 4,
+    "trialIndexWithinRun": 15,
+    "mapId": 15,
+    "seed": 20264435,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        1,
+        3
+      ],
+      [
+        7,
+        1
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -4,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 2,
+      "red_to_hare": 2,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 4,
+    "trialIndexWithinRun": 16,
+    "mapId": 16,
+    "seed": 20264436,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 4,
+    "trialIndexWithinRun": 17,
+    "mapId": 17,
+    "seed": 20264437,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        5
+      ],
+      [
+        7,
+        6
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 4,
+    "trialIndexWithinRun": 18,
+    "mapId": 18,
+    "seed": 20264438,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 5,
+    "trialIndexWithinRun": 1,
+    "mapId": 1,
+    "seed": 20265421,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -8,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 5,
+    "trialIndexWithinRun": 2,
+    "mapId": 2,
+    "seed": 20265422,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -12,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 5,
+    "trialIndexWithinRun": 3,
+    "mapId": 3,
+    "seed": 20265423,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        3
+      ],
+      [
+        7,
+        3
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -6,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 5,
+    "trialIndexWithinRun": 4,
+    "mapId": 4,
+    "seed": 20265424,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        5
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -14,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 5,
+    "trialIndexWithinRun": 5,
+    "mapId": 5,
+    "seed": 20265425,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -16,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 9,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 5,
+    "trialIndexWithinRun": 6,
+    "mapId": 6,
+    "seed": 20265426,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        1,
+        3
+      ],
+      [
+        7,
+        1
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -4,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 2,
+      "red_to_hare": 2,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 5,
+    "trialIndexWithinRun": 7,
+    "mapId": 7,
+    "seed": 20265427,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 5,
+    "trialIndexWithinRun": 8,
+    "mapId": 8,
+    "seed": 20265428,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        5
+      ],
+      [
+        7,
+        6
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 5,
+    "trialIndexWithinRun": 9,
+    "mapId": 9,
+    "seed": 20265429,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "equal-optimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 5,
+    "trialIndexWithinRun": 10,
+    "mapId": 10,
+    "seed": 20265430,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -8,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 5,
+    "trialIndexWithinRun": 11,
+    "mapId": 11,
+    "seed": 20265431,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -12,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -2,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 5,
+    "trialIndexWithinRun": 12,
+    "mapId": 12,
+    "seed": 20265432,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        3
+      ],
+      [
+        7,
+        3
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -6,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 5,
+    "trialIndexWithinRun": 13,
+    "mapId": 13,
+    "seed": 20265433,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        5
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -14,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -4,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 5,
+    "trialIndexWithinRun": 14,
+    "mapId": 14,
+    "seed": 20265434,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -16,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": -6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 9,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 5,
+    "trialIndexWithinRun": 15,
+    "mapId": 15,
+    "seed": 20265435,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        1,
+        3
+      ],
+      [
+        7,
+        1
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -4,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 6,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 2,
+      "red_to_hare": 2,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 5,
+    "trialIndexWithinRun": 16,
+    "mapId": 16,
+    "seed": 20265436,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 7,
+      "red_to_hare": 3,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 5,
+    "trialIndexWithinRun": 17,
+    "mapId": 17,
+    "seed": 20265437,
+    "player1StartPosition": [
+      8,
+      0
+    ],
+    "player2StartPosition": [
+      0,
+      4
+    ],
+    "player1FinalPosition": [
+      8,
+      0
+    ],
+    "player2FinalPosition": [
+      0,
+      4
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        2,
+        5
+      ],
+      [
+        7,
+        6
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 3,
+      "red_to_hare": 7,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  },
+  {
+    "runId": 5,
+    "trialIndexWithinRun": 18,
+    "mapId": 18,
+    "seed": 20265438,
+    "player1StartPosition": [
+      0,
+      4
+    ],
+    "player2StartPosition": [
+      8,
+      0
+    ],
+    "player1FinalPosition": [
+      0,
+      4
+    ],
+    "player2FinalPosition": [
+      8,
+      0
+    ],
+    "player1Actions": [],
+    "player2Actions": [],
+    "player1Trajectory": [],
+    "player2Trajectory": [],
+    "goals": [
+      [
+        5,
+        4
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "goalTypes": [
+      "small",
+      "small",
+      "big"
+    ],
+    "signaling": {
+      "path_type": "costly-suboptimal",
+      "indicate_action": "right",
+      "indicate_step_count": 1,
+      "indicate_position": [
+        0,
+        5
+      ]
+    },
+    "utilitySummary": {
+      "step_cost_per_move": -1,
+      "hare_reward_each": 5,
+      "hare_reward_total": 10,
+      "stag_reward_each": 10,
+      "stag_reward_total": 20,
+      "hare_distance_cost_total": -10,
+      "stag_distance_cost_total": -20,
+      "hare_final_utility": 0,
+      "stag_final_utility": 0
+    },
+    "distanceSummary": {
+      "orange_to_hare": 5,
+      "red_to_hare": 5,
+      "orange_to_stag": 8,
+      "red_to_stag": 12
+    },
+    "obstacles": [],
+    "outcomeCategory": "nothing",
+    "stagHuntSuccess": false,
+    "collaborationSucceeded": false,
+    "teamRoundPoints": 30,
+    "teamUtility": 0,
+    "player1PromptTokens": 0,
+    "player1CompletionTokens": 0,
+    "player2PromptTokens": 0,
+    "player2CompletionTokens": 0,
+    "trialTotalPromptTokens": 0,
+    "trialTotalCompletionTokens": 0,
+    "trialEstimatedCostUsd": 0,
+    "pricingModel": "vlm"
+  }
+]

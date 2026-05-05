@@ -198,10 +198,19 @@ export class ExperimentManager {
     try {
       const p1Type = CONFIG?.game?.players?.player1?.type;
       const p2Type = CONFIG?.game?.players?.player2?.type;
-      if (GameConfigUtils.isTwoPlayerExperiment(experimentType) && (p1Type === 'gpt' || p2Type === 'gpt')) {
+      const needsRemoteAI = (t) => (
+        t === 'gpt' || t === 'gpt-ToM' || t === 'vlm' || t === 'vlm-ToM'
+      );
+      if (GameConfigUtils.isTwoPlayerExperiment(experimentType)
+        && (needsRemoteAI(p1Type) || needsRemoteAI(p2Type))) {
         await this.logCurrentAIModel();
       }
     } catch (_) { /* noop */ }
+
+    // Legacy welcome screen has no canvas; create game layout before rendering state
+    if (this.uiManager && this.uiManager.currentScreen !== 'game') {
+      this.uiManager.showGameScreen();
+    }
 
     // Initialize trial
     this.gameStateManager.initializeTrial(this.currentTrialIndex, experimentType, design);
@@ -303,40 +312,60 @@ export class ExperimentManager {
 
   async logCurrentAIModel() {
     try {
+      const p1Type = CONFIG?.game?.players?.player1?.type;
       const p2Type = CONFIG?.game?.players?.player2?.type;
       const base = (CONFIG.server.url || '').replace(/\/$/, '');
-      if (p2Type === 'gpt' || p2Type === 'gpt-ToM') {
+      const gptPartner = (t) => t === 'gpt' || t === 'gpt-ToM';
+      const vlmPartner = (t) => t === 'vlm' || t === 'vlm-ToM';
+
+      if (gptPartner(p1Type) || gptPartner(p2Type)) {
         const resp = await fetch(`${base}/api/ai/gpt/config`);
         if (resp.ok) {
           const info = await resp.json();
           const model = info?.model || '(unknown)';
+          if (info?.hasApiKey === false) {
+            console.warn('GPT: server reports OPENAI_API_KEY is missing. GPT requests will fail; check the game server .env.');
+          }
           try {
             if (model && model !== '(unknown)') {
-              CONFIG.game.agent.gpt.model = model; // API model cache only
+              if (!CONFIG.game.agent.gpt) CONFIG.game.agent.gpt = {};
+              CONFIG.game.agent.gpt.model = String(model).trim();
               const td = this.gameStateManager?.trialData;
               const st = this.gameStateManager?.currentState;
               if (td && st && GameConfigUtils.isTwoPlayerExperiment(st.experimentType)) {
-                td.partnerAgentType = model;
+                td.partnerAgentType = String(model).trim();
               }
             }
           } catch (_) { /* noop */ }
         }
-      } else if (p2Type === 'vlm' || p2Type === 'vlm-ToM') {
+      } else if (vlmPartner(p1Type) || vlmPartner(p2Type)) {
         const resp = await fetch(`${base}/api/ai/vlm/config`);
         if (resp.ok) {
           const info = await resp.json();
           const model = info?.model || '(unknown)';
+          const provider = info?.provider || 'openai';
+          if (info?.hasApiKey === false) {
+            const keyHint = provider === 'google'
+              ? 'Set GOOGLE_API_KEY (and VLM_PROVIDER=google if needed) in the game server .env.'
+              : 'Set OPENAI_API_KEY in the game server .env, or use VLM_PROVIDER=google with GOOGLE_API_KEY.';
+            console.warn(`VLM: server has no API key for provider "${provider}". ${keyHint} Requests will fail and the partner will fall back to RL.`);
+          } else {
+            try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`VLM: provider=${provider}, model=${model}`); } catch (_) { /* noop */ }
+          }
           try {
             if (model && model !== '(unknown)') {
               if (!CONFIG.game.agent.vlm) CONFIG.game.agent.vlm = {};
-              CONFIG.game.agent.vlm.model = model; // API model cache only
+              CONFIG.game.agent.vlm.model = String(model).trim();
+              CONFIG.game.agent.vlm.provider = String(provider).trim();
               const td = this.gameStateManager?.trialData;
               const st = this.gameStateManager?.currentState;
               if (td && st && GameConfigUtils.isTwoPlayerExperiment(st.experimentType)) {
-                td.partnerAgentType = model;
+                td.partnerAgentType = String(model).trim();
               }
             }
           } catch (_) { /* noop */ }
+        } else {
+          console.warn(`VLM: could not reach ${base}/api/ai/vlm/config (HTTP ${resp.status}). Is the game server running and is VITE_SERVER_URL correct?`);
         }
       } else if (p2Type === 'rl_joint' || p2Type === 'rl_individual' || p2Type === 'ai') {
         const mode = CONFIG?.game?.agent?.type || (p2Type === 'rl_joint' ? 'joint' : 'individual');

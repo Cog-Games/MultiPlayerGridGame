@@ -63,7 +63,9 @@ export class GptAgentClient {
       currentPlayer: { label: aiLabel, pos: state[aiLabel] },
       goals: state.currentGoals,
       relativeInfo: GptAgentClient.buildRelativeInfo(state, aiLabel),
-      model: options.model || agentCfg.model || undefined,
+      // Only send the high-level agent label (e.g. gpt-ToM). The server .env
+      // is the source of truth for the underlying OpenAI model id.
+      model: options.model || undefined,
       temperature: typeof options.temperature === 'number' ? options.temperature : (typeof agentCfg.temperature === 'number' ? agentCfg.temperature : undefined),
       memory: {
         enabled: Boolean(agentCfg?.memory?.enabled),
@@ -89,10 +91,11 @@ export class GptAgentClient {
     const data = await resp.json();
     // Persist exact model used (ensures recordings use precise GPT type)
     try {
-      const modelUsed = data && (data.model || data.modelUsed);
+      const modelUsed = data?.baseModel || data?.modelUsed || data?.model;
       if (modelUsed) {
         const current = (CONFIG?.game?.agent?.gpt?.model);
         if (!current || String(current).trim() !== String(modelUsed).trim()) {
+          if (!CONFIG.game.agent.gpt) CONFIG.game.agent.gpt = {};
           CONFIG.game.agent.gpt.model = String(modelUsed).trim();
         }
       }
