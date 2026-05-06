@@ -21,6 +21,10 @@ function parseArgs(argv) {
     seed: DEFAULT_SEED,
     sessionOffset: 0,
     lambda: null,
+    beta: null,
+    lockSteps: null,
+    lockThreshold: null,
+    centralizedSharedSample: false,
     outputDir: DEFAULT_OUTPUT_DIR
   };
   for (let i = 0; i < argv.length; i++) {
@@ -35,6 +39,14 @@ function parseArgs(argv) {
       out.seed = Number(argv[++i]);
     } else if (arg === '--lambda' && argv[i + 1]) {
       out.lambda = Number(argv[++i]);
+    } else if (arg === '--beta' && argv[i + 1]) {
+      out.beta = Number(argv[++i]);
+    } else if ((arg === '--lock-steps' || arg === '--lock-in-after-steps') && argv[i + 1]) {
+      out.lockSteps = Number(argv[++i]);
+    } else if ((arg === '--lock-threshold' || arg === '--lock-in-threshold') && argv[i + 1]) {
+      out.lockThreshold = Number(argv[++i]);
+    } else if (arg === '--centralized-shared-sample') {
+      out.centralizedSharedSample = true;
     } else if (arg === '--output-dir' && argv[i + 1]) {
       out.outputDir = argv[++i];
     }
@@ -181,8 +193,9 @@ function maybePresentNewGoal(gameStateManager) {
 }
 
 function summarizeTrial(trialData, mapId, sessionIndex) {
+  const hasNewGoal = !!trialData.newGoalPresented;
   const eligibleForCommitment =
-    trialData.newGoalPresented &&
+    hasNewGoal &&
     Number.isInteger(trialData.firstDetectedSharedGoal) &&
     Number.isInteger(trialData.player1FinalReachedGoal) &&
     Number.isInteger(trialData.player2FinalReachedGoal);
@@ -205,8 +218,8 @@ function summarizeTrial(trialData, mapId, sessionIndex) {
     firstDetectedSharedGoal: trialData.firstDetectedSharedGoal,
     player1FinalReachedGoal: trialData.player1FinalReachedGoal,
     player2FinalReachedGoal: trialData.player2FinalReachedGoal,
-    player1SampledJointGoal: trialData.committedAgentPlayer1SampledJointGoal,
-    player2SampledJointGoal: trialData.committedAgentPlayer2SampledJointGoal,
+    player1SampledJointGoal: hasNewGoal ? trialData.committedAgentPlayer1SampledJointGoal : null,
+    player2SampledJointGoal: hasNewGoal ? trialData.committedAgentPlayer2SampledJointGoal : null,
     commitmentDefinition: 'finalReachedGoal == firstDetectedSharedGoal',
     collaborationSucceeded: !!trialData.collaborationSucceeded,
     commitmentEligible: !!eligibleForCommitment,
@@ -217,6 +230,7 @@ function summarizeTrial(trialData, mapId, sessionIndex) {
 }
 
 function buildRawTrialRecord(trialData, mapId, sessionIndex, design) {
+  const hasNewGoal = !!trialData.newGoalPresented;
   const initialGoals = Array.isArray(trialData.initialGoalPositions) ? trialData.initialGoalPositions : [];
   const target1 = Array.isArray(design?.target1) ? [...design.target1] : (Array.isArray(initialGoals[0]) ? [...initialGoals[0]] : null);
   const target2 = Array.isArray(design?.target2) ? [...design.target2] : (Array.isArray(initialGoals[1]) ? [...initialGoals[1]] : null);
@@ -237,14 +251,18 @@ function buildRawTrialRecord(trialData, mapId, sessionIndex, design) {
     player2FirstDetectedGoal: trialData.player2FirstDetectedGoal,
     player1FinalReachedGoal: trialData.player1FinalReachedGoal,
     player2FinalReachedGoal: trialData.player2FinalReachedGoal,
-    player1SampledJointGoal: trialData.committedAgentPlayer1SampledJointGoal,
-    player2SampledJointGoal: trialData.committedAgentPlayer2SampledJointGoal,
-    committedAgentPlayer1SampledJointGoal: trialData.committedAgentPlayer1SampledJointGoal,
-    committedAgentPlayer2SampledJointGoal: trialData.committedAgentPlayer2SampledJointGoal,
-    committedAgentPlayer1SampledJointGoalWeights: trialData.committedAgentPlayer1SampledJointGoalWeights,
-    committedAgentPlayer2SampledJointGoalWeights: trialData.committedAgentPlayer2SampledJointGoalWeights,
-    committedAgentPlayer1SampledJointGoalHistory: trialData.committedAgentPlayer1SampledJointGoalHistory,
-    committedAgentPlayer2SampledJointGoalHistory: trialData.committedAgentPlayer2SampledJointGoalHistory,
+    player1SampledJointGoal: hasNewGoal ? trialData.committedAgentPlayer1SampledJointGoal : null,
+    player2SampledJointGoal: hasNewGoal ? trialData.committedAgentPlayer2SampledJointGoal : null,
+    committedAgentPlayer1SampledJointGoal: hasNewGoal ? trialData.committedAgentPlayer1SampledJointGoal : null,
+    committedAgentPlayer2SampledJointGoal: hasNewGoal ? trialData.committedAgentPlayer2SampledJointGoal : null,
+    committedAgentPlayer1SampledJointGoalWeights: hasNewGoal ? trialData.committedAgentPlayer1SampledJointGoalWeights : null,
+    committedAgentPlayer2SampledJointGoalWeights: hasNewGoal ? trialData.committedAgentPlayer2SampledJointGoalWeights : null,
+    committedAgentPlayer1SampledJointGoalHistory: hasNewGoal ? trialData.committedAgentPlayer1SampledJointGoalHistory : null,
+    committedAgentPlayer2SampledJointGoalHistory: hasNewGoal ? trialData.committedAgentPlayer2SampledJointGoalHistory : null,
+    committedAgentPlayer1LockedJointGoal: hasNewGoal ? trialData.committedAgentPlayer1LockedJointGoal : null,
+    committedAgentPlayer2LockedJointGoal: hasNewGoal ? trialData.committedAgentPlayer2LockedJointGoal : null,
+    committedAgentPlayer1LockedAtStep: hasNewGoal ? trialData.committedAgentPlayer1LockedAtStep : null,
+    committedAgentPlayer2LockedAtStep: hasNewGoal ? trialData.committedAgentPlayer2LockedAtStep : null,
     player1Trajectory: trialData.player1Trajectory,
     player2Trajectory: trialData.player2Trajectory,
     player1Actions: trialData.player1Actions,
@@ -347,19 +365,21 @@ function computeSummary(trials, meta) {
   };
 }
 
-function runSimulation({ sessions, trialsPerSession, seed, sessionOffset, lambda }) {
+function runSimulation({ sessions, trialsPerSession, seed, sessionOffset, lambda, beta, lockSteps, lockThreshold, centralizedSharedSample }) {
   const originalPlayers = {
     player1: CONFIG.game.players.player1.type,
     player2: CONFIG.game.players.player2.type
   };
   const originalNumTrials = CONFIG.game.experiments.numTrials['2P3G'];
   const originalLambda = CONFIG.game.agent.committed.lambda;
+  const originalBeta = CONFIG.game.agent.committed.beta;
 
   CONFIG.game.players.player1.type = 'committedAgent';
   CONFIG.game.players.player2.type = 'committedAgent';
   CONFIG.game.experiments.order = ['2P3G'];
   CONFIG.game.experiments.numTrials['2P3G'] = trialsPerSession;
   if (Number.isFinite(lambda)) CONFIG.game.agent.committed.lambda = lambda;
+  if (Number.isFinite(beta)) CONFIG.game.agent.committed.beta = beta;
 
   try {
     const maps = loadMapsFor2P3G().slice(0, trialsPerSession);
@@ -381,12 +401,23 @@ function runSimulation({ sessions, trialsPerSession, seed, sessionOffset, lambda
           const agent1 = new CommittedAgent({
             rlAgent: sharedRl,
             lambda: CONFIG.game.agent.committed.lambda,
-            beta: CONFIG.game.agent.committed.beta
+            beta: CONFIG.game.agent.committed.beta,
+            lockInAfterSteps: lockSteps,
+            lockThreshold
           });
           const agent2 = new CommittedAgent({
             rlAgent: sharedRl,
             lambda: CONFIG.game.agent.committed.lambda,
-            beta: CONFIG.game.agent.committed.beta
+            beta: CONFIG.game.agent.committed.beta,
+            lockInAfterSteps: lockSteps,
+            lockThreshold
+          });
+          const centralizedAgent = new CommittedAgent({
+            rlAgent: sharedRl,
+            lambda: CONFIG.game.agent.committed.lambda,
+            beta: CONFIG.game.agent.committed.beta,
+            lockInAfterSteps: lockSteps,
+            lockThreshold
           });
 
           for (let trialIndex = 0; trialIndex < trialsPerSession; trialIndex++) {
@@ -399,8 +430,38 @@ function runSimulation({ sessions, trialsPerSession, seed, sessionOffset, lambda
 
               const state = gameStateManager.getCurrentState();
               const trialData = gameStateManager.trialData;
-              const action1 = agent1.getAIAction(state, trialData, 1);
-              const action2 = agent2.getAIAction(state, trialData, 2);
+              let action1;
+              let action2;
+              if (centralizedSharedSample) {
+                action1 = centralizedAgent.getAIAction(state, trialData, 1);
+                const sharedGoalIdx = trialData.committedAgentPlayer1SampledJointGoal;
+                const hasSharedSample = (
+                  trialData.newGoalPresented &&
+                  Number.isInteger(trialData.firstDetectedSharedGoal) &&
+                  Number.isInteger(sharedGoalIdx) &&
+                  Array.isArray(state.currentGoals?.[sharedGoalIdx])
+                );
+                if (hasSharedSample) {
+                  const sharedGoal = state.currentGoals[sharedGoalIdx];
+                  action2 = sharedRl.getJointRLAction(state.player2, state.player1, [sharedGoal]);
+                  trialData.committedAgentPlayer2SampledJointGoal = sharedGoalIdx;
+                  trialData.committedAgentPlayer2SampledJointGoalPosterior = trialData.committedAgentPlayer1SampledJointGoalPosterior;
+                  trialData.committedAgentPlayer2SampledJointGoalWeights = trialData.committedAgentPlayer1SampledJointGoalWeights;
+                  if (!Array.isArray(trialData.committedAgentPlayer2SampledJointGoalHistory)) {
+                    trialData.committedAgentPlayer2SampledJointGoalHistory = [];
+                  }
+                  trialData.committedAgentPlayer2SampledJointGoalHistory.push({
+                    ...(trialData.committedAgentPlayer1SampledJointGoalHistory?.at(-1) || {}),
+                    goal: sharedGoalIdx,
+                    centralizedSharedSample: true
+                  });
+                } else {
+                  action2 = sharedRl.getJointRLAction(state.player2, state.player1, state.currentGoals);
+                }
+              } else {
+                action1 = agent1.getAIAction(state, trialData, 1);
+                action2 = agent2.getAIAction(state, trialData, 2);
+              }
               const direction1 = actionToDirection(action1);
               const direction2 = actionToDirection(action2);
 
@@ -409,9 +470,14 @@ function runSimulation({ sessions, trialsPerSession, seed, sessionOffset, lambda
               trialComplete = !!result.trialComplete;
             }
 
+            const liveTrialData = gameStateManager.trialData ? { ...gameStateManager.trialData } : {};
             const success = GameHelpers.didBothPlayersReachSameGoal(gameStateManager.getCurrentState());
             gameStateManager.finalizeTrial(success);
-            const finalizedTrial = gameStateManager.getExperimentData().allTrialsData.at(-1);
+            const finalizedTrial = {
+              ...gameStateManager.getExperimentData().allTrialsData.at(-1),
+              ...liveTrialData,
+              collaborationSucceeded: success
+            };
             trials.push(summarizeTrial(finalizedTrial, mapId, sessionIndex));
             rawTrials.push(buildRawTrialRecord(finalizedTrial, mapId, sessionIndex, design));
           }
@@ -427,6 +493,9 @@ function runSimulation({ sessions, trialsPerSession, seed, sessionOffset, lambda
           totalPlannedTrials: sessions * trialsPerSession,
           lambda: CONFIG.game.agent.committed.lambda,
           beta: CONFIG.game.agent.committed.beta,
+          lockInAfterSteps: Number.isFinite(lockSteps) ? lockSteps : null,
+          lockThreshold: Number.isFinite(lockThreshold) ? lockThreshold : null,
+          centralizedSharedSample: !!centralizedSharedSample,
           mapSelection: 'first_trials_per_session_sorted_maps_from_MapsFor2P3G'
         }),
         trials,
@@ -438,18 +507,24 @@ function runSimulation({ sessions, trialsPerSession, seed, sessionOffset, lambda
     CONFIG.game.players.player2.type = originalPlayers.player2;
     CONFIG.game.experiments.numTrials['2P3G'] = originalNumTrials;
     CONFIG.game.agent.committed.lambda = originalLambda;
+    CONFIG.game.agent.committed.beta = originalBeta;
   }
 }
 
 function main() {
-  const { sessions, trialsPerSession, seed, sessionOffset, lambda, outputDir: outputDirArg } = parseArgs(process.argv.slice(2));
-  const result = runSimulation({ sessions, trialsPerSession, seed, sessionOffset, lambda });
+  const { sessions, trialsPerSession, seed, sessionOffset, lambda, beta, lockSteps, lockThreshold, centralizedSharedSample, outputDir: outputDirArg } = parseArgs(process.argv.slice(2));
+  const result = runSimulation({ sessions, trialsPerSession, seed, sessionOffset, lambda, beta, lockSteps, lockThreshold, centralizedSharedSample });
 
   const outputDir = path.resolve(outputDirArg);
   fs.mkdirSync(outputDir, { recursive: true });
 
   const lambdaPart = Number.isFinite(lambda) ? `lambda_${formatLambdaForPath(lambda)}_` : '';
-  const suffix = `${lambdaPart}sessions_${sessionOffset}_to_${sessionOffset + sessions - 1}`;
+  const betaPart = Number.isFinite(beta) ? `beta_${formatLambdaForPath(beta)}_` : '';
+  const lockPart = Number.isFinite(lockSteps) && Number.isFinite(lockThreshold)
+    ? `lock_${formatLambdaForPath(lockSteps)}_${formatLambdaForPath(lockThreshold)}_`
+    : '';
+  const centralPart = centralizedSharedSample ? 'centralized_shared_sample_' : '';
+  const suffix = `${betaPart}${lambdaPart}${lockPart}${centralPart}sessions_${sessionOffset}_to_${sessionOffset + sessions - 1}`;
   const summaryPath = path.join(outputDir, `committed_vs_committed_2p3g_summary_${suffix}.json`);
   const trialsPath = path.join(outputDir, `committed_vs_committed_2p3g_trials_${suffix}.json`);
   const rawTrialsPath = path.join(outputDir, `committed_vs_committed_2p3g_raw_trials_${suffix}.json`);

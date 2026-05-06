@@ -1,6 +1,7 @@
 import { CONFIG, GAME_OBJECTS, GameConfigUtils, DIRECTIONS } from '../config/gameConfig.js';
 import { RLAgent } from '../ai/RLAgent.js';
 import { CommittedAgent } from '../ai/CommittedAgent.js';
+import { SignalAgent } from '../ai/SignalAgent.js';
 import { LlmAgentClient } from '../ai/LlmAgentClient.js';
 import { VlmAgentClient } from '../ai/VlmAgentClient.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
@@ -14,6 +15,7 @@ export class ExperimentManager {
     this.timelineManager = timelineManager;
     this.rlAgent = new RLAgent();
     this.committedAgent = this.createCommittedAgent();
+    this.signalAgent = this.createSignalAgent();
     this.llmClient = new LlmAgentClient();
     this.vlmClient = new VlmAgentClient();
 
@@ -43,6 +45,16 @@ export class ExperimentManager {
       rlAgent: this.rlAgent,
       lambda: (typeof committedCfg.lambda === 'number') ? committedCfg.lambda : undefined,
       beta: (typeof committedCfg.beta === 'number') ? committedCfg.beta : undefined
+    });
+  }
+
+  createSignalAgent() {
+    const signalCfg = CONFIG?.game?.agent?.signal || {};
+    return new SignalAgent({
+      rlAgent: this.rlAgent,
+      alpha: (typeof signalCfg.alpha === 'number') ? signalCfg.alpha : undefined,
+      lambda: (typeof signalCfg.lambda === 'number') ? signalCfg.lambda : undefined,
+      beta: (typeof signalCfg.beta === 'number') ? signalCfg.beta : undefined
     });
   }
 
@@ -84,6 +96,9 @@ export class ExperimentManager {
       }
       if (!this.committedAgent) {
         this.committedAgent = this.createCommittedAgent();
+      }
+      if (!this.signalAgent) {
+        this.signalAgent = this.createSignalAgent();
       }
 
       // Update current trial's recorded partner agent type
@@ -372,6 +387,8 @@ export class ExperimentManager {
             }
           } catch (_) { /* noop */ }
         }
+      } else if (p2Type === 'signalAgent') {
+        console.log('🤖 AI partner: SignalAgent');
       } else if (p2Type === 'rl_joint' || p2Type === 'rl_individual' || p2Type === 'ai') {
         const mode = CONFIG?.game?.agent?.type || (p2Type === 'rl_joint' ? 'joint' : 'individual');
         console.log(`🤖 AI partner: RL mode = ${mode}`);
@@ -493,7 +510,14 @@ export class ExperimentManager {
       })();
 
       let aiAction = null;
-      if (fallbackPolicy === 'committedAgent') {
+      if (aiType === 'signalagent' || fallbackPolicy === 'signalAgent') {
+        if (!this.signalAgent) this.signalAgent = this.createSignalAgent();
+        aiAction = this.signalAgent.getAIAction(
+          gameState,
+          this.gameStateManager.getCurrentTrialData(),
+          this.aiPlayerNumber
+        );
+      } else if (fallbackPolicy === 'committedAgent' || aiType === 'committedagent') {
         if (!this.committedAgent) return; // Safety
         aiAction = this.committedAgent.getAIAction(
           gameState,
@@ -683,7 +707,14 @@ export class ExperimentManager {
       })();
 
       let aiAction = null;
-      if (fallbackPolicy === 'committedAgent') {
+      if (aiType === 'signalagent' || fallbackPolicy === 'signalAgent') {
+        if (!this.signalAgent) this.signalAgent = this.createSignalAgent();
+        aiAction = this.signalAgent.getAIAction(
+          gameState,
+          this.gameStateManager.getCurrentTrialData(),
+          this.aiPlayerNumber
+        );
+      } else if (fallbackPolicy === 'committedAgent' || aiType === 'committedagent') {
         if (!this.committedAgent) return;
         aiAction = this.committedAgent.getAIAction(
           gameState,
