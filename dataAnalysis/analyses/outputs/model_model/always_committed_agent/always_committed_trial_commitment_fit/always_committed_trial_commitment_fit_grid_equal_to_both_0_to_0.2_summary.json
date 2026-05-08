@@ -1,0 +1,17 @@
+{
+  "model": "AlwaysCommittedAgent",
+  "fit_target": "trial_level_commitment",
+  "fit_scope": "equal_to_both",
+  "method": "direct simulated grid search",
+  "lambda_start": 0.0,
+  "lambda_end": 0.2,
+  "lambda_step": 0.01,
+  "fitted_lambda": 0.15,
+  "loss": 0.20175600377803765,
+  "model_average_commitment_percent": 78.53505291005291,
+  "human_average_commitment_percent": 66.19718309859155,
+  "model_equal_to_both_commitment_percent": 85.55555555555556,
+  "human_equal_to_both_commitment_percent": 85.1063829787234,
+  "grid_csv": "dataAnalysis/analyses/outputs/model_model/always_committed_agent/always_committed_trial_commitment_fit/always_committed_trial_commitment_fit_grid_equal_to_both_0_to_0.2.csv",
+  "grid_plot": "dataAnalysis/analyses/outputs/model_model/always_committed_agent/always_committed_trial_commitment_fit/always_committed_trial_commitment_fit_grid_equal_to_both_0_to_0.2.png"
+}

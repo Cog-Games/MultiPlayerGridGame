@@ -1,0 +1,17 @@
+group,metric,mean_percent,ci95_percent,n
+"CommittedAgent
+(beta=3, lambda=0.125)",Success Rate (%),98.88888888888889,2.1777777777777776,90
+"CommittedAgent
+(beta=3, lambda=0.125)",Coordination Efficiency (%),98.4768199836693,0.7783178354515223,146
+"CommittedAgent
+(beta=3, lambda=0.125)",Commitment (%),84.45945945945947,5.856722042659773,148
+"CommittedAgent
+(beta=3, lambda=0.125)",Signaling Move (%),43.91891891891892,8.022900628953945,148
+Joint-RL,Success Rate (%),100.0,0.0,90
+Joint-RL,Coordination Efficiency (%),97.7063651721186,1.031093876691215,146
+Joint-RL,Commitment (%),38.35616438356164,7.914700450712996,146
+Joint-RL,Signaling Move (%),45.89041095890411,8.110920813931925,146
+Human-Human,Success Rate (%),100.0,0.0,47
+Human-Human,Coordination Efficiency (%),96.5682662491173,2.174964720607726,94
+Human-Human,Commitment (%),85.1063829787234,7.235953291737513,94
+Human-Human,Signaling Move (%),58.51063829787234,10.01383409099649,94

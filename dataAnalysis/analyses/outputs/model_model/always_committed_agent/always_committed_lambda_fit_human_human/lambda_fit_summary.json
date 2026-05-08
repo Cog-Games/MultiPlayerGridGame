@@ -1,0 +1,20 @@
+{
+  "model": "AlwaysCommittedAgent",
+  "fit_target": "all_valid_2p3g_steps",
+  "pure_human_workbooks": 30,
+  "pure_human_2p3g_participant_rows": 357,
+  "unique_2p3g_room_trials": 189,
+  "step_level_observations": 4682,
+  "pre_new_goal_observations": 3150,
+  "post_new_goal_observations": 1532,
+  "fitted_lambda": 32.88563768943176,
+  "negative_log_likelihood": 3769.727875225228,
+  "log_likelihood": -3769.727875225228,
+  "beta_fixed": 3.0,
+  "std_error": 1.2251995733753125,
+  "ci95_lower": 30.484246525616147,
+  "ci95_upper": 35.28702885324737,
+  "optimizer_success": true,
+  "optimizer_message": "Solution found.",
+  "posterior_resize": "new goals receive 1/current_goal_count mass; old posterior is rescaled preserving relative odds"
+}

@@ -142,7 +142,7 @@ export class GameApplication {
     const skipNetwork = urlParams.get('skipNetwork') === 'true';
 
     // Default to configured fallback AI when not explicitly set
-    if (!['llm', 'llm-tom', 'vlm', 'vlm-tom', 'human', 'rl_joint', 'rl_individual', 'committedAgent', 'gpt', 'gpt-ToM', 'vlm-ToM'].includes(CONFIG.game.players.player2.type)) {
+    if (!['llm', 'llm-tom', 'vlm', 'vlm-tom', 'human', 'rl_joint', 'rl_individual', 'committedAgent', 'alwaysCommittedAgent', 'gpt', 'gpt-ToM', 'vlm-ToM'].includes(CONFIG.game.players.player2.type)) {
       GameConfigUtils.setPlayerType(2, CONFIG.multiplayer.fallbackAIType || 'rl_joint');
     }
     this.uiManager.setPlayerInfo(0, 'human-ai');
@@ -550,6 +550,7 @@ export class GameApplication {
             }
             if (t === 'rl_joint') return 'joint-rl';
             if (t === 'rl_individual') return 'individual-rl';
+            if (t === 'alwaysCommittedAgent') return 'alwaysCommittedAgent';
             if (t === 'ai') return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl'; // legacy safety
             return t || 'unknown';
           })();

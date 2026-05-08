@@ -1,6 +1,7 @@
 import { CONFIG, GAME_OBJECTS, GameConfigUtils, DIRECTIONS } from '../config/gameConfig.js';
 import { RLAgent } from '../ai/RLAgent.js';
 import { CommittedAgent } from '../ai/CommittedAgent.js';
+import { AlwaysCommittedAgent } from '../ai/AlwaysCommittedAgent.js';
 import { SignalAgent } from '../ai/SignalAgent.js';
 import { LlmAgentClient } from '../ai/LlmAgentClient.js';
 import { VlmAgentClient } from '../ai/VlmAgentClient.js';
@@ -15,6 +16,7 @@ export class ExperimentManager {
     this.timelineManager = timelineManager;
     this.rlAgent = new RLAgent();
     this.committedAgent = this.createCommittedAgent();
+    this.alwaysCommittedAgent = this.createAlwaysCommittedAgent();
     this.signalAgent = this.createSignalAgent();
     this.llmClient = new LlmAgentClient();
     this.vlmClient = new VlmAgentClient();
@@ -45,6 +47,15 @@ export class ExperimentManager {
       rlAgent: this.rlAgent,
       lambda: (typeof committedCfg.lambda === 'number') ? committedCfg.lambda : undefined,
       beta: (typeof committedCfg.beta === 'number') ? committedCfg.beta : undefined
+    });
+  }
+
+  createAlwaysCommittedAgent() {
+    const alwaysCommittedCfg = CONFIG?.game?.agent?.alwaysCommitted || {};
+    return new AlwaysCommittedAgent({
+      rlAgent: this.rlAgent,
+      lambda: (typeof alwaysCommittedCfg.lambda === 'number') ? alwaysCommittedCfg.lambda : undefined,
+      beta: (typeof alwaysCommittedCfg.beta === 'number') ? alwaysCommittedCfg.beta : undefined
     });
   }
 
@@ -97,6 +108,9 @@ export class ExperimentManager {
       if (!this.committedAgent) {
         this.committedAgent = this.createCommittedAgent();
       }
+      if (!this.alwaysCommittedAgent) {
+        this.alwaysCommittedAgent = this.createAlwaysCommittedAgent();
+      }
       if (!this.signalAgent) {
         this.signalAgent = this.createSignalAgent();
       }
@@ -117,6 +131,8 @@ export class ExperimentManager {
             td.partnerAgentType = 'joint-rl';
           } else if (fallbackType === 'rl_individual') {
             td.partnerAgentType = 'individual-rl';
+          } else if (fallbackType === 'alwaysCommittedAgent') {
+            td.partnerAgentType = 'alwaysCommittedAgent';
           } else if (fallbackType === 'rl_individual_python') {
             td.partnerAgentType = 'individual-rl-python';
           } else {
@@ -387,6 +403,8 @@ export class ExperimentManager {
             }
           } catch (_) { /* noop */ }
         }
+      } else if (p2Type === 'alwaysCommittedAgent') {
+        console.log('🤖 AI partner: AlwaysCommittedAgent');
       } else if (p2Type === 'signalAgent') {
         console.log('🤖 AI partner: SignalAgent');
       } else if (p2Type === 'rl_joint' || p2Type === 'rl_individual' || p2Type === 'ai') {
@@ -510,7 +528,14 @@ export class ExperimentManager {
       })();
 
       let aiAction = null;
-      if (aiType === 'signalagent' || fallbackPolicy === 'signalAgent') {
+      if (aiType === 'alwayscommittedagent' || fallbackPolicy === 'alwaysCommittedAgent') {
+        if (!this.alwaysCommittedAgent) this.alwaysCommittedAgent = this.createAlwaysCommittedAgent();
+        aiAction = this.alwaysCommittedAgent.getAIAction(
+          gameState,
+          this.gameStateManager.getCurrentTrialData(),
+          this.aiPlayerNumber
+        );
+      } else if (aiType === 'signalagent' || fallbackPolicy === 'signalAgent') {
         if (!this.signalAgent) this.signalAgent = this.createSignalAgent();
         aiAction = this.signalAgent.getAIAction(
           gameState,
@@ -707,7 +732,14 @@ export class ExperimentManager {
       })();
 
       let aiAction = null;
-      if (aiType === 'signalagent' || fallbackPolicy === 'signalAgent') {
+      if (aiType === 'alwayscommittedagent' || fallbackPolicy === 'alwaysCommittedAgent') {
+        if (!this.alwaysCommittedAgent) this.alwaysCommittedAgent = this.createAlwaysCommittedAgent();
+        aiAction = this.alwaysCommittedAgent.getAIAction(
+          gameState,
+          this.gameStateManager.getCurrentTrialData(),
+          this.aiPlayerNumber
+        );
+      } else if (aiType === 'signalagent' || fallbackPolicy === 'signalAgent') {
         if (!this.signalAgent) this.signalAgent = this.createSignalAgent();
         aiAction = this.signalAgent.getAIAction(
           gameState,

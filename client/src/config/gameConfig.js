@@ -71,7 +71,7 @@ export const CONFIG = {
         // - 'human'
         // - 'llm' | 'llm-tom'
         // - 'vlm' | 'vlm-tom'
-        // - 'rl_individual' | 'rl_joint' | 'committedAgent' | 'signalAgent'
+        // - 'rl_individual' | 'rl_joint' | 'committedAgent' | 'alwaysCommittedAgent' | 'signalAgent'
         // Legacy aliases still accepted: 'gpt'|'gpt-ToM' (-> llm/llm-tom), 'vlm-ToM' (-> vlm-tom)
         type: 'committedAgent',
         color: 'orange',
@@ -149,6 +149,12 @@ export const CONFIG = {
         // Every-step goal-selection model after new-goal presentation:
         // W_lambda(g) ∝ exp(beta * EU(g)) * P_t(g)^lambda.
         // lambda is the current trial-level commitment fit with beta fixed to 3.0.
+        lambda: 0.125,
+        beta: 3.0
+      },
+      alwaysCommitted: {
+        // Always-on committed goal-selection model from trial start:
+        // W_lambda(g) ∝ exp(beta * EU(g)) * P_t(g)^lambda.
         lambda: 0.125,
         beta: 3.0
       },
@@ -256,7 +262,7 @@ export const CONFIG = {
     // human to press space before falling back to AI partner
     matchPlayReadyTimeout: 10000,
     // Fallback AI partner type when human-human matching fails
-    // Allowed (canonical): 'llm' | 'llm-tom' | 'vlm' | 'vlm-tom' | 'rl_individual' | 'rl_joint' | 'committedAgent' | 'signalAgent'
+    // Allowed (canonical): 'llm' | 'llm-tom' | 'vlm' | 'vlm-tom' | 'rl_individual' | 'rl_joint' | 'committedAgent' | 'alwaysCommittedAgent' | 'signalAgent'
     fallbackAIType: 'committedAgent',
     // Partner inactivity settings
     inactivityFallback: {
@@ -330,7 +336,7 @@ export const GameConfigUtils = {
         : (t === 'gpt-ToM' || lower === 'gpt-tom' || lower === 'gpttom') ? 'llm-tom'
           : (t === 'vlm-ToM' || lower === 'vlm-tom' || lower === 'vlmtom') ? 'vlm-tom'
             : t;
-    const allowed = ['human', 'llm', 'llm-tom', 'vlm', 'vlm-tom', 'gpt', 'gpt-ToM', 'vlm-ToM', 'rl_individual', 'rl_joint', 'committedAgent', 'signalAgent'];
+    const allowed = ['human', 'llm', 'llm-tom', 'vlm', 'vlm-tom', 'gpt', 'gpt-ToM', 'vlm-ToM', 'rl_individual', 'rl_joint', 'committedAgent', 'alwaysCommittedAgent', 'signalAgent'];
     if (!allowed.includes(normalized)) return;
     CONFIG.game.players[`player${playerIndex}`].type = normalized;
 
@@ -338,8 +344,8 @@ export const GameConfigUtils = {
     if (playerIndex === 2) {
       if (normalized === 'rl_joint') CONFIG.game.agent.type = 'joint';
       if (normalized === 'rl_individual') CONFIG.game.agent.type = 'individual';
-      // committedAgent/signalAgent start with joint planning, but can switch internally
-      if (normalized === 'committedAgent' || normalized === 'signalAgent') CONFIG.game.agent.type = 'joint';
+      // committed-style agents use joint policies internally.
+      if (normalized === 'committedAgent' || normalized === 'alwaysCommittedAgent' || normalized === 'signalAgent') CONFIG.game.agent.type = 'joint';
     }
   },
 

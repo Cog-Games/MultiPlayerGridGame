@@ -363,6 +363,10 @@ export class GameStateManager {
         try {
           if (fb === 'committedAgent') {
             this.trialData.partnerAgentType = 'committedAgent';
+          } else if (fb === 'alwaysCommittedAgent') {
+            this.trialData.partnerAgentType = 'alwaysCommittedAgent';
+          } else if (fb === 'signalAgent') {
+            this.trialData.partnerAgentType = 'signalAgent';
           } else if (fb === 'rl_joint') {
             this.trialData.partnerAgentType = 'joint-rl';
           } else if (fb === 'rl_individual') {
@@ -849,6 +853,10 @@ export class GameStateManager {
           const fb = String(this.trialData.gptFallbackAgentType || '').trim();
           if (fb === 'committedAgent') {
             this.trialData.partnerAgentType = 'committedAgent';
+          } else if (fb === 'alwaysCommittedAgent') {
+            this.trialData.partnerAgentType = 'alwaysCommittedAgent';
+          } else if (fb === 'signalAgent') {
+            this.trialData.partnerAgentType = 'signalAgent';
           } else if (fb && fb.toLowerCase() === 'rl') {
             const rlType = (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl';
             this.trialData.partnerAgentType = rlType;
@@ -945,6 +953,10 @@ export class GameStateManager {
       case 'rl_individual':
       case 'individual':
         return 'individual-rl';
+      case 'signalagent':
+        return 'signalAgent';
+      case 'alwayscommittedagent':
+        return 'alwaysCommittedAgent';
       case 'ai':
         // Default AI type based on config
         return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl';
@@ -1022,6 +1034,8 @@ export class GameStateManager {
       }
       if (t === 'rl_joint') return 'joint-rl';
       if (t === 'rl_individual') return 'individual-rl';
+      if (t === 'alwaysCommittedAgent') return 'alwaysCommittedAgent';
+      if (t === 'signalAgent') return 'signalAgent';
       if (t === 'ai') return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl'; // legacy safety
       return String(t || 'unknown');
     } catch (_) {
