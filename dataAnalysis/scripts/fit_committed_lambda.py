@@ -85,7 +85,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("dataAnalysis/committed_agent_lambda_fit"),
+        default=Path("dataAnalysis/analyses/outputs/model_model/committed_agent/committed_agent_lambda_fit"),
         help="Directory for generated CSV/JSON outputs.",
     )
     parser.add_argument(

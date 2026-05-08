@@ -12,7 +12,7 @@ import { NewGoalGenerator } from '../../client/src/utils/NewGoalGenerator.js';
 const DEFAULT_SESSIONS = 30;
 const DEFAULT_TRIALS_PER_SESSION = 12;
 const DEFAULT_SEED = 42;
-const DEFAULT_OUTPUT_DIR = 'dataAnalysis/signal_agent_alpha_fit_beta3/simulations';
+const DEFAULT_OUTPUT_DIR = 'dataAnalysis/analyses/outputs/model_model/signal_agent/signal_agent_alpha_fit_beta3/simulations';
 const VALID_SCORES = new Set(['margin', 'logposterior', 'mixture']);
 
 function parseArgs(argv) {

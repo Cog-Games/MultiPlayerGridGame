@@ -21,15 +21,15 @@ import matplotlib.pyplot as plt
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-HUMAN_RAW = PROJECT_ROOT / "dataAnalysis" / "equal_to_both_agent_human_comparison" / "human_human_pure_unique_2p3g_raw_trials.json"
-JOINT_RAW = PROJECT_ROOT / "dataAnalysis" / "joint_rl_vs_joint_rl_simulation" / "joint_rl_vs_joint_rl_2p3g_raw_trials_sessions_0_to_29.json"
+HUMAN_RAW = PROJECT_ROOT / "dataAnalysis" / "raw_data" / "human" / "equal_to_both_agent_human_comparison" / "human_human_pure_unique_2p3g_raw_trials.json"
+JOINT_RAW = PROJECT_ROOT / "dataAnalysis" / "raw_data" / "model_model_simulations" / "joint_rl" / "joint_rl_vs_joint_rl_simulation" / "joint_rl_vs_joint_rl_2p3g_raw_trials_sessions_0_to_29.json"
 SIM_SCRIPT = PROJECT_ROOT / "dataAnalysis" / "scripts" / "simulate_signal_vs_signal_2p3g.js"
 EPS = 1e-9
 DEFAULT_ALPHA_GRID = [round(i * 0.25, 10) for i in range(41)]
 DEFAULT_OUTPUT_DIRS = {
-    "margin": PROJECT_ROOT / "dataAnalysis" / "signal_agent_margin_alpha_fit_beta3",
-    "logposterior": PROJECT_ROOT / "dataAnalysis" / "signal_agent_logpost_alpha_fit_beta3",
-    "mixture": PROJECT_ROOT / "dataAnalysis" / "signal_agent_mixture_p_fit_beta3",
+    "margin": PROJECT_ROOT / "dataAnalysis" / "analyses" / "outputs" / "model_model" / "signal_agent" / "signal_agent_margin_alpha_fit_beta3",
+    "logposterior": PROJECT_ROOT / "dataAnalysis" / "analyses" / "outputs" / "model_model" / "signal_agent" / "signal_agent_logpost_alpha_fit_beta3",
+    "mixture": PROJECT_ROOT / "dataAnalysis" / "analyses" / "outputs" / "model_model" / "signal_agent" / "signal_agent_mixture_p_fit_beta3",
 }
 SCORE_LABELS = {
     "margin": "max-margin: P(g*|a) - max P(g!=g*|a)",

@@ -12,7 +12,7 @@ import { NewGoalGenerator } from '../../client/src/utils/NewGoalGenerator.js';
 const DEFAULT_SESSIONS = 30;
 const DEFAULT_TRIALS_PER_SESSION = 12;
 const DEFAULT_SEED = 42;
-const DEFAULT_OUTPUT_DIR = 'dataAnalysis/committed_vs_committed_simulation';
+const DEFAULT_OUTPUT_DIR = 'dataAnalysis/raw_data/model_model_simulations/committed_agent/committed_vs_committed_simulation';
 
 function parseArgs(argv) {
   const out = {
