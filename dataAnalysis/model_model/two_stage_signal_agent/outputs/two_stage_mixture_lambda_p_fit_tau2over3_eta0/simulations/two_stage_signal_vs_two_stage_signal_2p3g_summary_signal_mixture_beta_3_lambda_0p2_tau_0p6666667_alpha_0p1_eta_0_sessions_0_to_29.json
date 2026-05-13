@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 0.2,
+  "tau": 0.6666667,
+  "alpha": 0.1,
+  "eta": 0,
+  "beta": 3,
+  "gateSharpness": 10,
+  "signalMode": "mixture",
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 335,
+  "successRate": 0.9305555555555556,
+  "newGoalPresentedTrials": 239,
+  "commitmentEligibleTrials": 239,
+  "commitmentEligibleAgents": 478,
+  "committedAgents": 395,
+  "commitmentRate": 0.8263598326359832,
+  "bothCommittedTrials": 185,
+  "bothCommittedRate": 0.7740585774058577,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 74,
+      "commitmentEligibleTrials": 86,
+      "committedAgents": 140,
+      "totalEligibleAgents": 172,
+      "bothCommittedTrials": 62,
+      "successRate": 0.8222222222222222,
+      "commitmentRate": 0.813953488372093,
+      "bothCommittedRate": 0.7209302325581395
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 69,
+      "committedAgents": 126,
+      "totalEligibleAgents": 138,
+      "bothCommittedTrials": 63,
+      "successRate": 1,
+      "commitmentRate": 0.9130434782608695,
+      "bothCommittedRate": 0.9130434782608695
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 81,
+      "commitmentEligibleTrials": 84,
+      "committedAgents": 129,
+      "totalEligibleAgents": 168,
+      "bothCommittedTrials": 60,
+      "successRate": 0.9,
+      "commitmentRate": 0.7678571428571429,
+      "bothCommittedRate": 0.7142857142857143
+    }
+  }
+}

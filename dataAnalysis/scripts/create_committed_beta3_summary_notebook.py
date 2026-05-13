@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 NOTEBOOK_PATH = Path(
-    "dataAnalysis/analyses/notebooks/model_model/committed_agent/committed_agent_trial_commitment_fit_beta3/"
+    "dataAnalysis/model_model/committed_agent/notebooks/committed_agent_trial_commitment_fit_beta3/"
     "committed_beta3_lambda_fit_and_equal_to_both_comparison.ipynb"
 )
 

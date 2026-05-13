@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 NOTEBOOK_PATH = Path(
-    "dataAnalysis/analyses/notebooks/model_model/always_committed_agent/"
+    "dataAnalysis/model_model/always_committed_agent/notebooks/"
     "always_committed_equal_to_both_trial_commitment_fit/"
     "always_committed_equal_to_both_lambda_fit.ipynb"
 )
@@ -73,8 +73,8 @@ PROJECT_ROOT = Path('/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlaye
 if not PROJECT_ROOT.exists():
     PROJECT_ROOT = Path.cwd()
 
-FIT_DIR = PROJECT_ROOT / 'dataAnalysis' / 'analyses' / 'outputs' / 'model_model' / 'always_committed_agent' / 'always_committed_trial_commitment_fit'
-SIM_DIR = PROJECT_ROOT / 'dataAnalysis' / 'analyses' / 'outputs' / 'model_model' / 'always_committed_agent' / 'always_committed_vs_always_committed_simulation'
+FIT_DIR = PROJECT_ROOT / 'dataAnalysis' / 'model_model' / 'always_committed_agent' / 'outputs' / 'always_committed_trial_commitment_fit'
+SIM_DIR = PROJECT_ROOT / 'dataAnalysis' / 'model_model' / 'always_committed_agent' / 'outputs' / 'always_committed_vs_always_committed_simulation'
 
 FIT_SUMMARY_JSON = FIT_DIR / 'always_committed_trial_commitment_fit_grid_equal_to_both_0_to_0.2_summary.json'
 FIT_GRID_CSV = FIT_DIR / 'always_committed_trial_commitment_fit_grid_equal_to_both_0_to_0.2.csv'

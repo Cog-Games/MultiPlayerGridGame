@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 0.5,
+  "tau": 0.6666667,
+  "alpha": 0.1,
+  "eta": 0,
+  "beta": 3,
+  "gateSharpness": 10,
+  "signalMode": "mixture",
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 330,
+  "successRate": 0.9166666666666666,
+  "newGoalPresentedTrials": 243,
+  "commitmentEligibleTrials": 243,
+  "commitmentEligibleAgents": 486,
+  "committedAgents": 426,
+  "commitmentRate": 0.8765432098765432,
+  "bothCommittedTrials": 198,
+  "bothCommittedRate": 0.8148148148148148,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 71,
+      "commitmentEligibleTrials": 88,
+      "committedAgents": 151,
+      "totalEligibleAgents": 176,
+      "bothCommittedTrials": 66,
+      "successRate": 0.7888888888888889,
+      "commitmentRate": 0.8579545454545454,
+      "bothCommittedRate": 0.75
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 70,
+      "committedAgents": 136,
+      "totalEligibleAgents": 140,
+      "bothCommittedTrials": 68,
+      "successRate": 1,
+      "commitmentRate": 0.9714285714285714,
+      "bothCommittedRate": 0.9714285714285714
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 79,
+      "commitmentEligibleTrials": 85,
+      "committedAgents": 139,
+      "totalEligibleAgents": 170,
+      "bothCommittedTrials": 64,
+      "successRate": 0.8777777777777778,
+      "commitmentRate": 0.8176470588235294,
+      "bothCommittedRate": 0.7529411764705882
+    }
+  }
+}

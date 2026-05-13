@@ -20,7 +20,7 @@ import pandas as pd
 
 
 DEFAULT_SWEEP_CSV = Path(
-    "dataAnalysis/analyses/outputs/model_model/always_committed_agent/"
+    "dataAnalysis/model_model/always_committed_agent/outputs/"
     "always_committed_vs_always_committed_simulation/"
     "always_committed_lambda_sweep_average_equal_summary.csv"
 )
@@ -28,7 +28,7 @@ DEFAULT_HUMAN_COMPARISON_DIR = Path(
     "dataAnalysis/analyses/outputs/comparisons/equal_to_both_agent_human_comparison"
 )
 DEFAULT_OUTPUT_DIR = Path(
-    "dataAnalysis/analyses/outputs/model_model/always_committed_agent/"
+    "dataAnalysis/model_model/always_committed_agent/outputs/"
     "always_committed_trial_commitment_fit"
 )
 

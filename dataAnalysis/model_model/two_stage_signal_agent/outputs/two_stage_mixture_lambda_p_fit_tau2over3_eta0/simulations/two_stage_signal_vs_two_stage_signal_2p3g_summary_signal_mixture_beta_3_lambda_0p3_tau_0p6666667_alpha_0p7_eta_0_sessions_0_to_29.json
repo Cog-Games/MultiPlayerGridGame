@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 0.3,
+  "tau": 0.6666667,
+  "alpha": 0.7,
+  "eta": 0,
+  "beta": 3,
+  "gateSharpness": 10,
+  "signalMode": "mixture",
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 312,
+  "successRate": 0.8666666666666667,
+  "newGoalPresentedTrials": 246,
+  "commitmentEligibleTrials": 246,
+  "commitmentEligibleAgents": 492,
+  "committedAgents": 414,
+  "commitmentRate": 0.8414634146341463,
+  "bothCommittedTrials": 183,
+  "bothCommittedRate": 0.7439024390243902,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 64,
+      "commitmentEligibleTrials": 89,
+      "committedAgents": 146,
+      "totalEligibleAgents": 178,
+      "bothCommittedTrials": 60,
+      "successRate": 0.7111111111111111,
+      "commitmentRate": 0.8202247191011236,
+      "bothCommittedRate": 0.6741573033707865
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 68,
+      "committedAgents": 132,
+      "totalEligibleAgents": 136,
+      "bothCommittedTrials": 66,
+      "successRate": 1,
+      "commitmentRate": 0.9705882352941176,
+      "bothCommittedRate": 0.9705882352941176
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 68,
+      "commitmentEligibleTrials": 89,
+      "committedAgents": 136,
+      "totalEligibleAgents": 178,
+      "bothCommittedTrials": 57,
+      "successRate": 0.7555555555555555,
+      "commitmentRate": 0.7640449438202247,
+      "bothCommittedRate": 0.6404494382022472
+    }
+  }
+}

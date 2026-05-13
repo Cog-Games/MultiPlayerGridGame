@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 0.15,
+  "tau": 0.6666667,
+  "alpha": 1,
+  "eta": 0,
+  "beta": 3,
+  "gateSharpness": 10,
+  "signalMode": "mixture",
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 297,
+  "successRate": 0.825,
+  "newGoalPresentedTrials": 233,
+  "commitmentEligibleTrials": 233,
+  "commitmentEligibleAgents": 466,
+  "committedAgents": 383,
+  "commitmentRate": 0.8218884120171673,
+  "bothCommittedTrials": 160,
+  "bothCommittedRate": 0.6866952789699571,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 55,
+      "commitmentEligibleTrials": 87,
+      "committedAgents": 129,
+      "totalEligibleAgents": 174,
+      "bothCommittedTrials": 47,
+      "successRate": 0.6111111111111112,
+      "commitmentRate": 0.7413793103448276,
+      "bothCommittedRate": 0.5402298850574713
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 59,
+      "committedAgents": 112,
+      "totalEligibleAgents": 118,
+      "bothCommittedTrials": 56,
+      "successRate": 1,
+      "commitmentRate": 0.9491525423728814,
+      "bothCommittedRate": 0.9491525423728814
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 62,
+      "commitmentEligibleTrials": 87,
+      "committedAgents": 142,
+      "totalEligibleAgents": 174,
+      "bothCommittedTrials": 57,
+      "successRate": 0.6888888888888889,
+      "commitmentRate": 0.8160919540229885,
+      "bothCommittedRate": 0.6551724137931034
+    }
+  }
+}

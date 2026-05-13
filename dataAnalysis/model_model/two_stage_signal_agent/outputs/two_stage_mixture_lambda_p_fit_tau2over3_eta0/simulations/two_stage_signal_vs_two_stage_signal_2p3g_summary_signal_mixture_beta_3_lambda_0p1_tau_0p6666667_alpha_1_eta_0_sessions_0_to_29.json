@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 0.1,
+  "tau": 0.6666667,
+  "alpha": 1,
+  "eta": 0,
+  "beta": 3,
+  "gateSharpness": 10,
+  "signalMode": "mixture",
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 288,
+  "successRate": 0.8,
+  "newGoalPresentedTrials": 233,
+  "commitmentEligibleTrials": 233,
+  "commitmentEligibleAgents": 466,
+  "committedAgents": 350,
+  "commitmentRate": 0.7510729613733905,
+  "bothCommittedTrials": 139,
+  "bothCommittedRate": 0.5965665236051502,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 50,
+      "commitmentEligibleTrials": 87,
+      "committedAgents": 120,
+      "totalEligibleAgents": 174,
+      "bothCommittedTrials": 40,
+      "successRate": 0.5555555555555556,
+      "commitmentRate": 0.6896551724137931,
+      "bothCommittedRate": 0.45977011494252873
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 60,
+      "committedAgents": 104,
+      "totalEligibleAgents": 120,
+      "bothCommittedTrials": 52,
+      "successRate": 1,
+      "commitmentRate": 0.8666666666666667,
+      "bothCommittedRate": 0.8666666666666667
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 58,
+      "commitmentEligibleTrials": 86,
+      "committedAgents": 126,
+      "totalEligibleAgents": 172,
+      "bothCommittedTrials": 47,
+      "successRate": 0.6444444444444445,
+      "commitmentRate": 0.7325581395348837,
+      "bothCommittedRate": 0.5465116279069767
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 0.05,
+  "tau": 0.85,
+  "alpha": 1,
+  "eta": 1,
+  "beta": 3,
+  "gateSharpness": 10,
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 349,
+  "successRate": 0.9694444444444444,
+  "newGoalPresentedTrials": 237,
+  "commitmentEligibleTrials": 237,
+  "commitmentEligibleAgents": 474,
+  "committedAgents": 253,
+  "commitmentRate": 0.5337552742616034,
+  "bothCommittedTrials": 121,
+  "bothCommittedRate": 0.510548523206751,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 84,
+      "commitmentEligibleTrials": 84,
+      "committedAgents": 108,
+      "totalEligibleAgents": 168,
+      "bothCommittedTrials": 51,
+      "successRate": 0.9333333333333333,
+      "commitmentRate": 0.6428571428571429,
+      "bothCommittedRate": 0.6071428571428571
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 74,
+      "committedAgents": 56,
+      "totalEligibleAgents": 148,
+      "bothCommittedTrials": 28,
+      "successRate": 1,
+      "commitmentRate": 0.3783783783783784,
+      "bothCommittedRate": 0.3783783783783784
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 85,
+      "commitmentEligibleTrials": 79,
+      "committedAgents": 89,
+      "totalEligibleAgents": 158,
+      "bothCommittedTrials": 42,
+      "successRate": 0.9444444444444444,
+      "commitmentRate": 0.5632911392405063,
+      "bothCommittedRate": 0.5316455696202531
+    }
+  }
+}

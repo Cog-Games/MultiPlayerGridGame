@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Full Shared Agency Model Flow</title>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\(', '\\)']],
+    displayMath: [['\\[', '\\]']],
+    processEscapes: true
+  },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root {
+  --ink: #17202a;
+  --muted: #607080;
+  --line: #d8dee9;
+  --bg: #f7f9fc;
+  --card: #ffffff;
+  --blue: #315f91;
+  --green: #3f8f63;
+  --orange: #cc7a25;
+  --red: #b83232;
+  --violet: #6f5fb8;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: radial-gradient(circle at 20% 0%, #edf5ff 0, transparent 34%), var(--bg);
+  line-height: 1.45;
+}
+header {
+  padding: 42px 56px 28px;
+  background: linear-gradient(135deg, #142235, #315f91);
+  color: white;
+}
+header h1 { margin: 0 0 10px; font-size: 36px; letter-spacing: -0.03em; }
+header p { max-width: 1050px; margin: 0; color: #dce7f8; font-size: 17px; }
+main { max-width: 1280px; margin: 0 auto; padding: 28px 24px 60px; }
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(20,35,60,.07);
+  margin-bottom: 22px;
+}
+.panel h2 { margin: 0 0 12px; font-size: 24px; }
+.lead { color: #263b52; margin: 0 0 16px; }
+.flow {
+  display: grid;
+  grid-template-columns: 1fr 58px 1fr 58px 1fr 58px 1fr;
+  align-items: stretch;
+  gap: 0;
+}
+.step {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+  background: #fbfdff;
+  min-height: 275px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.step h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  letter-spacing: -.01em;
+}
+.step .tag {
+  display: inline-block;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 4px 8px;
+  margin-bottom: 8px;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+.step p { margin: 8px 0; color: #2f4156; }
+.math {
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  padding: 10px;
+  overflow-x: auto;
+  font-size: 14px;
+}
+.arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8a98a8;
+  font-size: 36px;
+  font-weight: 800;
+}
+.blue .tag { background: var(--blue); }
+.green .tag { background: var(--green); }
+.orange .tag { background: var(--orange); }
+.red .tag { background: var(--red); }
+.param {
+  margin-top: 10px;
+  border-left: 4px solid currentColor;
+  padding: 8px 10px;
+  background: #f7f9fc;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.param strong { display: block; color: var(--ink); }
+.blue .param { color: var(--blue); }
+.green .param { color: var(--green); }
+.orange .param { color: var(--orange); }
+.red .param { color: var(--red); }
+.mode-list {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: #30445b;
+  font-size: 13px;
+}
+.mode-list li { margin: 5px 0; }
+.param-line { display: block; margin: 3px 0; }
+.zero-note {
+  margin-top: 10px;
+  border: 1px dashed #c9d3df;
+  border-radius: 10px;
+  background: #fffdf7;
+  padding: 8px 10px;
+  color: #394b5f;
+  font-size: 13px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap: 22px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+th, td {
+  border-bottom: 1px solid var(--line);
+  padding: 10px 9px;
+  vertical-align: top;
+  text-align: left;
+}
+th {
+  background: #f0f4f8;
+  color: #34495e;
+}
+.component-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.component {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fbfdff;
+  padding: 14px;
+}
+.component h3 { margin: 0 0 6px; font-size: 16px; }
+.component p { margin: 6px 0; color: var(--muted); }
+.chip {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 4px 8px;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.tau { background: var(--green); }
+.lambda { background: var(--orange); }
+.alpha { background: var(--red); }
+.model-map strong { font-family: "SFMono-Regular", Consolas, monospace; }
+.note {
+  color: var(--muted);
+  font-size: 13px;
+}
+footer {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 28px;
+}
+@media (max-width: 1050px) {
+  .flow { grid-template-columns: 1fr; gap: 12px; }
+  .arrow { transform: rotate(90deg); height: 42px; }
+  .grid, .component-list { grid-template-columns: 1fr; }
+  header { padding: 30px 24px 22px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Full Shared Agency Model Flow</h1>
+  <p>A conceptual diagram for the shared-agency model family: start flexible with joint-RL, infer a latent joint goal, cross a confidence gate, then commit and optionally signal.</p>
+</header>
+<main>
+  <section class="panel">
+    <h2>Core Pipeline</h2>
+    <p class="lead">The full model can be understood as four linked computations. Existing model variants are ablations that turn some of these stages on/off or change when they start.</p>
+    <div class="flow">
+      <article class="step blue">
+        <div>
+          <span class="tag">Stage 1</span>
+          <h3>Flexible Joint-RL Policy</h3>
+          <p>No explicit joint goal has been established yet, so action is generated by joint-RL over the current goal set.</p>
+          <div class="math">\[\pi_{\mathrm{early}}(a)=\pi_{\mathrm{joint}}(a\mid s_t,\mathcal G_t)\]</div>
+        </div>
+        <div class="param">
+          <strong>No commitment parameter yet</strong>
+          This is the flexible baseline used before the agent has enough evidence for a specific joint goal.
+        </div>
+      </article>
+      <div class="arrow">→</div>
+      <article class="step green">
+        <div>
+          <span class="tag">Stage 2</span>
+          <h3>Infer Joint Goal</h3>
+          <p>The agent maintains a posterior over candidate joint goals from observed actions under goal-conditioned joint policies.</p>
+          <div class="math">\[P_t(g)\propto P_{t-1}(g)\prod_i\pi_{\mathrm{joint}}^i(a_{t-1}^i\mid s_{t-1}^i,s_{t-1}^{-i},g)\]</div>
+        </div>
+        <div class="param">
+          <strong>Confidence statistic</strong>
+          \(C_t=\max_g P_t(g)\)
+        </div>
+      </article>
+      <div class="arrow">→</div>
+      <article class="step orange">
+        <div>
+          <span class="tag">Stage 3</span>
+          <h3>Gate Into Joint-Goal Sampling</h3>
+          <p>Once inferred joint-goal confidence is high enough, the model shifts from flexible joint-RL toward sampling a specific joint goal.</p>
+          <p><strong>When does sampling start?</strong> There are three useful modes:</p>
+          <ul class="mode-list">
+            <li><strong>After new-goal presentation:</strong> simplified assumption that the new-goal event is the moment a shared joint-goal decision becomes clear.</li>
+            <li><strong>Sigmoid threshold:</strong> sampling gradually turns on as posterior confidence \(C_t\) crosses threshold \(\tau\).</li>
+            <li><strong>From trial start:</strong> sample from \(W_\lambda(g)\) at every step with an initial uniform prior.</li>
+          </ul>
+          <div class="math">\[\rho_t=\sigma(k(C_t-\tau))\]</div>
+          <div class="math">\[W_\lambda(g)\propto \exp(\beta EU_t(g))P_t(g)^\lambda\]</div>
+          <div class="math">\[g_t\sim \mathrm{Categorical}(W_\lambda(g))\]</div>
+          <div class="zero-note"><strong>If \(\lambda=0\):</strong> posterior belief no longer biases goal sampling, so \(W_\lambda(g)\propto \exp(\beta EU_t(g))\). The agent chooses among goals only by current joint utility / distance.</div>
+        </div>
+        <div class="param">
+          <strong>Free parameters 1–2</strong>
+          <span class="param-line">\(\tau\): confidence threshold for starting joint-goal sampling.</span>
+          <span class="param-line">\(\lambda\): commitment/posterior strength in the sampled-goal distribution.</span>
+        </div>
+      </article>
+      <div class="arrow">→</div>
+      <article class="step red">
+        <div>
+          <span class="tag">Stage 4</span>
+          <h3>Act, With Optional Signaling</h3>
+          <p>After selecting a joint goal, the agent can either follow the goal-conditioned joint policy or bias actions to make the goal more legible. There are two useful implementations.</p>
+          <div class="math">\[P(g\mid a)\propto P(g)\pi_{\mathrm{base}}(a\mid s_t,g)\]</div>
+          <p><strong>Approach A: RSA / log-posterior signaling.</strong> Theoretical soft bias toward actions that increase the listener posterior for the selected goal.</p>
+          <div class="math">\[\pi_{\mathrm{signal}}(a\mid g^*)\propto \pi_{\mathrm{joint}}(a\mid s_t,g^*)P_t(g^*\mid a)^\alpha\]</div>
+          <div class="zero-note"><strong>If \(\alpha=0\):</strong> the legibility term drops out, so \(\pi_{\mathrm{signal}}(a\mid g^*)=\pi_{\mathrm{joint}}(a\mid s_t,g^*)\). The agent acts efficiently toward the sampled goal without extra signaling pressure.</div>
+          <p><strong>Approach B: Bernoulli mixture signaling.</strong> Recommended fitted implementation: usually take the committed action, but sometimes replace it with the most legible progress action.</p>
+          <div class="math">\[a_{\mathrm{leg}}(g^*)=\arg\max_{a\in\mathcal A^+(g^*)}P(g^*\mid a)\]</div>
+          <div class="math">\[\pi_{\mathrm{signal}}(a\mid g^*)=(1-p)\pi_{\mathrm{committed}}(a\mid g^*)+p\,\delta_{a_{\mathrm{leg}}(g^*)}(a)\]</div>
+          <div class="zero-note"><strong>If \(p=0\):</strong> signaling reduces to the committed policy. <strong>If \(p=1\):</strong> the agent always takes the most legible progress action toward the sampled goal.</div>
+        </div>
+        <div class="param">
+          <strong>Free parameter 3</strong>
+          \(\alpha\) for RSA/log-posterior signaling, or \(p\) for mixture signaling. Higher values favor moves that better reveal the sampled goal.
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>One Full Model Equation</h2>
+    <p class="lead">The most compact version is a soft mixture between flexible joint-RL and committed-signaling control.</p>
+    <div class="math">
+      \[
+      \pi(a)
+      =
+      (1-\rho_t)\pi_{\mathrm{joint}}(a\mid s_t,\mathcal G_t)
+      +
+      \rho_t\sum_g W_\lambda(g)\pi_{\mathrm{signal}}(a\mid g)
+      \]
+    </div>
+    <p class="note">Intuition: before confidence is high, \(\rho_t\approx 0\), so behavior is mostly flexible joint-RL. After confidence crosses the threshold, \(\rho_t\approx 1\), so behavior becomes goal-conditioned and potentially signaling.</p>
+  </section>
+
+  <section class="grid">
+    <div class="panel">
+      <h2>Free-Parameter Components</h2>
+      <div class="component-list">
+        <div class="component">
+          <span class="chip tau">\(\tau\)</span>
+          <h3>When to start committing</h3>
+          <p>Controls the confidence midpoint for leaving flexible joint-RL.</p>
+          <div class="math">\[\rho_t=\sigma(k(C_t-\tau))\]</div>
+        </div>
+        <div class="component">
+          <span class="chip lambda">\(\lambda\)</span>
+          <h3>How strongly to commit</h3>
+          <p>Controls how much posterior belief affects sampled joint-goal weights.</p>
+          <div class="math">\[W_\lambda(g)\propto \exp(\beta EU_t(g))P_t(g)^\lambda\]</div>
+        </div>
+        <div class="component">
+          <span class="chip alpha">\(\alpha\) or \(p\)</span>
+          <h3>How strongly to signal</h3>
+          <p>Controls how much action choice favors listener inference of the selected goal. Use \(\alpha\) for the RSA/log-posterior form, or \(p\) for the fitted mixture form.</p>
+          <div class="math">\[\pi_{\mathrm{RSA}}(a\mid g^*)\propto \pi_{\mathrm{joint}}(a\mid s_t,g^*)P_t(g^*\mid a)^\alpha\]</div>
+          <div class="math">\[\pi_{\mathrm{mix}}(a\mid g^*)=(1-p)\pi_{\mathrm{committed}}(a\mid g^*)+p\,\delta_{a_{\mathrm{leg}}(g^*)}(a)\]</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>How Current Models Fit Into This Flow</h2>
+      <table class="model-map">
+        <thead>
+          <tr><th>Model label</th><th>Which components are active?</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>sampleJointGoal_afterNewGoal</strong></td>
+            <td>Uses Stage 1 before new-goal; after new-goal uses posterior inference plus \(W_\lambda(g)\). No explicit signaling gate.</td>
+          </tr>
+          <tr>
+            <td><strong>sampleJointGoalAndSignal_afterNewGoal</strong></td>
+            <td>Same post-new-goal joint-goal sampling, plus Stage 4 signaling. The comparison report uses the fitted mixture version; the RSA/log-posterior version is the theoretical variant.</td>
+          </tr>
+          <tr>
+            <td><strong>sampleJointGoal_fromStart</strong></td>
+            <td>Skips the flexible waiting period: posterior and \(W_\lambda(g)\) sampling are active from trial start.</td>
+          </tr>
+          <tr>
+            <td><strong>TwoStageSignalAgent_sigmoidThreshold</strong></td>
+            <td>Closest to the full pipeline: flexible joint-RL, posterior monitoring, sigmoid threshold gate, goal sampling, and signaling.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Interpretation</h2>
+    <p class="lead">This framing separates shared agency into three psychologically meaningful control knobs: when a shared intention is strong enough to matter, how strongly the agent follows that inferred joint goal, and how much it makes that goal legible to the partner.</p>
+    <table>
+      <thead><tr><th>Question</th><th>Model component</th><th>Behavioral effect</th></tr></thead>
+      <tbody>
+        <tr><td>Has a joint goal been established?</td><td>Posterior confidence \(C_t\) and threshold \(\tau\)</td><td>Delays premature commitment when evidence is weak.</td></tr>
+        <tr><td>Which goal should the pair pursue?</td><td>Goal weights \(W_\lambda(g)\)</td><td>Trades off efficient joint utility and inferred shared intention.</td></tr>
+        <tr><td>Should the action reveal the goal?</td><td>Signaling strength \(\alpha\) or mixture probability \(p\)</td><td>Biases action choice toward moves that help the partner infer the selected goal.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    Standalone conceptual diagram. It does not change runtime code, simulations, or fitted results.
+  </footer>
+</main>
+</body>
+</html>

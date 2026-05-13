@@ -27,9 +27,9 @@ SIM_SCRIPT = PROJECT_ROOT / "dataAnalysis" / "scripts" / "simulate_signal_vs_sig
 EPS = 1e-9
 DEFAULT_ALPHA_GRID = [round(i * 0.25, 10) for i in range(41)]
 DEFAULT_OUTPUT_DIRS = {
-    "margin": PROJECT_ROOT / "dataAnalysis" / "analyses" / "outputs" / "model_model" / "signal_agent" / "signal_agent_margin_alpha_fit_beta3",
-    "logposterior": PROJECT_ROOT / "dataAnalysis" / "analyses" / "outputs" / "model_model" / "signal_agent" / "signal_agent_logpost_alpha_fit_beta3",
-    "mixture": PROJECT_ROOT / "dataAnalysis" / "analyses" / "outputs" / "model_model" / "signal_agent" / "signal_agent_mixture_p_fit_beta3",
+    "margin": PROJECT_ROOT / "dataAnalysis" / "model_model" / "signal_agent" / "outputs" / "signal_agent_margin_alpha_fit_beta3",
+    "logposterior": PROJECT_ROOT / "dataAnalysis" / "model_model" / "signal_agent" / "outputs" / "signal_agent_logpost_alpha_fit_beta3",
+    "mixture": PROJECT_ROOT / "dataAnalysis" / "model_model" / "signal_agent" / "outputs" / "signal_agent_mixture_p_fit_beta3",
 }
 SCORE_LABELS = {
     "margin": "max-margin: P(g*|a) - max P(g!=g*|a)",

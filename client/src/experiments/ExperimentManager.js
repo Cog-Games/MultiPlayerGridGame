@@ -3,6 +3,7 @@ import { RLAgent } from '../ai/RLAgent.js';
 import { CommittedAgent } from '../ai/CommittedAgent.js';
 import { AlwaysCommittedAgent } from '../ai/AlwaysCommittedAgent.js';
 import { SignalAgent } from '../ai/SignalAgent.js';
+import { TwoStageSignalAgent } from '../ai/TwoStageSignalAgent.js';
 import { LlmAgentClient } from '../ai/LlmAgentClient.js';
 import { VlmAgentClient } from '../ai/VlmAgentClient.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
@@ -18,6 +19,7 @@ export class ExperimentManager {
     this.committedAgent = this.createCommittedAgent();
     this.alwaysCommittedAgent = this.createAlwaysCommittedAgent();
     this.signalAgent = this.createSignalAgent();
+    this.twoStageSignalAgent = this.createTwoStageSignalAgent();
     this.llmClient = new LlmAgentClient();
     this.vlmClient = new VlmAgentClient();
 
@@ -69,6 +71,20 @@ export class ExperimentManager {
     });
   }
 
+  createTwoStageSignalAgent() {
+    const cfg = CONFIG?.game?.agent?.twoStageSignal || {};
+    return new TwoStageSignalAgent({
+      rlAgent: this.rlAgent,
+      lambda: (typeof cfg.lambda === 'number') ? cfg.lambda : undefined,
+      tau: (typeof cfg.tau === 'number') ? cfg.tau : undefined,
+      alpha: (typeof cfg.alpha === 'number') ? cfg.alpha : undefined,
+      eta: (typeof cfg.eta === 'number') ? cfg.eta : undefined,
+      beta: (typeof cfg.beta === 'number') ? cfg.beta : undefined,
+      gateSharpness: (typeof cfg.gateSharpness === 'number') ? cfg.gateSharpness : undefined,
+      signalMode: (typeof cfg.signalMode === 'string') ? cfg.signalMode : undefined
+    });
+  }
+
   // Normalize agent type strings across legacy and new naming.
   // New canonical types:
   // - llm / llm-tom
@@ -114,6 +130,9 @@ export class ExperimentManager {
       if (!this.signalAgent) {
         this.signalAgent = this.createSignalAgent();
       }
+      if (!this.twoStageSignalAgent) {
+        this.twoStageSignalAgent = this.createTwoStageSignalAgent();
+      }
 
       // Update current trial's recorded partner agent type
       try {
@@ -133,6 +152,8 @@ export class ExperimentManager {
             td.partnerAgentType = 'individual-rl';
           } else if (fallbackType === 'alwaysCommittedAgent') {
             td.partnerAgentType = 'alwaysCommittedAgent';
+          } else if (fallbackType === 'twoStageSignalAgent') {
+            td.partnerAgentType = 'twoStageSignalAgent';
           } else if (fallbackType === 'rl_individual_python') {
             td.partnerAgentType = 'individual-rl-python';
           } else {
@@ -407,6 +428,8 @@ export class ExperimentManager {
         console.log('🤖 AI partner: AlwaysCommittedAgent');
       } else if (p2Type === 'signalAgent') {
         console.log('🤖 AI partner: SignalAgent');
+      } else if (p2Type === 'twoStageSignalAgent') {
+        console.log('🤖 AI partner: TwoStageSignalAgent');
       } else if (p2Type === 'rl_joint' || p2Type === 'rl_individual' || p2Type === 'ai') {
         const mode = CONFIG?.game?.agent?.type || (p2Type === 'rl_joint' ? 'joint' : 'individual');
         console.log(`🤖 AI partner: RL mode = ${mode}`);
@@ -538,6 +561,13 @@ export class ExperimentManager {
       } else if (aiType === 'signalagent' || fallbackPolicy === 'signalAgent') {
         if (!this.signalAgent) this.signalAgent = this.createSignalAgent();
         aiAction = this.signalAgent.getAIAction(
+          gameState,
+          this.gameStateManager.getCurrentTrialData(),
+          this.aiPlayerNumber
+        );
+      } else if (aiType === 'twostagesignalagent' || fallbackPolicy === 'twoStageSignalAgent') {
+        if (!this.twoStageSignalAgent) this.twoStageSignalAgent = this.createTwoStageSignalAgent();
+        aiAction = this.twoStageSignalAgent.getAIAction(
           gameState,
           this.gameStateManager.getCurrentTrialData(),
           this.aiPlayerNumber
@@ -742,6 +772,13 @@ export class ExperimentManager {
       } else if (aiType === 'signalagent' || fallbackPolicy === 'signalAgent') {
         if (!this.signalAgent) this.signalAgent = this.createSignalAgent();
         aiAction = this.signalAgent.getAIAction(
+          gameState,
+          this.gameStateManager.getCurrentTrialData(),
+          this.aiPlayerNumber
+        );
+      } else if (aiType === 'twostagesignalagent' || fallbackPolicy === 'twoStageSignalAgent') {
+        if (!this.twoStageSignalAgent) this.twoStageSignalAgent = this.createTwoStageSignalAgent();
+        aiAction = this.twoStageSignalAgent.getAIAction(
           gameState,
           this.gameStateManager.getCurrentTrialData(),
           this.aiPlayerNumber

@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 0.75,
+  "tau": 0.6666667,
+  "alpha": 0.3,
+  "eta": 0,
+  "beta": 3,
+  "gateSharpness": 10,
+  "signalMode": "mixture",
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 325,
+  "successRate": 0.9027777777777778,
+  "newGoalPresentedTrials": 241,
+  "commitmentEligibleTrials": 241,
+  "commitmentEligibleAgents": 482,
+  "committedAgents": 415,
+  "commitmentRate": 0.8609958506224067,
+  "bothCommittedTrials": 190,
+  "bothCommittedRate": 0.7883817427385892,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 70,
+      "commitmentEligibleTrials": 88,
+      "committedAgents": 142,
+      "totalEligibleAgents": 176,
+      "bothCommittedTrials": 61,
+      "successRate": 0.7777777777777778,
+      "commitmentRate": 0.8068181818181818,
+      "bothCommittedRate": 0.6931818181818182
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 64,
+      "committedAgents": 122,
+      "totalEligibleAgents": 128,
+      "bothCommittedTrials": 61,
+      "successRate": 1,
+      "commitmentRate": 0.953125,
+      "bothCommittedRate": 0.953125
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 75,
+      "commitmentEligibleTrials": 89,
+      "committedAgents": 151,
+      "totalEligibleAgents": 178,
+      "bothCommittedTrials": 68,
+      "successRate": 0.8333333333333334,
+      "commitmentRate": 0.848314606741573,
+      "bothCommittedRate": 0.7640449438202247
+    }
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 1,
+  "tau": 0.6666667,
+  "alpha": 0.1,
+  "eta": 0,
+  "beta": 3,
+  "gateSharpness": 10,
+  "signalMode": "mixture",
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 336,
+  "successRate": 0.9333333333333333,
+  "newGoalPresentedTrials": 242,
+  "commitmentEligibleTrials": 242,
+  "commitmentEligibleAgents": 484,
+  "committedAgents": 434,
+  "commitmentRate": 0.8966942148760331,
+  "bothCommittedTrials": 205,
+  "bothCommittedRate": 0.8471074380165289,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 74,
+      "commitmentEligibleTrials": 88,
+      "committedAgents": 158,
+      "totalEligibleAgents": 176,
+      "bothCommittedTrials": 71,
+      "successRate": 0.8222222222222222,
+      "commitmentRate": 0.8977272727272727,
+      "bothCommittedRate": 0.8068181818181818
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 69,
+      "committedAgents": 132,
+      "totalEligibleAgents": 138,
+      "bothCommittedTrials": 66,
+      "successRate": 1,
+      "commitmentRate": 0.9565217391304348,
+      "bothCommittedRate": 0.9565217391304348
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 82,
+      "commitmentEligibleTrials": 85,
+      "committedAgents": 144,
+      "totalEligibleAgents": 170,
+      "bothCommittedTrials": 68,
+      "successRate": 0.9111111111111111,
+      "commitmentRate": 0.8470588235294118,
+      "bothCommittedRate": 0.8
+    }
+  }
+}

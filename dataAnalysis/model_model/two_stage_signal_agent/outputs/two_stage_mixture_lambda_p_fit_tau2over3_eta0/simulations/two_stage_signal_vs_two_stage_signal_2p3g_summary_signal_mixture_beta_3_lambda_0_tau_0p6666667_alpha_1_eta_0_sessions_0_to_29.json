@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 0,
+  "tau": 0.6666667,
+  "alpha": 1,
+  "eta": 0,
+  "beta": 3,
+  "gateSharpness": 10,
+  "signalMode": "mixture",
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 293,
+  "successRate": 0.8138888888888889,
+  "newGoalPresentedTrials": 234,
+  "commitmentEligibleTrials": 234,
+  "commitmentEligibleAgents": 468,
+  "committedAgents": 251,
+  "commitmentRate": 0.5363247863247863,
+  "bothCommittedTrials": 92,
+  "bothCommittedRate": 0.39316239316239315,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 53,
+      "commitmentEligibleTrials": 89,
+      "committedAgents": 93,
+      "totalEligibleAgents": 178,
+      "bothCommittedTrials": 28,
+      "successRate": 0.5888888888888889,
+      "commitmentRate": 0.5224719101123596,
+      "bothCommittedRate": 0.3146067415730337
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 59,
+      "committedAgents": 52,
+      "totalEligibleAgents": 118,
+      "bothCommittedTrials": 26,
+      "successRate": 1,
+      "commitmentRate": 0.4406779661016949,
+      "bothCommittedRate": 0.4406779661016949
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 60,
+      "commitmentEligibleTrials": 86,
+      "committedAgents": 106,
+      "totalEligibleAgents": 172,
+      "bothCommittedTrials": 38,
+      "successRate": 0.6666666666666666,
+      "commitmentRate": 0.6162790697674418,
+      "bothCommittedRate": 0.4418604651162791
+    }
+  }
+}

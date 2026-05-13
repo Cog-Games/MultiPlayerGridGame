@@ -1,0 +1,27 @@
+{
+  "model": "sampleJointGoalAndSignal_afterNewGoal",
+  "score": "logposterior",
+  "score_definition": "pi(a|g*) proportional to pi_joint(a|s,g*) * P(g*|a)^alpha",
+  "beta_fixed": 3.0,
+  "lambda_fixed": 0.125,
+  "alpha_grid_min": 0.0,
+  "alpha_grid_max": 10.0,
+  "best_by_binomial_nll": {
+    "alpha": 10.0,
+    "sim_human_weighted_average": 0.41880328643572,
+    "sim_equal_to_both": 0.5328467153284672,
+    "binomial_nll": 186.9954719376099,
+    "sse_condition_rates": 0.0437620096990389
+  },
+  "best_grid_warning": "best alpha is at the upper grid boundary; a wider sweep could test whether the optimum keeps increasing",
+  "best_4measures_percent": {
+    "average_success_percent": 96.66666666666669,
+    "average_efficiency_percent": 88.65008035896105,
+    "average_commitment_percent": 68.79960317460316,
+    "average_signaling_percent": 40.63492063492063,
+    "equal_success_percent": 98.88888888888889,
+    "equal_efficiency_percent": 97.83899449847726,
+    "equal_commitment_percent": 74.71264367816093,
+    "equal_signaling_percent": 53.44827586206896
+  }
+}

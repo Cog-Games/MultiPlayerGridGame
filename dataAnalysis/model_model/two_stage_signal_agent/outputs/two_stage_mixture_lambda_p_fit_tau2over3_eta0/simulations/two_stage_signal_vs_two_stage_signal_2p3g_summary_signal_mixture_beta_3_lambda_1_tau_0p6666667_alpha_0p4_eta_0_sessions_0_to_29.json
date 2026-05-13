@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 1,
+  "tau": 0.6666667,
+  "alpha": 0.4,
+  "eta": 0,
+  "beta": 3,
+  "gateSharpness": 10,
+  "signalMode": "mixture",
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 320,
+  "successRate": 0.8888888888888888,
+  "newGoalPresentedTrials": 246,
+  "commitmentEligibleTrials": 246,
+  "commitmentEligibleAgents": 492,
+  "committedAgents": 434,
+  "commitmentRate": 0.8821138211382114,
+  "bothCommittedTrials": 197,
+  "bothCommittedRate": 0.8008130081300813,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 69,
+      "commitmentEligibleTrials": 88,
+      "committedAgents": 145,
+      "totalEligibleAgents": 176,
+      "bothCommittedTrials": 62,
+      "successRate": 0.7666666666666667,
+      "commitmentRate": 0.8238636363636364,
+      "bothCommittedRate": 0.7045454545454546
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 70,
+      "committedAgents": 138,
+      "totalEligibleAgents": 140,
+      "bothCommittedTrials": 69,
+      "successRate": 1,
+      "commitmentRate": 0.9857142857142858,
+      "bothCommittedRate": 0.9857142857142858
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 71,
+      "commitmentEligibleTrials": 88,
+      "committedAgents": 151,
+      "totalEligibleAgents": 176,
+      "bothCommittedTrials": 66,
+      "successRate": 0.7888888888888889,
+      "commitmentRate": 0.8579545454545454,
+      "bothCommittedRate": 0.75
+    }
+  }
+}

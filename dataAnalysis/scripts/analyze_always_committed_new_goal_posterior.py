@@ -23,12 +23,12 @@ from fit_always_committed_lambda import (
 
 
 DEFAULT_RAW = Path(
-    "dataAnalysis/analyses/outputs/model_model/always_committed_agent/"
+    "dataAnalysis/model_model/always_committed_agent/outputs/"
     "always_committed_vs_always_committed_simulation/"
     "always_committed_vs_always_committed_2p3g_raw_trials_beta_3_lambda_0p04_sessions_0_to_29.json"
 )
 DEFAULT_OUTPUT_DIR = Path(
-    "dataAnalysis/analyses/outputs/model_model/always_committed_agent/"
+    "dataAnalysis/model_model/always_committed_agent/outputs/"
     "always_committed_new_goal_posterior"
 )
 

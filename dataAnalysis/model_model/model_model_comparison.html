@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Model-Model Comparison: Commitment and Signaling Agents</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']], processEscapes: true },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root { --ink:#17202a; --muted:#607080; --line:#d8dee9; --bg:#f7f9fc; --card:#ffffff; --accent:#2457a6; }
+* { box-sizing: border-box; }
+body { margin:0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:var(--ink); background:var(--bg); line-height:1.45; }
+header { padding:42px 56px 24px; background:linear-gradient(135deg,#17202a,#28486f); color:white; }
+header h1 { margin:0 0 10px; font-size:34px; letter-spacing:-0.02em; }
+header p { margin:0 0 6px; max-width:1000px; color:#dce7f8; font-size:16px; }
+main { max-width:1280px; margin:0 auto; padding:30px 26px 60px; }
+nav { display:flex; gap:10px; flex-wrap:wrap; margin:0 0 22px; }
+nav a, .links a { color:var(--accent); text-decoration:none; border-bottom:1px solid transparent; }
+nav a { padding:7px 10px; background:white; border:1px solid var(--line); border-radius:999px; }
+nav a:hover, .links a:hover { border-bottom-color:var(--accent); }
+.summary, .card, .svg-card, .fit-card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; box-shadow:0 6px 20px rgba(20,35,60,.06); }
+.summary { margin-bottom:24px; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th, td { padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { text-align:left; color:#34495e; background:#f0f3f8; position:sticky; top:0; }
+td.num { text-align:right; font-variant-numeric: tabular-nums; }
+tr.human td { background:#fff7df; }
+.grid, .fit-grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:18px; }
+.fit-card.wide { grid-column: 1 / -1; }
+.visuals { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:18px; margin:24px 0; }
+.card h2 { margin:0 0 6px; font-size:24px; }
+.card h3, .svg-card h3, .fit-card h3 { margin:16px 0 8px; font-size:16px; }
+.lede { color:#25364a; margin:0 0 12px; }
+.meta { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 10px; }
+.meta span { background:#eef4ff; color:#1f4e8c; border:1px solid #cfe0ff; border-radius:999px; padding:5px 8px; font-size:12px; }
+.equations { display:grid; gap:10px; margin:10px 0 14px; }
+.eq { border:1px solid #e1e7f0; border-radius:12px; background:#fbfdff; padding:12px 14px; overflow-x:auto; line-height:1.65; }
+.eq-label { color:var(--muted); font-size:12px; font-weight:700; letter-spacing:.02em; text-transform:uppercase; margin-bottom:4px; }
+.eq .latex { font-family:inherit; font-size:16px; color:#1d2c3d; }
+.eq mjx-container[jax="SVG"][display="true"] { margin:.25em 0; }
+code { font-family:"SFMono-Regular", Consolas, monospace; white-space:normal; }
+.note, .fit-card p { color:var(--muted); font-size:13px; }
+.links { display:flex; gap:14px; flex-wrap:wrap; }
+.card img, .fit-card img, .summary > a > img { width:100%; max-height:760px; object-fit:contain; border:1px solid var(--line); border-radius:10px; background:white; }
+.legend { display:flex; gap:18px; flex-wrap:wrap; color:#4b5563; font-size:13px; margin:8px 0 0; }
+.legend span::before { content:""; display:inline-block; width:12px; height:12px; margin-right:6px; vertical-align:-1px; background:var(--c); opacity:var(--o, .95); }
+footer { color:#607080; font-size:12px; margin-top:28px; }
+@media (max-width: 900px) { .grid, .fit-grid, .visuals { grid-template-columns: 1fr; } header { padding:30px 24px 20px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Model-Model Comparison: Commitment and Signaling Agents</h1>
+  <p>Organized comparison of non-Joint-RL folders under <code>dataAnalysis/model_model</code>. Joint-RL is excluded as a model row, but <code>π_joint</code> appears in the math because it is the shared base policy used by these agents.</p>
+  <p>Report labels describe the model math; implementation class names are unchanged.</p>
+</header>
+<main>
+<nav>
+  <a href="#overview">Overview</a>
+  <a href="#committed_agent">sampleJointGoal_afterNewGoal</a><a href="#signal_agent">sampleJointGoalAndSignal_afterNewGoal</a><a href="#always_committed_agent">sampleJointGoal_fromStart</a><a href="#two_stage_signal_agent">TwoStageSignalAgent_sigmoidThreshold</a>
+  <a href="#fit-gallery">Fit Sweeps / Heatmaps</a>
+  <a href="#visual-summary">Visual Summary</a>
+  <a href="#btom-legibility">BToM Legibility</a>
+</nav>
+<section class="summary" id="overview">
+  <h2>Primary Result Table</h2>
+  <p>Values are percentages from the standardized report summaries. Commitment uses <code>finalReachedGoal == firstDetectedSharedGoal</code>; the plots below show 95% CI error bars.</p>
+  <table>
+    <thead><tr><th>Model</th><th>Scope</th><th>Fit / Setting</th><th>Success</th><th>Efficiency</th><th>Commitment</th><th>Signaling</th></tr></thead>
+    <tbody>
+      <tr><td><strong>sampleJointGoal_afterNewGoal</strong></td><td>Average all 2P3G</td><td>beta=3.0, lambda=0.125 fixed/current branch value</td><td class="num">92.5</td><td class="num">90.0</td><td class="num">69.0</td><td class="num">31.0</td></tr>
+      <tr><td><strong>sampleJointGoal_afterNewGoal</strong></td><td>Equal-to-both</td><td>beta=3.0, lambda=0.125 fixed/current branch value</td><td class="num">98.9</td><td class="num">98.5</td><td class="num">85.8</td><td class="num">42.5</td></tr>
+      <tr><td><strong>sampleJointGoalAndSignal_afterNewGoal</strong></td><td>Average all 2P3G</td><td>beta=3.0, lambda=0.125, mixture p=0.375 from trial-level signaling fit</td><td class="num">92.5</td><td class="num">89.0</td><td class="num">74.2</td><td class="num">44.0</td></tr>
+      <tr><td><strong>sampleJointGoalAndSignal_afterNewGoal</strong></td><td>Equal-to-both</td><td>beta=3.0, lambda=0.125, mixture p=0.375 from trial-level signaling fit</td><td class="num">100.0</td><td class="num">98.4</td><td class="num">73.6</td><td class="num">64.1</td></tr>
+      <tr><td><strong>sampleJointGoal_fromStart</strong></td><td>Average all 2P3G</td><td>beta=3.0, lambda=0.15 from equal-to-both trial-level commitment fit</td><td class="num">93.9</td><td class="num">89.0</td><td class="num">78.5</td><td class="num">36.1</td></tr>
+      <tr><td><strong>sampleJointGoal_fromStart</strong></td><td>Equal-to-both</td><td>beta=3.0, lambda=0.15 from equal-to-both trial-level commitment fit</td><td class="num">100.0</td><td class="num">98.6</td><td class="num">85.6</td><td class="num">36.9</td></tr>
+      <tr><td><strong>TwoStageSignalAgent_sigmoidThreshold</strong></td><td>Average all 2P3G</td><td>beta=3.0, k=10, tau=2/3 fixed, eta=0 fixed, lambda=0.10 and mixture p=0.00 from success-weighted lambda-p search</td><td class="num">95.3</td><td class="num">88.5</td><td class="num">75.5</td><td class="num">38.2</td></tr>
+      <tr><td><strong>TwoStageSignalAgent_sigmoidThreshold</strong></td><td>Equal-to-both</td><td>beta=3.0, k=10, tau=2/3 fixed, eta=0 fixed, lambda=0.10 and mixture p=0.00 from success-weighted lambda-p search</td><td class="num">100.0</td><td class="num">97.7</td><td class="num">81.7</td><td class="num">48.1</td></tr>
+      <tr class="human"><td><strong>Human-Human</strong></td><td>Average all 2P3G</td><td>reference data, not a model</td><td class="num">100.0</td><td class="num">81.6</td><td class="num">66.2</td><td class="num">51.7</td></tr>
+      <tr class="human"><td><strong>Human-Human</strong></td><td>Equal-to-both</td><td>reference data, not a model</td><td class="num">100.0</td><td class="num">96.6</td><td class="num">85.1</td><td class="num">58.5</td></tr>
+    </tbody>
+  </table>
+</section>
+<section class="summary" id="fit-gallery">
+  <h2>Fit Sweeps / Heatmaps</h2>
+  <p>Each plot highlights the parameter setting used in the primary result table. Line sweeps mark the best fit with a red dashed line and star; the two-stage plot uses lambda × mixture-p heatmaps with the best fit starred.</p>
+  <div class="fit-grid">
+    <section class="fit-card">
+      <h3>sampleJointGoal_afterNewGoal</h3>
+      <p>Lambda sweep; red dashed line and star mark best fit lambda = 0.125.</p>
+      <a href="report_assets/sampleJointGoal_afterNewGoal_standard_sweep_best.png"><img src="report_assets/sampleJointGoal_afterNewGoal_standard_sweep_best.png" alt="sampleJointGoal_afterNewGoal standardized sweep with best fit highlighted"></a>
+    </section>
+    
+    <section class="fit-card">
+      <h3>sampleJointGoalAndSignal_afterNewGoal</h3>
+      <p>Mixture-p sweep; red dashed line and star mark best fit p = 0.375.</p>
+      <a href="report_assets/sampleJointGoalAndSignal_afterNewGoal_standard_sweep_best.png"><img src="report_assets/sampleJointGoalAndSignal_afterNewGoal_standard_sweep_best.png" alt="sampleJointGoalAndSignal_afterNewGoal standardized mixture-p sweep with best fit highlighted"></a>
+    </section>
+    
+    <section class="fit-card">
+      <h3>sampleJointGoal_fromStart</h3>
+      <p>Lambda sweep; red dashed line and star mark best fit lambda = 0.15.</p>
+      <a href="report_assets/sampleJointGoal_fromStart_standard_sweep_best.png"><img src="report_assets/sampleJointGoal_fromStart_standard_sweep_best.png" alt="sampleJointGoal_fromStart standardized sweep with best fit highlighted"></a>
+    </section>
+    
+    <section class="fit-card wide">
+      <h3>TwoStageSignalAgent_sigmoidThreshold</h3>
+      <p>Success-weighted lambda × mixture-p heatmaps for all four measures; red star marks the best commitment+signaling+success NLL fit: lambda = 0.10, p = 0.00.</p>
+      <a href="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_sweep_best.png"><img src="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_sweep_best.png" alt="TwoStageSignalAgent_sigmoidThreshold standardized lambda by mixture-p heatmaps with best fit highlighted"></a>
+      <p class="links"><a href="two_stage_signal_agent/outputs/two_stage_mixture_lambda_p_success_fit_tau2over3_eta0/two_stage_signal_lambda_p_average_4measure_heatmaps.png">all measures, average</a> <a href="two_stage_signal_agent/outputs/two_stage_mixture_lambda_p_success_fit_tau2over3_eta0/two_stage_signal_lambda_p_equal_to_both_4measure_heatmaps.png">all measures, equal-to-both</a> <a href="two_stage_signal_agent/outputs/two_stage_mixture_lambda_p_success_fit_tau2over3_eta0/two_stage_signal_4param_grid.csv">grid CSV</a></p>
+    </section>
+    </div>
+</section>
+<section class="summary" id="visual-summary">
+  <h2>Compact Visual Summary</h2>
+  <p>Grouped bars match the standardized report style: solid bars are average all 2P3G distance conditions; lighter bars are equal-to-both only. Error bars show 95% CI, and Human-Human is the gray reference bar.</p>
+  <div class="legend"><span style="--c:#4e79a7">sampleJointGoal_afterNewGoal</span><span style="--c:#59a14f">sampleJointGoalAndSignal_afterNewGoal</span><span style="--c:#f28e2b">sampleJointGoal_fromStart</span><span style="--c:#e15759">TwoStageSignalAgent_sigmoidThreshold</span><span style="--c:#777777">Human</span><span style="--c:#111; --o:.55">lighter = equal-to-both</span></div>
+  <a href="report_assets/model_model_compact_visual_summary_grouped.png"><img src="report_assets/model_model_compact_visual_summary_grouped.png" alt="Compact visual summary with grouped average and equal-to-both bars plus 95% CI error bars for all four measures"></a>
+  <p class="links"><a href="report_assets/model_model_compact_visual_summary_grouped_ci.csv">compact summary CSV</a></p>
+  <div class="visuals" style="display:none">
+    <div class="svg-card">
+      <h3>Success Rate (%)</h3>
+      <svg viewBox="0 0 660 245" role="img" aria-label="Success Rate comparison">
+        <line x1="55" x2="636" y1="201.0" y2="201.0" stroke="#e5e7eb"/><line x1="55" x2="636" y1="157.8" y2="157.8" stroke="#e5e7eb"/><line x1="55" x2="636" y1="114.5" y2="114.5" stroke="#e5e7eb"/><line x1="55" x2="636" y1="71.2" y2="71.2" stroke="#e5e7eb"/><line x1="55" x2="636" y1="28.0" y2="28.0" stroke="#e5e7eb"/>
+        <line x1="55" x2="55" y1="28" y2="201" stroke="#9ca3af"/>
+        <line x1="55" x2="636" y1="201" y2="201" stroke="#9ca3af"/>
+        <text x="12" y="114.5" transform="rotate(-90 12,114.5)" font-size="11">Percent</text>
+        <rect x="65.0" y="41.0" width="41.4" height="160.0" fill="#4e79a7" opacity="0.95"/><text x="85.7" y="38.0" text-anchor="middle" font-size="9">92</text><rect x="115.5" y="29.9" width="41.4" height="171.1" fill="#4e79a7" opacity="0.55"/><text x="136.2" y="26.9" text-anchor="middle" font-size="9">99</text><text x="115.5" y="221" text-anchor="middle" font-size="8">sampleAfterNew</text><rect x="173.6" y="41.0" width="41.4" height="160.0" fill="#59a14f" opacity="0.95"/><text x="194.3" y="38.0" text-anchor="middle" font-size="9">92</text><rect x="224.1" y="28.0" width="41.4" height="173.0" fill="#59a14f" opacity="0.55"/><text x="244.9" y="25.0" text-anchor="middle" font-size="9">100</text><text x="224.1" y="221" text-anchor="middle" font-size="8">sample+signal</text><rect x="282.2" y="38.6" width="41.4" height="162.4" fill="#f28e2b" opacity="0.95"/><text x="303.0" y="35.6" text-anchor="middle" font-size="9">94</text><rect x="332.8" y="28.0" width="41.4" height="173.0" fill="#f28e2b" opacity="0.55"/><text x="353.5" y="25.0" text-anchor="middle" font-size="9">100</text><text x="332.8" y="221" text-anchor="middle" font-size="8">sampleFromStart</text><rect x="390.9" y="36.2" width="41.4" height="164.8" fill="#e15759" opacity="0.95"/><text x="411.6" y="33.2" text-anchor="middle" font-size="9">95</text><rect x="441.4" y="28.0" width="41.4" height="173.0" fill="#e15759" opacity="0.55"/><text x="462.1" y="25.0" text-anchor="middle" font-size="9">100</text><text x="441.4" y="221" text-anchor="middle" font-size="8">sigmoidThreshold</text><rect x="499.5" y="28.0" width="41.4" height="173.0" fill="#777777" opacity="0.95"/><text x="520.2" y="25.0" text-anchor="middle" font-size="9">100</text><rect x="550.0" y="28.0" width="41.4" height="173.0" fill="#777777" opacity="0.55"/><text x="570.7" y="25.0" text-anchor="middle" font-size="9">100</text><text x="550.0" y="221" text-anchor="middle" font-size="8">Human</text>
+      </svg>
+    </div>
+    
+    <div class="svg-card">
+      <h3>Coordination Efficiency (%)</h3>
+      <svg viewBox="0 0 660 245" role="img" aria-label="Coordination Efficiency comparison">
+        <line x1="55" x2="636" y1="201.0" y2="201.0" stroke="#e5e7eb"/><line x1="55" x2="636" y1="157.8" y2="157.8" stroke="#e5e7eb"/><line x1="55" x2="636" y1="114.5" y2="114.5" stroke="#e5e7eb"/><line x1="55" x2="636" y1="71.2" y2="71.2" stroke="#e5e7eb"/><line x1="55" x2="636" y1="28.0" y2="28.0" stroke="#e5e7eb"/>
+        <line x1="55" x2="55" y1="28" y2="201" stroke="#9ca3af"/>
+        <line x1="55" x2="636" y1="201" y2="201" stroke="#9ca3af"/>
+        <text x="12" y="114.5" transform="rotate(-90 12,114.5)" font-size="11">Percent</text>
+        <rect x="65.0" y="45.4" width="41.4" height="155.6" fill="#4e79a7" opacity="0.95"/><text x="85.7" y="42.4" text-anchor="middle" font-size="9">90</text><rect x="115.5" y="30.6" width="41.4" height="170.4" fill="#4e79a7" opacity="0.55"/><text x="136.2" y="27.6" text-anchor="middle" font-size="9">98</text><text x="115.5" y="221" text-anchor="middle" font-size="8">sampleAfterNew</text><rect x="173.6" y="47.1" width="41.4" height="153.9" fill="#59a14f" opacity="0.95"/><text x="194.3" y="44.1" text-anchor="middle" font-size="9">89</text><rect x="224.1" y="30.8" width="41.4" height="170.2" fill="#59a14f" opacity="0.55"/><text x="244.9" y="27.8" text-anchor="middle" font-size="9">98</text><text x="224.1" y="221" text-anchor="middle" font-size="8">sample+signal</text><rect x="282.2" y="47.0" width="41.4" height="154.0" fill="#f28e2b" opacity="0.95"/><text x="303.0" y="44.0" text-anchor="middle" font-size="9">89</text><rect x="332.8" y="30.4" width="41.4" height="170.6" fill="#f28e2b" opacity="0.55"/><text x="353.5" y="27.4" text-anchor="middle" font-size="9">99</text><text x="332.8" y="221" text-anchor="middle" font-size="8">sampleFromStart</text><rect x="390.9" y="48.0" width="41.4" height="153.0" fill="#e15759" opacity="0.95"/><text x="411.6" y="45.0" text-anchor="middle" font-size="9">88</text><rect x="441.4" y="32.0" width="41.4" height="169.0" fill="#e15759" opacity="0.55"/><text x="462.1" y="29.0" text-anchor="middle" font-size="9">98</text><text x="441.4" y="221" text-anchor="middle" font-size="8">sigmoidThreshold</text><rect x="499.5" y="59.9" width="41.4" height="141.1" fill="#777777" opacity="0.95"/><text x="520.2" y="56.9" text-anchor="middle" font-size="9">82</text><rect x="550.0" y="33.9" width="41.4" height="167.1" fill="#777777" opacity="0.55"/><text x="570.7" y="30.9" text-anchor="middle" font-size="9">97</text><text x="550.0" y="221" text-anchor="middle" font-size="8">Human</text>
+      </svg>
+    </div>
+    
+    <div class="svg-card">
+      <h3>Commitment (%)</h3>
+      <svg viewBox="0 0 660 245" role="img" aria-label="Commitment comparison">
+        <line x1="55" x2="636" y1="201.0" y2="201.0" stroke="#e5e7eb"/><line x1="55" x2="636" y1="157.8" y2="157.8" stroke="#e5e7eb"/><line x1="55" x2="636" y1="114.5" y2="114.5" stroke="#e5e7eb"/><line x1="55" x2="636" y1="71.2" y2="71.2" stroke="#e5e7eb"/><line x1="55" x2="636" y1="28.0" y2="28.0" stroke="#e5e7eb"/>
+        <line x1="55" x2="55" y1="28" y2="201" stroke="#9ca3af"/>
+        <line x1="55" x2="636" y1="201" y2="201" stroke="#9ca3af"/>
+        <text x="12" y="114.5" transform="rotate(-90 12,114.5)" font-size="11">Percent</text>
+        <rect x="65.0" y="81.2" width="41.4" height="119.8" fill="#4e79a7" opacity="0.95"/><text x="85.7" y="78.2" text-anchor="middle" font-size="9">69</text><rect x="115.5" y="54.9" width="41.4" height="146.1" fill="#4e79a7" opacity="0.55"/><text x="136.2" y="51.9" text-anchor="middle" font-size="9">84</text><text x="115.5" y="221" text-anchor="middle" font-size="8">sampleAfterNew</text><rect x="173.6" y="81.7" width="41.4" height="119.3" fill="#59a14f" opacity="0.95"/><text x="194.3" y="78.7" text-anchor="middle" font-size="9">69</text><rect x="224.1" y="75.7" width="41.4" height="125.3" fill="#59a14f" opacity="0.55"/><text x="244.9" y="72.7" text-anchor="middle" font-size="9">72</text><text x="224.1" y="221" text-anchor="middle" font-size="8">sample+signal</text><rect x="282.2" y="65.1" width="41.4" height="135.9" fill="#f28e2b" opacity="0.95"/><text x="303.0" y="62.1" text-anchor="middle" font-size="9">79</text><rect x="332.8" y="53.0" width="41.4" height="148.0" fill="#f28e2b" opacity="0.55"/><text x="353.5" y="50.0" text-anchor="middle" font-size="9">86</text><text x="332.8" y="221" text-anchor="middle" font-size="8">sampleFromStart</text><rect x="390.9" y="78.8" width="41.4" height="122.2" fill="#e15759" opacity="0.95"/><text x="411.6" y="75.8" text-anchor="middle" font-size="9">71</text><rect x="441.4" y="59.7" width="41.4" height="141.3" fill="#e15759" opacity="0.55"/><text x="462.1" y="56.7" text-anchor="middle" font-size="9">82</text><text x="441.4" y="221" text-anchor="middle" font-size="8">sigmoidThreshold</text><rect x="499.5" y="86.5" width="41.4" height="114.5" fill="#777777" opacity="0.95"/><text x="520.2" y="83.5" text-anchor="middle" font-size="9">66</text><rect x="550.0" y="53.8" width="41.4" height="147.2" fill="#777777" opacity="0.55"/><text x="570.7" y="50.8" text-anchor="middle" font-size="9">85</text><text x="550.0" y="221" text-anchor="middle" font-size="8">Human</text>
+      </svg>
+    </div>
+    
+    <div class="svg-card">
+      <h3>Signaling Move (%)</h3>
+      <svg viewBox="0 0 660 245" role="img" aria-label="Signaling Move comparison">
+        <line x1="55" x2="636" y1="201.0" y2="201.0" stroke="#e5e7eb"/><line x1="55" x2="636" y1="157.8" y2="157.8" stroke="#e5e7eb"/><line x1="55" x2="636" y1="114.5" y2="114.5" stroke="#e5e7eb"/><line x1="55" x2="636" y1="71.2" y2="71.2" stroke="#e5e7eb"/><line x1="55" x2="636" y1="28.0" y2="28.0" stroke="#e5e7eb"/>
+        <line x1="55" x2="55" y1="28" y2="201" stroke="#9ca3af"/>
+        <line x1="55" x2="636" y1="201" y2="201" stroke="#9ca3af"/>
+        <text x="12" y="114.5" transform="rotate(-90 12,114.5)" font-size="11">Percent</text>
+        <rect x="65.0" y="147.4" width="41.4" height="53.6" fill="#4e79a7" opacity="0.95"/><text x="85.7" y="144.4" text-anchor="middle" font-size="9">31</text><rect x="115.5" y="127.5" width="41.4" height="73.5" fill="#4e79a7" opacity="0.55"/><text x="136.2" y="124.5" text-anchor="middle" font-size="9">42</text><text x="115.5" y="221" text-anchor="middle" font-size="8">sampleAfterNew</text><rect x="173.6" y="124.9" width="41.4" height="76.1" fill="#59a14f" opacity="0.95"/><text x="194.3" y="121.9" text-anchor="middle" font-size="9">44</text><rect x="224.1" y="90.1" width="41.4" height="110.9" fill="#59a14f" opacity="0.55"/><text x="244.9" y="87.1" text-anchor="middle" font-size="9">64</text><text x="224.1" y="221" text-anchor="middle" font-size="8">sample+signal</text><rect x="282.2" y="138.5" width="41.4" height="62.5" fill="#f28e2b" opacity="0.95"/><text x="303.0" y="135.5" text-anchor="middle" font-size="9">36</text><rect x="332.8" y="137.1" width="41.4" height="63.9" fill="#f28e2b" opacity="0.55"/><text x="353.5" y="134.1" text-anchor="middle" font-size="9">37</text><text x="332.8" y="221" text-anchor="middle" font-size="8">sampleFromStart</text><rect x="390.9" y="134.9" width="41.4" height="66.1" fill="#e15759" opacity="0.95"/><text x="411.6" y="131.9" text-anchor="middle" font-size="9">38</text><rect x="441.4" y="117.9" width="41.4" height="83.1" fill="#e15759" opacity="0.55"/><text x="462.1" y="114.9" text-anchor="middle" font-size="9">48</text><text x="441.4" y="221" text-anchor="middle" font-size="8">sigmoidThreshold</text><rect x="499.5" y="111.5" width="41.4" height="89.5" fill="#777777" opacity="0.95"/><text x="520.2" y="108.5" text-anchor="middle" font-size="9">52</text><rect x="550.0" y="99.8" width="41.4" height="101.2" fill="#777777" opacity="0.55"/><text x="570.7" y="96.8" text-anchor="middle" font-size="9">59</text><text x="550.0" y="221" text-anchor="middle" font-size="8">Human</text>
+      </svg>
+    </div>
+    </div>
+</section>
+<section class="summary" id="btom-legibility">
+  <h2>BToM Legibility After New-Goal Presentation</h2>
+  <p>BToM legibility is computed from each post-new-goal sub-trajectory using the listener posterior from <code>BToM_legibility_comparison.ipynb</code>: posterior over the original shared goal versus the new goal, scored as \(P(\mathrm{final\ reached\ goal})\). Step 0 is the new-goal presentation moment.</p>
+  <div class="fit-grid">
+    <section class="fit-card">
+      <h3>Posterior Over First 5 Steps</h3>
+      <a href="report_assets/btom_model_model_first5_trajectory.png"><img src="report_assets/btom_model_model_first5_trajectory.png" alt="BToM legibility posterior over first five steps after new-goal presentation"></a>
+    </section>
+    <section class="fit-card">
+      <h3>Mean Posterior Across First 5 Steps</h3>
+      <a href="report_assets/btom_model_model_first5_mean_posterior.png"><img src="report_assets/btom_model_model_first5_mean_posterior.png" alt="Mean BToM posterior across first five steps after new-goal presentation"></a>
+    </section>
+  </div>
+  <p class="links"><a href="report_assets/btom_model_model_first5_summary.csv">summary CSV</a> <a href="report_assets/btom_model_model_first5_step_per_participant.csv">step-level participant CSV</a> <a href="report_assets/btom_model_model_first5_mean_per_participant.csv">mean posterior participant CSV</a></p>
+</section>
+<section class="grid">
+    <section class="card" id="committed_agent">
+      <h2>sampleJointGoal_afterNewGoal</h2>
+      <p class="lede">Joint-RL before new-goal; after new-goal, infer posterior and resample a joint goal every step.</p>
+      <div class="meta"><span>beta=3.0, lambda=0.125 fixed/current branch value</span><span>lambda: posterior strength; beta fixed at 3.0</span></div>
+      <h3>Math</h3>
+      <div class="equations"><div class="eq"><div class="eq-label">Posterior update</div><div class="latex">\[P_t(g)\propto P_{t-1}(g)\prod_i\pi_{\mathrm{joint}}^i(a_{t-1}^i\mid x_{t-1}^i,x_{t-1}^{-i},\{g\})\]</div></div><div class="eq"><div class="eq-label">Post-new-goal joint-goal sampling</div><div class="latex">\[W_\lambda(g)\propto \exp(\beta EU_t(g))P_t(g)^\lambda\]</div></div><div class="eq"><div class="eq-label">Joint utility</div><div class="latex">\[EU_t(g)=-(d(x_t^1,g)+d(x_t^2,g))\]</div></div></div>
+      <h3>Result Snapshot</h3>
+      <table class="mini"><thead><tr><th>Scope</th><th>Success</th><th>Efficiency</th><th>Commitment</th><th>Signaling</th></tr></thead>
+      <tbody><tr><td>Average</td><td>92.5</td><td>90.0</td><td>69.0</td><td>31.0</td></tr>
+      <tr><td>Equal-to-both</td><td>98.9</td><td>98.5</td><td>85.8</td><td>42.5</td></tr></tbody></table>
+      <h3>Fit Sweep / Heatmap</h3>
+      <p class="note">Lambda sweep; red dashed line and star mark best fit lambda = 0.125.</p>
+      <a href="report_assets/sampleJointGoal_afterNewGoal_standard_sweep_best.png"><img src="report_assets/sampleJointGoal_afterNewGoal_standard_sweep_best.png" alt="sampleJointGoal_afterNewGoal standardized sweep with best fit highlighted"></a>
+      <h3>Result Plot</h3>
+      <p class="note">Implementation alias: CommittedAgent. Primary row uses the every-step resampling model at lambda=0.125, not one-shot or threshold variants. The result plot is standardized against Human-Human with 95% CI error bars.</p>
+      <p class="links"><a href="committed_agent/model.md">model.md</a> <a href="committed_agent/notebooks/committed_agent_trial_commitment_fit_beta3/committed_beta3_lambda_fit_and_equal_to_both_comparison.ipynb">notebook</a> <a href="report_assets/sampleJointGoal_afterNewGoal_standard_human_side_by_side_bar_4panel.png">result plot</a> <a href="report_assets/sampleJointGoal_afterNewGoal_standard_sweep_best.png">fit plot</a> <a href="report_assets/sampleJointGoal_afterNewGoal_standard_human_side_by_side_summary.csv">summary CSV</a></p>
+      <a href="report_assets/sampleJointGoal_afterNewGoal_standard_human_side_by_side_bar_4panel.png"><img src="report_assets/sampleJointGoal_afterNewGoal_standard_human_side_by_side_bar_4panel.png" alt="sampleJointGoal_afterNewGoal standardized model-vs-human result plot with error bars"></a>
+    </section>
+    
+    <section class="card" id="signal_agent">
+      <h2>sampleJointGoalAndSignal_afterNewGoal</h2>
+      <p class="lede">Post-new-goal sampled joint-goal target plus a legibility layer that favors actions making the sampled goal easier for a listener to infer.</p>
+      <div class="meta"><span>beta=3.0, lambda=0.125, mixture p=0.375 from trial-level signaling fit</span><span>p: probability of replacing the committed action with the most legible progress action; lambda inherited from sampleJointGoal_afterNewGoal; beta fixed at 3.0</span></div>
+      <h3>Math</h3>
+      <div class="equations"><div class="eq"><div class="eq-label">Inherited joint-goal sampling</div><div class="latex">\[W_\lambda(g)\propto \exp(\beta EU_t(g))P_t(g)^\lambda\]</div></div><div class="eq"><div class="eq-label">Listener posterior used for legibility</div><div class="latex">\[P(g\mid a)\propto P(g)\pi_{\mathrm{base}}(a\mid s_t,g)\]</div></div><div class="eq"><div class="eq-label">Most-legible progress action</div><div class="latex">\[a_{\mathrm{leg}}(g^*)=\arg\max_{a\in\mathcal A^+(g^*)}P(g^*\mid a)\]</div></div><div class="eq"><div class="eq-label">Mixture signaling policy</div><div class="latex">\[\pi_{\mathrm{signal}}(a\mid g^*)=(1-p)\pi_{\mathrm{committed}}(a\mid g^*)+p\,\delta_{a_{\mathrm{leg}}(g^*)}(a)\]</div></div></div>
+      <h3>Result Snapshot</h3>
+      <table class="mini"><thead><tr><th>Scope</th><th>Success</th><th>Efficiency</th><th>Commitment</th><th>Signaling</th></tr></thead>
+      <tbody><tr><td>Average</td><td>92.5</td><td>89.0</td><td>74.2</td><td>44.0</td></tr>
+      <tr><td>Equal-to-both</td><td>100.0</td><td>98.4</td><td>73.6</td><td>64.1</td></tr></tbody></table>
+      <h3>Fit Sweep / Heatmap</h3>
+      <p class="note">Mixture-p sweep; red dashed line and star mark best fit p = 0.375.</p>
+      <a href="report_assets/sampleJointGoalAndSignal_afterNewGoal_standard_sweep_best.png"><img src="report_assets/sampleJointGoalAndSignal_afterNewGoal_standard_sweep_best.png" alt="sampleJointGoalAndSignal_afterNewGoal standardized mixture-p sweep with best fit highlighted"></a>
+      <h3>Result Plot</h3>
+      <p class="note">Implementation alias: SignalAgent. This page uses the Bernoulli mixture variant fit to trial/player-level signaling by distance condition; model.md also documents margin, log-posterior, and trajectory variants. The result plot is standardized against Human-Human with 95% CI error bars.</p>
+      <p class="links"><a href="signal_agent/model.md">model.md</a> <a href="signal_agent/notebooks/signal_agent_mixture_p_fit_beta3/SignalAgent_mixture_results.ipynb">notebook</a> <a href="report_assets/sampleJointGoalAndSignal_afterNewGoal_standard_human_side_by_side_bar_4panel.png">result plot</a> <a href="report_assets/sampleJointGoalAndSignal_afterNewGoal_standard_sweep_best.png">fit plot</a> <a href="report_assets/sampleJointGoalAndSignal_afterNewGoal_standard_human_side_by_side_summary.csv">summary CSV</a></p>
+      <a href="report_assets/sampleJointGoalAndSignal_afterNewGoal_standard_human_side_by_side_bar_4panel.png"><img src="report_assets/sampleJointGoalAndSignal_afterNewGoal_standard_human_side_by_side_bar_4panel.png" alt="sampleJointGoalAndSignal_afterNewGoal standardized model-vs-human result plot with error bars"></a>
+    </section>
+    
+    <section class="card" id="always_committed_agent">
+      <h2>sampleJointGoal_fromStart</h2>
+      <p class="lede">Commitment model is active from trial start; posterior is uniform over initial goals and resized when the new goal appears.</p>
+      <div class="meta"><span>beta=3.0, lambda=0.15 from equal-to-both trial-level commitment fit</span><span>lambda: posterior strength; beta fixed at 3.0</span></div>
+      <h3>Math</h3>
+      <div class="equations"><div class="eq"><div class="eq-label">Initial prior</div><div class="latex">\[P_0(g)=1/|\mathcal G_0|\]</div></div><div class="eq"><div class="eq-label">New-goal prior mass</div><div class="latex">\[P_t(g_{\mathrm{new}})=1/|\mathcal G_t|\]</div></div><div class="eq"><div class="eq-label">Every-step joint-goal sampling</div><div class="latex">\[W_\lambda(g)\propto \exp(\beta EU_t(g))P_t(g)^\lambda\]</div></div></div>
+      <h3>Result Snapshot</h3>
+      <table class="mini"><thead><tr><th>Scope</th><th>Success</th><th>Efficiency</th><th>Commitment</th><th>Signaling</th></tr></thead>
+      <tbody><tr><td>Average</td><td>93.9</td><td>89.0</td><td>78.5</td><td>36.1</td></tr>
+      <tr><td>Equal-to-both</td><td>100.0</td><td>98.6</td><td>85.6</td><td>36.9</td></tr></tbody></table>
+      <h3>Fit Sweep / Heatmap</h3>
+      <p class="note">Lambda sweep; red dashed line and star mark best fit lambda = 0.15.</p>
+      <a href="report_assets/sampleJointGoal_fromStart_standard_sweep_best.png"><img src="report_assets/sampleJointGoal_fromStart_standard_sweep_best.png" alt="sampleJointGoal_fromStart standardized sweep with best fit highlighted"></a>
+      <h3>Result Plot</h3>
+      <p class="note">Implementation alias: AlwaysCommittedAgent. A separate step-level action fit produced lambda=32.89 and much higher commitment; this page uses the trial-level commitment fit because it is closer to the behavioral target. The result plot is standardized against Human-Human with 95% CI error bars.</p>
+      <p class="links"><a href="always_committed_agent/model.md">model.md</a> <a href="always_committed_agent/notebooks/always_committed_equal_to_both_trial_commitment_fit/always_committed_equal_to_both_lambda_fit.ipynb">notebook</a> <a href="report_assets/sampleJointGoal_fromStart_standard_human_side_by_side_bar_4panel.png">result plot</a> <a href="report_assets/sampleJointGoal_fromStart_standard_sweep_best.png">fit plot</a> <a href="report_assets/sampleJointGoal_fromStart_standard_human_side_by_side_summary.csv">summary CSV</a></p>
+      <a href="report_assets/sampleJointGoal_fromStart_standard_human_side_by_side_bar_4panel.png"><img src="report_assets/sampleJointGoal_fromStart_standard_human_side_by_side_bar_4panel.png" alt="sampleJointGoal_fromStart standardized model-vs-human result plot with error bars"></a>
+    </section>
+    
+    <section class="card" id="two_stage_signal_agent">
+      <h2>TwoStageSignalAgent_sigmoidThreshold</h2>
+      <p class="lede">Starts flexible under joint-RL, monitors joint-goal posterior, then smoothly gates into posterior-weighted committed signaling.</p>
+      <div class="meta"><span>beta=3.0, k=10, tau=2/3 fixed, eta=0 fixed, lambda=0.10 and mixture p=0.00 from success-weighted lambda-p search</span><span>lambda: posterior strength; p: mixture probability of taking the legible signal action; tau: gate midpoint; eta fixed to 0 in primary row</span></div>
+      <h3>Math</h3>
+      <div class="equations"><div class="eq"><div class="eq-label">Confidence</div><div class="latex">\[C_t=\max_g P_t(g)\]</div></div><div class="eq"><div class="eq-label">Sigmoid threshold gate</div><div class="latex">\[\rho_t=\sigma(k(C_t-\tau))\]</div></div><div class="eq"><div class="eq-label">Committed goal weights</div><div class="latex">\[W_\lambda(g)\propto \exp(\beta EU_t(g))P_t(g)^\lambda\]</div></div><div class="eq"><div class="eq-label">Mixture signaling policy</div><div class="latex">\[\pi_{\mathrm{signal}}(a\mid g^*)=(1-p)\pi_{\mathrm{committed}}(a\mid g^*)+p\,\delta_{a_{\mathrm{leg}}(g^*)}(a)\]</div></div><div class="eq"><div class="eq-label">Blended action policy</div><div class="latex">\[\pi(a)=(1-\rho_t)\pi_{\mathrm{joint}}(a\mid s_t,\mathcal G_t)+\rho_t\sum_g W_\lambda(g)\pi_{\mathrm{signal}}(a\mid g)\]</div></div></div>
+      <h3>Result Snapshot</h3>
+      <table class="mini"><thead><tr><th>Scope</th><th>Success</th><th>Efficiency</th><th>Commitment</th><th>Signaling</th></tr></thead>
+      <tbody><tr><td>Average</td><td>95.3</td><td>88.5</td><td>75.5</td><td>38.2</td></tr>
+      <tr><td>Equal-to-both</td><td>100.0</td><td>97.7</td><td>81.7</td><td>48.1</td></tr></tbody></table>
+      <h3>Fit Sweep / Heatmap</h3>
+      <p class="note">Success-weighted lambda × mixture-p heatmaps for all four measures; red star marks best fit lambda = 0.10, p = 0.00.</p>
+      <a href="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_sweep_best.png"><img src="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_sweep_best.png" alt="TwoStageSignalAgent_sigmoidThreshold standardized lambda by mixture-p heatmaps with best fit highlighted"></a>
+      <h3>Result Plot</h3>
+      <p class="note">Implementation alias: TwoStageSignalAgent. This page uses the success-weighted mixture-signaling variant with tau fixed at 2/3 and eta fixed at 0; older commitment/signaling-only and logposterior fits remain in the output folder for comparison. The result plot is standardized against Human-Human with 95% CI error bars.</p>
+      <p class="links"><a href="two_stage_signal_agent/model.md">model.md</a> <a href="two_stage_signal_agent/notebooks/two_stage_mixture_lambda_p_success_fit_tau2over3_eta0/two_stage_signal_mixture_success_fit_results.ipynb">notebook</a> <a href="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_human_side_by_side_bar_4panel.png">result plot</a> <a href="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_sweep_best.png">fit heatmap</a> <a href="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_human_side_by_side_summary.csv">summary CSV</a> <a href="two_stage_signal_agent/outputs/two_stage_mixture_lambda_p_success_fit_tau2over3_eta0/two_stage_signal_4param_grid.csv">grid CSV</a></p>
+      <a href="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_human_side_by_side_bar_4panel.png"><img src="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_human_side_by_side_bar_4panel.png" alt="TwoStageSignalAgent_sigmoidThreshold standardized model-vs-human result plot with error bars"></a>
+    </section>
+    </section>
+<footer>Generated from local CSV/JSON/model.md artifacts in <code>dataAnalysis/model_model</code>. Raw simulation JSON files are not embedded.</footer>
+</main>
+</body>
+</html>

@@ -149,10 +149,10 @@ The mixture variant is the only model that simultaneously brings the **average**
 - `dataAnalysis/scripts/simulate_signal_vs_signal_2p3g.js` — Node simulator. CLI flags `--alpha`, `--lambda`, `--beta`, `--score`, `--horizon`, `--sessions`, `--trials`, `--seed`, `--output-dir`.
 - `dataAnalysis/scripts/fit_signal_alpha_beta3.py` — Python fit + plot pipeline. CLI flags `--score`, `--horizon`, `--alphas`, `--reuse-existing`, etc. Output dir auto-routed by `(score, horizon)`.
 - Output directories produced:
-  - `dataAnalysis/analyses/outputs/model_model/signal_agent/signal_agent_margin_alpha_fit_beta3/`
-  - `dataAnalysis/analyses/outputs/model_model/signal_agent/signal_agent_logpost_alpha_fit_beta3/`
-  - `dataAnalysis/analyses/outputs/model_model/signal_agent/signal_agent_logpost_alpha_fit_beta3_H3/`
-  - `dataAnalysis/analyses/outputs/model_model/signal_agent/signal_agent_mixture_p_fit_beta3/`
+  - `dataAnalysis/model_model/signal_agent/outputs/signal_agent_margin_alpha_fit_beta3/`
+  - `dataAnalysis/model_model/signal_agent/outputs/signal_agent_logpost_alpha_fit_beta3/`
+  - `dataAnalysis/model_model/signal_agent/outputs/signal_agent_logpost_alpha_fit_beta3_H3/`
+  - `dataAnalysis/model_model/signal_agent/outputs/signal_agent_mixture_p_fit_beta3/`
 
 Each output directory contains derived fit artifacts:
 - `signal_alpha_fit_beta3_grid.csv`, `..._average_equal.csv`, `..._4measures.csv` — sweep tables.

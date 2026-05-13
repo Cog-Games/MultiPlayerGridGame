@@ -1,0 +1,42 @@
+{
+  "html": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/model_model_comparison_step_level_fit.html",
+  "parameters": {
+    "sampleJointGoal_afterNewGoal": {
+      "lambda": 18.14554903468059,
+      "negative_log_likelihood": 1165.7949227455676,
+      "step_observations": 1532,
+      "setting": "beta=3.0, lambda=18.1 from post-new-goal step-level action likelihood"
+    },
+    "sampleJointGoalAndSignal_afterNewGoal": {
+      "lambda": 18.145549,
+      "p_signal": 0.0,
+      "negative_log_likelihood": 1165.7949227455683,
+      "step_observations": 1532,
+      "setting": "beta=3.0, lambda=18.1, mixture p=0 from post-new-goal step-level action likelihood"
+    },
+    "sampleJointGoal_fromStart": {
+      "lambda": 32.885637682566234,
+      "negative_log_likelihood": 3769.72787522523,
+      "step_observations": 4682,
+      "setting": "beta=3.0, lambda=32.9 from all-step action likelihood"
+    },
+    "TwoStageSignalAgent_sigmoidThreshold": {
+      "lambda": 50.0,
+      "p_signal": 0.0,
+      "negative_log_likelihood": 3744.5522825879957,
+      "step_observations": 4682,
+      "setting": "beta=3.0, tau=2/3, eta=0, lambda=50, mixture p=0 from all-step action likelihood (bounded grid cap: lambda <= 50)"
+    }
+  },
+  "raw_paths": {
+    "sampleJointGoal_afterNewGoal": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/step_level_fit_comparison/simulations/committed_agent/committed_vs_committed_2p3g_raw_trials_beta_3_lambda_18p14554903468059_sessions_0_to_29.json",
+    "sampleJointGoalAndSignal_afterNewGoal": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/step_level_fit_comparison/simulations/signal_agent/signal_vs_signal_2p3g_raw_trials_beta_3_lambda_18p145549_alpha_0_sessions_0_to_29.json",
+    "sampleJointGoal_fromStart": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/step_level_fit_comparison/simulations/always_committed_agent/always_committed_vs_always_committed_2p3g_raw_trials_beta_3_lambda_32p885637682566234_sessions_0_to_29.json",
+    "TwoStageSignalAgent_sigmoidThreshold": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/two_stage_signal_agent/step_level_fit_comparison/two_stage_signal_vs_two_stage_signal_2p3g_raw_trials_signal_mixture_beta_3_lambda_50_tau_0p6666666666666666_alpha_0_eta_0_sessions_0_to_29.json"
+  },
+  "human_raw_trials": 189,
+  "step_observations": {
+    "post_new_goal": 1532,
+    "all_steps": 4682
+  }
+}

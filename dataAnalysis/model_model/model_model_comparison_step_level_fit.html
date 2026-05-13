@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Step-Level Fit Model-Model Comparison</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' } };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root { --ink:#17202a; --muted:#607080; --line:#d8dee9; --bg:#f7f9fc; --card:#fff; --accent:#2457a6; }
+* { box-sizing:border-box; }
+body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:var(--ink); background:var(--bg); line-height:1.45; }
+header { padding:42px 56px 24px; background:linear-gradient(135deg,#1a2638,#3a5f83); color:white; }
+header h1 { margin:0 0 10px; font-size:34px; letter-spacing:-.02em; }
+header p { margin:0 0 6px; max-width:1050px; color:#dce7f8; }
+main { max-width:1280px; margin:0 auto; padding:30px 26px 60px; }
+nav { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:22px; }
+nav a, .links a { color:var(--accent); text-decoration:none; }
+nav a { padding:7px 10px; background:white; border:1px solid var(--line); border-radius:999px; }
+.summary,.card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; box-shadow:0 6px 20px rgba(20,35,60,.06); margin-bottom:24px; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th,td { padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { text-align:left; background:#f0f3f8; color:#34495e; }
+td.num { text-align:right; font-variant-numeric:tabular-nums; }
+tr.human td { background:#fff7df; }
+.grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+.card h2 { margin:0 0 6px; font-size:22px; }
+.card h3 { margin:16px 0 8px; font-size:15px; }
+.meta { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; }
+.meta span { background:#eef4ff; border:1px solid #cfe0ff; color:#1f4e8c; border-radius:999px; padding:5px 8px; font-size:12px; }
+.equations { display:grid; gap:8px; margin:10px 0; }
+.eq { border:1px solid #e1e7f0; border-radius:12px; background:#fbfdff; padding:10px 12px; overflow-x:auto; }
+img { width:100%; max-height:620px; object-fit:contain; border:1px solid var(--line); border-radius:10px; background:white; }
+code { font-family:"SFMono-Regular",Consolas,monospace; }
+footer { color:var(--muted); font-size:12px; margin-top:28px; }
+@media (max-width: 900px) { .grid { grid-template-columns:1fr; } header { padding:30px 24px 20px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Model-Model Comparison: Step-Level Fitted Parameters</h1>
+  <p>This is a separate report from <code>model_model_comparison.html</code>. Here, fitted parameters are selected by human step-level action likelihood rather than trial-level commitment/signaling/success metrics.</p>
+  <p>Fixed constants: goal-selection beta = 3.0; joint-RL softmax beta = 3.0. Human-Human is a reference row and is not fit.</p>
+</header>
+<main>
+<nav>
+  <a href="#overview">Overview</a>
+  <a href="#summary-plot">4 Measures</a>
+  <a href="#btom-legibility">BToM Legibility</a>
+  <a href="#sampleJointGoal_afterNewGoal">sampleJointGoal_afterNewGoal</a><a href="#sampleJointGoalAndSignal_afterNewGoal">sampleJointGoalAndSignal_afterNewGoal</a><a href="#sampleJointGoal_fromStart">sampleJointGoal_fromStart</a><a href="#TwoStageSignalAgent_sigmoidThreshold">TwoStageSignalAgent_sigmoidThreshold</a>
+</nav>
+<section class="summary" id="overview">
+  <h2>Primary Result Table</h2>
+  <p>Rows use simulations at the step-level fitted parameter values. Values are percentages.</p>
+  <table>
+    <thead><tr><th>Model</th><th>Scope</th><th>Step-Level Fit / Setting</th><th>Success</th><th>Efficiency</th><th>Commitment</th><th>Signaling</th></tr></thead>
+    <tbody>
+      <tr class=""><td><strong>sampleJointGoal_afterNewGoal</strong></td><td>Average all 2P3G</td><td>beta=3.0, lambda=18.1 from post-new-goal step-level action likelihood</td><td class="num">93.3</td><td class="num">89.8</td><td class="num">86.1</td><td class="num">37.0</td></tr><tr class=""><td><strong>sampleJointGoal_afterNewGoal</strong></td><td>Equal-to-both</td><td>beta=3.0, lambda=18.1 from post-new-goal step-level action likelihood</td><td class="num">100.0</td><td class="num">99.5</td><td class="num">97.4</td><td class="num">51.4</td></tr><tr class=""><td><strong>sampleJointGoalAndSignal_afterNewGoal</strong></td><td>Average all 2P3G</td><td>beta=3.0, lambda=18.1, mixture p=0 from post-new-goal step-level action likelihood</td><td class="num">92.5</td><td class="num">90.1</td><td class="num">85.7</td><td class="num">34.3</td></tr><tr class=""><td><strong>sampleJointGoalAndSignal_afterNewGoal</strong></td><td>Equal-to-both</td><td>beta=3.0, lambda=18.1, mixture p=0 from post-new-goal step-level action likelihood</td><td class="num">100.0</td><td class="num">99.7</td><td class="num">99.1</td><td class="num">50.9</td></tr><tr class=""><td><strong>sampleJointGoal_fromStart</strong></td><td>Average all 2P3G</td><td>beta=3.0, lambda=32.9 from all-step action likelihood</td><td class="num">92.5</td><td class="num">90.4</td><td class="num">85.3</td><td class="num">37.0</td></tr><tr class=""><td><strong>sampleJointGoal_fromStart</strong></td><td>Equal-to-both</td><td>beta=3.0, lambda=32.9 from all-step action likelihood</td><td class="num">100.0</td><td class="num">99.7</td><td class="num">96.7</td><td class="num">40.0</td></tr><tr class=""><td><strong>TwoStageSignalAgent_sigmoidThreshold</strong></td><td>Average all 2P3G</td><td>beta=3.0, tau=2/3, eta=0, lambda=50, mixture p=0 from all-step action likelihood (bounded grid cap: lambda &lt;= 50)</td><td class="num">95.3</td><td class="num">89.2</td><td class="num">85.8</td><td class="num">41.1</td></tr><tr class=""><td><strong>TwoStageSignalAgent_sigmoidThreshold</strong></td><td>Equal-to-both</td><td>beta=3.0, tau=2/3, eta=0, lambda=50, mixture p=0 from all-step action likelihood (bounded grid cap: lambda &lt;= 50)</td><td class="num">100.0</td><td class="num">99.0</td><td class="num">97.2</td><td class="num">51.4</td></tr><tr class="human"><td><strong>Human-Human</strong></td><td>Average all 2P3G</td><td>reference data, not fit</td><td class="num">100.0</td><td class="num">81.6</td><td class="num">65.0</td><td class="num">52.5</td></tr><tr class="human"><td><strong>Human-Human</strong></td><td>Equal-to-both</td><td>reference data, not fit</td><td class="num">100.0</td><td class="num">96.6</td><td class="num">84.4</td><td class="num">59.4</td></tr>
+    </tbody>
+  </table>
+</section>
+<section class="summary" id="summary-plot">
+  <h2>Four-Measure Summary</h2>
+  <a href="step_level_fit_comparison/assets/step_level_fit_model_model_4measure_summary.png"><img src="step_level_fit_comparison/assets/step_level_fit_model_model_4measure_summary.png" alt="Step-level fitted model comparison four-measure plot"></a>
+  <p class="links"><a href="step_level_fit_comparison/step_level_fit_parameters.csv">fit parameters CSV</a> <a href="step_level_fit_comparison/step_level_fit_comparison_long.csv">long metrics CSV</a> <a href="step_level_fit_comparison/step_level_fit_comparison_summary.csv">summary CSV</a></p>
+</section>
+<section class="summary" id="btom-legibility">
+  <h2>BToM Legibility After New-Goal Presentation</h2>
+  <p>BToM legibility is computed from the step-level fitted model simulations using the listener posterior from <code>BToM_legibility_comparison.ipynb</code>: posterior over the original shared goal versus the new goal, scored as \(P(\mathrm{final\ reached\ goal})\). Step 0 is the new-goal presentation moment.</p>
+  <div class="grid">
+    <section class="card">
+      <h3>Posterior Over First 5 Steps</h3>
+      <a href="step_level_fit_comparison/assets/btom_model_model_first5_trajectory.png"><img src="step_level_fit_comparison/assets/btom_model_model_first5_trajectory.png" alt="Step-level fit BToM legibility posterior over first five steps after new-goal presentation"></a>
+    </section>
+    <section class="card">
+      <h3>Mean Posterior Across First 5 Steps</h3>
+      <a href="step_level_fit_comparison/assets/btom_model_model_first5_mean_posterior.png"><img src="step_level_fit_comparison/assets/btom_model_model_first5_mean_posterior.png" alt="Step-level fit mean BToM posterior across first five steps after new-goal presentation"></a>
+    </section>
+  </div>
+  <p class="links"><a href="step_level_fit_comparison/assets/btom_model_model_first5_summary.csv">summary CSV</a> <a href="step_level_fit_comparison/assets/btom_model_model_first5_step_per_participant.csv">step-level participant CSV</a> <a href="step_level_fit_comparison/assets/btom_model_model_first5_mean_per_participant.csv">mean posterior participant CSV</a></p>
+</section>
+<section class="grid">
+  
+    <section class="card" id="sampleJointGoal_afterNewGoal">
+      <h2>sampleJointGoal_afterNewGoal</h2>
+      <p>Joint-RL before new-goal; after new-goal, infer posterior and resample a joint goal every step.</p>
+      <div class="meta"><span>beta=3.0, lambda=18.1 from post-new-goal step-level action likelihood</span><span>fit target: step-level human action likelihood</span></div>
+      <h3>Core Math</h3>
+      <div class="equations">
+          <div class="eq">\[W_\lambda(g)\propto \exp(3\,EU_t(g))P_t(g)^\lambda\]</div>
+          <div class="eq">\[\pi(a_t)=\sum_g W_\lambda(g)\pi_{\mathrm{joint}}(a_t\mid s_t,\{g\})\]</div>
+        </div>
+      <h3>Step-Level Fit Surface</h3>
+      <a href="step_level_fit_comparison/assets/step_level_sampleJointGoal_afterNewGoal_lambda_fit.png"><img src="step_level_fit_comparison/assets/step_level_sampleJointGoal_afterNewGoal_lambda_fit.png" alt="sampleJointGoal_afterNewGoal step-level fit plot"></a>
+    </section>
+            
+    <section class="card" id="sampleJointGoalAndSignal_afterNewGoal">
+      <h2>sampleJointGoalAndSignal_afterNewGoal</h2>
+      <p>Same post-new-goal joint-goal sampler plus a Bernoulli mixture signaling policy.</p>
+      <div class="meta"><span>beta=3.0, lambda=18.1, mixture p=0 from post-new-goal step-level action likelihood</span><span>fit target: step-level human action likelihood</span></div>
+      <h3>Core Math</h3>
+      <div class="equations">
+          <div class="eq">\[\pi_{\mathrm{signal}}(a\mid g)=(1-p)\pi_{\mathrm{joint}}(a\mid s_t,\{g\})+p\,\delta_{a_{\mathrm{leg}}(g)}(a)\]</div>
+          <div class="eq">\[\pi(a_t)=\sum_g W_\lambda(g)\pi_{\mathrm{signal}}(a_t\mid g)\]</div>
+        </div>
+      <h3>Step-Level Fit Surface</h3>
+      <a href="step_level_fit_comparison/assets/step_level_sampleJointGoalAndSignal_afterNewGoal_lambda_p_fit.png"><img src="step_level_fit_comparison/assets/step_level_sampleJointGoalAndSignal_afterNewGoal_lambda_p_fit.png" alt="sampleJointGoalAndSignal_afterNewGoal step-level fit plot"></a>
+    </section>
+            
+    <section class="card" id="sampleJointGoal_fromStart">
+      <h2>sampleJointGoal_fromStart</h2>
+      <p>Commitment model is active from trial start; new goals are added by posterior resizing.</p>
+      <div class="meta"><span>beta=3.0, lambda=32.9 from all-step action likelihood</span><span>fit target: step-level human action likelihood</span></div>
+      <h3>Core Math</h3>
+      <div class="equations">
+          <div class="eq">\[P_0(g)=1/|\mathcal G_0|,\quad P_t(g_{\mathrm{new}})=1/|\mathcal G_t|\]</div>
+          <div class="eq">\[\pi(a_t)=\sum_g W_\lambda(g)\pi_{\mathrm{joint}}(a_t\mid s_t,\{g\})\]</div>
+        </div>
+      <h3>Step-Level Fit Surface</h3>
+      <a href="step_level_fit_comparison/assets/step_level_sampleJointGoal_fromStart_lambda_fit.png"><img src="step_level_fit_comparison/assets/step_level_sampleJointGoal_fromStart_lambda_fit.png" alt="sampleJointGoal_fromStart step-level fit plot"></a>
+    </section>
+            
+    <section class="card" id="TwoStageSignalAgent_sigmoidThreshold">
+      <h2>TwoStageSignalAgent_sigmoidThreshold</h2>
+      <p>Always monitors joint-goal posterior and mixes early joint-RL with late committed-signaling policy via a sigmoid gate.</p>
+      <div class="meta"><span>beta=3.0, tau=2/3, eta=0, lambda=50, mixture p=0 from all-step action likelihood (bounded grid cap: lambda &lt;= 50)</span><span>fit target: step-level human action likelihood</span></div>
+      <h3>Core Math</h3>
+      <div class="equations">
+          <div class="eq">\[\rho_t=\sigma(10(\max_gP_t(g)-2/3))\]</div>
+          <div class="eq">\[\pi(a_t)=(1-\rho_t)\pi_{\mathrm{joint}}(a_t\mid s_t,\mathcal G_t)+\rho_t\sum_g W_\lambda(g)\pi_{\mathrm{signal}}(a_t\mid g)\]</div>
+        </div>
+      <h3>Step-Level Fit Surface</h3>
+      <a href="step_level_fit_comparison/assets/step_level_TwoStageSignalAgent_sigmoidThreshold_lambda_p_fit.png"><img src="step_level_fit_comparison/assets/step_level_TwoStageSignalAgent_sigmoidThreshold_lambda_p_fit.png" alt="TwoStageSignalAgent_sigmoidThreshold step-level fit plot"></a>
+    </section>
+            
+</section>
+<footer>
+Generated by <code>dataAnalysis/scripts/create_step_level_model_model_comparison.py</code>. Step-level NLL uses the same lightweight joint-goal likelihood approximation as the committed-agent fitters.
+</footer>
+</main>
+</body>
+</html>

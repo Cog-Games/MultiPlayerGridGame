@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 0.5,
+  "tau": 0.6666667,
+  "alpha": 0.4,
+  "eta": 0,
+  "beta": 3,
+  "gateSharpness": 10,
+  "signalMode": "mixture",
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 320,
+  "successRate": 0.8888888888888888,
+  "newGoalPresentedTrials": 247,
+  "commitmentEligibleTrials": 247,
+  "commitmentEligibleAgents": 494,
+  "committedAgents": 430,
+  "commitmentRate": 0.8704453441295547,
+  "bothCommittedTrials": 195,
+  "bothCommittedRate": 0.7894736842105263,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 70,
+      "commitmentEligibleTrials": 88,
+      "committedAgents": 142,
+      "totalEligibleAgents": 176,
+      "bothCommittedTrials": 61,
+      "successRate": 0.7777777777777778,
+      "commitmentRate": 0.8068181818181818,
+      "bothCommittedRate": 0.6931818181818182
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 71,
+      "committedAgents": 138,
+      "totalEligibleAgents": 142,
+      "bothCommittedTrials": 69,
+      "successRate": 1,
+      "commitmentRate": 0.971830985915493,
+      "bothCommittedRate": 0.971830985915493
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 70,
+      "commitmentEligibleTrials": 88,
+      "committedAgents": 150,
+      "totalEligibleAgents": 176,
+      "bothCommittedTrials": 65,
+      "successRate": 0.7777777777777778,
+      "commitmentRate": 0.8522727272727273,
+      "bothCommittedRate": 0.7386363636363636
+    }
+  }
+}

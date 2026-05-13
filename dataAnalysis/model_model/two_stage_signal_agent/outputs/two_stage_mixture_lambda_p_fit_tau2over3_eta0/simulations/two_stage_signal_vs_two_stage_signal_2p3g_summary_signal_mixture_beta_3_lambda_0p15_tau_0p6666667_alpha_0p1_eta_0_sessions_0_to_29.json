@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 0.15,
+  "tau": 0.6666667,
+  "alpha": 0.1,
+  "eta": 0,
+  "beta": 3,
+  "gateSharpness": 10,
+  "signalMode": "mixture",
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 334,
+  "successRate": 0.9277777777777778,
+  "newGoalPresentedTrials": 238,
+  "commitmentEligibleTrials": 238,
+  "commitmentEligibleAgents": 476,
+  "committedAgents": 362,
+  "commitmentRate": 0.7605042016806722,
+  "bothCommittedTrials": 168,
+  "bothCommittedRate": 0.7058823529411765,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 74,
+      "commitmentEligibleTrials": 85,
+      "committedAgents": 126,
+      "totalEligibleAgents": 170,
+      "bothCommittedTrials": 55,
+      "successRate": 0.8222222222222222,
+      "commitmentRate": 0.7411764705882353,
+      "bothCommittedRate": 0.6470588235294118
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 69,
+      "committedAgents": 114,
+      "totalEligibleAgents": 138,
+      "bothCommittedTrials": 57,
+      "successRate": 1,
+      "commitmentRate": 0.8260869565217391,
+      "bothCommittedRate": 0.8260869565217391
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 80,
+      "commitmentEligibleTrials": 84,
+      "committedAgents": 122,
+      "totalEligibleAgents": 168,
+      "bothCommittedTrials": 56,
+      "successRate": 0.8888888888888888,
+      "commitmentRate": 0.7261904761904762,
+      "bothCommittedRate": 0.6666666666666666
+    }
+  }
+}

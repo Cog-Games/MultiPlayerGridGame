@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 0.1,
+  "tau": 0.6666667,
+  "alpha": 0.4,
+  "eta": 0,
+  "beta": 3,
+  "gateSharpness": 10,
+  "signalMode": "mixture",
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 321,
+  "successRate": 0.8916666666666667,
+  "newGoalPresentedTrials": 242,
+  "commitmentEligibleTrials": 242,
+  "commitmentEligibleAgents": 484,
+  "committedAgents": 367,
+  "commitmentRate": 0.7582644628099173,
+  "bothCommittedTrials": 164,
+  "bothCommittedRate": 0.6776859504132231,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 69,
+      "commitmentEligibleTrials": 89,
+      "committedAgents": 135,
+      "totalEligibleAgents": 178,
+      "bothCommittedTrials": 57,
+      "successRate": 0.7666666666666667,
+      "commitmentRate": 0.7584269662921348,
+      "bothCommittedRate": 0.6404494382022472
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 67,
+      "committedAgents": 106,
+      "totalEligibleAgents": 134,
+      "bothCommittedTrials": 53,
+      "successRate": 1,
+      "commitmentRate": 0.7910447761194029,
+      "bothCommittedRate": 0.7910447761194029
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 72,
+      "commitmentEligibleTrials": 86,
+      "committedAgents": 126,
+      "totalEligibleAgents": 172,
+      "bothCommittedTrials": 54,
+      "successRate": 0.8,
+      "commitmentRate": 0.7325581395348837,
+      "bothCommittedRate": 0.627906976744186
+    }
+  }
+}

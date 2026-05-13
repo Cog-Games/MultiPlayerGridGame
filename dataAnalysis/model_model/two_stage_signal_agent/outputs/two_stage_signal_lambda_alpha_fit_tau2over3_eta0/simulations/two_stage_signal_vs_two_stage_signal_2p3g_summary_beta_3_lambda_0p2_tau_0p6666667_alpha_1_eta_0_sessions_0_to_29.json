@@ -1,0 +1,71 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 0.2,
+  "tau": 0.6666667,
+  "alpha": 1,
+  "eta": 0,
+  "beta": 3,
+  "gateSharpness": 10,
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 347,
+  "successRate": 0.9638888888888889,
+  "newGoalPresentedTrials": 237,
+  "commitmentEligibleTrials": 237,
+  "commitmentEligibleAgents": 474,
+  "committedAgents": 349,
+  "commitmentRate": 0.7362869198312236,
+  "bothCommittedTrials": 168,
+  "bothCommittedRate": 0.7088607594936709,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 83,
+      "commitmentEligibleTrials": 84,
+      "committedAgents": 127,
+      "totalEligibleAgents": 168,
+      "bothCommittedTrials": 60,
+      "successRate": 0.9222222222222223,
+      "commitmentRate": 0.7559523809523809,
+      "bothCommittedRate": 0.7142857142857143
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 67,
+      "committedAgents": 98,
+      "totalEligibleAgents": 134,
+      "bothCommittedTrials": 49,
+      "successRate": 1,
+      "commitmentRate": 0.7313432835820896,
+      "bothCommittedRate": 0.7313432835820896
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 84,
+      "commitmentEligibleTrials": 86,
+      "committedAgents": 124,
+      "totalEligibleAgents": 172,
+      "bothCommittedTrials": 59,
+      "successRate": 0.9333333333333333,
+      "commitmentRate": 0.7209302325581395,
+      "bothCommittedRate": 0.686046511627907
+    }
+  }
+}

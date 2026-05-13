@@ -82,7 +82,7 @@ def parse_args() -> argparse.Namespace:
         "--output-dir",
         type=Path,
         default=Path(
-            "dataAnalysis/analyses/outputs/model_model/always_committed_agent/"
+            "dataAnalysis/model_model/always_committed_agent/outputs/"
             "always_committed_lambda_fit_human_human"
         ),
     )

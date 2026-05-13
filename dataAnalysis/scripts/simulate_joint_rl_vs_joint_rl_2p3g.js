@@ -11,7 +11,7 @@ import { NewGoalGenerator } from '../../client/src/utils/NewGoalGenerator.js';
 const DEFAULT_SESSIONS = 30;
 const DEFAULT_TRIALS_PER_SESSION = 12;
 const DEFAULT_SEED = 42;
-const DEFAULT_OUTPUT_DIR = 'dataAnalysis/analyses/outputs/model_model/joint_rl/joint_rl_vs_joint_rl_simulation';
+const DEFAULT_OUTPUT_DIR = 'dataAnalysis/model_model/joint_rl/outputs/joint_rl_vs_joint_rl_simulation';
 
 function parseArgs(argv) {
   const out = {

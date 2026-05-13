@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 0.1,
+  "tau": 0.6666667,
+  "alpha": 0,
+  "eta": 0,
+  "beta": 3,
+  "gateSharpness": 10,
+  "signalMode": "mixture",
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 343,
+  "successRate": 0.9527777777777777,
+  "newGoalPresentedTrials": 237,
+  "commitmentEligibleTrials": 237,
+  "commitmentEligibleAgents": 474,
+  "committedAgents": 357,
+  "commitmentRate": 0.7531645569620253,
+  "bothCommittedTrials": 170,
+  "bothCommittedRate": 0.7172995780590717,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 81,
+      "commitmentEligibleTrials": 84,
+      "committedAgents": 121,
+      "totalEligibleAgents": 168,
+      "bothCommittedTrials": 56,
+      "successRate": 0.9,
+      "commitmentRate": 0.7202380952380952,
+      "bothCommittedRate": 0.6666666666666666
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 69,
+      "committedAgents": 112,
+      "totalEligibleAgents": 138,
+      "bothCommittedTrials": 56,
+      "successRate": 1,
+      "commitmentRate": 0.8115942028985508,
+      "bothCommittedRate": 0.8115942028985508
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 82,
+      "commitmentEligibleTrials": 84,
+      "committedAgents": 124,
+      "totalEligibleAgents": 168,
+      "bothCommittedTrials": 58,
+      "successRate": 0.9111111111111111,
+      "commitmentRate": 0.7380952380952381,
+      "bothCommittedRate": 0.6904761904761905
+    }
+  }
+}

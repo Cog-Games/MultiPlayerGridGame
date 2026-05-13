@@ -1,0 +1,71 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 0,
+  "tau": 0.8,
+  "alpha": 1,
+  "eta": 1,
+  "beta": 3,
+  "gateSharpness": 10,
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 348,
+  "successRate": 0.9666666666666667,
+  "newGoalPresentedTrials": 235,
+  "commitmentEligibleTrials": 235,
+  "commitmentEligibleAgents": 470,
+  "committedAgents": 214,
+  "commitmentRate": 0.4553191489361702,
+  "bothCommittedTrials": 101,
+  "bothCommittedRate": 0.4297872340425532,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 84,
+      "commitmentEligibleTrials": 82,
+      "committedAgents": 80,
+      "totalEligibleAgents": 164,
+      "bothCommittedTrials": 37,
+      "successRate": 0.9333333333333333,
+      "commitmentRate": 0.4878048780487805,
+      "bothCommittedRate": 0.45121951219512196
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 74,
+      "committedAgents": 42,
+      "totalEligibleAgents": 148,
+      "bothCommittedTrials": 21,
+      "successRate": 1,
+      "commitmentRate": 0.28378378378378377,
+      "bothCommittedRate": 0.28378378378378377
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 84,
+      "commitmentEligibleTrials": 79,
+      "committedAgents": 92,
+      "totalEligibleAgents": 158,
+      "bothCommittedTrials": 43,
+      "successRate": 0.9333333333333333,
+      "commitmentRate": 0.5822784810126582,
+      "bothCommittedRate": 0.5443037974683544
+    }
+  }
+}

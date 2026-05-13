@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 
-NOTEBOOK_PATH = Path("dataAnalysis/analyses/notebooks/model_model/root/committed_vs_committed_lambda_sweep_plots.ipynb")
+NOTEBOOK_PATH = Path("dataAnalysis/model_model/committed_agent/notebooks/legacy_root/committed_vs_committed_lambda_sweep_plots.ipynb")
 
 
 def code_cell(source: str) -> dict:

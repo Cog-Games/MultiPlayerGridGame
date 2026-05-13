@@ -367,6 +367,8 @@ export class GameStateManager {
             this.trialData.partnerAgentType = 'alwaysCommittedAgent';
           } else if (fb === 'signalAgent') {
             this.trialData.partnerAgentType = 'signalAgent';
+          } else if (fb === 'twoStageSignalAgent') {
+            this.trialData.partnerAgentType = 'twoStageSignalAgent';
           } else if (fb === 'rl_joint') {
             this.trialData.partnerAgentType = 'joint-rl';
           } else if (fb === 'rl_individual') {
@@ -857,6 +859,8 @@ export class GameStateManager {
             this.trialData.partnerAgentType = 'alwaysCommittedAgent';
           } else if (fb === 'signalAgent') {
             this.trialData.partnerAgentType = 'signalAgent';
+          } else if (fb === 'twoStageSignalAgent') {
+            this.trialData.partnerAgentType = 'twoStageSignalAgent';
           } else if (fb && fb.toLowerCase() === 'rl') {
             const rlType = (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl';
             this.trialData.partnerAgentType = rlType;
@@ -1036,6 +1040,7 @@ export class GameStateManager {
       if (t === 'rl_individual') return 'individual-rl';
       if (t === 'alwaysCommittedAgent') return 'alwaysCommittedAgent';
       if (t === 'signalAgent') return 'signalAgent';
+      if (t === 'twoStageSignalAgent') return 'twoStageSignalAgent';
       if (t === 'ai') return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl'; // legacy safety
       return String(t || 'unknown');
     } catch (_) {

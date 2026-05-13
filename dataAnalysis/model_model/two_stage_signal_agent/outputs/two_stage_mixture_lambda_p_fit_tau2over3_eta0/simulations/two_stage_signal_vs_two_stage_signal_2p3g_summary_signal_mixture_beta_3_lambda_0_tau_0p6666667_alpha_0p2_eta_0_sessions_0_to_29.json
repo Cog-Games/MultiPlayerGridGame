@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 0,
+  "tau": 0.6666667,
+  "alpha": 0.2,
+  "eta": 0,
+  "beta": 3,
+  "gateSharpness": 10,
+  "signalMode": "mixture",
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 334,
+  "successRate": 0.9277777777777778,
+  "newGoalPresentedTrials": 234,
+  "commitmentEligibleTrials": 234,
+  "commitmentEligibleAgents": 468,
+  "committedAgents": 278,
+  "commitmentRate": 0.594017094017094,
+  "bothCommittedTrials": 126,
+  "bothCommittedRate": 0.5384615384615384,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 73,
+      "commitmentEligibleTrials": 87,
+      "committedAgents": 113,
+      "totalEligibleAgents": 174,
+      "bothCommittedTrials": 48,
+      "successRate": 0.8111111111111111,
+      "commitmentRate": 0.6494252873563219,
+      "bothCommittedRate": 0.5517241379310345
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 62,
+      "committedAgents": 72,
+      "totalEligibleAgents": 124,
+      "bothCommittedTrials": 36,
+      "successRate": 1,
+      "commitmentRate": 0.5806451612903226,
+      "bothCommittedRate": 0.5806451612903226
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 81,
+      "commitmentEligibleTrials": 85,
+      "committedAgents": 93,
+      "totalEligibleAgents": 170,
+      "bothCommittedTrials": 42,
+      "successRate": 0.9,
+      "commitmentRate": 0.5470588235294118,
+      "bothCommittedRate": 0.49411764705882355
+    }
+  }
+}

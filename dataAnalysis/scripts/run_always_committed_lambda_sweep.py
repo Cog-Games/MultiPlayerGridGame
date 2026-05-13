@@ -17,7 +17,7 @@ import pandas as pd
 
 
 DEFAULT_OUTPUT_DIR = Path(
-    "dataAnalysis/analyses/outputs/model_model/always_committed_agent/"
+    "dataAnalysis/model_model/always_committed_agent/outputs/"
     "always_committed_vs_always_committed_simulation"
 )
 SIM_SCRIPT = Path("dataAnalysis/scripts/simulate_always_committed_vs_always_committed_2p3g.js")

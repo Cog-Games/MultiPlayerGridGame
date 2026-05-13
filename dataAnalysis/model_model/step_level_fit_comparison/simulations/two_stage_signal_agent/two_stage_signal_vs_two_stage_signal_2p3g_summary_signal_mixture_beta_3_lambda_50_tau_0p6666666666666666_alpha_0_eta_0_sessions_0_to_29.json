@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 50,
+  "tau": 0.6666666666666666,
+  "alpha": 0,
+  "eta": 0,
+  "beta": 3,
+  "gateSharpness": 10,
+  "signalMode": "mixture",
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 343,
+  "successRate": 0.9527777777777777,
+  "newGoalPresentedTrials": 230,
+  "commitmentEligibleTrials": 230,
+  "commitmentEligibleAgents": 460,
+  "committedAgents": 423,
+  "commitmentRate": 0.9195652173913044,
+  "bothCommittedTrials": 203,
+  "bothCommittedRate": 0.8826086956521739,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 80,
+      "commitmentEligibleTrials": 85,
+      "committedAgents": 150,
+      "totalEligibleAgents": 170,
+      "bothCommittedTrials": 70,
+      "successRate": 0.8888888888888888,
+      "commitmentRate": 0.8823529411764706,
+      "bothCommittedRate": 0.8235294117647058
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 60,
+      "committedAgents": 116,
+      "totalEligibleAgents": 120,
+      "bothCommittedTrials": 58,
+      "successRate": 1,
+      "commitmentRate": 0.9666666666666667,
+      "bothCommittedRate": 0.9666666666666667
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 83,
+      "commitmentEligibleTrials": 85,
+      "committedAgents": 157,
+      "totalEligibleAgents": 170,
+      "bothCommittedTrials": 75,
+      "successRate": 0.9222222222222223,
+      "commitmentRate": 0.9235294117647059,
+      "bothCommittedRate": 0.8823529411764706
+    }
+  }
+}

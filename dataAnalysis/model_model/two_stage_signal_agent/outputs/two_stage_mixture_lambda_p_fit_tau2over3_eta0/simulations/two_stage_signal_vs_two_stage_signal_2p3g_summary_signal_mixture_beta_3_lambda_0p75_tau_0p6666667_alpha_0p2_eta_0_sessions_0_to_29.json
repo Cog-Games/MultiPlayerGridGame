@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "sessionOffset": 0,
+  "sessions": 30,
+  "trialsPerSession": 12,
+  "totalPlannedTrials": 360,
+  "lambda": 0.75,
+  "tau": 0.6666667,
+  "alpha": 0.2,
+  "eta": 0,
+  "beta": 3,
+  "gateSharpness": 10,
+  "signalMode": "mixture",
+  "agentType": "twoStageSignalAgent",
+  "mapSelection": "first_trials_per_session_sorted_maps_from_MapsFor2P3G",
+  "totalTrials": 360,
+  "successfulTrials": 334,
+  "successRate": 0.9277777777777778,
+  "newGoalPresentedTrials": 243,
+  "commitmentEligibleTrials": 243,
+  "commitmentEligibleAgents": 486,
+  "committedAgents": 418,
+  "commitmentRate": 0.8600823045267489,
+  "bothCommittedTrials": 196,
+  "bothCommittedRate": 0.8065843621399177,
+  "byCondition": {
+    "no_new_goal": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 0,
+      "committedAgents": 0,
+      "totalEligibleAgents": 0,
+      "bothCommittedTrials": 0,
+      "successRate": 1,
+      "commitmentRate": null,
+      "bothCommittedRate": null
+    },
+    "closer_to_player1": {
+      "trials": 90,
+      "successes": 73,
+      "commitmentEligibleTrials": 88,
+      "committedAgents": 145,
+      "totalEligibleAgents": 176,
+      "bothCommittedTrials": 64,
+      "successRate": 0.8111111111111111,
+      "commitmentRate": 0.8238636363636364,
+      "bothCommittedRate": 0.7272727272727273
+    },
+    "equal_to_both": {
+      "trials": 90,
+      "successes": 90,
+      "commitmentEligibleTrials": 68,
+      "committedAgents": 132,
+      "totalEligibleAgents": 136,
+      "bothCommittedTrials": 66,
+      "successRate": 1,
+      "commitmentRate": 0.9705882352941176,
+      "bothCommittedRate": 0.9705882352941176
+    },
+    "closer_to_player2": {
+      "trials": 90,
+      "successes": 81,
+      "commitmentEligibleTrials": 87,
+      "committedAgents": 141,
+      "totalEligibleAgents": 174,
+      "bothCommittedTrials": 66,
+      "successRate": 0.9,
+      "commitmentRate": 0.8103448275862069,
+      "bothCommittedRate": 0.7586206896551724
+    }
+  }
+}
