@@ -8,7 +8,7 @@ export class GameEventHandler {
     socket.on('join-room', (data) => {
       try {
         const { roomId, gameMode = 'human-ai', experimentType = '2P2G' } = data;
-        const room = this.roomManager.joinRoom(socket.id, roomId, gameMode);
+        const room = this.roomManager.joinRoom(socket.id, roomId, gameMode, experimentType);
 
         socket.join(room.id);
         socket.emit('room-joined', {

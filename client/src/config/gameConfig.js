@@ -28,6 +28,17 @@ const DEFAULT_LLM_AGENT_CONFIG = {
 };
 
 export const CONFIG = {
+  // Kid experiment branch settings
+  kids: {
+    enabled: getEnvVar('VITE_KIDS_MODE', 'true') !== 'false',
+    // Runtime modes:
+    // - human: attempt kid-kid matching first, then fall back to committedAgent
+    // - committed: skip matching and start directly with a committedAgent partner
+    partnerMode: 'human',
+    useLegacyUi: true,
+    assetBasePath: '/kids/figs'
+  },
+
   // Debug / logging configuration
   debug: {
     // When true, mutes console.log/info/debug in the browser

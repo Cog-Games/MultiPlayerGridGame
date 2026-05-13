@@ -143,6 +143,14 @@ export class GameRenderer {
       }
     }
 
+    if (CONFIG?.kids?.enabled) {
+      // Legacy kids UI draws players first and then overlays restaurants so goals remain visible.
+      const playerPositions = this.getPlayerPositions(gridMatrix);
+      this.drawPlayersWithOverlap(playerPositions);
+      this.drawGoals();
+      return;
+    }
+
     // Second pass: draw goals (middle layer) - always draw goals from gameState
     this.drawGoals();
 

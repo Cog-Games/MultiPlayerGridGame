@@ -5,6 +5,11 @@ import { ExperimentManager } from '../experiments/ExperimentManager.js';
 import { TimelineManager } from '../timeline/TimelineManager.js';
 import { CONFIG, GameConfigUtils } from '../config/gameConfig.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
+import {
+  getChildIdFromUrl,
+  getParticipantIdFromUrl,
+  getProlificPidFromUrl
+} from '../utils/ParticipantUtils.js';
 
 export class GameApplication {
   constructor(container) {
@@ -49,6 +54,19 @@ export class GameApplication {
     // Check URL parameters for timeline preference
     const urlParams = new URLSearchParams(window.location.search);
     this.useTimelineFlow = urlParams.get('timeline') !== 'false' && useTimeline;
+
+    const kidModeParam = urlParams.get('kidMode');
+    if (kidModeParam === 'false') {
+      CONFIG.kids.enabled = false;
+    }
+    if (CONFIG.kids.enabled) {
+      const rawKidPartner = String(urlParams.get('kidPartner') || CONFIG.kids.partnerMode || 'human').toLowerCase();
+      const kidPartner = rawKidPartner === 'committed' ? 'committed' : 'human';
+      CONFIG.kids.partnerMode = kidPartner;
+      CONFIG.multiplayer.fallbackAIType = 'committedAgent';
+      GameConfigUtils.setPlayerType(2, kidPartner === 'committed' ? 'committedAgent' : 'human');
+    }
+
     const aiParam = urlParams.get('ai');
     if (aiParam) {
       // Accept (canonical): 'llm' | 'llm-tom' | 'vlm' | 'vlm-tom' | 'rl_joint' | 'rl_individual' | 'committedAgent'
@@ -141,11 +159,20 @@ export class GameApplication {
     const urlParams = new URLSearchParams(window.location.search);
     const skipNetwork = urlParams.get('skipNetwork') === 'true';
 
+    if (CONFIG.kids?.enabled) {
+      CONFIG.multiplayer.fallbackAIType = 'committedAgent';
+      if (CONFIG.kids.partnerMode === 'committed') {
+        GameConfigUtils.setPlayerType(2, 'committedAgent');
+      } else if (CONFIG.kids.partnerMode === 'human') {
+        GameConfigUtils.setPlayerType(2, 'human');
+      }
+    }
+
     // Default to configured fallback AI when not explicitly set
     if (!['llm', 'llm-tom', 'vlm', 'vlm-tom', 'human', 'rl_joint', 'rl_individual', 'committedAgent', 'alwaysCommittedAgent', 'signalAgent', 'twoStageSignalAgent', 'gpt', 'gpt-ToM', 'vlm-ToM'].includes(CONFIG.game.players.player2.type)) {
       GameConfigUtils.setPlayerType(2, CONFIG.multiplayer.fallbackAIType || 'rl_joint');
     }
-    this.uiManager.setPlayerInfo(0, 'human-ai');
+    this.uiManager.setPlayerInfo(0, CONFIG.game.players.player2.type === 'human' ? 'human-human' : 'human-ai');
 
     if (!skipNetwork) {
       if (this.networkManager && this.networkManager.isConnected) {
@@ -378,33 +405,14 @@ export class GameApplication {
       // Pull comprehensive trial data from GameStateManager (legacy: allTrialsData)
       const gsData = this.gameStateManager?.getExperimentData?.() || { allTrialsData: [], successThreshold: {} };
 
-      const getProlificPidFromUrl = () => {
-        try {
-          // Normal query string
-          const params = new URLSearchParams(window.location.search || '');
-          const p = params.get('PROLIFIC_PID') || params.get('prolific_pid');
-          if (p && String(p).trim()) return String(p).trim();
-        } catch (_) { /* ignore */ }
-        try {
-          // Some deployments store query params after '#', e.g. '#/?PROLIFIC_PID=...'
-          const hash = String(window.location.hash || '');
-          const qIdx = hash.indexOf('?');
-          if (qIdx >= 0) {
-            const hashQuery = hash.slice(qIdx + 1);
-            const params2 = new URLSearchParams(hashQuery);
-            const p2 = params2.get('PROLIFIC_PID') || params2.get('prolific_pid');
-            if (p2 && String(p2).trim()) return String(p2).trim();
-          }
-        } catch (_) { /* ignore */ }
-        return null;
-      };
-
-      // Participant ID: always prefer Prolific PID from URL when present
+      // Participant ID: kids use child/childId first, then existing Prolific IDs.
       let participantId = null;
       let prolificPid = null;
+      let childId = null;
       try {
         prolificPid = getProlificPidFromUrl();
-        participantId = prolificPid || data.participantId || `participant_${Date.now()}`;
+        childId = getChildIdFromUrl();
+        participantId = getParticipantIdFromUrl() || data.participantId || `participant_${Date.now()}`;
       } catch (_) {
         participantId = data.participantId || `participant_${Date.now()}`;
       }
@@ -415,11 +423,18 @@ export class GameApplication {
       // Legacy-compatible export object
       const exportObj = {
         participantId,
+        childId: childId || null,
         prolificPid: prolificPid || null,
         timestamp: new Date().toISOString(),
         experimentOrder: (CONFIG?.game?.experiments?.order) || [],
         allTrialsData: gsData.allTrialsData || [],
         questionnaireData: data.questionnaire || null,
+        participantDob: data.participantDob || null,
+        participantAgeReferenceDate: data.participantAgeReferenceDate || null,
+        participantAgeYears: data.participantAgeYears ?? null,
+        participantAgeMonths: data.participantAgeMonths ?? null,
+        participantAgeDays: data.participantAgeDays ?? null,
+        participantAgeTotalDays: data.participantAgeTotalDays ?? null,
         successThreshold: gsData.successThreshold || {},
         completionCode: data.completionCode || '',
         version: (CONFIG?.game?.version) || '2.0.0',
@@ -459,6 +474,13 @@ export class GameApplication {
               o.roomId = exportObj.roomId || '';
               // Add participantId per row for easier analysis join
               o.participantId = exportObj.participantId;
+              o.childId = exportObj.childId || '';
+              o.participantDob = exportObj.participantDob || '';
+              o.participantAgeReferenceDate = exportObj.participantAgeReferenceDate || '';
+              o.participantAgeYears = exportObj.participantAgeYears ?? '';
+              o.participantAgeMonths = exportObj.participantAgeMonths ?? '';
+              o.participantAgeDays = exportObj.participantAgeDays ?? '';
+              o.participantAgeTotalDays = exportObj.participantAgeTotalDays ?? '';
               // Also include explicit prolificPid for verification/debugging
               o.prolificPid = exportObj.prolificPid || '';
               // Add current player number (1 or 2) for human-human mode analysis
@@ -479,7 +501,9 @@ export class GameApplication {
             // Prefer a sensible column order for readability; include common fields first if present
             const preferredOrder = [
               'trialIndex', 'experimentType', 'partnerAgentType',
-              'currentPlayer', 'participantId', 'roomId',
+              'currentPlayer', 'participantId', 'childId', 'prolificPid', 'roomId',
+              'participantDob', 'participantAgeReferenceDate',
+              'participantAgeYears', 'participantAgeMonths', 'participantAgeDays', 'participantAgeTotalDays',
               'humanPlayerIndex', 'aiPlayerIndex',
               'player1StartPosition', 'player2StartPosition', 'initialGoalPositions',
               'partnerFallbackOccurred', 'partnerFallbackReason', 'partnerFallbackStage', 'partnerFallbackTime',
@@ -573,7 +597,14 @@ export class GameApplication {
 
           const metaRows = [
             ['participantId', exportObj.participantId],
+            ['childId', exportObj.childId || ''],
             ['prolificPid', exportObj.prolificPid || ''],
+            ['participantDob', exportObj.participantDob || ''],
+            ['participantAgeReferenceDate', exportObj.participantAgeReferenceDate || ''],
+            ['participantAgeYears', exportObj.participantAgeYears ?? ''],
+            ['participantAgeMonths', exportObj.participantAgeMonths ?? ''],
+            ['participantAgeDays', exportObj.participantAgeDays ?? ''],
+            ['participantAgeTotalDays', exportObj.participantAgeTotalDays ?? ''],
             ['roomId', exportObj.roomId || ''],
             ['experimentOrder', JSON.stringify(exportObj.experimentOrder || [])],
             ['experimentType', exportObj.experimentType],

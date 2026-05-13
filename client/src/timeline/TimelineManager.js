@@ -1,4 +1,8 @@
 import { CONFIG, GameConfigUtils } from '../config/gameConfig.js';
+import {
+  calculateAgeFromDob,
+  getParticipantIdFromUrl
+} from '../utils/ParticipantUtils.js';
 
 /**
  * Timeline Manager - Orchestrates the complete experiment flow
@@ -19,6 +23,12 @@ export class TimelineManager {
       consentTime: null,
       experiments: {},
       questionnaire: {},
+      participantDob: null,
+      participantAgeReferenceDate: null,
+      participantAgeYears: null,
+      participantAgeMonths: null,
+      participantAgeDays: null,
+      participantAgeTotalDays: null,
       totalScore: 0,
       completed: false
     };
@@ -44,6 +54,14 @@ export class TimelineManager {
     // Player information for multiplayer games
     this.playerIndex = 0; // Default to player 0 (red)
     this.gameMode = 'human-ai'; // Default game mode
+  }
+
+  isKidMode() {
+    return !!CONFIG?.kids?.enabled;
+  }
+
+  shouldUseHumanMatching() {
+    return !this.isKidMode() || CONFIG?.kids?.partnerMode === 'human';
   }
 
   // Event system
@@ -91,17 +109,32 @@ export class TimelineManager {
 
     console.log('📋 Creating comprehensive timeline stages...');
 
-    // 1. Consent form
-    this.stages.push({
-      type: 'consent',
-      handler: () => this.showConsentStage()
-    });
+    if (this.isKidMode()) {
+      this.stages.push({
+        type: 'fullscreen_prompt',
+        handler: () => this.showFullscreenPromptStage()
+      });
+      this.stages.push({
+        type: 'dob',
+        handler: () => this.showDobStage()
+      });
+      this.stages.push({
+        type: 'welcome_info',
+        handler: () => this.showWelcomeInfoStage()
+      });
+    } else {
+      // 1. Consent form
+      this.stages.push({
+        type: 'consent',
+        handler: () => this.showConsentStage()
+      });
 
-    // 2. Welcome info
-    this.stages.push({
-      type: 'welcome_info',
-      handler: () => this.showWelcomeInfoStage()
-    });
+      // 2. Welcome info
+      this.stages.push({
+        type: 'welcome_info',
+        handler: () => this.showWelcomeInfoStage()
+      });
+    }
 
     // 3-6. Add stages for each experiment in order
     const experimentOrder = CONFIG.game.experiments.order;
@@ -124,7 +157,8 @@ export class TimelineManager {
       const isMultiplayer = experimentType.includes('2P');
       console.log(`🔍 Experiment ${experimentType}: isMultiplayer=${isMultiplayer}`);
 
-      if (isMultiplayer) {
+      const shouldMatchHumanPartner = !this.isKidMode() || this.shouldUseHumanMatching();
+      if (isMultiplayer && shouldMatchHumanPartner) {
         // Only show the partner-finding (waiting) stage once across all 2P games
         if (!this.hasShownPartnerFindingStage) {
           console.log(`➕ Adding waiting + match-play stages for ${experimentType}`);
@@ -194,11 +228,18 @@ export class TimelineManager {
       handler: () => this.showEndExperimentInfoStage()
     });
 
-    // 10. Prolific redirect
-    this.stages.push({
-      type: 'prolific-redirect',
-      handler: () => this.showProlificRedirectStage()
-    });
+    if (this.isKidMode()) {
+      this.stages.push({
+        type: 'local-complete',
+        handler: () => this.showKidLocalCompletionStage()
+      });
+    } else {
+      // 10. Prolific redirect
+      this.stages.push({
+        type: 'prolific-redirect',
+        handler: () => this.showProlificRedirectStage()
+      });
+    }
 
     console.log(`📋 Timeline created with ${this.stages.length} total stages`);
     console.log('📋 Stages:', this.stages.map((stage, index) => `${index}: ${stage.type}`).join(', '));
@@ -284,6 +325,13 @@ export class TimelineManager {
     console.log(`➡️ Advancing from stage ${this.currentStageIndex} to ${this.currentStageIndex + 1}`);
     this.currentStageIndex++;
     this.runCurrentStage();
+  }
+
+  skipNextMatchPlayStageIfPresent() {
+    const nextStage = this.stages[this.currentStageIndex + 1];
+    if (nextStage?.type === 'match_play') {
+      this.currentStageIndex++;
+    }
   }
 
   /**
@@ -377,6 +425,90 @@ export class TimelineManager {
     }
   }
 
+  showFullscreenPromptStage() {
+    this.container.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#fff;">
+        <div data-stage-focus="true" tabindex="-1" style="color:#333;text-align:center;font-family:Arial, sans-serif;max-width:720px;padding:30px;font-size:24px;">
+          <h2 style="margin:0 0 10px;">Please press <span style="font-family:monospace;background:#f0f0f0;padding:2px 6px;border-radius:4px;">Space Bar</span> to start the game in fullscreen!</h2>
+        </div>
+      </div>
+    `;
+
+    this.setupStageAdvanceControls({
+      onAdvance: async () => {
+        if (CONFIG?.game?.fullscreen?.defaultEnabled || CONFIG?.game?.fullscreen?.enabled) {
+          this.tryEnterFullscreen();
+        }
+        this.nextStage();
+      }
+    });
+  }
+
+  showDobStage() {
+    const currentYear = new Date().getFullYear();
+    this.container.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8f9fa;padding:20px;">
+        <div data-stage-focus="true" tabindex="-1" style="background:white;padding:36px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:640px;width:100%;text-align:center;">
+          <h2 style="color:#333;margin:0 0 12px;font-size:30px;">Before we begin</h2>
+          <p style="font-size:18px;color:#333;line-height:1.5;margin:0 0 24px;">Please enter your date of birth.</p>
+
+          <form id="dobForm" style="display:flex;flex-direction:column;gap:18px;align-items:stretch;">
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;text-align:left;">
+              <label style="font-weight:bold;color:#333;">
+                Month
+                <select id="dobMonth" required style="width:100%;margin-top:6px;padding:12px;border:1px solid #bbb;border-radius:6px;font-size:16px;background:white;">
+                  <option value="">Month</option>
+                  ${Array.from({ length: 12 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('')}
+                </select>
+              </label>
+              <label style="font-weight:bold;color:#333;">
+                Day
+                <select id="dobDay" required style="width:100%;margin-top:6px;padding:12px;border:1px solid #bbb;border-radius:6px;font-size:16px;background:white;">
+                  <option value="">Day</option>
+                  ${Array.from({ length: 31 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('')}
+                </select>
+              </label>
+              <label style="font-weight:bold;color:#333;">
+                Year
+                <input id="dobYear" required type="text" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="YYYY" style="width:100%;box-sizing:border-box;margin-top:6px;padding:12px;border:1px solid #bbb;border-radius:6px;font-size:16px;">
+              </label>
+            </div>
+
+            <div id="dobError" role="alert" style="min-height:22px;color:#dc3545;font-size:15px;text-align:center;"></div>
+
+            <button id="dobContinueBtn" type="submit" style="align-self:center;background:#007bff;color:white;border:none;padding:13px 28px;font-size:18px;border-radius:6px;cursor:pointer;">
+              Continue
+            </button>
+          </form>
+        </div>
+      </div>
+    `;
+
+    const form = document.getElementById('dobForm');
+    const errorEl = document.getElementById('dobError');
+    const setError = (message) => {
+      if (errorEl) errorEl.textContent = message || '';
+    };
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const year = Number(document.getElementById('dobYear')?.value);
+      const month = Number(document.getElementById('dobMonth')?.value);
+      const day = Number(document.getElementById('dobDay')?.value);
+      const dob = `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const ageInfo = calculateAgeFromDob(dob, new Date());
+
+      if (!ageInfo) {
+        setError('Please enter a real date of birth that is not in the future.');
+        return;
+      }
+
+      Object.assign(this.experimentData, ageInfo);
+      this.experimentData.participantId = this.getParticipantId();
+      this.nextStage();
+    });
+  }
+
   showConsentStage() {
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
@@ -456,6 +588,11 @@ export class TimelineManager {
   }
 
   showWelcomeInfoStage() {
+    if (this.isKidMode()) {
+      this.showKidWelcomeInfoStage();
+      return;
+    }
+
     const preferFullscreen = !!(CONFIG?.game?.fullscreen?.defaultEnabled ?? CONFIG?.fullscreen?.defaultEnabled);
     const promptText = preferFullscreen ? 'enter the fullscreen and start the game' : 'start the game';
     this.container.innerHTML = `
@@ -503,6 +640,138 @@ export class TimelineManager {
     });
   }
 
+  showKidWelcomeInfoStage() {
+    const assetBase = CONFIG?.kids?.assetBasePath || '/kids/figs';
+    const guideSrc = `${assetBase}/guide-kid.gif`;
+    const smileSrc = `${assetBase}/smile-face.svg`;
+
+    this.container.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8f9fa;">
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;width:100%;padding:10px;">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <img id="kidsGuideImg" src="${guideSrc}" alt="Friendly guide" style="width:160px;height:160px;object-fit:contain;image-rendering:-webkit-optimize-contrast;" onerror="this.onerror=null;this.src='${smileSrc}'">
+            <div id="speakControls" style="margin-top:8px;display:flex;gap:8px;align-items:center;">
+              <button id="btnSpeak" style="background:#007bff;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">Listen</button>
+              <button id="btnStop" style="background:#dc3545;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">Stop</button>
+              <span id="speakStatus" style="font-size:12px;color:#555;"></span>
+            </div>
+          </div>
+
+          <div data-stage-focus="true" tabindex="-1" style="background:white;padding:10px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:800px;text-align:center;">
+            <h2 style="color:#333;margin-bottom:2px;font-size:22px;">Welcome to the Game!</h2>
+
+            <div style="display:flex;justify-content:center;align-items:center;width:100%;">
+              <div style="text-align:center;line-height:1.6;margin-bottom:2px;font-size:18px;max-width:600px;">
+                <p style="margin-bottom:2px;">You will play a navigation game where hungry travelers need to reach restaurants as quickly as possible.</p>
+                <p style="margin-bottom:2px;"><span style="color:#007bff;font-weight:bold;">Your goal: Use the arrow keys to guide your traveler to a restaurant.</span></p>
+              </div>
+            </div>
+
+            <div style="background:#f8f9fa;border:2px solid #007bff;border-radius:10px;padding:16px;margin:5px auto;max-width:700px;">
+              <h4 style="color:rgb(14,14,15);margin:0 0 12px;font-size:14px;text-align:center;">Example Game Map and Controls</h4>
+              <div style="display:flex;justify-content:center;align-items:center;gap:20px;margin-bottom:10px;flex-wrap:wrap;">
+                <div style="display:grid;grid-template-columns:repeat(5,32px);grid-template-rows:repeat(5,32px);gap:3px;border:2px solid #333;padding:6px;background:white;border-radius:8px;">
+                  ${Array.from({ length: 25 }, (_, i) => {
+                    const goal = i === 3;
+                    const player = i === 11;
+                    const bg = goal ? '#007bff' : (player ? 'red' : '#f8f9fa');
+                    const radius = goal ? '3px' : (player ? '50%' : '0');
+                    return `<div style="background:${bg};border:1px solid #ddd;border-radius:${radius};"></div>`;
+                  }).join('')}
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;font-size:14px;color:#333;">
+                  <div style="display:flex;align-items:center;gap:6px;"><div style="width:14px;height:14px;background:red;border-radius:50%;"></div><span>Traveler</span></div>
+                  <div style="display:flex;align-items:center;gap:6px;"><div style="width:14px;height:14px;background:#007bff;border-radius:3px;"></div><span>Restaurant</span></div>
+                </div>
+              </div>
+
+              <div style="display:flex;justify-content:center;align-items:flex-end;gap:24px;margin:12px auto 4px;max-width:640px;flex-wrap:wrap;">
+                <div style="display:flex;flex-direction:column;align-items:center;">
+                  <div style="width:240px;height:48px;border:1px solid #bbb;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow:inset 0 1px 0 #fff;font-size:16px;letter-spacing:1px;">SPACE BAR</div>
+                  <div style="margin-top:8px;color:#555;font-size:14px;">Press this button for starting the game</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;">
+                  <div style="display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,46px);gap:6px;">
+                    <div></div><div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow:inset 0 1px 0 #fff;font-size:20px;">Up</div><div></div>
+                    <div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow:inset 0 1px 0 #fff;font-size:20px;">Left</div>
+                    <div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow:inset 0 1px 0 #fff;font-size:20px;">Down</div>
+                    <div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow:inset 0 1px 0 #fff;font-size:20px;">Right</div>
+                  </div>
+                  <div style="margin-top:8px;color:#555;font-size:14px;">Arrow keys for navigation</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:5px;">
+              <p style="font-size:18px;font-weight:bold;color:#333;margin-bottom:5px;">
+                Next, let's see how to play the game! Press the <span style="background:#f0f0f0;padding:4px 8px;border-radius:4px;font-family:monospace;">spacebar</span> to begin!
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.setupKidWelcomeSpeech();
+    this.setupStageAdvanceControls({
+      onAdvance: async () => {
+        try {
+          window.speechSynthesis?.cancel?.();
+        } catch (_) {
+          // Ignore speech cleanup failures.
+        }
+        this.nextStage();
+      }
+    });
+  }
+
+  setupKidWelcomeSpeech() {
+    try {
+      if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return;
+
+      const btnSpeak = document.getElementById('btnSpeak');
+      const btnStop = document.getElementById('btnStop');
+      const statusEl = document.getElementById('speakStatus');
+      const text = [
+        'Hello! Welcome to the game.',
+        'You will play a navigation game.',
+        'Hungry travelers need to reach restaurants as quickly as possible.',
+        'Your goal is to use the arrow keys to guide your traveler to a restaurant.',
+        'When you are ready, press the space bar to begin.'
+      ].join(' ');
+
+      const synth = window.speechSynthesis;
+      const speak = () => {
+        synth.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.8;
+        utterance.pitch = 1.15;
+        utterance.volume = 1.0;
+        utterance.onstart = () => { if (statusEl) statusEl.textContent = 'Speaking...'; };
+        utterance.onend = () => { if (statusEl) statusEl.textContent = ''; };
+        synth.speak(utterance);
+      };
+      const stop = () => {
+        synth.cancel();
+        if (statusEl) statusEl.textContent = '';
+      };
+
+      btnSpeak?.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        speak();
+      });
+      btnStop?.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        stop();
+      });
+    } catch (_) {
+      // Speech support is optional.
+    }
+  }
+
   showInstructionsStage(experimentType, experimentIndex) {
     const instructions = this.getInstructionsForExperiment(experimentType);
 
@@ -511,20 +780,22 @@ export class TimelineManager {
     if (instructionCard) {
       instructionCard.setAttribute('data-stage-focus', 'true');
       instructionCard.setAttribute('tabindex', '-1');
-      instructionCard.insertAdjacentHTML(
-        'beforeend',
-        `
-          <div style="margin-top: 24px;">
-            <button id="instruction-continue-btn" style="background: #007bff; color: white; border: none; padding: 14px 28px; font-size: 18px; border-radius: 6px; cursor: pointer;">
-              Continue
-            </button>
-          </div>
-        `
-      );
+      if (!this.isKidMode()) {
+        instructionCard.insertAdjacentHTML(
+          'beforeend',
+          `
+            <div style="margin-top: 24px;">
+              <button id="instruction-continue-btn" style="background: #007bff; color: white; border: none; padding: 14px 28px; font-size: 18px; border-radius: 6px; cursor: pointer;">
+                Continue
+              </button>
+            </div>
+          `
+        );
+      }
     }
 
     this.setupStageAdvanceControls({
-      buttonId: 'instruction-continue-btn',
+      buttonId: this.isKidMode() ? null : 'instruction-continue-btn',
       onAdvance: async () => {
         console.log(`📋 Instructions completed for ${experimentType}`);
         this.nextStage();
@@ -648,8 +919,11 @@ export class TimelineManager {
         document.removeEventListener('keydown', handleSkipWaiting);
         console.log('⏭️ Skipping multiplayer waiting after min wait - continuing with AI partner');
         const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
-        GameConfigUtils.setPlayerType(2, fallbackType);
+        const aiPlayerNumber = (this.playerIndex === 0) ? 2 : 1;
+        GameConfigUtils.setPlayerType(aiPlayerNumber, fallbackType);
         try { this.emit('fallback-to-ai', { reason: 'waiting-skip', stage: 'waiting-for-partner', at: Date.now(), fallbackAIType: fallbackType }); } catch (_) { /* noop */ }
+        this.emit('ai-fallback-activated', { fallbackType, aiPlayerNumber });
+        this.skipNextMatchPlayStageIfPresent();
         this.nextStage();
       }
     };
@@ -709,14 +983,16 @@ export class TimelineManager {
 
         console.log(`⌛ No partner found after ${maxWaitMs}ms - falling back to AI mode`);
         const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
-        GameConfigUtils.setPlayerType(2, fallbackType);
+        const aiPlayerNumber = (this.playerIndex === 0) ? 2 : 1;
+        GameConfigUtils.setPlayerType(aiPlayerNumber, fallbackType);
         this.gameMode = 'human-ai';
         document.removeEventListener('keydown', handleSkipWaiting);
         // Notify app to record this fallback event
         try { this.emit('fallback-to-ai', { reason: 'waiting-timeout', stage: 'waiting-for-partner', at: Date.now(), fallbackAIType: fallbackType }); } catch (_) { /* noop */ }
         // Notify ExperimentManager to activate AI fallback
         try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] Timeline emitting ai-fallback-activated event (waiting timeout)`); } catch (_) {}
-        this.emit('ai-fallback-activated', { fallbackType, aiPlayerNumber: 2 });
+        this.emit('ai-fallback-activated', { fallbackType, aiPlayerNumber });
+        this.skipNextMatchPlayStageIfPresent();
         this.nextStage();
       }
     }, maxWaitMs);
@@ -817,8 +1093,9 @@ export class TimelineManager {
             try {
               console.log(`⌛ Match-play wait exceeded (${readyTimeoutMs}ms) - falling back to AI mode`);
               const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
+              const aiPlayerNumber = (this.playerIndex === 0) ? 2 : 1;
             try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] Timeline fallback - fallbackType: ${fallbackType}`); } catch (_) {}
-              GameConfigUtils.setPlayerType(2, fallbackType);
+              GameConfigUtils.setPlayerType(aiPlayerNumber, fallbackType);
             try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] Timeline fallback - After setPlayerType, Player2: ${CONFIG.game.players.player2.type}`); } catch (_) {}
               this.gameMode = 'human-ai';
               // Clean up listener to avoid double-proceed if server emits later
@@ -826,7 +1103,7 @@ export class TimelineManager {
 
               // Notify ExperimentManager to activate AI fallback
             try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] Timeline emitting ai-fallback-activated event`); } catch (_) {}
-              this.emit('ai-fallback-activated', { fallbackType, aiPlayerNumber: 2 });
+              this.emit('ai-fallback-activated', { fallbackType, aiPlayerNumber });
             } catch (_) { /* noop */ }
             this.nextStage();
           };
@@ -1006,6 +1283,11 @@ export class TimelineManager {
   }
 
   showGameFeedbackStage() {
+    if (this.isKidMode()) {
+      this.showKidGameFeedbackStage();
+      return;
+    }
+
     // Build legacy-compatible metrics based on collected trial results
     const allResults = Object.values(this.experimentData.experiments).flat();
     const trials = allResults.map(r => r?.trialData || r).filter(Boolean);
@@ -1124,7 +1406,90 @@ export class TimelineManager {
     }
   }
 
+  showKidGameFeedbackStage() {
+    const allResults = Object.values(this.experimentData.experiments).flat();
+    const trials = allResults.map(r => r?.trialData || r).filter(Boolean);
+    const totalTrials = trials.length;
+
+    let totalTimeMinutes = 0;
+    if (trials.length > 0) {
+      const firstStart = Math.min(...trials.map(t => Number(t.trialStartTime || 0) || 0));
+      const lastEnd = Math.max(...trials.map(t => Number(t.endTime || t.trialEndTime || 0) || 0));
+      totalTimeMinutes = Math.round(Math.max(0, lastEnd - firstStart) / (1000 * 60));
+    }
+
+    const singlePlayerTrials = trials.filter(trial => String(trial.experimentType || '').includes('1P'));
+    const collaborationTrials = trials.filter(trial => String(trial.experimentType || '').includes('2P'));
+    const successfulSinglePlayer = singlePlayerTrials.filter(trial => trial.completed === true).length;
+    const successfulCollaborations = collaborationTrials.filter(trial => trial.collaborationSucceeded === true).length;
+    const singleRateDisplay = singlePlayerTrials.length
+      ? `${Math.round((successfulSinglePlayer / singlePlayerTrials.length) * 100)}%`
+      : '-';
+    const collabRateDisplay = collaborationTrials.length
+      ? `${Math.round((successfulCollaborations / collaborationTrials.length) * 100)}%`
+      : '-';
+
+    this.container.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8f9fa;">
+        <div data-stage-focus="true" tabindex="-1" style="background:white;padding:10px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:1100px;width:100%;text-align:center;">
+          <h2 style="color:#333;margin-bottom:5px;">Game Performance Summary</h2>
+
+          <div style="background:#f8f9fa;border-radius:8px;padding:15px;margin-bottom:10px;">
+            <h3 style="color:#666;margin-bottom:10px;font-size:16px;">Your Results</h3>
+
+            <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:10px;align-items:stretch;">
+              <div style="background:white;padding:12px;border-radius:8px;border-left:4px solid #007bff;">
+                <h4 style="color:#007bff;margin-bottom:5px;font-size:14px;">Total Trials</h4>
+                <p style="font-size:20px;font-weight:bold;color:#333;margin:0;">${totalTrials}</p>
+              </div>
+              <div style="background:white;padding:12px;border-radius:8px;border-left:4px solid #28a745;">
+                <h4 style="color:#28a745;margin-bottom:5px;font-size:14px;">Total Time</h4>
+                <p style="font-size:20px;font-weight:bold;color:#333;margin:0;">${totalTimeMinutes} min</p>
+              </div>
+              <div style="background:white;padding:12px;border-radius:8px;border-left:4px solid #ffc107;">
+                <h4 style="color:#ffc107;margin-bottom:5px;font-size:14px;">Single Player Success</h4>
+                <p style="font-size:20px;font-weight:bold;color:#333;margin:0;">${singleRateDisplay}</p>
+                <p style="font-size:12px;color:#666;margin:2px 0 0 0;">(${singlePlayerTrials.length} single player trials)</p>
+              </div>
+              <div style="background:white;padding:12px;border-radius:8px;border-left:4px solid #dc3545;">
+                <h4 style="color:#dc3545;margin-bottom:5px;font-size:14px;">Collaboration Success</h4>
+                <p style="font-size:20px;font-weight:bold;color:#333;margin:0;">${collabRateDisplay}</p>
+                <p style="font-size:12px;color:#666;margin:2px 0 0 0;">(${collaborationTrials.length} collaboration trials)</p>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#e8f5e8;border:2px solid #28a745;border-radius:8px;padding:15px;margin-bottom:5px;">
+            <h3 style="color:#28a745;margin-bottom:8px;font-size:16px;">Almost Done!</h3>
+            <p style="font-size:16px;color:#333;margin-bottom:8px;">Thank you for completing the game! We just have few more questions for you to answer!</p>
+          </div>
+
+          <div style="text-align:center;">
+            <button id="continueToQuestionnaireBtn" style="background:#28a745;color:white;border:none;padding:12px 25px;font-size:16px;border-radius:8px;cursor:pointer;box-shadow:0 4px 8px rgba(0,0,0,0.2);transition:all 0.3s ease;">
+              Press the space bar to continue!
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const hasQuestionnaireStage = this.stages.some(s => s.type === 'questionnaire');
+    if (!hasQuestionnaireStage) {
+      this.stages.push({ type: 'questionnaire', handler: () => this.showQuestionnaireStage() });
+    }
+
+    this.setupStageAdvanceControls({
+      buttonId: 'continueToQuestionnaireBtn',
+      onAdvance: async () => this.nextStage()
+    });
+  }
+
   showQuestionnaireStage() {
+    if (this.isKidMode()) {
+      this.showKidQuestionnaireStage();
+      return;
+    }
+
     // Match legacy two-page questionnaire exactly
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
@@ -1310,6 +1675,114 @@ export class TimelineManager {
     });
   }
 
+  showKidQuestionnaireStage() {
+    const questions = [
+      {
+        name: 'ai_detection',
+        title: 'Page 1 of 3',
+        prompt: 'Do you think the other player is a person or a computer?',
+        options: [
+          'Definitely a person',
+          'Probably a person',
+          'Not sure',
+          'Probably a computer',
+          'Definitely a computer'
+        ]
+      },
+      {
+        name: 'collaboration_rating',
+        title: 'Page 2 of 3',
+        prompt: 'How well did the other player collaborate with you?',
+        options: [
+          'Very poor collaborator',
+          'Poor collaborator',
+          'Neutral',
+          'Good collaborator',
+          'Very good collaborator'
+        ]
+      },
+      {
+        name: 'play_again',
+        title: 'Page 3 of 3',
+        prompt: 'Would you like to play this game again in the future?',
+        options: [
+          'Definitely not play again',
+          'Probably not play again',
+          'Not sure',
+          'Probably play again',
+          'Definitely play again'
+        ]
+      }
+    ];
+
+    const answers = {};
+    let questionIndex = 0;
+    let selectedIndex = 2;
+
+    const renderQuestion = () => {
+      const question = questions[questionIndex];
+      const optionsHtml = question.options.map((option, index) => {
+        const selected = index === selectedIndex;
+        return `
+          <div data-idx="${index}" style="
+            padding:12px 16px;
+            margin:8px 0;
+            border-radius:10px;
+            border:2px solid ${selected ? '#4f46e5' : '#e5e7eb'};
+            background:${selected ? '#eef2ff' : '#ffffff'};
+            color:#333;
+            font-size:18px;
+            text-align:center;
+          ">${option}</div>
+        `;
+      }).join('');
+
+      this.container.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8f9fa;padding:20px;">
+          <div data-stage-focus="true" tabindex="-1" style="background:white;padding:32px;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,0.1);width:100%;max-width:720px;">
+            <div style="text-align:center;margin-bottom:12px;color:#6b7280;font-weight:600;">Post-Game Questionnaire</div>
+            <div style="text-align:center;margin-bottom:8px;color:#6b7280;font-weight:600;">${question.title}</div>
+            <h2 style="text-align:center;margin:8px 0 20px;color:#111827;">${question.prompt}</h2>
+            <div style="margin-bottom:16px;text-align:center;color:#6b7280;">Use Up and Down arrows to choose, press Space to confirm</div>
+            <div id="options" style="display:flex;flex-direction:column;">${optionsHtml}</div>
+          </div>
+        </div>
+      `;
+
+      const focusTarget = this.container.querySelector('[data-stage-focus="true"]');
+      if (focusTarget && typeof focusTarget.focus === 'function') {
+        setTimeout(() => focusTarget.focus({ preventScroll: true }), 0);
+      }
+    };
+
+    const handleKeys = (event) => {
+      if (event.code === 'ArrowUp' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        selectedIndex = Math.max(0, selectedIndex - 1);
+        renderQuestion();
+      } else if (event.code === 'ArrowDown' || event.key === 'ArrowDown') {
+        event.preventDefault();
+        selectedIndex = Math.min(questions[questionIndex].options.length - 1, selectedIndex + 1);
+        renderQuestion();
+      } else if (event.code === 'Space' || event.key === ' ') {
+        event.preventDefault();
+        answers[questions[questionIndex].name] = questions[questionIndex].options[selectedIndex];
+        if (questionIndex < questions.length - 1) {
+          questionIndex += 1;
+          selectedIndex = 2;
+          renderQuestion();
+        } else {
+          document.removeEventListener('keydown', handleKeys, true);
+          this.experimentData.questionnaire = answers;
+          this.nextStage();
+        }
+      }
+    };
+
+    renderQuestion();
+    document.addEventListener('keydown', handleKeys, true);
+  }
+
   showEndExperimentInfoStage() {
     const completionCode = this.generateCompletionCode();
 
@@ -1403,6 +1876,18 @@ export class TimelineManager {
       }
       this.nextStage();
     });
+  }
+
+  showKidLocalCompletionStage() {
+    this.container.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8f9fa;">
+        <div style="background:white;padding:40px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:600px;text-align:center;">
+          <h2 style="color:#28a745;margin-bottom:20px;">Experiment Complete!</h2>
+          <p style="font-size:18px;margin-bottom:12px;">Thank you for playing the game.</p>
+          <p style="font-size:16px;color:#666;margin-bottom:0;">You may close this page now.</p>
+        </div>
+      </div>
+    `;
   }
 
   showProlificRedirectStage() {
@@ -1589,27 +2074,7 @@ export class TimelineManager {
   }
 
   getParticipantId() {
-    try {
-      const params = new URLSearchParams(window.location.search || '');
-      const prolific = params.get('PROLIFIC_PID') || params.get('prolific_pid');
-      if (prolific && String(prolific).trim()) return String(prolific).trim();
-    } catch (e) {
-      // ignore
-    }
-    // Hash-query fallback (e.g., '#/?PROLIFIC_PID=...')
-    try {
-      const hash = String(window.location.hash || '');
-      const qIdx = hash.indexOf('?');
-      if (qIdx >= 0) {
-        const hashQuery = hash.slice(qIdx + 1);
-        const params2 = new URLSearchParams(hashQuery);
-        const prolific2 = params2.get('PROLIFIC_PID') || params2.get('prolific_pid');
-        if (prolific2 && String(prolific2).trim()) return String(prolific2).trim();
-      }
-    } catch (e) {
-      // ignore
-    }
-    return this.generateParticipantId();
+    return getParticipantIdFromUrl() || this.generateParticipantId();
   }
 
   generateCompletionCode() {

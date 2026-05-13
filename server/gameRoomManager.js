@@ -23,7 +23,7 @@ export class GameRoomManager {
     return room;
   }
 
-  joinRoom(playerId, roomId = null, gameMode = 'human-ai') {
+  joinRoom(playerId, roomId = null, gameMode = 'human-ai', experimentType = '2P2G') {
     let room;
     
     if (roomId) {
@@ -33,7 +33,7 @@ export class GameRoomManager {
       }
     } else {
       // Find available room or create new one
-      room = this.findAvailableRoom(gameMode) || this.createRoom(gameMode);
+      room = this.findAvailableRoom(gameMode, experimentType) || this.createRoom(gameMode, experimentType);
     }
 
     if (room.players.length >= room.maxPlayers) {
@@ -73,9 +73,10 @@ export class GameRoomManager {
     }
   }
 
-  findAvailableRoom(gameMode) {
+  findAvailableRoom(gameMode, experimentType = '2P2G') {
     for (const room of this.rooms.values()) {
       if (room.gameMode === gameMode && 
+          room.experimentType === experimentType &&
           room.status === 'waiting' && 
           room.players.length < room.maxPlayers) {
         return room;
