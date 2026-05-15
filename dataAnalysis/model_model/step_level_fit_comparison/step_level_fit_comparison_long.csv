@@ -1,0 +1,65 @@
+group,metric,mean_percent,ci95_percent,n,scope
+sampleJointGoal_afterNewGoal,Success Rate (%),93.33333333333333,2.5803677529835887,360,Average all 2P3G
+sampleJointGoal_afterNewGoal,Coordination Efficiency (%),89.75012745191317,0.8672468960490475,60,Average all 2P3G
+sampleJointGoal_afterNewGoal,Commitment (%),86.07804232804234,2.6818756256579066,60,Average all 2P3G
+sampleJointGoal_afterNewGoal,Signaling Move (%),36.984126984126995,3.823292343518217,60,Average all 2P3G
+sampleJointGoal_afterNewGoal,Success Rate (%),100.0,0.0,90,Equal-to-both
+sampleJointGoal_afterNewGoal,Coordination Efficiency (%),99.52475685234306,0.3397956935230666,58,Equal-to-both
+sampleJointGoal_afterNewGoal,Commitment (%),97.41379310344827,2.515472836431367,58,Equal-to-both
+sampleJointGoal_afterNewGoal,Signaling Move (%),51.43678160919541,8.848527692293642,58,Equal-to-both
+sampleJointGoalAndSignal_afterNewGoal,Success Rate (%),92.5,2.7246476350853226,360,Average all 2P3G
+sampleJointGoalAndSignal_afterNewGoal,Coordination Efficiency (%),90.14445332004857,0.9413399317611331,60,Average all 2P3G
+sampleJointGoalAndSignal_afterNewGoal,Commitment (%),85.73875661375662,2.7102764207002314,60,Average all 2P3G
+sampleJointGoalAndSignal_afterNewGoal,Signaling Move (%),34.340608465608454,3.83867713893748,60,Average all 2P3G
+sampleJointGoalAndSignal_afterNewGoal,Success Rate (%),100.0,0.0,90,Equal-to-both
+sampleJointGoalAndSignal_afterNewGoal,Coordination Efficiency (%),99.6740615706133,0.37047433612410857,58,Equal-to-both
+sampleJointGoalAndSignal_afterNewGoal,Commitment (%),99.13793103448276,1.689655172413793,58,Equal-to-both
+sampleJointGoalAndSignal_afterNewGoal,Signaling Move (%),50.86206896551724,9.554930158404437,58,Equal-to-both
+sampleJointGoal_fromStart,Success Rate (%),92.5,2.7246476350853226,360,Average all 2P3G
+sampleJointGoal_fromStart,Coordination Efficiency (%),90.36593292620077,0.8931319389488886,60,Average all 2P3G
+sampleJointGoal_fromStart,Commitment (%),85.26984126984127,3.280128049683407,60,Average all 2P3G
+sampleJointGoal_fromStart,Signaling Move (%),36.98677248677249,4.325037018265282,60,Average all 2P3G
+sampleJointGoal_fromStart,Success Rate (%),100.0,0.0,90,Equal-to-both
+sampleJointGoal_fromStart,Coordination Efficiency (%),99.71885521885521,0.2454629099406966,60,Equal-to-both
+sampleJointGoal_fromStart,Commitment (%),96.66666666666667,3.9439194897486916,60,Equal-to-both
+sampleJointGoal_fromStart,Signaling Move (%),40.0,7.849529675915763,60,Equal-to-both
+sampleJointGoalAndSignal_fromStart,Success Rate (%),95.0,2.254528096062045,360,Average all 2P3G
+sampleJointGoalAndSignal_fromStart,Coordination Efficiency (%),89.87081731099588,0.980829853623298,60,Average all 2P3G
+sampleJointGoalAndSignal_fromStart,Commitment (%),89.3551587301587,2.3417737459870356,60,Average all 2P3G
+sampleJointGoalAndSignal_fromStart,Signaling Move (%),42.42063492063492,3.915523355809781,60,Average all 2P3G
+sampleJointGoalAndSignal_fromStart,Success Rate (%),100.0,0.0,90,Equal-to-both
+sampleJointGoalAndSignal_fromStart,Coordination Efficiency (%),99.43210955710956,0.39203426671640784,60,Equal-to-both
+sampleJointGoalAndSignal_fromStart,Commitment (%),98.88888888888889,1.5268154819094166,60,Equal-to-both
+sampleJointGoalAndSignal_fromStart,Signaling Move (%),55.55555555555555,9.110298066704377,60,Equal-to-both
+sampleJointGoalAndRSASignal_fromStart,Success Rate (%),92.5,2.7246476350853226,360,Average all 2P3G
+sampleJointGoalAndRSASignal_fromStart,Coordination Efficiency (%),90.36593292620077,0.8931319389488886,60,Average all 2P3G
+sampleJointGoalAndRSASignal_fromStart,Commitment (%),85.26984126984127,3.280128049683407,60,Average all 2P3G
+sampleJointGoalAndRSASignal_fromStart,Signaling Move (%),36.98677248677249,4.325037018265282,60,Average all 2P3G
+sampleJointGoalAndRSASignal_fromStart,Success Rate (%),100.0,0.0,90,Equal-to-both
+sampleJointGoalAndRSASignal_fromStart,Coordination Efficiency (%),99.71885521885521,0.2454629099406966,60,Equal-to-both
+sampleJointGoalAndRSASignal_fromStart,Commitment (%),96.66666666666667,3.9439194897486916,60,Equal-to-both
+sampleJointGoalAndRSASignal_fromStart,Signaling Move (%),40.0,7.849529675915763,60,Equal-to-both
+samplePosteriorOnlyGoalAndSignal_fromStart,Success Rate (%),92.77777777777779,2.6777267287738984,360,Average all 2P3G
+samplePosteriorOnlyGoalAndSignal_fromStart,Coordination Efficiency (%),85.3344403743631,1.8497602197048368,60,Average all 2P3G
+samplePosteriorOnlyGoalAndSignal_fromStart,Commitment (%),72.8260582010582,3.8934004992141413,60,Average all 2P3G
+samplePosteriorOnlyGoalAndSignal_fromStart,Signaling Move (%),33.389550264550266,4.964186317716672,60,Average all 2P3G
+samplePosteriorOnlyGoalAndSignal_fromStart,Success Rate (%),100.0,0.0,90,Equal-to-both
+samplePosteriorOnlyGoalAndSignal_fromStart,Coordination Efficiency (%),97.06837722462721,1.3755738520353946,56,Equal-to-both
+samplePosteriorOnlyGoalAndSignal_fromStart,Commitment (%),93.75,4.1255394504932035,56,Equal-to-both
+samplePosteriorOnlyGoalAndSignal_fromStart,Signaling Move (%),43.45238095238094,9.552169355384116,56,Equal-to-both
+TwoStageSignalAgent_sigmoidThreshold,Success Rate (%),95.27777777777777,2.194208368137532,360,Average all 2P3G
+TwoStageSignalAgent_sigmoidThreshold,Coordination Efficiency (%),89.20043391223363,1.0954405702136556,60,Average all 2P3G
+TwoStageSignalAgent_sigmoidThreshold,Commitment (%),85.75066137566138,3.074929758138208,60,Average all 2P3G
+TwoStageSignalAgent_sigmoidThreshold,Signaling Move (%),41.12103174603175,4.3661929210595085,60,Average all 2P3G
+TwoStageSignalAgent_sigmoidThreshold,Success Rate (%),100.0,0.0,90,Equal-to-both
+TwoStageSignalAgent_sigmoidThreshold,Coordination Efficiency (%),99.04820451879274,0.7543928702254372,60,Equal-to-both
+TwoStageSignalAgent_sigmoidThreshold,Commitment (%),97.22222222222221,2.70834504319261,60,Equal-to-both
+TwoStageSignalAgent_sigmoidThreshold,Signaling Move (%),51.388888888888886,10.162166478519314,60,Equal-to-both
+Human-Human,Success Rate (%),100.0,0.0,189,Average all 2P3G
+Human-Human,Coordination Efficiency (%),81.57604663510541,3.0088168401228863,32,Average all 2P3G
+Human-Human,Commitment (%),64.97395833333334,10.970724409578962,32,Average all 2P3G
+Human-Human,Signaling Move (%),52.5297619047619,7.596550149484699,32,Average all 2P3G
+Human-Human,Success Rate (%),100.0,0.0,47,Equal-to-both
+Human-Human,Coordination Efficiency (%),96.6397607022607,1.9427338715409046,32,Equal-to-both
+Human-Human,Commitment (%),84.375,10.155508485475568,32,Equal-to-both
+Human-Human,Signaling Move (%),59.375,12.697364383051536,32,Equal-to-both

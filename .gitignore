@@ -78,6 +78,8 @@ experiment-data-*.json.env.example
 # data files
 dataAnalysis/raw_data/
 *raw_trials*.json
+dataAnalysis/model_model/**/simulations/*_trials_*.json
+dataAnalysis/model_model/**/smoke/*_trials_*.json
 *.xlsx
 *.png
 *.csv

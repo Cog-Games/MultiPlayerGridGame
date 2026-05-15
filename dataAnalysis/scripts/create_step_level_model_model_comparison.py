@@ -14,12 +14,15 @@ import math
 import os
 import subprocess
 from dataclasses import dataclass
+from itertools import product
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize_scalar
+
+from fit_signal_alpha_beta3 import load_raw, resolved_raw_path  # noqa: E402
 
 os.environ.setdefault("MPLCONFIGDIR", "/tmp/mplconfig")
 import matplotlib
@@ -49,12 +52,18 @@ MODEL_ORDER = [
     "sampleJointGoal_afterNewGoal",
     "sampleJointGoalAndSignal_afterNewGoal",
     "sampleJointGoal_fromStart",
+    "sampleJointGoalAndSignal_fromStart",
+    "sampleJointGoalAndRSASignal_fromStart",
+    "samplePosteriorOnlyGoalAndSignal_fromStart",
     "TwoStageSignalAgent_sigmoidThreshold",
 ]
 MODEL_COLORS = {
     "sampleJointGoal_afterNewGoal": "#4e79a7",
     "sampleJointGoalAndSignal_afterNewGoal": "#59a14f",
     "sampleJointGoal_fromStart": "#f28e2b",
+    "sampleJointGoalAndSignal_fromStart": "#b07aa1",
+    "sampleJointGoalAndRSASignal_fromStart": "#edc948",
+    "samplePosteriorOnlyGoalAndSignal_fromStart": "#76b7b2",
     "TwoStageSignalAgent_sigmoidThreshold": "#e15759",
     "Human-Human": "#777777",
 }
@@ -62,9 +71,16 @@ SHORT_LABELS = {
     "sampleJointGoal_afterNewGoal": "sampleAfterNew",
     "sampleJointGoalAndSignal_afterNewGoal": "sample+signal",
     "sampleJointGoal_fromStart": "sampleFromStart",
+    "sampleJointGoalAndSignal_fromStart": "sample+signalStart",
+    "sampleJointGoalAndRSASignal_fromStart": "sample+RSAStart\n(shared-agency)",
+    "samplePosteriorOnlyGoalAndSignal_fromStart": "posteriorOnly+signal",
     "TwoStageSignalAgent_sigmoidThreshold": "sigmoidThreshold",
     "Human-Human": "Human",
 }
+
+ADAPTIVE_LAMBDAS = [0, 0.05, 0.1, 0.15, 0.3, 0.5, 1, 2, 5, 10, 20, 50]
+ADAPTIVE_PS = [0, 0.1, 0.25, 0.375, 0.5, 0.75, 1.0]
+ADAPTIVE_ALPHAS = [0, 0.5, 1, 2, 3, 5, 8]
 
 
 @dataclass
@@ -414,6 +430,14 @@ def goal_weights(obs: StepObs, lambda_value: float) -> np.ndarray:
     return weights / total
 
 
+def posterior_only_goal_weights(obs: StepObs, lambda_value: float) -> np.ndarray:
+    posterior_weight = np.power(np.maximum(EPS, obs.posterior), lambda_value)
+    total = float(np.sum(posterior_weight))
+    if not math.isfinite(total) or total <= 0:
+        return np.full(len(posterior_weight), 1.0 / max(1, len(posterior_weight)), dtype=np.float64)
+    return posterior_weight / total
+
+
 def committed_likelihood(obs: StepObs, lambda_value: float) -> float:
     w = goal_weights(obs, lambda_value)
     return max(EPS, float(np.sum(w * obs.action_probs_by_goal[:, obs.observed_idx])))
@@ -421,6 +445,33 @@ def committed_likelihood(obs: StepObs, lambda_value: float) -> float:
 
 def signal_likelihood(obs: StepObs, lambda_value: float, p_signal: float) -> float:
     w = goal_weights(obs, lambda_value)
+    committed = obs.action_probs_by_goal[:, obs.observed_idx]
+    per_goal = (1.0 - p_signal) * committed + p_signal * obs.legible_indicator
+    return max(EPS, float(np.sum(w * per_goal)))
+
+
+def rsa_signal_likelihood(obs: StepObs, lambda_value: float, alpha: float) -> float:
+    w = goal_weights(obs, lambda_value)
+    per_goal = np.zeros(len(w), dtype=np.float64)
+    for goal_idx in range(len(w)):
+        base = np.maximum(EPS, obs.action_probs_by_goal[goal_idx, :])
+        unnormalized = np.zeros(len(ACTIONS), dtype=np.float64)
+        for action_idx in range(len(ACTIONS)):
+            posterior_after_action = revealed_posterior(obs.posterior, obs.action_probs_by_goal, action_idx)
+            target_prob = max(EPS, float(posterior_after_action[goal_idx]))
+            unnormalized[action_idx] = base[action_idx] * math.exp(
+                max(-700.0, min(700.0, alpha * math.log(target_prob)))
+            )
+        total = float(np.sum(unnormalized))
+        if not math.isfinite(total) or total <= 0:
+            per_goal[goal_idx] = float(base[obs.observed_idx] / max(EPS, float(np.sum(base))))
+        else:
+            per_goal[goal_idx] = float(unnormalized[obs.observed_idx] / total)
+    return max(EPS, float(np.sum(w * per_goal)))
+
+
+def posterior_only_signal_likelihood(obs: StepObs, lambda_value: float, p_signal: float) -> float:
+    w = posterior_only_goal_weights(obs, lambda_value)
     committed = obs.action_probs_by_goal[:, obs.observed_idx]
     per_goal = (1.0 - p_signal) * committed + p_signal * obs.legible_indicator
     return max(EPS, float(np.sum(w * per_goal)))
@@ -464,26 +515,136 @@ def fit_grid(
     rows: List[Dict[str, Any]] = []
     for lam in lambda_grid:
         for p in p_grid:
-            if likelihood_kind == "signal":
-                value = nll(observations, lambda obs, lam=lam, p=p: signal_likelihood(obs, lam, p))
-            elif likelihood_kind == "two_stage":
-                value = nll(observations, lambda obs, lam=lam, p=p: two_stage_likelihood(obs, lam, p))
-            else:
-                raise ValueError(likelihood_kind)
-            rows.append({"lambda": float(lam), "p_signal": float(p), "negative_log_likelihood": value})
+            rows.append(score_grid_setting(observations, likelihood_kind, float(lam), float(p)))
     df = pd.DataFrame(rows)
     best = df.loc[df["negative_log_likelihood"].idxmin()].to_dict()
     return df, best
 
 
+def score_grid_setting(
+    observations: Sequence[StepObs],
+    likelihood_kind: str,
+    lambda_value: float,
+    p_signal: float,
+) -> Dict[str, float]:
+    if likelihood_kind in {"signal", "always_signal"}:
+        value = nll(observations, lambda obs: signal_likelihood(obs, lambda_value, p_signal))
+    elif likelihood_kind == "always_signal_rsa":
+        value = nll(observations, lambda obs: rsa_signal_likelihood(obs, lambda_value, p_signal))
+        return {"lambda": float(lambda_value), "alpha": float(p_signal), "negative_log_likelihood": value}
+    elif likelihood_kind == "posterior_only_signal":
+        value = nll(observations, lambda obs: posterior_only_signal_likelihood(obs, lambda_value, p_signal))
+    elif likelihood_kind == "two_stage":
+        value = nll(observations, lambda obs: two_stage_likelihood(obs, lambda_value, p_signal))
+    else:
+        raise ValueError(likelihood_kind)
+    return {"lambda": float(lambda_value), "p_signal": float(p_signal), "negative_log_likelihood": value}
+
+
+def refinement_values(best: float, coarse: Sequence[float], lower: float, upper: float) -> List[float]:
+    values = sorted(set(float(v) for v in coarse))
+    idx = min(range(len(values)), key=lambda i: abs(values[i] - best))
+    lo = values[idx - 1] if idx > 0 else lower
+    hi = values[idx + 1] if idx < len(values) - 1 else upper
+    return sorted(set(round(float(v), 10) for v in np.linspace(lo, hi, 5) if lower <= float(v) <= upper))
+
+
+def fit_adaptive_grid(
+    observations: Sequence[StepObs],
+    likelihood_kind: str,
+    lambda_grid: Sequence[float],
+    p_grid: Sequence[float],
+) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+    coarse_df, coarse_best = fit_grid(observations, likelihood_kind, lambda_grid, p_grid)
+    coarse_df["fit_stage"] = "coarse"
+    seen = {
+        (round(float(row["lambda"]), 10), round(float(row["p_signal"]), 10))
+        for row in coarse_df.to_dict(orient="records")
+    }
+
+    refine_lambdas = refinement_values(float(coarse_best["lambda"]), lambda_grid, 0.0, max(float(max(lambda_grid)), 50.0))
+    refine_ps = refinement_values(float(coarse_best["p_signal"]), p_grid, 0.0, 1.0)
+    refine_settings = [
+        (lam, p)
+        for lam, p in product(refine_lambdas, refine_ps)
+        if (round(float(lam), 10), round(float(p), 10)) not in seen
+    ]
+    if refine_settings:
+        refine_df = pd.DataFrame([
+            score_grid_setting(observations, likelihood_kind, float(lam), float(p))
+            for lam, p in refine_settings
+        ])
+        refine_df["fit_stage"] = "refine"
+        df = pd.concat([coarse_df, refine_df], ignore_index=True)
+        df = df.drop_duplicates(subset=["lambda", "p_signal"], keep="first")
+    else:
+        df = coarse_df
+    best = df.loc[df["negative_log_likelihood"].idxmin()].to_dict()
+    return df.sort_values(["lambda", "p_signal"]).reset_index(drop=True), best
+
+
+def fit_adaptive_alpha_grid(
+    observations: Sequence[StepObs],
+    likelihood_kind: str,
+    lambda_grid: Sequence[float],
+    alpha_grid: Sequence[float],
+) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+    coarse_df, coarse_best = fit_grid(observations, likelihood_kind, lambda_grid, alpha_grid)
+    coarse_df["fit_stage"] = "coarse"
+    seen = {
+        (round(float(row["lambda"]), 10), round(float(row["alpha"]), 10))
+        for row in coarse_df.to_dict(orient="records")
+    }
+
+    refine_lambdas = refinement_values(float(coarse_best["lambda"]), lambda_grid, 0.0, max(float(max(lambda_grid)), 50.0))
+    refine_alphas = refinement_values(float(coarse_best["alpha"]), alpha_grid, 0.0, max(float(max(alpha_grid)), 8.0))
+    refine_settings = [
+        (lam, alpha)
+        for lam, alpha in product(refine_lambdas, refine_alphas)
+        if (round(float(lam), 10), round(float(alpha), 10)) not in seen
+    ]
+    if refine_settings:
+        refine_df = pd.DataFrame([
+            score_grid_setting(observations, likelihood_kind, float(lam), float(alpha))
+            for lam, alpha in refine_settings
+        ])
+        refine_df["fit_stage"] = "refine"
+        df = pd.concat([coarse_df, refine_df], ignore_index=True)
+        df = df.drop_duplicates(subset=["lambda", "alpha"], keep="first")
+    else:
+        df = coarse_df
+    best = df.loc[df["negative_log_likelihood"].idxmin()].to_dict()
+    return df.sort_values(["lambda", "alpha"]).reset_index(drop=True), best
+
+
 def load_human_rows() -> List[Dict[str, Any]]:
-    rows = json.loads(HUMAN_RAW.read_text(encoding="utf-8"))
+    rows = load_raw(HUMAN_RAW)
     return [row for row in rows if row.get("experimentType") == "2P3G"]
 
 
+def raw_exists(path: Path) -> Optional[Path]:
+    try:
+        return resolved_raw_path(path)
+    except FileNotFoundError:
+        return None
+
+
+def compress_raw_json(path: Path) -> Path:
+    resolved = raw_exists(path) or path
+    if resolved.suffix == ".zst":
+        return resolved
+    if not resolved.exists():
+        raise FileNotFoundError(resolved)
+    zst_path = Path(f"{resolved}.zst")
+    subprocess.run(["zstd", "-q", "-f", "--rm", str(resolved)], cwd=PROJECT_ROOT, check=True)
+    return zst_path
+
+
 def run_command(cmd: List[str], reuse_path: Optional[Path] = None) -> Dict[str, Any]:
-    if reuse_path is not None and reuse_path.exists():
-        return {"rawTrialsPath": str(reuse_path)}
+    if reuse_path is not None:
+        existing = raw_exists(reuse_path)
+        if existing is not None:
+            return {"rawTrialsPath": str(existing)}
     result = subprocess.run(cmd, cwd=PROJECT_ROOT, text=True, capture_output=True)
     if result.returncode != 0:
         if result.stdout:
@@ -511,6 +672,18 @@ def expected_raw_path(model: str, params: Dict[str, Any], sessions: int, output_
     if model == "signal":
         suffix = f"beta_3_lambda_{fmt(params['lambda'])}_alpha_{fmt(params['p_signal'])}_sessions_0_to_{sessions - 1}"
         return output_dir / f"signal_vs_signal_2p3g_raw_trials_{suffix}.json"
+    if model == "always_signal":
+        raw_dir = PROJECT_ROOT / "dataAnalysis" / "raw_data" / "model_model_simulations" / "signal_agent" / "from_start_step_level_fit_comparison"
+        suffix = f"beta_3_lambda_{fmt(params['lambda'])}_alpha_{fmt(params['p_signal'])}_sessions_0_to_{sessions - 1}"
+        return raw_dir / f"always_signal_vs_always_signal_2p3g_raw_trials_{suffix}.json"
+    if model == "always_signal_rsa":
+        raw_dir = PROJECT_ROOT / "dataAnalysis" / "raw_data" / "model_model_simulations" / "signal_agent" / "from_start_rsa_step_level_fit_comparison"
+        suffix = f"beta_3_lambda_{fmt(params['lambda'])}_alpha_{fmt(params['alpha'])}_sessions_0_to_{sessions - 1}"
+        return raw_dir / f"always_signal_vs_always_signal_2p3g_raw_trials_{suffix}.json"
+    if model == "posterior_only_signal":
+        raw_dir = PROJECT_ROOT / "dataAnalysis" / "raw_data" / "model_model_simulations" / "signal_agent" / "posterior_only_step_level_fit_comparison"
+        suffix = f"beta_3_lambda_{fmt(params['lambda'])}_alpha_{fmt(params['p_signal'])}_sessions_0_to_{sessions - 1}"
+        return raw_dir / f"posterior_only_signal_vs_posterior_only_signal_2p3g_raw_trials_{suffix}.json"
     if model == "two_stage":
         raw_dir = PROJECT_ROOT / "dataAnalysis" / "raw_data" / "model_model_simulations" / "two_stage_signal_agent" / "step_level_fit_comparison"
         suffix = (
@@ -536,7 +709,7 @@ def run_simulations(params: Dict[str, Dict[str, Any]], sessions: int, trials: in
         ],
         raw if reuse else None,
     )
-    raw_paths["sampleJointGoal_afterNewGoal"] = Path(result.get("rawTrialsPath", raw))
+    raw_paths["sampleJointGoal_afterNewGoal"] = compress_raw_json(Path(result.get("rawTrialsPath", raw)))
 
     signal_dir = SIM_DIR / "signal_agent"
     raw = expected_raw_path("signal", params["sampleJointGoalAndSignal_afterNewGoal"], sessions, signal_dir)
@@ -550,7 +723,7 @@ def run_simulations(params: Dict[str, Dict[str, Any]], sessions: int, trials: in
         ],
         raw if reuse else None,
     )
-    raw_paths["sampleJointGoalAndSignal_afterNewGoal"] = Path(result.get("rawTrialsPath", raw))
+    raw_paths["sampleJointGoalAndSignal_afterNewGoal"] = compress_raw_json(Path(result.get("rawTrialsPath", raw)))
 
     always_dir = SIM_DIR / "always_committed_agent"
     raw = expected_raw_path("always", params["sampleJointGoal_fromStart"], sessions, always_dir)
@@ -563,7 +736,55 @@ def run_simulations(params: Dict[str, Dict[str, Any]], sessions: int, trials: in
         ],
         raw if reuse else None,
     )
-    raw_paths["sampleJointGoal_fromStart"] = Path(result.get("rawTrialsPath", raw))
+    raw_paths["sampleJointGoal_fromStart"] = compress_raw_json(Path(result.get("rawTrialsPath", raw)))
+
+    always_signal_dir = SIM_DIR / "always_signal_agent"
+    raw = expected_raw_path("always_signal", params["sampleJointGoalAndSignal_fromStart"], sessions, always_signal_dir)
+    result = run_command(
+        [
+            "node", "dataAnalysis/scripts/simulate_always_signal_vs_always_signal_2p3g.js",
+            "--sessions", str(sessions), "--trials", str(trials), "--seed", str(seed),
+            "--lambda", str(params["sampleJointGoalAndSignal_fromStart"]["lambda"]),
+            "--alpha", str(params["sampleJointGoalAndSignal_fromStart"]["p_signal"]),
+            "--beta", "3", "--score", "mixture",
+            "--output-dir", str(always_signal_dir),
+            "--raw-output-dir", str(PROJECT_ROOT / "dataAnalysis" / "raw_data" / "model_model_simulations" / "signal_agent" / "from_start_step_level_fit_comparison"),
+        ],
+        raw if reuse else None,
+    )
+    raw_paths["sampleJointGoalAndSignal_fromStart"] = compress_raw_json(Path(result.get("rawTrialsPath", raw)))
+
+    always_signal_rsa_dir = SIM_DIR / "always_signal_rsa_agent"
+    raw = expected_raw_path("always_signal_rsa", params["sampleJointGoalAndRSASignal_fromStart"], sessions, always_signal_rsa_dir)
+    result = run_command(
+        [
+            "node", "dataAnalysis/scripts/simulate_always_signal_vs_always_signal_2p3g.js",
+            "--sessions", str(sessions), "--trials", str(trials), "--seed", str(seed),
+            "--lambda", str(params["sampleJointGoalAndRSASignal_fromStart"]["lambda"]),
+            "--alpha", str(params["sampleJointGoalAndRSASignal_fromStart"]["alpha"]),
+            "--beta", "3", "--score", "logposterior", "--horizon", "1",
+            "--output-dir", str(always_signal_rsa_dir),
+            "--raw-output-dir", str(PROJECT_ROOT / "dataAnalysis" / "raw_data" / "model_model_simulations" / "signal_agent" / "from_start_rsa_step_level_fit_comparison"),
+        ],
+        raw if reuse else None,
+    )
+    raw_paths["sampleJointGoalAndRSASignal_fromStart"] = compress_raw_json(Path(result.get("rawTrialsPath", raw)))
+
+    posterior_only_signal_dir = SIM_DIR / "posterior_only_signal_agent"
+    raw = expected_raw_path("posterior_only_signal", params["samplePosteriorOnlyGoalAndSignal_fromStart"], sessions, posterior_only_signal_dir)
+    result = run_command(
+        [
+            "node", "dataAnalysis/scripts/simulate_posterior_only_signal_vs_posterior_only_signal_2p3g.js",
+            "--sessions", str(sessions), "--trials", str(trials), "--seed", str(seed),
+            "--lambda", str(params["samplePosteriorOnlyGoalAndSignal_fromStart"]["lambda"]),
+            "--alpha", str(params["samplePosteriorOnlyGoalAndSignal_fromStart"]["p_signal"]),
+            "--beta", "3", "--score", "mixture",
+            "--output-dir", str(posterior_only_signal_dir),
+            "--raw-output-dir", str(PROJECT_ROOT / "dataAnalysis" / "raw_data" / "model_model_simulations" / "signal_agent" / "posterior_only_step_level_fit_comparison"),
+        ],
+        raw if reuse else None,
+    )
+    raw_paths["samplePosteriorOnlyGoalAndSignal_fromStart"] = compress_raw_json(Path(result.get("rawTrialsPath", raw)))
 
     two_stage_dir = SIM_DIR / "two_stage_signal_agent"
     raw = expected_raw_path("two_stage", params["TwoStageSignalAgent_sigmoidThreshold"], sessions, two_stage_dir)
@@ -579,7 +800,7 @@ def run_simulations(params: Dict[str, Dict[str, Any]], sessions: int, trials: in
         ],
         raw if reuse else None,
     )
-    raw_paths["TwoStageSignalAgent_sigmoidThreshold"] = Path(result.get("rawTrialsPath", raw))
+    raw_paths["TwoStageSignalAgent_sigmoidThreshold"] = compress_raw_json(Path(result.get("rawTrialsPath", raw)))
     return raw_paths
 
 
@@ -628,7 +849,16 @@ def build_summary(raw_paths: Dict[str, Path]) -> pd.DataFrame:
     return long, pivot
 
 
-def plot_fit_grids(committed_grid: pd.DataFrame, signal_grid: pd.DataFrame, always_grid: pd.DataFrame, two_stage_grid: pd.DataFrame, params: Dict[str, Dict[str, Any]]) -> Dict[str, Path]:
+def plot_fit_grids(
+    committed_grid: pd.DataFrame,
+    signal_grid: pd.DataFrame,
+    always_grid: pd.DataFrame,
+    always_signal_grid: pd.DataFrame,
+    always_signal_rsa_grid: pd.DataFrame,
+    posterior_only_signal_grid: pd.DataFrame,
+    two_stage_grid: pd.DataFrame,
+    params: Dict[str, Dict[str, Any]],
+) -> Dict[str, Path]:
     ASSET_DIR.mkdir(parents=True, exist_ok=True)
     out: Dict[str, Path] = {}
 
@@ -658,20 +888,27 @@ def plot_fit_grids(committed_grid: pd.DataFrame, signal_grid: pd.DataFrame, alwa
     plot_line(always_line, params["sampleJointGoal_fromStart"]["lambda"], "sampleJointGoal_fromStart Step-Level Lambda Fit", path)
     out["sampleJointGoal_fromStart"] = path
 
-    def plot_heatmap(df: pd.DataFrame, best: Dict[str, Any], title: str, path: Path) -> None:
-        pivot = df.pivot(index="p_signal", columns="lambda", values="negative_log_likelihood").sort_index(ascending=True)
+    def plot_heatmap(
+        df: pd.DataFrame,
+        best: Dict[str, Any],
+        title: str,
+        path: Path,
+        param_col: str = "p_signal",
+        y_label: str = "mixture p",
+    ) -> None:
+        pivot = df.pivot(index=param_col, columns="lambda", values="negative_log_likelihood").sort_index(ascending=True)
         fig, ax = plt.subplots(figsize=(9.5, 5.8))
         im = ax.imshow(pivot.values, origin="lower", aspect="auto", cmap="viridis")
         ax.set_xticks(np.arange(len(pivot.columns)))
         ax.set_xticklabels([f"{v:g}" for v in pivot.columns], rotation=45, ha="right", fontsize=8)
         ax.set_yticks(np.arange(len(pivot.index)))
         ax.set_yticklabels([f"{v:g}" for v in pivot.index], fontsize=8)
-        x = list(pivot.columns).index(best["lambda"])
-        y = list(pivot.index).index(best["p_signal"])
+        x = min(range(len(pivot.columns)), key=lambda i: abs(float(pivot.columns[i]) - float(best["lambda"])))
+        y = min(range(len(pivot.index)), key=lambda i: abs(float(pivot.index[i]) - float(best[param_col])))
         ax.scatter([x], [y], marker="*", s=260, color="red", edgecolor="white", linewidth=0.9)
         ax.set_title(title, fontweight="bold")
         ax.set_xlabel("lambda")
-        ax.set_ylabel("mixture p")
+        ax.set_ylabel(y_label)
         cbar = fig.colorbar(im, ax=ax)
         cbar.set_label("Step-level negative log likelihood")
         fig.tight_layout()
@@ -681,6 +918,25 @@ def plot_fit_grids(committed_grid: pd.DataFrame, signal_grid: pd.DataFrame, alwa
     path = ASSET_DIR / "step_level_sampleJointGoalAndSignal_afterNewGoal_lambda_p_fit.png"
     plot_heatmap(signal_grid, params["sampleJointGoalAndSignal_afterNewGoal"], "sampleJointGoalAndSignal_afterNewGoal Step-Level Fit", path)
     out["sampleJointGoalAndSignal_afterNewGoal"] = path
+
+    path = ASSET_DIR / "step_level_sampleJointGoalAndSignal_fromStart_lambda_p_fit.png"
+    plot_heatmap(always_signal_grid, params["sampleJointGoalAndSignal_fromStart"], "sampleJointGoalAndSignal_fromStart Step-Level Fit", path)
+    out["sampleJointGoalAndSignal_fromStart"] = path
+
+    path = ASSET_DIR / "step_level_sampleJointGoalAndRSASignal_fromStart_lambda_alpha_fit.png"
+    plot_heatmap(
+        always_signal_rsa_grid,
+        params["sampleJointGoalAndRSASignal_fromStart"],
+        "sampleJointGoalAndRSASignal_fromStart Step-Level Fit",
+        path,
+        param_col="alpha",
+        y_label="RSA alpha",
+    )
+    out["sampleJointGoalAndRSASignal_fromStart"] = path
+
+    path = ASSET_DIR / "step_level_samplePosteriorOnlyGoalAndSignal_fromStart_lambda_p_fit.png"
+    plot_heatmap(posterior_only_signal_grid, params["samplePosteriorOnlyGoalAndSignal_fromStart"], "samplePosteriorOnlyGoalAndSignal_fromStart Step-Level Fit", path)
+    out["samplePosteriorOnlyGoalAndSignal_fromStart"] = path
 
     path = ASSET_DIR / "step_level_TwoStageSignalAgent_sigmoidThreshold_lambda_p_fit.png"
     plot_heatmap(two_stage_grid, params["TwoStageSignalAgent_sigmoidThreshold"], "TwoStageSignalAgent_sigmoidThreshold Step-Level Fit", path)
@@ -727,6 +983,12 @@ def metric_value(pivot: pd.DataFrame, group: str, scope: str, metric: str) -> fl
     return float(row.iloc[0].get(f"mean_percent_{metric}", np.nan))
 
 
+def display_model_name(model: str) -> str:
+    if model == "sampleJointGoalAndRSASignal_fromStart":
+        return f"{model} (shared-agency model)"
+    return model
+
+
 def write_html(params: Dict[str, Dict[str, Any]], fit_plots: Dict[str, Path], long_df: pd.DataFrame, pivot: pd.DataFrame, summary_plot: Path) -> None:
     rows_html = []
     for group in MODEL_ORDER + ["Human-Human"]:
@@ -738,7 +1000,7 @@ def write_html(params: Dict[str, Dict[str, Any]], fit_plots: Dict[str, Path], lo
                 "<td class=\"num\">{success:.1f}</td><td class=\"num\">{eff:.1f}</td>"
                 "<td class=\"num\">{commit:.1f}</td><td class=\"num\">{signal:.1f}</td></tr>".format(
                     row_class=row_class,
-                    group=html.escape(group),
+                    group=html.escape(display_model_name(group)),
                     scope=html.escape(scope),
                     setting=html.escape(setting),
                     success=metric_value(pivot, group, scope, "Success Rate (%)"),
@@ -753,6 +1015,9 @@ def write_html(params: Dict[str, Dict[str, Any]], fit_plots: Dict[str, Path], lo
         "sampleJointGoal_afterNewGoal": "Joint-RL before new-goal; after new-goal, infer posterior and resample a joint goal every step.",
         "sampleJointGoalAndSignal_afterNewGoal": "Same post-new-goal joint-goal sampler plus a Bernoulli mixture signaling policy.",
         "sampleJointGoal_fromStart": "Commitment model is active from trial start; new goals are added by posterior resizing.",
+        "sampleJointGoalAndSignal_fromStart": "Always-on posterior timing plus the Bernoulli mixture signaling policy.",
+        "sampleJointGoalAndRSASignal_fromStart": "Always-on posterior timing plus an RSA/log-posterior signaling policy.",
+        "samplePosteriorOnlyGoalAndSignal_fromStart": "Always-on posterior timing plus the Bernoulli mixture signaling policy, with the EU term removed from goal selection.",
         "TwoStageSignalAgent_sigmoidThreshold": "Always monitors joint-goal posterior and mixes early joint-RL with late committed-signaling policy via a sigmoid gate.",
     }
     equations = {
@@ -768,6 +1033,21 @@ def write_html(params: Dict[str, Dict[str, Any]], fit_plots: Dict[str, Path], lo
           <div class="eq">\[P_0(g)=1/|\mathcal G_0|,\quad P_t(g_{\mathrm{new}})=1/|\mathcal G_t|\]</div>
           <div class="eq">\[\pi(a_t)=\sum_g W_\lambda(g)\pi_{\mathrm{joint}}(a_t\mid s_t,\{g\})\]</div>
         """,
+        "sampleJointGoalAndSignal_fromStart": r"""
+          <div class="eq">\[P_0(g)=1/|\mathcal G_0|,\quad P_t(g_{\mathrm{new}})=1/|\mathcal G_t|\]</div>
+          <div class="eq">\[\pi(a_t)=\sum_g W_\lambda(g)\left((1-p)\pi_{\mathrm{joint}}(a_t\mid s_t,\{g\})+p\,\delta_{a_{\mathrm{leg}}(g)}(a_t)\right)\]</div>
+        """,
+        "sampleJointGoalAndRSASignal_fromStart": r"""
+          <div class="eq">\[P_0(g)=1/|\mathcal G_0|,\quad P_t(g_{\mathrm{new}})=1/|\mathcal G_t|\]</div>
+          <div class="eq">\[W_\lambda(g)\propto \exp(3\,EU_t(g))P_t(g)^\lambda\]</div>
+          <div class="eq">\[\pi_{\mathrm{RSA}}(a\mid g)\propto \pi_{\mathrm{joint}}(a\mid s_t,\{g\})P_t(g\mid a)^\alpha\]</div>
+          <div class="eq">\[\pi(a_t)=\sum_g W_\lambda(g)\pi_{\mathrm{RSA}}(a_t\mid g)\]</div>
+        """,
+        "samplePosteriorOnlyGoalAndSignal_fromStart": r"""
+          <div class="eq">\[P_0(g)=1/|\mathcal G_0|,\quad P_t(g_{\mathrm{new}})=1/|\mathcal G_t|\]</div>
+          <div class="eq">\[W_\lambda(g)=\frac{P_t(g)^\lambda}{\sum_{g'}P_t(g')^\lambda}\]</div>
+          <div class="eq">\[\pi(a_t)=\sum_g W_\lambda(g)\left((1-p)\pi_{\mathrm{joint}}(a_t\mid s_t,\{g\})+p\,\delta_{a_{\mathrm{leg}}(g)}(a_t)\right)\]</div>
+        """,
         "TwoStageSignalAgent_sigmoidThreshold": r"""
           <div class="eq">\[\rho_t=\sigma(10(\max_gP_t(g)-2/3))\]</div>
           <div class="eq">\[\pi(a_t)=(1-\rho_t)\pi_{\mathrm{joint}}(a_t\mid s_t,\mathcal G_t)+\rho_t\sum_g W_\lambda(g)\pi_{\mathrm{signal}}(a_t\mid g)\]</div>
@@ -777,7 +1057,7 @@ def write_html(params: Dict[str, Dict[str, Any]], fit_plots: Dict[str, Path], lo
         cards.append(
             f"""
     <section class="card" id="{model}">
-      <h2>{html.escape(model)}</h2>
+      <h2>{html.escape(display_model_name(model))}</h2>
       <p>{html.escape(descriptions[model])}</p>
       <div class="meta"><span>{html.escape(params[model]['setting'])}</span><span>fit target: step-level human action likelihood</span></div>
       <h3>Core Math</h3>
@@ -839,7 +1119,7 @@ footer {{ color:var(--muted); font-size:12px; margin-top:28px; }}
   <a href="#overview">Overview</a>
   <a href="#summary-plot">4 Measures</a>
   <a href="#btom-legibility">BToM Legibility</a>
-  {''.join(f'<a href="#{m}">{m}</a>' for m in MODEL_ORDER)}
+  {''.join(f'<a href="#{m}">{html.escape(display_model_name(m))}</a>' for m in MODEL_ORDER)}
 </nav>
 <section class="summary" id="overview">
   <h2>Primary Result Table</h2>
@@ -893,6 +1173,9 @@ def main() -> None:
     committed_obs = build_observations(rows, "committed")
     always_obs = build_observations(rows, "always")
     signal_obs = build_observations(rows, "signal")
+    always_signal_obs = build_observations(rows, "always_signal")
+    always_signal_rsa_obs = build_observations(rows, "always_signal")
+    posterior_only_signal_obs = build_observations(rows, "posterior_only_signal")
     two_stage_obs = build_observations(rows, "two_stage")
 
     committed_fit = fit_scalar_lambda(committed_obs, args.max_lambda)
@@ -917,6 +1200,9 @@ def main() -> None:
     ]))
     p_grid = [round(i * 0.05, 10) for i in range(21)]
     signal_grid, signal_fit = fit_grid(signal_obs, "signal", lambda_grid, p_grid)
+    always_signal_grid, always_signal_fit = fit_adaptive_grid(always_signal_obs, "always_signal", ADAPTIVE_LAMBDAS, ADAPTIVE_PS)
+    always_signal_rsa_grid, always_signal_rsa_fit = fit_adaptive_alpha_grid(always_signal_rsa_obs, "always_signal_rsa", ADAPTIVE_LAMBDAS, ADAPTIVE_ALPHAS)
+    posterior_only_signal_grid, posterior_only_signal_fit = fit_adaptive_grid(posterior_only_signal_obs, "posterior_only_signal", ADAPTIVE_LAMBDAS, ADAPTIVE_PS)
     two_stage_grid, two_stage_fit = fit_grid(two_stage_obs, "two_stage", lambda_grid, p_grid)
 
     params = {
@@ -939,6 +1225,30 @@ def main() -> None:
             "step_observations": len(always_obs),
             "setting": f"beta=3.0, lambda={always_fit['lambda']:.3g} from all-step action likelihood",
         },
+        "sampleJointGoalAndSignal_fromStart": {
+            "lambda": float(always_signal_fit["lambda"]),
+            "p_signal": float(always_signal_fit["p_signal"]),
+            "negative_log_likelihood": float(always_signal_fit["negative_log_likelihood"]),
+            "step_observations": len(always_signal_obs),
+            "evaluated_settings": int(always_signal_grid.shape[0]),
+            "setting": f"beta=3.0, lambda={always_signal_fit['lambda']:.3g}, mixture p={always_signal_fit['p_signal']:.3g} from all-step adaptive action likelihood",
+        },
+        "sampleJointGoalAndRSASignal_fromStart": {
+            "lambda": float(always_signal_rsa_fit["lambda"]),
+            "alpha": float(always_signal_rsa_fit["alpha"]),
+            "negative_log_likelihood": float(always_signal_rsa_fit["negative_log_likelihood"]),
+            "step_observations": len(always_signal_rsa_obs),
+            "evaluated_settings": int(always_signal_rsa_grid.shape[0]),
+            "setting": f"beta=3.0, lambda={always_signal_rsa_fit['lambda']:.3g}, RSA alpha={always_signal_rsa_fit['alpha']:.3g} from all-step adaptive RSA action likelihood",
+        },
+        "samplePosteriorOnlyGoalAndSignal_fromStart": {
+            "lambda": float(posterior_only_signal_fit["lambda"]),
+            "p_signal": float(posterior_only_signal_fit["p_signal"]),
+            "negative_log_likelihood": float(posterior_only_signal_fit["negative_log_likelihood"]),
+            "step_observations": len(posterior_only_signal_obs),
+            "evaluated_settings": int(posterior_only_signal_grid.shape[0]),
+            "setting": f"beta=3.0, lambda={posterior_only_signal_fit['lambda']:.3g}, mixture p={posterior_only_signal_fit['p_signal']:.3g} from posterior-only all-step adaptive action likelihood",
+        },
         "TwoStageSignalAgent_sigmoidThreshold": {
             "lambda": float(two_stage_fit["lambda"]),
             "p_signal": float(two_stage_fit["p_signal"]),
@@ -947,7 +1257,7 @@ def main() -> None:
             "setting": f"beta=3.0, tau=2/3, eta=0, lambda={two_stage_fit['lambda']:.3g}, mixture p={two_stage_fit['p_signal']:.3g} from all-step action likelihood",
         },
     }
-    for model in ["sampleJointGoalAndSignal_afterNewGoal", "TwoStageSignalAgent_sigmoidThreshold"]:
+    for model in ["sampleJointGoalAndSignal_afterNewGoal", "sampleJointGoalAndSignal_fromStart", "sampleJointGoalAndRSASignal_fromStart", "samplePosteriorOnlyGoalAndSignal_fromStart", "TwoStageSignalAgent_sigmoidThreshold"]:
         if math.isclose(float(params[model]["lambda"]), float(args.max_lambda), rel_tol=0.0, abs_tol=1e-9):
             params[model]["setting"] += f" (bounded grid cap: lambda <= {args.max_lambda:g})"
 
@@ -958,9 +1268,12 @@ def main() -> None:
     committed_grid.to_csv(OUT_DIR / "sampleJointGoal_afterNewGoal_step_level_lambda_profile.csv", index=False)
     signal_grid.to_csv(OUT_DIR / "sampleJointGoalAndSignal_afterNewGoal_step_level_lambda_p_grid.csv", index=False)
     always_grid.to_csv(OUT_DIR / "sampleJointGoal_fromStart_step_level_lambda_profile.csv", index=False)
+    always_signal_grid.to_csv(OUT_DIR / "sampleJointGoalAndSignal_fromStart_step_level_lambda_p_grid.csv", index=False)
+    always_signal_rsa_grid.to_csv(OUT_DIR / "sampleJointGoalAndRSASignal_fromStart_step_level_lambda_alpha_grid.csv", index=False)
+    posterior_only_signal_grid.to_csv(OUT_DIR / "samplePosteriorOnlyGoalAndSignal_fromStart_step_level_lambda_p_grid.csv", index=False)
     two_stage_grid.to_csv(OUT_DIR / "TwoStageSignalAgent_sigmoidThreshold_step_level_lambda_p_grid.csv", index=False)
 
-    fit_plots = plot_fit_grids(committed_grid, signal_grid, always_grid, two_stage_grid, params)
+    fit_plots = plot_fit_grids(committed_grid, signal_grid, always_grid, always_signal_grid, always_signal_rsa_grid, posterior_only_signal_grid, two_stage_grid, params)
     raw_paths = run_simulations(params, args.sessions, args.trials, args.seed, args.reuse_simulations)
     long_df, pivot = build_summary(raw_paths)
     long_df.to_csv(OUT_DIR / "step_level_fit_comparison_long.csv", index=False)
@@ -977,6 +1290,9 @@ def main() -> None:
         "step_observations": {
             "post_new_goal": len(committed_obs),
             "all_steps": len(always_obs),
+            "always_signal_all_steps": len(always_signal_obs),
+            "always_signal_rsa_all_steps": len(always_signal_rsa_obs),
+            "posterior_only_signal_all_steps": len(posterior_only_signal_obs),
         },
     }
     (OUT_DIR / "step_level_fit_report_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")

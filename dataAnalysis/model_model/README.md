@@ -1,6 +1,6 @@
 # Model-Model Analyses
 
-This folder contains model-model analyses separated by model family. Raw simulation JSON is intentionally kept outside this folder under `dataAnalysis/raw_data/model_model_simulations/`.
+This folder contains model-model analyses separated by model family. Raw simulation JSON is intentionally kept outside this folder under `dataAnalysis/raw_data/model_model_simulations/` and compressed as `.json.zst`.
 
 Each model folder has:
 
@@ -14,7 +14,7 @@ Each model folder has:
 |---|---|
 | `committed_agent/` | Main CommittedAgent variants and commitment fits |
 | `always_committed_agent/` | Always-on committed goal-selection model |
-| `signal_agent/` | Signaling variants built on committed goal selection |
+| `signal_agent/` | Signaling variants built on committed goal selection, including `sampleJointGoalAndSignal_fromStart`, `sampleJointGoalAndRSASignal_fromStart` (`shared-agency model`), and `samplePosteriorOnlyGoalAndSignal_fromStart` |
 | `two_stage_signal_agent/` | Confidence-gated two-stage signal model |
 | `joint_rl/` | Joint-RL baseline |
 

@@ -49,7 +49,7 @@ footer { color:var(--muted); font-size:12px; margin-top:28px; }
   <a href="#overview">Overview</a>
   <a href="#summary-plot">4 Measures</a>
   <a href="#btom-legibility">BToM Legibility</a>
-  <a href="#sampleJointGoal_afterNewGoal">sampleJointGoal_afterNewGoal</a><a href="#sampleJointGoalAndSignal_afterNewGoal">sampleJointGoalAndSignal_afterNewGoal</a><a href="#sampleJointGoal_fromStart">sampleJointGoal_fromStart</a><a href="#TwoStageSignalAgent_sigmoidThreshold">TwoStageSignalAgent_sigmoidThreshold</a>
+  <a href="#sampleJointGoal_afterNewGoal">sampleJointGoal_afterNewGoal</a><a href="#sampleJointGoalAndSignal_afterNewGoal">sampleJointGoalAndSignal_afterNewGoal</a><a href="#sampleJointGoal_fromStart">sampleJointGoal_fromStart</a><a href="#sampleJointGoalAndSignal_fromStart">sampleJointGoalAndSignal_fromStart</a><a href="#sampleJointGoalAndRSASignal_fromStart">sampleJointGoalAndRSASignal_fromStart (shared-agency model)</a><a href="#samplePosteriorOnlyGoalAndSignal_fromStart">samplePosteriorOnlyGoalAndSignal_fromStart</a><a href="#TwoStageSignalAgent_sigmoidThreshold">TwoStageSignalAgent_sigmoidThreshold</a>
 </nav>
 <section class="summary" id="overview">
   <h2>Primary Result Table</h2>
@@ -57,7 +57,7 @@ footer { color:var(--muted); font-size:12px; margin-top:28px; }
   <table>
     <thead><tr><th>Model</th><th>Scope</th><th>Step-Level Fit / Setting</th><th>Success</th><th>Efficiency</th><th>Commitment</th><th>Signaling</th></tr></thead>
     <tbody>
-      <tr class=""><td><strong>sampleJointGoal_afterNewGoal</strong></td><td>Average all 2P3G</td><td>beta=3.0, lambda=18.1 from post-new-goal step-level action likelihood</td><td class="num">93.3</td><td class="num">89.8</td><td class="num">86.1</td><td class="num">37.0</td></tr><tr class=""><td><strong>sampleJointGoal_afterNewGoal</strong></td><td>Equal-to-both</td><td>beta=3.0, lambda=18.1 from post-new-goal step-level action likelihood</td><td class="num">100.0</td><td class="num">99.5</td><td class="num">97.4</td><td class="num">51.4</td></tr><tr class=""><td><strong>sampleJointGoalAndSignal_afterNewGoal</strong></td><td>Average all 2P3G</td><td>beta=3.0, lambda=18.1, mixture p=0 from post-new-goal step-level action likelihood</td><td class="num">92.5</td><td class="num">90.1</td><td class="num">85.7</td><td class="num">34.3</td></tr><tr class=""><td><strong>sampleJointGoalAndSignal_afterNewGoal</strong></td><td>Equal-to-both</td><td>beta=3.0, lambda=18.1, mixture p=0 from post-new-goal step-level action likelihood</td><td class="num">100.0</td><td class="num">99.7</td><td class="num">99.1</td><td class="num">50.9</td></tr><tr class=""><td><strong>sampleJointGoal_fromStart</strong></td><td>Average all 2P3G</td><td>beta=3.0, lambda=32.9 from all-step action likelihood</td><td class="num">92.5</td><td class="num">90.4</td><td class="num">85.3</td><td class="num">37.0</td></tr><tr class=""><td><strong>sampleJointGoal_fromStart</strong></td><td>Equal-to-both</td><td>beta=3.0, lambda=32.9 from all-step action likelihood</td><td class="num">100.0</td><td class="num">99.7</td><td class="num">96.7</td><td class="num">40.0</td></tr><tr class=""><td><strong>TwoStageSignalAgent_sigmoidThreshold</strong></td><td>Average all 2P3G</td><td>beta=3.0, tau=2/3, eta=0, lambda=50, mixture p=0 from all-step action likelihood (bounded grid cap: lambda &lt;= 50)</td><td class="num">95.3</td><td class="num">89.2</td><td class="num">85.8</td><td class="num">41.1</td></tr><tr class=""><td><strong>TwoStageSignalAgent_sigmoidThreshold</strong></td><td>Equal-to-both</td><td>beta=3.0, tau=2/3, eta=0, lambda=50, mixture p=0 from all-step action likelihood (bounded grid cap: lambda &lt;= 50)</td><td class="num">100.0</td><td class="num">99.0</td><td class="num">97.2</td><td class="num">51.4</td></tr><tr class="human"><td><strong>Human-Human</strong></td><td>Average all 2P3G</td><td>reference data, not fit</td><td class="num">100.0</td><td class="num">81.6</td><td class="num">65.0</td><td class="num">52.5</td></tr><tr class="human"><td><strong>Human-Human</strong></td><td>Equal-to-both</td><td>reference data, not fit</td><td class="num">100.0</td><td class="num">96.6</td><td class="num">84.4</td><td class="num">59.4</td></tr>
+      <tr class=""><td><strong>sampleJointGoal_afterNewGoal</strong></td><td>Average all 2P3G</td><td>beta=3.0, lambda=18.1 from post-new-goal step-level action likelihood</td><td class="num">93.3</td><td class="num">89.8</td><td class="num">86.1</td><td class="num">37.0</td></tr><tr class=""><td><strong>sampleJointGoal_afterNewGoal</strong></td><td>Equal-to-both</td><td>beta=3.0, lambda=18.1 from post-new-goal step-level action likelihood</td><td class="num">100.0</td><td class="num">99.5</td><td class="num">97.4</td><td class="num">51.4</td></tr><tr class=""><td><strong>sampleJointGoalAndSignal_afterNewGoal</strong></td><td>Average all 2P3G</td><td>beta=3.0, lambda=18.1, mixture p=0 from post-new-goal step-level action likelihood</td><td class="num">92.5</td><td class="num">90.1</td><td class="num">85.7</td><td class="num">34.3</td></tr><tr class=""><td><strong>sampleJointGoalAndSignal_afterNewGoal</strong></td><td>Equal-to-both</td><td>beta=3.0, lambda=18.1, mixture p=0 from post-new-goal step-level action likelihood</td><td class="num">100.0</td><td class="num">99.7</td><td class="num">99.1</td><td class="num">50.9</td></tr><tr class=""><td><strong>sampleJointGoal_fromStart</strong></td><td>Average all 2P3G</td><td>beta=3.0, lambda=32.9 from all-step action likelihood</td><td class="num">92.5</td><td class="num">90.4</td><td class="num">85.3</td><td class="num">37.0</td></tr><tr class=""><td><strong>sampleJointGoal_fromStart</strong></td><td>Equal-to-both</td><td>beta=3.0, lambda=32.9 from all-step action likelihood</td><td class="num">100.0</td><td class="num">99.7</td><td class="num">96.7</td><td class="num">40.0</td></tr><tr class=""><td><strong>sampleJointGoalAndSignal_fromStart</strong></td><td>Average all 2P3G</td><td>beta=3.0, lambda=35, mixture p=0 from all-step adaptive action likelihood</td><td class="num">95.0</td><td class="num">89.9</td><td class="num">89.4</td><td class="num">42.4</td></tr><tr class=""><td><strong>sampleJointGoalAndSignal_fromStart</strong></td><td>Equal-to-both</td><td>beta=3.0, lambda=35, mixture p=0 from all-step adaptive action likelihood</td><td class="num">100.0</td><td class="num">99.4</td><td class="num">98.9</td><td class="num">55.6</td></tr><tr class=""><td><strong>sampleJointGoalAndRSASignal_fromStart</strong><br><span class="meta"><span>(shared-agency model)</span></span></td><td>Average all 2P3G</td><td>beta=3.0, lambda=35, RSA alpha=0 from all-step adaptive RSA action likelihood</td><td class="num">92.5</td><td class="num">90.4</td><td class="num">85.3</td><td class="num">37.0</td></tr><tr class=""><td><strong>sampleJointGoalAndRSASignal_fromStart</strong><br><span class="meta"><span>(shared-agency model)</span></span></td><td>Equal-to-both</td><td>beta=3.0, lambda=35, RSA alpha=0 from all-step adaptive RSA action likelihood</td><td class="num">100.0</td><td class="num">99.7</td><td class="num">96.7</td><td class="num">40.0</td></tr><tr class=""><td><strong>samplePosteriorOnlyGoalAndSignal_fromStart</strong></td><td>Average all 2P3G</td><td>beta=3.0, lambda=0.3, mixture p=0 from posterior-only all-step adaptive action likelihood</td><td class="num">92.8</td><td class="num">85.3</td><td class="num">72.8</td><td class="num">33.4</td></tr><tr class=""><td><strong>samplePosteriorOnlyGoalAndSignal_fromStart</strong></td><td>Equal-to-both</td><td>beta=3.0, lambda=0.3, mixture p=0 from posterior-only all-step adaptive action likelihood</td><td class="num">100.0</td><td class="num">97.1</td><td class="num">93.8</td><td class="num">43.5</td></tr><tr class=""><td><strong>TwoStageSignalAgent_sigmoidThreshold</strong></td><td>Average all 2P3G</td><td>beta=3.0, tau=2/3, eta=0, lambda=50, mixture p=0 from all-step action likelihood (bounded grid cap: lambda &lt;= 50)</td><td class="num">95.3</td><td class="num">89.2</td><td class="num">85.8</td><td class="num">41.1</td></tr><tr class=""><td><strong>TwoStageSignalAgent_sigmoidThreshold</strong></td><td>Equal-to-both</td><td>beta=3.0, tau=2/3, eta=0, lambda=50, mixture p=0 from all-step action likelihood (bounded grid cap: lambda &lt;= 50)</td><td class="num">100.0</td><td class="num">99.0</td><td class="num">97.2</td><td class="num">51.4</td></tr><tr class="human"><td><strong>Human-Human</strong></td><td>Average all 2P3G</td><td>reference data, not fit</td><td class="num">100.0</td><td class="num">81.6</td><td class="num">65.0</td><td class="num">52.5</td></tr><tr class="human"><td><strong>Human-Human</strong></td><td>Equal-to-both</td><td>reference data, not fit</td><td class="num">100.0</td><td class="num">96.6</td><td class="num">84.4</td><td class="num">59.4</td></tr>
     </tbody>
   </table>
 </section>
@@ -120,6 +120,48 @@ footer { color:var(--muted); font-size:12px; margin-top:28px; }
         </div>
       <h3>Step-Level Fit Surface</h3>
       <a href="step_level_fit_comparison/assets/step_level_sampleJointGoal_fromStart_lambda_fit.png"><img src="step_level_fit_comparison/assets/step_level_sampleJointGoal_fromStart_lambda_fit.png" alt="sampleJointGoal_fromStart step-level fit plot"></a>
+    </section>
+            
+    <section class="card" id="sampleJointGoalAndSignal_fromStart">
+      <h2>sampleJointGoalAndSignal_fromStart</h2>
+      <p>Always-on posterior timing plus the Bernoulli mixture signaling policy.</p>
+      <div class="meta"><span>beta=3.0, lambda=35, mixture p=0 from all-step adaptive action likelihood</span><span>fit target: step-level human action likelihood</span></div>
+      <h3>Core Math</h3>
+      <div class="equations">
+          <div class="eq">\[P_0(g)=1/|\mathcal G_0|,\quad P_t(g_{\mathrm{new}})=1/|\mathcal G_t|\]</div>
+          <div class="eq">\[\pi(a_t)=\sum_g W_\lambda(g)\left((1-p)\pi_{\mathrm{joint}}(a_t\mid s_t,\{g\})+p\,\delta_{a_{\mathrm{leg}}(g)}(a_t)\right)\]</div>
+        </div>
+      <h3>Step-Level Fit Surface</h3>
+      <a href="step_level_fit_comparison/assets/step_level_sampleJointGoalAndSignal_fromStart_lambda_p_fit.png"><img src="step_level_fit_comparison/assets/step_level_sampleJointGoalAndSignal_fromStart_lambda_p_fit.png" alt="sampleJointGoalAndSignal_fromStart step-level fit plot"></a>
+    </section>
+            
+    <section class="card" id="sampleJointGoalAndRSASignal_fromStart">
+      <h2>sampleJointGoalAndRSASignal_fromStart <span class="meta"><span>(shared-agency model)</span></span></h2>
+      <p>Always-on posterior timing plus an RSA/log-posterior signaling policy.</p>
+      <div class="meta"><span>beta=3.0, lambda=35, RSA alpha=0 from all-step adaptive RSA action likelihood</span><span>fit target: step-level human action likelihood</span></div>
+      <h3>Core Math</h3>
+      <div class="equations">
+          <div class="eq">\[P_0(g)=1/|\mathcal G_0|,\quad P_t(g_{\mathrm{new}})=1/|\mathcal G_t|\]</div>
+          <div class="eq">\[W_\lambda(g)\propto \exp(3\,EU_t(g))P_t(g)^\lambda\]</div>
+          <div class="eq">\[\pi_{\mathrm{RSA}}(a\mid g)\propto \pi_{\mathrm{joint}}(a\mid s_t,\{g\})P_t(g\mid a)^\alpha\]</div>
+          <div class="eq">\[\pi(a_t)=\sum_g W_\lambda(g)\pi_{\mathrm{RSA}}(a_t\mid g)\]</div>
+        </div>
+      <h3>Step-Level Fit Surface</h3>
+      <a href="step_level_fit_comparison/assets/step_level_sampleJointGoalAndRSASignal_fromStart_lambda_alpha_fit.png"><img src="step_level_fit_comparison/assets/step_level_sampleJointGoalAndRSASignal_fromStart_lambda_alpha_fit.png" alt="sampleJointGoalAndRSASignal_fromStart step-level fit plot"></a>
+    </section>
+            
+    <section class="card" id="samplePosteriorOnlyGoalAndSignal_fromStart">
+      <h2>samplePosteriorOnlyGoalAndSignal_fromStart</h2>
+      <p>Always-on posterior timing plus the Bernoulli mixture signaling policy, with the EU term removed from goal selection.</p>
+      <div class="meta"><span>beta=3.0, lambda=0.3, mixture p=0 from posterior-only all-step adaptive action likelihood</span><span>fit target: step-level human action likelihood</span></div>
+      <h3>Core Math</h3>
+      <div class="equations">
+          <div class="eq">\[P_0(g)=1/|\mathcal G_0|,\quad P_t(g_{\mathrm{new}})=1/|\mathcal G_t|\]</div>
+          <div class="eq">\[W_\lambda(g)=\frac{P_t(g)^\lambda}{\sum_{g'}P_t(g')^\lambda}\]</div>
+          <div class="eq">\[\pi(a_t)=\sum_g W_\lambda(g)\left((1-p)\pi_{\mathrm{joint}}(a_t\mid s_t,\{g\})+p\,\delta_{a_{\mathrm{leg}}(g)}(a_t)\right)\]</div>
+        </div>
+      <h3>Step-Level Fit Surface</h3>
+      <a href="step_level_fit_comparison/assets/step_level_samplePosteriorOnlyGoalAndSignal_fromStart_lambda_p_fit.png"><img src="step_level_fit_comparison/assets/step_level_samplePosteriorOnlyGoalAndSignal_fromStart_lambda_p_fit.png" alt="samplePosteriorOnlyGoalAndSignal_fromStart step-level fit plot"></a>
     </section>
             
     <section class="card" id="TwoStageSignalAgent_sigmoidThreshold">

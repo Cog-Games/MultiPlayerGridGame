@@ -1,0 +1,7 @@
+distanceCondition,metric,human_n,human_k,human_rate
+closer_to_player1,commitment,96,53,0.5520833333333334
+closer_to_player1,signalingMove,83,42,0.5060240963855421
+equal_to_both,commitment,94,79,0.8404255319148937
+equal_to_both,signalingMove,94,55,0.5851063829787234
+closer_to_player2,commitment,94,53,0.5638297872340425
+closer_to_player2,signalingMove,84,38,0.4523809523809524

@@ -1,0 +1,25 @@
+condition_scope,condition_label,group,metric,mean_percent,ci95_percent,n
+average,Average all 2P3G,"samplePosteriorOnlyGoalAndSignal_fromStart
+(lambda=0.325, p=0.5625)",Success Rate (%),82.77777777777776,2.5894438094368324,30
+average,Average all 2P3G,"samplePosteriorOnlyGoalAndSignal_fromStart
+(lambda=0.325, p=0.5625)",Coordination Efficiency (%),88.21456033656663,1.3850610283420406,60
+average,Average all 2P3G,"samplePosteriorOnlyGoalAndSignal_fromStart
+(lambda=0.325, p=0.5625)",Commitment (%),81.66997354497354,3.649752845594425,30
+average,Average all 2P3G,"samplePosteriorOnlyGoalAndSignal_fromStart
+(lambda=0.325, p=0.5625)",Signaling Move (%),46.70304232804233,3.85182374463102,60
+equal_to_both,Equal-to-Both only,"samplePosteriorOnlyGoalAndSignal_fromStart
+(lambda=0.325, p=0.5625)",Success Rate (%),100.0,0.0,30
+equal_to_both,Equal-to-Both only,"samplePosteriorOnlyGoalAndSignal_fromStart
+(lambda=0.325, p=0.5625)",Coordination Efficiency (%),96.79958310538667,1.1543947875892575,56
+equal_to_both,Equal-to-Both only,"samplePosteriorOnlyGoalAndSignal_fromStart
+(lambda=0.325, p=0.5625)",Commitment (%),95.23809523809524,5.275145542430764,28
+equal_to_both,Equal-to-Both only,"samplePosteriorOnlyGoalAndSignal_fromStart
+(lambda=0.325, p=0.5625)",Signaling Move (%),68.75,8.772597083872004,56
+average,Average all 2P3G,Human-Human,Success Rate (%),100.0,0.0,189
+average,Average all 2P3G,Human-Human,Coordination Efficiency (%),81.58244905371343,3.0249800916776026,261
+average,Average all 2P3G,Human-Human,Commitment (%),66.19718309859155,5.511363487211303,284
+average,Average all 2P3G,Human-Human,Signaling Move (%),51.724137931034484,6.0740875419824745,261
+equal_to_both,Equal-to-Both only,Human-Human,Success Rate (%),100.0,0.0,47
+equal_to_both,Equal-to-Both only,Human-Human,Coordination Efficiency (%),96.56826624911733,2.1749647206077265,94
+equal_to_both,Equal-to-Both only,Human-Human,Commitment (%),85.1063829787234,7.235953291737513,94
+equal_to_both,Equal-to-Both only,Human-Human,Signaling Move (%),58.51063829787234,10.01383409099649,94

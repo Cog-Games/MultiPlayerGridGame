@@ -1,0 +1,25 @@
+condition_scope,condition_label,group,metric,mean_percent,ci95_percent,n
+average,Average all 2P3G,"sampleJointGoal_afterNewGoal
+(lambda=0.125)",Success Rate (%),92.5,2.6383239968079777,30
+average,Average all 2P3G,"sampleJointGoal_afterNewGoal
+(lambda=0.125)",Coordination Efficiency (%),89.96973554962003,1.3277030402715966,60
+average,Average all 2P3G,"sampleJointGoal_afterNewGoal
+(lambda=0.125)",Commitment (%),69.0079365079365,4.950964210694832,30
+average,Average all 2P3G,"sampleJointGoal_afterNewGoal
+(lambda=0.125)",Signaling Move (%),30.95568783068783,3.9407952164644198,60
+equal_to_both,Equal-to-Both only,"sampleJointGoal_afterNewGoal
+(lambda=0.125)",Success Rate (%),98.88888888888889,2.177777777777778,30
+equal_to_both,Equal-to-Both only,"sampleJointGoal_afterNewGoal
+(lambda=0.125)",Coordination Efficiency (%),98.48498723498724,0.7667997368437736,60
+equal_to_both,Equal-to-Both only,"sampleJointGoal_afterNewGoal
+(lambda=0.125)",Commitment (%),85.83333333333333,7.953619544393635,30
+equal_to_both,Equal-to-Both only,"sampleJointGoal_afterNewGoal
+(lambda=0.125)",Signaling Move (%),42.50000000000001,7.663962922901951,60
+average,Average all 2P3G,Human-Human,Success Rate (%),100.0,0.0,189
+average,Average all 2P3G,Human-Human,Coordination Efficiency (%),81.58244905371343,3.0249800916776026,261
+average,Average all 2P3G,Human-Human,Commitment (%),66.19718309859155,5.511363487211303,284
+average,Average all 2P3G,Human-Human,Signaling Move (%),51.724137931034484,6.0740875419824745,261
+equal_to_both,Equal-to-Both only,Human-Human,Success Rate (%),100.0,0.0,47
+equal_to_both,Equal-to-Both only,Human-Human,Coordination Efficiency (%),96.56826624911733,2.1749647206077265,94
+equal_to_both,Equal-to-Both only,Human-Human,Commitment (%),85.1063829787234,7.235953291737513,94
+equal_to_both,Equal-to-Both only,Human-Human,Signaling Move (%),58.51063829787234,10.01383409099649,94

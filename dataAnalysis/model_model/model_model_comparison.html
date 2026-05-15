@@ -62,7 +62,7 @@ footer { color:#607080; font-size:12px; margin-top:28px; }
 <main>
 <nav>
   <a href="#overview">Overview</a>
-  <a href="#committed_agent">sampleJointGoal_afterNewGoal</a><a href="#signal_agent">sampleJointGoalAndSignal_afterNewGoal</a><a href="#always_committed_agent">sampleJointGoal_fromStart</a><a href="#two_stage_signal_agent">TwoStageSignalAgent_sigmoidThreshold</a>
+  <a href="#committed_agent">sampleJointGoal_afterNewGoal</a><a href="#signal_agent">sampleJointGoalAndSignal_afterNewGoal</a><a href="#always_committed_agent">sampleJointGoal_fromStart</a><a href="#always_signal_agent">sampleJointGoalAndSignal_fromStart</a><a href="#always_signal_rsa_agent">sampleJointGoalAndRSASignal_fromStart (shared-agency model)</a><a href="#posterior_only_signal_agent">samplePosteriorOnlyGoalAndSignal_fromStart</a><a href="#two_stage_signal_agent">TwoStageSignalAgent_sigmoidThreshold</a>
   <a href="#fit-gallery">Fit Sweeps / Heatmaps</a>
   <a href="#visual-summary">Visual Summary</a>
   <a href="#btom-legibility">BToM Legibility</a>
@@ -79,6 +79,12 @@ footer { color:#607080; font-size:12px; margin-top:28px; }
       <tr><td><strong>sampleJointGoalAndSignal_afterNewGoal</strong></td><td>Equal-to-both</td><td>beta=3.0, lambda=0.125, mixture p=0.375 from trial-level signaling fit</td><td class="num">100.0</td><td class="num">98.4</td><td class="num">73.6</td><td class="num">64.1</td></tr>
       <tr><td><strong>sampleJointGoal_fromStart</strong></td><td>Average all 2P3G</td><td>beta=3.0, lambda=0.15 from equal-to-both trial-level commitment fit</td><td class="num">93.9</td><td class="num">89.0</td><td class="num">78.5</td><td class="num">36.1</td></tr>
       <tr><td><strong>sampleJointGoal_fromStart</strong></td><td>Equal-to-both</td><td>beta=3.0, lambda=0.15 from equal-to-both trial-level commitment fit</td><td class="num">100.0</td><td class="num">98.6</td><td class="num">85.6</td><td class="num">36.9</td></tr>
+      <tr><td><strong>sampleJointGoalAndSignal_fromStart</strong></td><td>Average all 2P3G</td><td>beta=3.0, lambda=0.20, mixture p=0.4375 from adaptive trial-level commitment+signaling fit</td><td class="num">86.1</td><td class="num">90.2</td><td class="num">80.9</td><td class="num">44.3</td></tr>
+      <tr><td><strong>sampleJointGoalAndSignal_fromStart</strong></td><td>Equal-to-both</td><td>beta=3.0, lambda=0.20, mixture p=0.4375 from adaptive trial-level commitment+signaling fit</td><td class="num">98.9</td><td class="num">99.0</td><td class="num">86.9</td><td class="num">60.6</td></tr>
+      <tr><td><strong>sampleJointGoalAndRSASignal_fromStart</strong><br><span class="note">(shared-agency model)</span></td><td>Average all 2P3G</td><td>beta=3.0, lambda=0.325, RSA alpha=7.25 from adaptive trial-level commitment+signaling fit</td><td class="num">94.2</td><td class="num">89.4</td><td class="num">82.9</td><td class="num">41.9</td></tr>
+      <tr><td><strong>sampleJointGoalAndRSASignal_fromStart</strong><br><span class="note">(shared-agency model)</span></td><td>Equal-to-both</td><td>beta=3.0, lambda=0.325, RSA alpha=7.25 from adaptive trial-level commitment+signaling fit</td><td class="num">100.0</td><td class="num">99.4</td><td class="num">96.3</td><td class="num">61.1</td></tr>
+      <tr><td><strong>samplePosteriorOnlyGoalAndSignal_fromStart</strong></td><td>Average all 2P3G</td><td>beta=3.0, lambda=0.325, mixture p=0.5625 from adaptive trial-level commitment+signaling fit with no EU term</td><td class="num">82.8</td><td class="num">88.2</td><td class="num">81.7</td><td class="num">46.7</td></tr>
+      <tr><td><strong>samplePosteriorOnlyGoalAndSignal_fromStart</strong></td><td>Equal-to-both</td><td>beta=3.0, lambda=0.325, mixture p=0.5625 from adaptive trial-level commitment+signaling fit with no EU term</td><td class="num">100.0</td><td class="num">96.8</td><td class="num">95.2</td><td class="num">68.8</td></tr>
       <tr><td><strong>TwoStageSignalAgent_sigmoidThreshold</strong></td><td>Average all 2P3G</td><td>beta=3.0, k=10, tau=2/3 fixed, eta=0 fixed, lambda=0.10 and mixture p=0.00 from success-weighted lambda-p search</td><td class="num">95.3</td><td class="num">88.5</td><td class="num">75.5</td><td class="num">38.2</td></tr>
       <tr><td><strong>TwoStageSignalAgent_sigmoidThreshold</strong></td><td>Equal-to-both</td><td>beta=3.0, k=10, tau=2/3 fixed, eta=0 fixed, lambda=0.10 and mixture p=0.00 from success-weighted lambda-p search</td><td class="num">100.0</td><td class="num">97.7</td><td class="num">81.7</td><td class="num">48.1</td></tr>
       <tr class="human"><td><strong>Human-Human</strong></td><td>Average all 2P3G</td><td>reference data, not a model</td><td class="num">100.0</td><td class="num">81.6</td><td class="num">66.2</td><td class="num">51.7</td></tr>
@@ -88,7 +94,7 @@ footer { color:#607080; font-size:12px; margin-top:28px; }
 </section>
 <section class="summary" id="fit-gallery">
   <h2>Fit Sweeps / Heatmaps</h2>
-  <p>Each plot highlights the parameter setting used in the primary result table. Line sweeps mark the best fit with a red dashed line and star; the two-stage plot uses lambda × mixture-p heatmaps with the best fit starred.</p>
+  <p>Each plot highlights the parameter setting used in the primary result table. Line sweeps mark the best fit with a red dashed line and star; lambda × mixture-p heatmaps use a starred best setting.</p>
   <div class="fit-grid">
     <section class="fit-card">
       <h3>sampleJointGoal_afterNewGoal</h3>
@@ -107,19 +113,43 @@ footer { color:#607080; font-size:12px; margin-top:28px; }
       <p>Lambda sweep; red dashed line and star mark best fit lambda = 0.15.</p>
       <a href="report_assets/sampleJointGoal_fromStart_standard_sweep_best.png"><img src="report_assets/sampleJointGoal_fromStart_standard_sweep_best.png" alt="sampleJointGoal_fromStart standardized sweep with best fit highlighted"></a>
     </section>
+
+    <section class="fit-card wide">
+      <h3>sampleJointGoalAndSignal_fromStart</h3>
+      <p>Adaptive lambda × mixture-p heatmaps for all four measures; red star marks the trial-level commitment+signaling NLL best fit: lambda = 0.20, p = 0.4375.</p>
+      <a href="report_assets/sampleJointGoalAndSignal_fromStart_standard_sweep_best.png"><img src="report_assets/sampleJointGoalAndSignal_fromStart_standard_sweep_best.png" alt="sampleJointGoalAndSignal_fromStart standardized lambda by mixture-p heatmaps with best fit highlighted"></a>
+      <p class="links"><a href="signal_agent/outputs/signal_agent_from_start_lambda_p_fit/always_signal_lambda_p_average_4measure_heatmaps.png">all measures, average</a> <a href="signal_agent/outputs/signal_agent_from_start_lambda_p_fit/always_signal_lambda_p_equal_to_both_4measure_heatmaps.png">all measures, equal-to-both</a> <a href="signal_agent/outputs/signal_agent_from_start_lambda_p_fit/always_signal_lambda_p_grid.csv">grid CSV</a></p>
+    </section>
+
+    <section class="fit-card wide">
+      <h3>sampleJointGoalAndRSASignal_fromStart (shared-agency model)</h3>
+      <p>Adaptive lambda × RSA-alpha heatmaps for all four measures; red star marks the trial-level commitment+signaling NLL best fit: lambda = 0.325, alpha = 7.25.</p>
+      <a href="report_assets/sampleJointGoalAndRSASignal_fromStart_standard_sweep_best.png"><img src="report_assets/sampleJointGoalAndRSASignal_fromStart_standard_sweep_best.png" alt="sampleJointGoalAndRSASignal_fromStart standardized lambda by RSA-alpha heatmaps with best fit highlighted"></a>
+      <p class="links"><a href="signal_agent/outputs/signal_agent_from_start_rsa_lambda_alpha_fit/always_signal_rsa_lambda_alpha_average_4measure_heatmaps.png">all measures, average</a> <a href="signal_agent/outputs/signal_agent_from_start_rsa_lambda_alpha_fit/always_signal_rsa_lambda_alpha_equal_to_both_4measure_heatmaps.png">all measures, equal-to-both</a> <a href="signal_agent/outputs/signal_agent_from_start_rsa_lambda_alpha_fit/always_signal_rsa_lambda_alpha_grid.csv">grid CSV</a></p>
+    </section>
+
+    <section class="fit-card wide">
+      <h3>samplePosteriorOnlyGoalAndSignal_fromStart</h3>
+      <p>Adaptive lambda × mixture-p heatmaps for all four measures; red star marks the trial-level commitment+signaling NLL best fit: lambda = 0.325, p = 0.5625.</p>
+      <a href="report_assets/samplePosteriorOnlyGoalAndSignal_fromStart_standard_sweep_best.png"><img src="report_assets/samplePosteriorOnlyGoalAndSignal_fromStart_standard_sweep_best.png" alt="samplePosteriorOnlyGoalAndSignal_fromStart standardized lambda by mixture-p heatmaps with best fit highlighted"></a>
+      <p class="links"><a href="signal_agent/outputs/signal_agent_posterior_only_lambda_p_fit/posterior_only_signal_lambda_p_average_4measure_heatmaps.png">all measures, average</a> <a href="signal_agent/outputs/signal_agent_posterior_only_lambda_p_fit/posterior_only_signal_lambda_p_equal_to_both_4measure_heatmaps.png">all measures, equal-to-both</a> <a href="signal_agent/outputs/signal_agent_posterior_only_lambda_p_fit/posterior_only_signal_lambda_p_grid.csv">grid CSV</a></p>
+    </section>
     
     <section class="fit-card wide">
       <h3>TwoStageSignalAgent_sigmoidThreshold</h3>
       <p>Success-weighted lambda × mixture-p heatmaps for all four measures; red star marks the best commitment+signaling+success NLL fit: lambda = 0.10, p = 0.00.</p>
       <a href="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_sweep_best.png"><img src="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_sweep_best.png" alt="TwoStageSignalAgent_sigmoidThreshold standardized lambda by mixture-p heatmaps with best fit highlighted"></a>
       <p class="links"><a href="two_stage_signal_agent/outputs/two_stage_mixture_lambda_p_success_fit_tau2over3_eta0/two_stage_signal_lambda_p_average_4measure_heatmaps.png">all measures, average</a> <a href="two_stage_signal_agent/outputs/two_stage_mixture_lambda_p_success_fit_tau2over3_eta0/two_stage_signal_lambda_p_equal_to_both_4measure_heatmaps.png">all measures, equal-to-both</a> <a href="two_stage_signal_agent/outputs/two_stage_mixture_lambda_p_success_fit_tau2over3_eta0/two_stage_signal_4param_grid.csv">grid CSV</a></p>
+      <p>Lambda × tau heatmaps for all four measures from the tau sweep; this keeps the signaling variant fixed at alpha=1 and eta=1.</p>
+      <a href="two_stage_signal_agent/outputs/two_stage_signal_lambda_tau_fit_alpha1_eta1/two_stage_signal_lambda_tau_average_4measure_heatmaps.png"><img src="two_stage_signal_agent/outputs/two_stage_signal_lambda_tau_fit_alpha1_eta1/two_stage_signal_lambda_tau_average_4measure_heatmaps.png" alt="TwoStageSignalAgent_sigmoidThreshold lambda by tau heatmaps for average all 2P3G measures"></a>
+      <p class="links"><a href="two_stage_signal_agent/outputs/two_stage_signal_lambda_tau_fit_alpha1_eta1/two_stage_signal_lambda_tau_average_4measure_heatmaps.png">lambda × tau, average</a> <a href="two_stage_signal_agent/outputs/two_stage_signal_lambda_tau_fit_alpha1_eta1/two_stage_signal_lambda_tau_equal_to_both_4measure_heatmaps.png">lambda × tau, equal-to-both</a> <a href="two_stage_signal_agent/outputs/two_stage_signal_lambda_tau_fit_alpha1_eta1/two_stage_signal_4param_grid.csv">lambda × tau grid CSV</a></p>
     </section>
     </div>
 </section>
 <section class="summary" id="visual-summary">
   <h2>Compact Visual Summary</h2>
   <p>Grouped bars match the standardized report style: solid bars are average all 2P3G distance conditions; lighter bars are equal-to-both only. Error bars show 95% CI, and Human-Human is the gray reference bar.</p>
-  <div class="legend"><span style="--c:#4e79a7">sampleJointGoal_afterNewGoal</span><span style="--c:#59a14f">sampleJointGoalAndSignal_afterNewGoal</span><span style="--c:#f28e2b">sampleJointGoal_fromStart</span><span style="--c:#e15759">TwoStageSignalAgent_sigmoidThreshold</span><span style="--c:#777777">Human</span><span style="--c:#111; --o:.55">lighter = equal-to-both</span></div>
+  <div class="legend"><span style="--c:#4e79a7">sampleJointGoal_afterNewGoal</span><span style="--c:#59a14f">sampleJointGoalAndSignal_afterNewGoal</span><span style="--c:#f28e2b">sampleJointGoal_fromStart</span><span style="--c:#b07aa1">sampleJointGoalAndSignal_fromStart</span><span style="--c:#edc948">sampleJointGoalAndRSASignal_fromStart (shared-agency model)</span><span style="--c:#76b7b2">samplePosteriorOnlyGoalAndSignal_fromStart</span><span style="--c:#e15759">TwoStageSignalAgent_sigmoidThreshold</span><span style="--c:#777777">Human</span><span style="--c:#111; --o:.55">lighter = equal-to-both</span></div>
   <a href="report_assets/model_model_compact_visual_summary_grouped.png"><img src="report_assets/model_model_compact_visual_summary_grouped.png" alt="Compact visual summary with grouped average and equal-to-both bars plus 95% CI error bars for all four measures"></a>
   <p class="links"><a href="report_assets/model_model_compact_visual_summary_grouped_ci.csv">compact summary CSV</a></p>
   <div class="visuals" style="display:none">
@@ -240,6 +270,63 @@ footer { color:#607080; font-size:12px; margin-top:28px; }
       <p class="links"><a href="always_committed_agent/model.md">model.md</a> <a href="always_committed_agent/notebooks/always_committed_equal_to_both_trial_commitment_fit/always_committed_equal_to_both_lambda_fit.ipynb">notebook</a> <a href="report_assets/sampleJointGoal_fromStart_standard_human_side_by_side_bar_4panel.png">result plot</a> <a href="report_assets/sampleJointGoal_fromStart_standard_sweep_best.png">fit plot</a> <a href="report_assets/sampleJointGoal_fromStart_standard_human_side_by_side_summary.csv">summary CSV</a></p>
       <a href="report_assets/sampleJointGoal_fromStart_standard_human_side_by_side_bar_4panel.png"><img src="report_assets/sampleJointGoal_fromStart_standard_human_side_by_side_bar_4panel.png" alt="sampleJointGoal_fromStart standardized model-vs-human result plot with error bars"></a>
     </section>
+
+    <section class="card" id="always_signal_agent">
+      <h2>sampleJointGoalAndSignal_fromStart</h2>
+      <p class="lede">Always-on posterior timing plus a legibility layer that favors actions making the sampled goal easier for a listener to infer.</p>
+      <div class="meta"><span>beta=3.0, lambda=0.20, mixture p=0.4375 from adaptive trial-level commitment+signaling fit</span><span>lambda: posterior strength; p: probability of replacing the committed action with the most legible progress action; beta fixed at 3.0</span></div>
+      <h3>Math</h3>
+      <div class="equations"><div class="eq"><div class="eq-label">Always-on prior and new-goal resizing</div><div class="latex">\[P_0(g)=1/|\mathcal G_0|,\quad P_t(g_{\mathrm{new}})=1/|\mathcal G_t|\]</div></div><div class="eq"><div class="eq-label">Every-step joint-goal sampling</div><div class="latex">\[W_\lambda(g)\propto \exp(\beta EU_t(g))P_t(g)^\lambda\]</div></div><div class="eq"><div class="eq-label">Mixture signaling policy</div><div class="latex">\[\pi(a_t)=\sum_g W_\lambda(g)\left((1-p)\pi_{\mathrm{joint}}(a_t\mid s_t,\{g\})+p\,\delta_{a_{\mathrm{leg}}(g)}(a_t)\right)\]</div></div></div>
+      <h3>Result Snapshot</h3>
+      <table class="mini"><thead><tr><th>Scope</th><th>Success</th><th>Efficiency</th><th>Commitment</th><th>Signaling</th></tr></thead>
+      <tbody><tr><td>Average</td><td>86.1</td><td>90.2</td><td>80.9</td><td>44.3</td></tr>
+      <tr><td>Equal-to-both</td><td>98.9</td><td>99.0</td><td>86.9</td><td>60.6</td></tr></tbody></table>
+      <h3>Fit Sweep / Heatmap</h3>
+      <p class="note">Adaptive lambda × mixture-p heatmap; red star marks best fit lambda = 0.20, p = 0.4375.</p>
+      <a href="report_assets/sampleJointGoalAndSignal_fromStart_standard_sweep_best.png"><img src="report_assets/sampleJointGoalAndSignal_fromStart_standard_sweep_best.png" alt="sampleJointGoalAndSignal_fromStart standardized lambda by mixture-p heatmaps with best fit highlighted"></a>
+      <h3>Result Plot</h3>
+      <p class="note">Implementation alias: AlwaysSignalAgent. Primary row uses the trial-level adaptive lambda × p fit that optimizes commitment plus signaling binomial NLL; success and efficiency are reported but not optimized. The result plot is standardized against Human-Human with 95% CI error bars.</p>
+      <p class="links"><a href="signal_agent/model.md">model.md</a> <a href="signal_agent/notebooks/signal_agent_from_start_lambda_p_fit/AlwaysSignalAgent_from_start_lambda_p_results.ipynb">notebook</a> <a href="report_assets/sampleJointGoalAndSignal_fromStart_standard_human_side_by_side_bar_4panel.png">result plot</a> <a href="report_assets/sampleJointGoalAndSignal_fromStart_standard_sweep_best.png">lambda × p heatmap</a> <a href="report_assets/sampleJointGoalAndSignal_fromStart_standard_human_side_by_side_summary.csv">summary CSV</a> <a href="signal_agent/outputs/signal_agent_from_start_lambda_p_fit/always_signal_lambda_p_grid.csv">grid CSV</a></p>
+      <a href="report_assets/sampleJointGoalAndSignal_fromStart_standard_human_side_by_side_bar_4panel.png"><img src="report_assets/sampleJointGoalAndSignal_fromStart_standard_human_side_by_side_bar_4panel.png" alt="sampleJointGoalAndSignal_fromStart standardized model-vs-human result plot with error bars"></a>
+    </section>
+
+    <section class="card" id="always_signal_rsa_agent">
+      <h2>sampleJointGoalAndRSASignal_fromStart <span class="note">(shared-agency model)</span></h2>
+      <p class="lede">Always-on posterior timing and joint-goal sampling, with RSA/log-posterior signaling instead of the Bernoulli mixture signal policy.</p>
+      <div class="meta"><span>beta=3.0, lambda=0.325, RSA alpha=7.25 from adaptive trial-level commitment+signaling fit</span><span>lambda: posterior strength; alpha: RSA signal rationality; beta fixed at 3.0</span></div>
+      <h3>Math</h3>
+      <div class="equations"><div class="eq"><div class="eq-label">Always-on prior and new-goal resizing</div><div class="latex">\[P_0(g)=1/|\mathcal G_0|,\quad P_t(g_{\mathrm{new}})=1/|\mathcal G_t|\]</div></div><div class="eq"><div class="eq-label">Every-step joint-goal sampling</div><div class="latex">\[W_\lambda(g)\propto \exp(\beta EU_t(g))P_t(g)^\lambda\]</div></div><div class="eq"><div class="eq-label">RSA/log-posterior signaling policy</div><div class="latex">\[\pi_{\mathrm{RSA}}(a\mid g)\propto \pi_{\mathrm{joint}}(a\mid s_t,\{g\})P_t(g\mid a)^\alpha\]</div></div><div class="eq"><div class="eq-label">Marginal action policy</div><div class="latex">\[\pi(a_t)=\sum_g W_\lambda(g)\pi_{\mathrm{RSA}}(a_t\mid g)\]</div></div></div>
+      <h3>Result Snapshot</h3>
+      <table class="mini"><thead><tr><th>Scope</th><th>Success</th><th>Efficiency</th><th>Commitment</th><th>Signaling</th></tr></thead>
+      <tbody><tr><td>Average</td><td>94.2</td><td>89.4</td><td>82.9</td><td>41.9</td></tr>
+      <tr><td>Equal-to-both</td><td>100.0</td><td>99.4</td><td>96.3</td><td>61.1</td></tr></tbody></table>
+      <h3>Fit Sweep / Heatmap</h3>
+      <p class="note">Adaptive lambda × RSA-alpha heatmap; red star marks best fit lambda = 0.325, alpha = 7.25.</p>
+      <a href="report_assets/sampleJointGoalAndRSASignal_fromStart_standard_sweep_best.png"><img src="report_assets/sampleJointGoalAndRSASignal_fromStart_standard_sweep_best.png" alt="sampleJointGoalAndRSASignal_fromStart standardized lambda by RSA-alpha heatmaps with best fit highlighted"></a>
+      <h3>Result Plot</h3>
+      <p class="note">Implementation alias: AlwaysSignalAgent with score=logposterior and horizon=1. Primary row uses the trial-level adaptive lambda × alpha fit that optimizes commitment plus signaling binomial NLL; success and efficiency are reported but not optimized. The result plot is standardized against Human-Human with 95% CI error bars.</p>
+      <p class="links"><a href="signal_agent/model.md">model.md</a> <a href="signal_agent/notebooks/signal_agent_from_start_rsa_lambda_alpha_fit/AlwaysSignalAgent_from_start_rsa_lambda_alpha_results.ipynb">notebook</a> <a href="report_assets/sampleJointGoalAndRSASignal_fromStart_standard_human_side_by_side_bar_4panel.png">result plot</a> <a href="report_assets/sampleJointGoalAndRSASignal_fromStart_standard_sweep_best.png">lambda × alpha heatmap</a> <a href="report_assets/sampleJointGoalAndRSASignal_fromStart_standard_human_side_by_side_summary.csv">summary CSV</a> <a href="signal_agent/outputs/signal_agent_from_start_rsa_lambda_alpha_fit/always_signal_rsa_lambda_alpha_grid.csv">grid CSV</a></p>
+      <a href="report_assets/sampleJointGoalAndRSASignal_fromStart_standard_human_side_by_side_bar_4panel.png"><img src="report_assets/sampleJointGoalAndRSASignal_fromStart_standard_human_side_by_side_bar_4panel.png" alt="sampleJointGoalAndRSASignal_fromStart standardized model-vs-human result plot with error bars"></a>
+    </section>
+
+    <section class="card" id="posterior_only_signal_agent">
+      <h2>samplePosteriorOnlyGoalAndSignal_fromStart</h2>
+      <p class="lede">Always-on posterior timing plus signaling, with goal selection based only on inferred joint-goal posterior rather than joint-distance utility.</p>
+      <div class="meta"><span>beta=3.0, lambda=0.325, mixture p=0.5625 from adaptive trial-level commitment+signaling fit</span><span>lambda: posterior sharpening; p: probability of replacing the committed action with the most legible progress action; no EU term in goal selection</span></div>
+      <h3>Math</h3>
+      <div class="equations"><div class="eq"><div class="eq-label">Always-on prior and new-goal resizing</div><div class="latex">\[P_0(g)=1/|\mathcal G_0|,\quad P_t(g_{\mathrm{new}})=1/|\mathcal G_t|\]</div></div><div class="eq"><div class="eq-label">Posterior-only joint-goal sampling</div><div class="latex">\[W_\lambda(g)=\frac{P_t(g)^\lambda}{\sum_{g'}P_t(g')^\lambda}\]</div></div><div class="eq"><div class="eq-label">Mixture signaling policy</div><div class="latex">\[\pi(a_t)=\sum_g W_\lambda(g)\left((1-p)\pi_{\mathrm{joint}}(a_t\mid s_t,\{g\})+p\,\delta_{a_{\mathrm{leg}}(g)}(a_t)\right)\]</div></div></div>
+      <h3>Result Snapshot</h3>
+      <table class="mini"><thead><tr><th>Scope</th><th>Success</th><th>Efficiency</th><th>Commitment</th><th>Signaling</th></tr></thead>
+      <tbody><tr><td>Average</td><td>82.8</td><td>88.2</td><td>81.7</td><td>46.7</td></tr>
+      <tr><td>Equal-to-both</td><td>100.0</td><td>96.8</td><td>95.2</td><td>68.8</td></tr></tbody></table>
+      <h3>Fit Sweep / Heatmap</h3>
+      <p class="note">Adaptive lambda × mixture-p heatmap; red star marks best fit lambda = 0.325, p = 0.5625.</p>
+      <a href="report_assets/samplePosteriorOnlyGoalAndSignal_fromStart_standard_sweep_best.png"><img src="report_assets/samplePosteriorOnlyGoalAndSignal_fromStart_standard_sweep_best.png" alt="samplePosteriorOnlyGoalAndSignal_fromStart standardized lambda by mixture-p heatmaps with best fit highlighted"></a>
+      <h3>Result Plot</h3>
+      <p class="note">Implementation alias: PosteriorOnlySignalAgent. Primary row uses the trial-level adaptive lambda × p fit that optimizes commitment plus signaling binomial NLL; success and efficiency are reported but not optimized. The result plot is standardized against Human-Human with 95% CI error bars.</p>
+      <p class="links"><a href="signal_agent/model.md">model.md</a> <a href="signal_agent/notebooks/signal_agent_posterior_only_lambda_p_fit/PosteriorOnlySignalAgent_from_start_lambda_p_results.ipynb">notebook</a> <a href="report_assets/samplePosteriorOnlyGoalAndSignal_fromStart_standard_human_side_by_side_bar_4panel.png">result plot</a> <a href="report_assets/samplePosteriorOnlyGoalAndSignal_fromStart_standard_sweep_best.png">lambda × p heatmap</a> <a href="report_assets/samplePosteriorOnlyGoalAndSignal_fromStart_standard_human_side_by_side_summary.csv">summary CSV</a> <a href="signal_agent/outputs/signal_agent_posterior_only_lambda_p_fit/posterior_only_signal_lambda_p_grid.csv">grid CSV</a></p>
+      <a href="report_assets/samplePosteriorOnlyGoalAndSignal_fromStart_standard_human_side_by_side_bar_4panel.png"><img src="report_assets/samplePosteriorOnlyGoalAndSignal_fromStart_standard_human_side_by_side_bar_4panel.png" alt="samplePosteriorOnlyGoalAndSignal_fromStart standardized model-vs-human result plot with error bars"></a>
+    </section>
     
     <section class="card" id="two_stage_signal_agent">
       <h2>TwoStageSignalAgent_sigmoidThreshold</h2>
@@ -254,9 +341,11 @@ footer { color:#607080; font-size:12px; margin-top:28px; }
       <h3>Fit Sweep / Heatmap</h3>
       <p class="note">Success-weighted lambda × mixture-p heatmaps for all four measures; red star marks best fit lambda = 0.10, p = 0.00.</p>
       <a href="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_sweep_best.png"><img src="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_sweep_best.png" alt="TwoStageSignalAgent_sigmoidThreshold standardized lambda by mixture-p heatmaps with best fit highlighted"></a>
+      <p class="note">Lambda × tau heatmaps for all four measures from the tau sweep, with alpha=1 and eta=1 fixed.</p>
+      <a href="two_stage_signal_agent/outputs/two_stage_signal_lambda_tau_fit_alpha1_eta1/two_stage_signal_lambda_tau_average_4measure_heatmaps.png"><img src="two_stage_signal_agent/outputs/two_stage_signal_lambda_tau_fit_alpha1_eta1/two_stage_signal_lambda_tau_average_4measure_heatmaps.png" alt="TwoStageSignalAgent_sigmoidThreshold lambda by tau heatmaps for average all 2P3G measures"></a>
       <h3>Result Plot</h3>
       <p class="note">Implementation alias: TwoStageSignalAgent. This page uses the success-weighted mixture-signaling variant with tau fixed at 2/3 and eta fixed at 0; older commitment/signaling-only and logposterior fits remain in the output folder for comparison. The result plot is standardized against Human-Human with 95% CI error bars.</p>
-      <p class="links"><a href="two_stage_signal_agent/model.md">model.md</a> <a href="two_stage_signal_agent/notebooks/two_stage_mixture_lambda_p_success_fit_tau2over3_eta0/two_stage_signal_mixture_success_fit_results.ipynb">notebook</a> <a href="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_human_side_by_side_bar_4panel.png">result plot</a> <a href="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_sweep_best.png">fit heatmap</a> <a href="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_human_side_by_side_summary.csv">summary CSV</a> <a href="two_stage_signal_agent/outputs/two_stage_mixture_lambda_p_success_fit_tau2over3_eta0/two_stage_signal_4param_grid.csv">grid CSV</a></p>
+      <p class="links"><a href="two_stage_signal_agent/model.md">model.md</a> <a href="two_stage_signal_agent/notebooks/two_stage_mixture_lambda_p_success_fit_tau2over3_eta0/two_stage_signal_mixture_success_fit_results.ipynb">notebook</a> <a href="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_human_side_by_side_bar_4panel.png">result plot</a> <a href="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_sweep_best.png">lambda × p heatmap</a> <a href="two_stage_signal_agent/outputs/two_stage_signal_lambda_tau_fit_alpha1_eta1/two_stage_signal_lambda_tau_average_4measure_heatmaps.png">lambda × tau heatmap</a> <a href="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_human_side_by_side_summary.csv">summary CSV</a> <a href="two_stage_signal_agent/outputs/two_stage_mixture_lambda_p_success_fit_tau2over3_eta0/two_stage_signal_4param_grid.csv">lambda × p grid CSV</a> <a href="two_stage_signal_agent/outputs/two_stage_signal_lambda_tau_fit_alpha1_eta1/two_stage_signal_4param_grid.csv">lambda × tau grid CSV</a></p>
       <a href="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_human_side_by_side_bar_4panel.png"><img src="report_assets/TwoStageSignalAgent_sigmoidThreshold_standard_human_side_by_side_bar_4panel.png" alt="TwoStageSignalAgent_sigmoidThreshold standardized model-vs-human result plot with error bars"></a>
     </section>
     </section>

@@ -1,0 +1,78 @@
+{
+  "model": "samplePosteriorOnlyGoalAndSignal_fromStart",
+  "implementation": "PosteriorOnlySignalAgent",
+  "fit_target": "trial/player-level commitment + signalingMove binomial NLL by distance condition",
+  "optimized_metrics": [
+    "commitment",
+    "signalingMove"
+  ],
+  "reported_not_optimized": [
+    "success",
+    "efficiency"
+  ],
+  "coarse_lambdas": [
+    0.0,
+    0.05,
+    0.1,
+    0.15,
+    0.3,
+    0.5,
+    1.0
+  ],
+  "coarse_ps": [
+    0.0,
+    0.1,
+    0.25,
+    0.375,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "evaluated_settings": 70,
+  "max_expected_settings": 74,
+  "best_by_binomial_nll": {
+    "lambda": 0.325,
+    "p_signal": 0.5625,
+    "alpha": 0.5625,
+    "commitment_nll": 174.15985986569586,
+    "signaling_nll": 182.93015006446714,
+    "binomial_nll": 357.090009930163,
+    "sim_commitment_human_weighted_average": 0.6884585289514866,
+    "sim_signaling_human_weighted_average": 0.4983670827636679,
+    "sim_commitment_equal_to_both": 0.8055555555555556,
+    "sim_signaling_equal_to_both": 0.6724137931034483,
+    "raw_trials": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/signal_agent/posterior_only_lambda_p_fit/posterior_only_signal_vs_posterior_only_signal_2p3g_raw_trials_beta_3_lambda_0p325_alpha_0p5625_sessions_0_to_29.json.zst",
+    "sim_closer_to_player1_commitment": 0.6277777777777778,
+    "sim_closer_to_player1_signalingMove": 0.4101123595505618,
+    "human_closer_to_player1_commitment": 0.5520833333333334,
+    "human_closer_to_player1_signalingMove": 0.5060240963855421,
+    "sim_equal_to_both_commitment": 0.8055555555555556,
+    "sim_equal_to_both_signalingMove": 0.6724137931034483,
+    "human_equal_to_both_commitment": 0.8404255319148937,
+    "human_equal_to_both_signalingMove": 0.5851063829787234,
+    "sim_closer_to_player2_commitment": 0.6333333333333333,
+    "sim_closer_to_player2_signalingMove": 0.39080459770114945,
+    "human_closer_to_player2_commitment": 0.5638297872340425,
+    "human_closer_to_player2_signalingMove": 0.4523809523809524,
+    "average_success_percent": 82.77777777777777,
+    "average_efficiency_percent": 88.21456033656663,
+    "average_commitment_percent": 70.83333333333331,
+    "average_signaling_percent": 46.70304232804233,
+    "equal_success_percent": 100.0,
+    "equal_efficiency_percent": 96.79958310538667,
+    "equal_commitment_percent": 94.64285714285714,
+    "equal_signaling_percent": 68.75,
+    "fit_stage": "refine"
+  },
+  "best_raw_trials": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/signal_agent/posterior_only_lambda_p_fit/posterior_only_signal_vs_posterior_only_signal_2p3g_raw_trials_beta_3_lambda_0p325_alpha_0p5625_sessions_0_to_29.json.zst",
+  "human_target_csv": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/signal_agent/outputs/signal_agent_posterior_only_lambda_p_fit/human_trial_level_commitment_signaling_target.csv",
+  "outputs": {
+    "grid_csv": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/signal_agent/outputs/signal_agent_posterior_only_lambda_p_fit/posterior_only_signal_lambda_p_grid.csv",
+    "best_metrics_csv": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/signal_agent/outputs/signal_agent_posterior_only_lambda_p_fit/posterior_only_signal_lambda_p_best_metrics.csv",
+    "average_heatmap": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/signal_agent/outputs/signal_agent_posterior_only_lambda_p_fit/posterior_only_signal_lambda_p_average_4measure_heatmaps.png",
+    "equal_to_both_heatmap": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/signal_agent/outputs/signal_agent_posterior_only_lambda_p_fit/posterior_only_signal_lambda_p_equal_to_both_4measure_heatmaps.png",
+    "equal_to_both_comparison_csv": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/signal_agent/outputs/signal_agent_posterior_only_lambda_p_fit/equal_to_both_posterior_only_signal_human_4panel_summary.csv",
+    "all_distance_comparison_csv": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/signal_agent/outputs/signal_agent_posterior_only_lambda_p_fit/all_distance_posterior_only_signal_human_4panel_summary.csv",
+    "notebook": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/signal_agent/notebooks/signal_agent_posterior_only_lambda_p_fit/PosteriorOnlySignalAgent_from_start_lambda_p_results.ipynb"
+  }
+}

@@ -1,0 +1,8 @@
+model,lambda,negative_log_likelihood,step_observations,setting,p_signal,evaluated_settings,alpha
+sampleJointGoal_afterNewGoal,18.14554903468059,1165.7949227455676,1532,"beta=3.0, lambda=18.1 from post-new-goal step-level action likelihood",,,
+sampleJointGoalAndSignal_afterNewGoal,18.145549,1165.7949227455683,1532,"beta=3.0, lambda=18.1, mixture p=0 from post-new-goal step-level action likelihood",0.0,,
+sampleJointGoal_fromStart,32.885637682566234,3769.72787522523,4682,"beta=3.0, lambda=32.9 from all-step action likelihood",,,
+sampleJointGoalAndSignal_fromStart,35.0,3772.103701035921,4682,"beta=3.0, lambda=35, mixture p=0 from all-step adaptive action likelihood",0.0,105.0,
+sampleJointGoalAndRSASignal_fromStart,35.0,3772.103701035921,4682,"beta=3.0, lambda=35, RSA alpha=0 from all-step adaptive RSA action likelihood",,105.0,0.0
+samplePosteriorOnlyGoalAndSignal_fromStart,0.3,3579.1931508111584,4682,"beta=3.0, lambda=0.3, mixture p=0 from posterior-only all-step adaptive action likelihood",0.0,105.0,
+TwoStageSignalAgent_sigmoidThreshold,50.0,3744.5522825879957,4682,"beta=3.0, tau=2/3, eta=0, lambda=50, mixture p=0 from all-step action likelihood (bounded grid cap: lambda <= 50)",0.0,,

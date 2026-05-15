@@ -1,0 +1,13 @@
+group,metric,mean_percent,ci95_percent,n
+"sampleJointGoalAndRSASignal_fromStart
+(lambda=0.325, alpha=7.25)",Success Rate (%),94.16666666666667,2.424464574737401,360
+"sampleJointGoalAndRSASignal_fromStart
+(lambda=0.325, alpha=7.25)",Coordination Efficiency (%),89.41538657877258,1.0343468140146954,60
+"sampleJointGoalAndRSASignal_fromStart
+(lambda=0.325, alpha=7.25)",Commitment (%),66.48677248677247,5.418723760668985,60
+"sampleJointGoalAndRSASignal_fromStart
+(lambda=0.325, alpha=7.25)",Signaling Move (%),41.89947089947089,4.597612988110261,60
+Human-Human,Success Rate (%),100.0,0.0,189
+Human-Human,Coordination Efficiency (%),81.57604663510541,3.0088168401228863,32
+Human-Human,Commitment (%),64.97395833333334,10.970724409578962,32
+Human-Human,Signaling Move (%),52.5297619047619,7.596550149484699,32

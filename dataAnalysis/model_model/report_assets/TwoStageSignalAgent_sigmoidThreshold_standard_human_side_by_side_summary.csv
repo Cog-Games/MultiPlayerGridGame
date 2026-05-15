@@ -1,0 +1,25 @@
+condition_scope,condition_label,group,metric,mean_percent,ci95_percent,n
+average,Average all 2P3G,"TwoStageSignalAgent_sigmoidThreshold
+(lambda=0.10, p=0.00)",Success Rate (%),95.27777777777777,2.1707261312736956,30
+average,Average all 2P3G,"TwoStageSignalAgent_sigmoidThreshold
+(lambda=0.10, p=0.00)",Coordination Efficiency (%),88.45911698267665,1.3185700362464714,60
+average,Average all 2P3G,"TwoStageSignalAgent_sigmoidThreshold
+(lambda=0.10, p=0.00)",Commitment (%),75.53571428571428,4.887213699121682,30
+average,Average all 2P3G,"TwoStageSignalAgent_sigmoidThreshold
+(lambda=0.10, p=0.00)",Signaling Move (%),38.18783068783069,3.8951288084717426,60
+equal_to_both,Equal-to-Both only,"TwoStageSignalAgent_sigmoidThreshold
+(lambda=0.10, p=0.00)",Success Rate (%),100.0,0.0,30
+equal_to_both,Equal-to-Both only,"TwoStageSignalAgent_sigmoidThreshold
+(lambda=0.10, p=0.00)",Coordination Efficiency (%),97.68317410167901,1.2339933725123362,60
+equal_to_both,Equal-to-Both only,"TwoStageSignalAgent_sigmoidThreshold
+(lambda=0.10, p=0.00)",Commitment (%),81.66666666666667,8.485242240950564,30
+equal_to_both,Equal-to-Both only,"TwoStageSignalAgent_sigmoidThreshold
+(lambda=0.10, p=0.00)",Signaling Move (%),48.05555555555555,8.718893651584331,60
+average,Average all 2P3G,Human-Human,Success Rate (%),100.0,0.0,189
+average,Average all 2P3G,Human-Human,Coordination Efficiency (%),81.58244905371343,3.0249800916776026,261
+average,Average all 2P3G,Human-Human,Commitment (%),66.19718309859155,5.511363487211303,284
+average,Average all 2P3G,Human-Human,Signaling Move (%),51.724137931034484,6.0740875419824745,261
+equal_to_both,Equal-to-Both only,Human-Human,Success Rate (%),100.0,0.0,47
+equal_to_both,Equal-to-Both only,Human-Human,Coordination Efficiency (%),96.56826624911733,2.1749647206077265,94
+equal_to_both,Equal-to-Both only,Human-Human,Commitment (%),85.1063829787234,7.235953291737513,94
+equal_to_both,Equal-to-Both only,Human-Human,Signaling Move (%),58.51063829787234,10.01383409099649,94

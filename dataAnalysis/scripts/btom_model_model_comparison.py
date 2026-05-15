@@ -11,6 +11,7 @@ import functools as ft
 import gc
 import json
 import multiprocessing as mp
+import subprocess
 from pathlib import Path
 
 import matplotlib
@@ -30,6 +31,9 @@ GROUP_ORDER = [
     "sampleJointGoal_afterNewGoal",
     "sampleJointGoalAndSignal_afterNewGoal",
     "sampleJointGoal_fromStart",
+    "sampleJointGoalAndSignal_fromStart",
+    "sampleJointGoalAndRSASignal_fromStart",
+    "samplePosteriorOnlyGoalAndSignal_fromStart",
     "TwoStageSignalAgent_sigmoidThreshold",
     "Human-Human",
 ]
@@ -38,6 +42,9 @@ GROUP_PALETTE = {
     "sampleJointGoal_afterNewGoal": "#4e79a7",
     "sampleJointGoalAndSignal_afterNewGoal": "#59a14f",
     "sampleJointGoal_fromStart": "#f28e2b",
+    "sampleJointGoalAndSignal_fromStart": "#b07aa1",
+    "sampleJointGoalAndRSASignal_fromStart": "#edc948",
+    "samplePosteriorOnlyGoalAndSignal_fromStart": "#76b7b2",
     "TwoStageSignalAgent_sigmoidThreshold": "#e15759",
     "Human-Human": "#777777",
 }
@@ -46,6 +53,9 @@ GROUP_DISPLAY_LABELS = {
     "sampleJointGoal_afterNewGoal": "sampleJointGoal\nafterNewGoal",
     "sampleJointGoalAndSignal_afterNewGoal": "sampleJointGoal+Signal\nafterNewGoal",
     "sampleJointGoal_fromStart": "sampleJointGoal\nfromStart",
+    "sampleJointGoalAndSignal_fromStart": "sampleJointGoal+Signal\nfromStart",
+    "sampleJointGoalAndRSASignal_fromStart": "sampleJointGoal+RSA\n(shared-agency model)\nfromStart",
+    "samplePosteriorOnlyGoalAndSignal_fromStart": "samplePosteriorOnlyGoal+Signal\nfromStart",
     "TwoStageSignalAgent_sigmoidThreshold": "TwoStageSignal\nsigmoidThreshold",
     "Human-Human": "Human-Human",
 }
@@ -59,9 +69,65 @@ GROUP_SLUGS = {
     "sampleJointGoal_afterNewGoal": "sample_after_new_goal",
     "sampleJointGoalAndSignal_afterNewGoal": "sample_and_signal_after_new_goal",
     "sampleJointGoal_fromStart": "sample_from_start",
+    "sampleJointGoalAndSignal_fromStart": "sample_and_signal_from_start",
+    "sampleJointGoalAndRSASignal_fromStart": "sample_and_rsa_signal_from_start",
+    "samplePosteriorOnlyGoalAndSignal_fromStart": "sample_posterior_only_and_signal_from_start",
     "TwoStageSignalAgent_sigmoidThreshold": "two_stage_sigmoid_threshold",
     "Human-Human": "human_human",
 }
+
+
+def resolve_json_path(path: Path) -> Path:
+    if path.exists():
+        return path
+    zst_path = Path(f"{path}.zst")
+    if zst_path.exists():
+        return zst_path
+    raise FileNotFoundError(path)
+
+
+def load_json(path: Path):
+    resolved = resolve_json_path(Path(path))
+    if resolved.suffix == ".zst":
+        result = subprocess.run(["zstd", "-dc", str(resolved)], text=True, capture_output=True, check=True)
+        return json.loads(result.stdout)
+    return json.loads(resolved.read_text(encoding="utf-8"))
+
+
+def primary_always_signal_raw_path() -> Path:
+    summary = load_json(ROOT / "model_model" / "signal_agent" / "outputs" / "signal_agent_from_start_lambda_p_fit" / "always_signal_lambda_p_fit_summary.json")
+    path = Path(summary.get("best_raw_trials") or summary.get("best_by_binomial_nll", {}).get("raw_trials"))
+    return path if path.is_absolute() else ROOT.parent / path
+
+
+def primary_posterior_only_signal_raw_path() -> Path:
+    summary = load_json(ROOT / "model_model" / "signal_agent" / "outputs" / "signal_agent_posterior_only_lambda_p_fit" / "posterior_only_signal_lambda_p_fit_summary.json")
+    path = Path(summary.get("best_raw_trials") or summary.get("best_by_binomial_nll", {}).get("raw_trials"))
+    return path if path.is_absolute() else ROOT.parent / path
+
+
+def primary_always_signal_rsa_raw_path() -> Path:
+    summary = load_json(ROOT / "model_model" / "signal_agent" / "outputs" / "signal_agent_from_start_rsa_lambda_alpha_fit" / "always_signal_rsa_lambda_alpha_fit_summary.json")
+    path = Path(summary.get("best_raw_trials") or summary.get("best_by_binomial_nll", {}).get("raw_trials"))
+    return path if path.is_absolute() else ROOT.parent / path
+
+
+def step_level_always_signal_raw_path() -> Path:
+    summary = load_json(ROOT / "model_model" / "step_level_fit_comparison" / "step_level_fit_report_summary.json")
+    path = Path(summary["raw_paths"]["sampleJointGoalAndSignal_fromStart"])
+    return path if path.is_absolute() else ROOT.parent / path
+
+
+def step_level_always_signal_rsa_raw_path() -> Path:
+    summary = load_json(ROOT / "model_model" / "step_level_fit_comparison" / "step_level_fit_report_summary.json")
+    path = Path(summary["raw_paths"]["sampleJointGoalAndRSASignal_fromStart"])
+    return path if path.is_absolute() else ROOT.parent / path
+
+
+def step_level_posterior_only_signal_raw_path() -> Path:
+    summary = load_json(ROOT / "model_model" / "step_level_fit_comparison" / "step_level_fit_report_summary.json")
+    path = Path(summary["raw_paths"]["samplePosteriorOnlyGoalAndSignal_fromStart"])
+    return path if path.is_absolute() else ROOT.parent / path
 
 DATA_PATHS = {
     "sampleJointGoal_afterNewGoal": ROOT
@@ -83,6 +149,9 @@ DATA_PATHS = {
     / "outputs"
     / "always_committed_vs_always_committed_simulation"
     / "always_committed_vs_always_committed_2p3g_raw_trials_beta_3_lambda_0p15_sessions_0_to_29.json",
+    "sampleJointGoalAndSignal_fromStart": primary_always_signal_raw_path,
+    "sampleJointGoalAndRSASignal_fromStart": primary_always_signal_rsa_raw_path,
+    "samplePosteriorOnlyGoalAndSignal_fromStart": primary_posterior_only_signal_raw_path,
     "TwoStageSignalAgent_sigmoidThreshold": ROOT
     / "raw_data"
     / "model_model_simulations"
@@ -115,6 +184,9 @@ STEP_LEVEL_DATA_PATHS = {
     / "simulations"
     / "always_committed_agent"
     / "always_committed_vs_always_committed_2p3g_raw_trials_beta_3_lambda_32p885637682566234_sessions_0_to_29.json",
+    "sampleJointGoalAndSignal_fromStart": step_level_always_signal_raw_path,
+    "sampleJointGoalAndRSASignal_fromStart": step_level_always_signal_rsa_raw_path,
+    "samplePosteriorOnlyGoalAndSignal_fromStart": step_level_posterior_only_signal_raw_path,
     "TwoStageSignalAgent_sigmoidThreshold": ROOT
     / "raw_data"
     / "model_model_simulations"
@@ -265,9 +337,13 @@ def participant_id(trial: dict, group: str, player_index: int) -> str:
     return f"{group}_session_{session}_trial_{trial_index}_p{player_index + 1}"
 
 
+def resolve_data_path(path_or_loader) -> Path:
+    path = path_or_loader() if callable(path_or_loader) else path_or_loader
+    return resolve_json_path(Path(path))
+
+
 def load_group(group: str, path: Path) -> pd.DataFrame:
-    with path.open() as f:
-        trials = json.load(f)
+    trials = load_json(path)
 
     rows = []
     for trial in trials:
@@ -439,9 +515,7 @@ def main() -> None:
 
     if args.single_group:
         group = args.single_group
-        path = data_paths[group]
-        if not path.exists():
-            raise FileNotFoundError(f"Missing raw trial file for {group}: {path}")
+        path = resolve_data_path(data_paths[group])
         print(f"Loading {group} ...", flush=True)
         df = load_group(group, path)
         out = write_group_cache(df, args.output_dir, group)
@@ -457,9 +531,7 @@ def main() -> None:
             frames.append(df)
     else:
         for group in groups:
-            path = data_paths[group]
-            if not path.exists():
-                raise FileNotFoundError(f"Missing raw trial file for {group}: {path}")
+            path = resolve_data_path(data_paths[group])
             goal_action_probabilities.cache_clear()
             gc.collect()
             print(f"Loading {group} ...", flush=True)

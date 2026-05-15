@@ -341,6 +341,18 @@ footer {
             <td>Skips the flexible waiting period: posterior and \(W_\lambda(g)\) sampling are active from trial start.</td>
           </tr>
           <tr>
+            <td><strong>sampleJointGoalAndSignal_fromStart</strong></td>
+            <td>Skips the flexible waiting period and also applies the fitted mixture signaling policy from the start-state posterior timing.</td>
+          </tr>
+          <tr>
+            <td><strong>sampleJointGoalAndRSASignal_fromStart</strong><br><span class="badge">(shared-agency model)</span></td>
+            <td>Uses the same from-start posterior timing and goal sampling as <strong>sampleJointGoalAndSignal_fromStart</strong>, but replaces mixture signaling with the RSA/log-posterior action policy.</td>
+          </tr>
+          <tr>
+            <td><strong>samplePosteriorOnlyGoalAndSignal_fromStart</strong></td>
+            <td>Uses the same from-start posterior timing and mixture signaling policy, but samples goals from \(W_\lambda(g) \propto P_t(g)^\lambda\) with no EU term.</td>
+          </tr>
+          <tr>
             <td><strong>TwoStageSignalAgent_sigmoidThreshold</strong></td>
             <td>Closest to the full pipeline: flexible joint-RL, posterior monitoring, sigmoid threshold gate, goal sampling, and signaling.</td>
           </tr>

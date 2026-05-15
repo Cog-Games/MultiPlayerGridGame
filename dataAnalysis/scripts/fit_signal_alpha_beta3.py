@@ -98,8 +98,11 @@ def raw_path_for(output_dir: Path, beta: float, lambda_value: float, alpha: floa
 
 def run_simulation(args: argparse.Namespace, alpha: float) -> Path:
     raw_path = raw_path_for(args.output_dir, args.beta, args.lambda_value, alpha, args.sessions)
-    if args.reuse_existing and raw_path.exists():
-        return raw_path
+    if args.reuse_existing:
+        try:
+            return resolved_raw_path(raw_path)
+        except FileNotFoundError:
+            pass
     cmd = [
         "node",
         str(SIM_SCRIPT),
@@ -289,8 +292,28 @@ def add_measures(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+def resolved_raw_path(path: Path) -> Path:
+    path = Path(path)
+    if path.exists():
+        return path
+    zst_path = Path(f"{path}.zst")
+    if zst_path.exists():
+        return zst_path
+    raise FileNotFoundError(path)
+
+
 def load_raw(path: Path) -> List[Dict[str, Any]]:
-    return json.loads(path.read_text())
+    raw_path = resolved_raw_path(path)
+    if raw_path.suffix == ".zst":
+        result = subprocess.run(
+            ["zstd", "-dc", str(raw_path)],
+            cwd=PROJECT_ROOT,
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        return json.loads(result.stdout)
+    return json.loads(raw_path.read_text(encoding="utf-8"))
 
 
 def human_signal_targets(human_df: pd.DataFrame) -> pd.DataFrame:

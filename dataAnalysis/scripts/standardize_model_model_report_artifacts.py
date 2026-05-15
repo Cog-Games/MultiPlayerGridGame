@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import subprocess
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
@@ -41,6 +42,9 @@ COMPACT_LABELS = {
     "sampleJointGoal_afterNewGoal": "sampleAfterNew",
     "sampleJointGoalAndSignal_afterNewGoal": "sample+signal",
     "sampleJointGoal_fromStart": "sampleFromStart",
+    "sampleJointGoalAndSignal_fromStart": "sample+signalStart",
+    "sampleJointGoalAndRSASignal_fromStart": "sample+RSAStart\n(shared-agency)",
+    "samplePosteriorOnlyGoalAndSignal_fromStart": "posteriorOnly+signal",
     "TwoStageSignalAgent_sigmoidThreshold": "sigmoidThreshold",
     "Human-Human": "Human",
 }
@@ -49,6 +53,9 @@ COMPACT_COLORS = {
     "sampleJointGoal_afterNewGoal": "#4e79a7",
     "sampleJointGoalAndSignal_afterNewGoal": "#59a14f",
     "sampleJointGoal_fromStart": "#f28e2b",
+    "sampleJointGoalAndSignal_fromStart": "#b07aa1",
+    "sampleJointGoalAndRSASignal_fromStart": "#edc948",
+    "samplePosteriorOnlyGoalAndSignal_fromStart": "#76b7b2",
     "TwoStageSignalAgent_sigmoidThreshold": "#e15759",
     "Human-Human": "#777777",
 }
@@ -84,6 +91,39 @@ MODELS = {
         "sweep": MODEL_ROOT / "always_committed_agent" / "outputs" / "always_committed_vs_always_committed_simulation" / "always_committed_lambda_sweep_average_equal_summary.csv",
         "notebook": MODEL_ROOT / "always_committed_agent" / "notebooks" / "always_committed_equal_to_both_trial_commitment_fit" / "always_committed_equal_to_both_lambda_fit.ipynb",
     },
+    "sampleJointGoalAndSignal_fromStart": {
+        "short": "sample+signalStart",
+        "impl": "AlwaysSignalAgent",
+        "param_label": "lambda/p",
+        "best_param": (0.0, 0.0),
+        "agent_label": "sampleJointGoalAndSignal_fromStart\n(lambda=?, p=?)",
+        "raw": MODEL_ROOT / "signal_agent" / "outputs" / "signal_agent_from_start_lambda_p_fit" / "missing_until_fit.json",
+        "sweep": MODEL_ROOT / "signal_agent" / "outputs" / "signal_agent_from_start_lambda_p_fit" / "always_signal_lambda_p_grid.csv",
+        "summary": MODEL_ROOT / "signal_agent" / "outputs" / "signal_agent_from_start_lambda_p_fit" / "always_signal_lambda_p_fit_summary.json",
+        "notebook": MODEL_ROOT / "signal_agent" / "notebooks" / "signal_agent_from_start_lambda_p_fit" / "AlwaysSignalAgent_from_start_lambda_p_results.ipynb",
+    },
+    "sampleJointGoalAndRSASignal_fromStart": {
+        "short": "sample+RSAStart\n(shared-agency)",
+        "impl": "AlwaysSignalAgent",
+        "param_label": "lambda/alpha",
+        "best_param": (0.0, 0.0),
+        "agent_label": "sampleJointGoalAndRSASignal_fromStart (shared-agency model)\n(lambda=?, alpha=?)",
+        "raw": MODEL_ROOT / "signal_agent" / "outputs" / "signal_agent_from_start_rsa_lambda_alpha_fit" / "missing_until_fit.json",
+        "sweep": MODEL_ROOT / "signal_agent" / "outputs" / "signal_agent_from_start_rsa_lambda_alpha_fit" / "always_signal_rsa_lambda_alpha_grid.csv",
+        "summary": MODEL_ROOT / "signal_agent" / "outputs" / "signal_agent_from_start_rsa_lambda_alpha_fit" / "always_signal_rsa_lambda_alpha_fit_summary.json",
+        "notebook": MODEL_ROOT / "signal_agent" / "notebooks" / "signal_agent_from_start_rsa_lambda_alpha_fit" / "AlwaysSignalAgent_from_start_rsa_lambda_alpha_results.ipynb",
+    },
+    "samplePosteriorOnlyGoalAndSignal_fromStart": {
+        "short": "posteriorOnly+signal",
+        "impl": "PosteriorOnlySignalAgent",
+        "param_label": "lambda/p",
+        "best_param": (0.0, 0.0),
+        "agent_label": "samplePosteriorOnlyGoalAndSignal_fromStart\n(lambda=?, p=?)",
+        "raw": MODEL_ROOT / "signal_agent" / "outputs" / "signal_agent_posterior_only_lambda_p_fit" / "missing_until_fit.json",
+        "sweep": MODEL_ROOT / "signal_agent" / "outputs" / "signal_agent_posterior_only_lambda_p_fit" / "posterior_only_signal_lambda_p_grid.csv",
+        "summary": MODEL_ROOT / "signal_agent" / "outputs" / "signal_agent_posterior_only_lambda_p_fit" / "posterior_only_signal_lambda_p_fit_summary.json",
+        "notebook": MODEL_ROOT / "signal_agent" / "notebooks" / "signal_agent_posterior_only_lambda_p_fit" / "PosteriorOnlySignalAgent_from_start_lambda_p_results.ipynb",
+    },
     "TwoStageSignalAgent_sigmoidThreshold": {
         "short": "sigmoidThreshold",
         "impl": "TwoStageSignalAgent",
@@ -97,6 +137,48 @@ MODELS = {
 }
 
 HUMAN_RAW = ROOT / "dataAnalysis" / "raw_data" / "human" / "equal_to_both_agent_human_comparison" / "human_human_pure_unique_2p3g_raw_trials.json"
+
+
+def resolve_raw_path(path: Path) -> Path:
+    path = Path(path)
+    if path.exists():
+        return path
+    zst_path = Path(f"{path}.zst")
+    if zst_path.exists():
+        return zst_path
+    raise FileNotFoundError(path)
+
+
+def load_json(path: Path) -> Any:
+    raw_path = resolve_raw_path(Path(path))
+    if raw_path.suffix == ".zst":
+        result = subprocess.run(
+            ["zstd", "-dc", str(raw_path)],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        return json.loads(result.stdout)
+    return json.loads(raw_path.read_text(encoding="utf-8"))
+
+
+def apply_dynamic_model_config() -> None:
+    for model, cfg in MODELS.items():
+        summary_path = cfg.get("summary")
+        if not summary_path or not Path(summary_path).exists():
+            continue
+        summary = load_json(Path(summary_path))
+        best = summary.get("best_by_binomial_nll", {})
+        best_lambda = float(best.get("lambda", 0.0))
+        second_key = "alpha" if cfg.get("param_label") == "lambda/alpha" else "p_signal"
+        best_second = float(best.get(second_key, best.get("alpha", 0.0)))
+        raw_path = Path(summary.get("best_raw_trials") or best.get("raw_trials") or cfg["raw"])
+        cfg["best_param"] = (best_lambda, best_second)
+        second_label = "alpha" if cfg.get("param_label") == "lambda/alpha" else "p"
+        display_model = f"{model} (shared-agency model)" if model == "sampleJointGoalAndRSASignal_fromStart" else model
+        cfg["agent_label"] = f"{display_model}\n(lambda={best_lambda:g}, {second_label}={best_second:g})"
+        cfg["raw"] = raw_path if raw_path.is_absolute() else ROOT / raw_path
 
 
 def parse_traj(value: Any) -> List[List[int]]:
@@ -217,7 +299,7 @@ def long_rows(raw: List[Dict[str, Any]]) -> pd.DataFrame:
 
 
 def metric_summary(raw_path: Path, agent_label: str, human: bool = False) -> pd.DataFrame:
-    raw = json.loads(raw_path.read_text(encoding="utf-8"))
+    raw = load_json(raw_path)
     base = pd.DataFrame(raw)
     long = long_rows(raw)
     rows: List[Dict[str, Any]] = []
@@ -380,27 +462,31 @@ def plot_sweep_4measure(df: pd.DataFrame, param_col: str, best: float, title: st
     plt.close(fig)
 
 
-def plot_two_stage_heatmaps(df: pd.DataFrame, best_lambda: float, best_p: float, output_path: Path) -> None:
+def plot_lambda_p_heatmaps(df: pd.DataFrame, best_lambda: float, best_p: float, output_path: Path, title: str) -> None:
     metrics = [
         ("Success Rate (%)", "average_success_percent"),
         ("Coordination Efficiency (%)", "average_efficiency_percent"),
         ("Commitment (%)", "average_commitment_percent"),
         ("Signaling Move (%)", "average_signaling_percent"),
     ]
+    p_col = "p_signal" if "p_signal" in df.columns else "alpha"
+    y_label = "mixture p" if p_col == "p_signal" else "RSA alpha"
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
-    fig.suptitle("TwoStageSignalAgent_sigmoidThreshold: lambda x p sweep", fontsize=18, fontweight="bold", y=0.98)
+    fig.suptitle(title, fontsize=18, fontweight="bold", y=0.98)
     for ax, (title, col) in zip(axes.ravel(), metrics):
-        pivot = df.pivot_table(index="alpha", columns="lambda", values=col, aggfunc="first").sort_index()
+        pivot = df.pivot_table(index=p_col, columns="lambda", values=col, aggfunc="first").sort_index()
         im = ax.imshow(pivot.values, origin="lower", aspect="auto", cmap="viridis", vmin=0, vmax=100)
         ax.set_xticks(np.arange(len(pivot.columns)))
         ax.set_xticklabels([f"{v:g}" for v in pivot.columns], rotation=45, ha="right", fontsize=8)
         ax.set_yticks(np.arange(len(pivot.index)))
         ax.set_yticklabels([f"{v:g}" for v in pivot.index], fontsize=8)
-        if best_lambda in list(pivot.columns) and best_p in list(pivot.index):
-            ax.scatter([list(pivot.columns).index(best_lambda)], [list(pivot.index).index(best_p)], marker="*", s=240, color="red", edgecolor="white", linewidth=0.8)
+        if len(pivot.columns) and len(pivot.index):
+            x = min(range(len(pivot.columns)), key=lambda i: abs(float(pivot.columns[i]) - float(best_lambda)))
+            y = min(range(len(pivot.index)), key=lambda i: abs(float(pivot.index[i]) - float(best_p)))
+            ax.scatter([x], [y], marker="*", s=240, color="red", edgecolor="white", linewidth=0.8)
         ax.set_title(title, fontsize=14, fontweight="bold")
         ax.set_xlabel("lambda")
-        ax.set_ylabel("mixture p")
+        ax.set_ylabel(y_label)
         fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
     fig.tight_layout(rect=[0, 0, 1, 0.94])
     fig.savefig(output_path, dpi=200, bbox_inches="tight")
@@ -416,6 +502,9 @@ def plot_compact_summary(df: pd.DataFrame, output_path: Path) -> None:
         "sampleJointGoal_afterNewGoal",
         "sampleJointGoalAndSignal_afterNewGoal",
         "sampleJointGoal_fromStart",
+        "sampleJointGoalAndSignal_fromStart",
+        "sampleJointGoalAndRSASignal_fromStart",
+        "samplePosteriorOnlyGoalAndSignal_fromStart",
         "TwoStageSignalAgent_sigmoidThreshold",
         "Human-Human",
     ]
@@ -477,12 +566,13 @@ def write_notebook(model: str, cfg: Dict[str, Any], sweep_png: Path, bar_png: Pa
     rel_sweep = os.path.relpath(sweep_png, nb_path.parent)
     rel_bar = os.path.relpath(bar_png, nb_path.parent)
     rel_csv = os.path.relpath(summary_csv, nb_path.parent)
+    display_model = f"{model} (shared-agency model)" if model == "sampleJointGoalAndRSASignal_fromStart" else model
     cells = [
         {
             "cell_type": "markdown",
             "metadata": {},
             "source": [
-                f"# {model} standardized model-model results\n",
+                f"# {display_model} standardized model-model results\n",
                 "\n",
                 "This notebook mirrors the current `model_model_comparison.html` plotting logic.\n",
                 "\n",
@@ -518,6 +608,7 @@ def write_notebook(model: str, cfg: Dict[str, Any], sweep_png: Path, bar_png: Pa
 
 
 def main() -> None:
+    apply_dynamic_model_config()
     human_df = metric_summary(HUMAN_RAW, "Human-Human", human=True)
     manifest = []
     compact_parts = []
@@ -529,10 +620,12 @@ def main() -> None:
         combined.to_csv(summary_csv, index=False)
         plot_side_by_side(combined, f"{model} vs Human-Human", bar_png)
 
-        if model == "TwoStageSignalAgent_sigmoidThreshold":
+        if cfg["param_label"] in {"lambda/p", "lambda/alpha"}:
             grid = pd.read_csv(cfg["sweep"])
             sweep_png = ASSET_DIR / f"{model}_standard_sweep_best.png"
-            plot_two_stage_heatmaps(grid, 0.10, 0.0, sweep_png)
+            best_lambda, best_p = cfg["best_param"]
+            sweep_title = f"{model}: lambda x {'alpha' if cfg['param_label'] == 'lambda/alpha' else 'p'} sweep"
+            plot_lambda_p_heatmaps(grid, float(best_lambda), float(best_p), sweep_png, sweep_title)
         else:
             param_col = "alpha" if cfg["param_label"] == "p" else "lambda"
             sweep_df = read_sweep_wide(cfg["sweep"], param_col)
