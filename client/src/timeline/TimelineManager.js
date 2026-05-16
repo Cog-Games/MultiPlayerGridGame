@@ -993,37 +993,39 @@ export class TimelineManager {
               <div class="kid-wait-rainbow kid-wait-rainbow-one"></div>
               <div class="kid-wait-rainbow kid-wait-rainbow-two"></div>
               <div class="kid-wait-rainbow kid-wait-rainbow-three"></div>
-              <div class="kid-wait-ball kid-wait-red"></div>
-              <div class="kid-wait-ball kid-wait-orange"></div>
+              <div class="kid-wait-bubble" style="left:92px;top:138px;--size:44px;animation-delay:.1s;"></div>
+              <div class="kid-wait-bubble" style="left:246px;top:88px;--size:34px;animation-delay:.7s;"></div>
+              <div class="kid-wait-bubble" style="left:428px;top:128px;--size:52px;animation-delay:1.1s;"></div>
             </div>
             <div class="kid-wait-scene kid-wait-scene-two">
-              <div class="kid-wait-balloon" style="left:74px;--balloon:#ff3b30;animation-delay:.1s;"></div>
+              <div class="kid-wait-balloon" style="left:74px;--balloon:#7c8cff;animation-delay:.1s;"></div>
               <div class="kid-wait-balloon" style="left:176px;--balloon:#007bff;animation-delay:.6s;"></div>
-              <div class="kid-wait-balloon" style="left:282px;--balloon:#34c759;animation-delay:.2s;"></div>
-              <div class="kid-wait-balloon" style="left:388px;--balloon:#ffcc00;animation-delay:.8s;"></div>
-              <div class="kid-wait-balloon" style="left:492px;--balloon:#ff9500;animation-delay:.4s;"></div>
+              <div class="kid-wait-balloon" style="left:282px;--balloon:#1fb6a6;animation-delay:.2s;"></div>
+              <div class="kid-wait-balloon" style="left:388px;--balloon:#ffdf6b;animation-delay:.8s;"></div>
+              <div class="kid-wait-balloon" style="left:492px;--balloon:#c77dff;animation-delay:.4s;"></div>
               <div class="kid-wait-confetti" style="left:120px;top:56px;animation-delay:.1s;"></div>
               <div class="kid-wait-confetti" style="left:262px;top:94px;animation-delay:.5s;"></div>
               <div class="kid-wait-confetti" style="left:438px;top:48px;animation-delay:.9s;"></div>
             </div>
             <div class="kid-wait-scene kid-wait-scene-three">
-              <div class="kid-wait-stage"></div>
-              <div class="kid-wait-spotlight kid-wait-spotlight-red"></div>
-              <div class="kid-wait-spotlight kid-wait-spotlight-orange"></div>
-              <div class="kid-wait-dance-ball kid-wait-dance-red"></div>
-              <div class="kid-wait-dance-ball kid-wait-dance-orange"></div>
+              <div class="kid-wait-pinwheel" style="left:100px;top:60px;--pin:#7c8cff;animation-delay:.1s;"></div>
+              <div class="kid-wait-pinwheel" style="left:260px;top:92px;--pin:#1fb6a6;animation-delay:.5s;"></div>
+              <div class="kid-wait-pinwheel" style="left:430px;top:54px;--pin:#c77dff;animation-delay:.9s;"></div>
+              <div class="kid-wait-ribbon" style="left:72px;top:172px;--ribbon:#7c8cff;animation-delay:.1s;"></div>
+              <div class="kid-wait-ribbon" style="left:230px;top:188px;--ribbon:#1fb6a6;animation-delay:.5s;"></div>
+              <div class="kid-wait-ribbon" style="left:394px;top:168px;--ribbon:#c77dff;animation-delay:.9s;"></div>
               <div class="kid-wait-star" style="left:122px;top:54px;animation-delay:.2s;"></div>
               <div class="kid-wait-star" style="left:266px;top:34px;animation-delay:.8s;"></div>
               <div class="kid-wait-star" style="left:424px;top:64px;animation-delay:1.2s;"></div>
             </div>
             <div class="kid-wait-scene kid-wait-scene-four">
-              <div class="kid-wait-track"></div>
-              <div class="kid-wait-car kid-wait-car-red"></div>
-              <div class="kid-wait-car kid-wait-car-orange"></div>
-              <div class="kid-wait-gate"></div>
-              <div class="kid-wait-gate-light" style="left:245px;animation-delay:.1s;"></div>
-              <div class="kid-wait-gate-light" style="left:280px;animation-delay:.5s;"></div>
-              <div class="kid-wait-gate-light" style="left:315px;animation-delay:.9s;"></div>
+              <div class="kid-wait-lantern" style="left:82px;--lantern:#7c8cff;animation-delay:.1s;"></div>
+              <div class="kid-wait-lantern" style="left:210px;--lantern:#1fb6a6;animation-delay:.5s;"></div>
+              <div class="kid-wait-lantern" style="left:340px;--lantern:#ffdf6b;animation-delay:.9s;"></div>
+              <div class="kid-wait-lantern" style="left:470px;--lantern:#c77dff;animation-delay:1.3s;"></div>
+              <div class="kid-wait-streamer" style="left:94px;top:150px;--stream:#7c8cff;animation-delay:.1s;"></div>
+              <div class="kid-wait-streamer" style="left:278px;top:170px;--stream:#1fb6a6;animation-delay:.5s;"></div>
+              <div class="kid-wait-streamer" style="left:448px;top:146px;--stream:#c77dff;animation-delay:.9s;"></div>
             </div>
           </div>
 
@@ -1049,7 +1051,7 @@ export class TimelineManager {
         .kid-wait-rainbow {
           position:absolute;left:76px;right:76px;border-radius:999px;border-style:solid;border-color:transparent;border-top-color:#ffcc00;
         }
-        .kid-wait-rainbow-one { top:112px;height:86px;border-width:10px;border-top-color:#ff3b30; }
+        .kid-wait-rainbow-one { top:112px;height:86px;border-width:10px;border-top-color:#7c8cff; }
         .kid-wait-rainbow-two { top:126px;height:62px;border-width:10px;border-top-color:#34c759; }
         .kid-wait-rainbow-three { top:140px;height:38px;border-width:10px;border-top-color:#007bff; }
         .kid-wait-cloud {
@@ -1059,12 +1061,11 @@ export class TimelineManager {
         .kid-wait-cloud::before,.kid-wait-cloud::after { content:""; position:absolute; border-radius:50%; background:#fff; }
         .kid-wait-cloud::before { width:48px;height:48px;left:18px;top:-22px; }
         .kid-wait-cloud::after { width:58px;height:58px;right:18px;top:-30px; }
-        .kid-wait-ball {
-          position:absolute;bottom:48px;width:42px;height:42px;border-radius:50%;box-shadow:0 4px 10px rgba(0,0,0,.18);
-          animation:kidBallMeet 4.8s ease-in-out infinite alternate;
+        .kid-wait-bubble {
+          position:absolute;width:var(--size);height:var(--size);border-radius:50%;border:3px solid rgba(0,123,255,.32);
+          background:rgba(255,255,255,.55);box-shadow:inset -8px -8px 16px rgba(123,223,242,.25);
+          animation:kidBubbleFloat 4.2s ease-in-out infinite alternate;
         }
-        .kid-wait-red { left:80px;background:#ff3b30; }
-        .kid-wait-orange { right:80px;background:#ff9500;animation-direction:alternate-reverse; }
         .kid-wait-balloon {
           position:absolute;bottom:34px;width:54px;height:68px;border-radius:50% 50% 46% 46%;background:var(--balloon);
           box-shadow:inset -8px -10px 0 rgba(0,0,0,.08),0 5px 14px rgba(0,0,0,.12);
@@ -1079,39 +1080,30 @@ export class TimelineManager {
         .kid-wait-confetti {
           position:absolute;width:16px;height:16px;border-radius:4px;background:#ffcc00;animation:kidConfettiSpin 1.6s ease-in-out infinite;
         }
-        .kid-wait-stage {
-          position:absolute;left:80px;right:80px;bottom:36px;height:26px;border-radius:50%;background:#dfe8f6;
+        .kid-wait-pinwheel {
+          position:absolute;width:78px;height:78px;animation:kidPinwheelSpin 2.8s linear infinite;
         }
-        .kid-wait-spotlight {
-          position:absolute;top:18px;width:190px;height:210px;opacity:.42;clip-path:polygon(50% 0,0 100%,100% 100%);
+        .kid-wait-pinwheel::before,.kid-wait-pinwheel::after {
+          content:"";position:absolute;inset:0;background:var(--pin);opacity:.82;clip-path:polygon(50% 50%,100% 0,100% 42%,50% 50%,0 100%,42% 100%);
         }
-        .kid-wait-spotlight-red { left:138px;background:#ffd1d1;animation:kidSpotlightSweep 3.8s ease-in-out infinite alternate; }
-        .kid-wait-spotlight-orange { right:138px;background:#ffe2b8;animation:kidSpotlightSweep 3.8s ease-in-out infinite alternate-reverse; }
-        .kid-wait-dance-ball {
-          position:absolute;bottom:62px;width:54px;height:54px;border-radius:50%;box-shadow:0 6px 14px rgba(0,0,0,.18);
-          animation:kidDanceBounce 1.2s ease-in-out infinite alternate;
+        .kid-wait-pinwheel::after {
+          transform:rotate(90deg);opacity:.55;
         }
-        .kid-wait-dance-red { left:214px;background:#ff3b30; }
-        .kid-wait-dance-orange { right:214px;background:#ff9500;animation-delay:.35s; }
-        .kid-wait-track {
-          position:absolute;left:52px;right:52px;bottom:68px;height:38px;border-radius:999px;background:#dfe8f6;border:4px solid #a6c8ff;
+        .kid-wait-ribbon {
+          position:absolute;width:118px;height:24px;border-radius:999px;background:var(--ribbon);opacity:.72;
+          animation:kidRibbonWave 2.6s ease-in-out infinite alternate;
         }
-        .kid-wait-car {
-          position:absolute;bottom:92px;width:76px;height:42px;border-radius:18px 18px 12px 12px;box-shadow:0 5px 12px rgba(0,0,0,.16);
-          animation:kidCarCruise 4s ease-in-out infinite alternate;
+        .kid-wait-lantern {
+          position:absolute;top:42px;width:58px;height:78px;border-radius:28px;background:var(--lantern);
+          box-shadow:inset 0 0 0 6px rgba(255,255,255,.35),0 6px 16px rgba(0,0,0,.14);
+          animation:kidLanternFloat 3.2s ease-in-out infinite alternate;
         }
-        .kid-wait-car::before,.kid-wait-car::after {
-          content:"";position:absolute;bottom:-10px;width:18px;height:18px;border-radius:50%;background:#222;
+        .kid-wait-lantern::before {
+          content:"";position:absolute;left:27px;top:-38px;width:2px;height:38px;background:#9aa8b5;
         }
-        .kid-wait-car::before { left:12px; }
-        .kid-wait-car::after { right:12px; }
-        .kid-wait-car-red { left:72px;background:#ff3b30; }
-        .kid-wait-car-orange { right:72px;background:#ff9500;animation-direction:alternate-reverse; }
-        .kid-wait-gate {
-          position:absolute;left:236px;bottom:72px;width:104px;height:104px;border:8px solid #8fb8ff;border-bottom:none;border-radius:52px 52px 0 0;
-        }
-        .kid-wait-gate-light {
-          position:absolute;bottom:176px;width:18px;height:18px;border-radius:50%;background:#ffcc00;animation:kidStarPulse 1.4s ease-in-out infinite;
+        .kid-wait-streamer {
+          position:absolute;width:86px;height:30px;border-radius:999px;background:var(--stream);opacity:.65;
+          transform:skewX(-16deg);animation:kidStreamerDrift 2.7s ease-in-out infinite alternate;
         }
         .kid-wait-star {
           position:absolute;width:18px;height:18px;background:#ffd43b;clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 56%,79% 91%,50% 70%,21% 91%,32% 56%,2% 35%,39% 35%);
@@ -1122,13 +1114,13 @@ export class TimelineManager {
           4%,21% { opacity:1; transform:scale(1); }
           25%,100% { opacity:0; transform:scale(1.02); }
         }
-        @keyframes kidBallMeet {
-          from { transform:translateX(0) scale(1); }
-          to { transform:translateX(170px) scale(1.08); }
-        }
         @keyframes kidCloudFloat {
           from { transform:translateY(0); }
           to { transform:translateY(12px); }
+        }
+        @keyframes kidBubbleFloat {
+          from { transform:translateY(0) scale(.95); opacity:.65; }
+          to { transform:translateY(-34px) scale(1.1); opacity:1; }
         }
         @keyframes kidBalloonFloat {
           from { transform:translateY(0) rotate(-3deg); }
@@ -1138,17 +1130,21 @@ export class TimelineManager {
           0%,100% { transform:rotate(0deg) scale(.85); opacity:.55; }
           50% { transform:rotate(160deg) scale(1.2); opacity:1; }
         }
-        @keyframes kidSpotlightSweep {
-          from { transform:translateX(-24px); }
-          to { transform:translateX(24px); }
+        @keyframes kidPinwheelSpin {
+          from { transform:rotate(0deg); }
+          to { transform:rotate(360deg); }
         }
-        @keyframes kidDanceBounce {
-          from { transform:translateY(0) scale(1); }
-          to { transform:translateY(-36px) scale(1.06); }
+        @keyframes kidRibbonWave {
+          from { transform:translateY(0) rotate(-5deg); }
+          to { transform:translateY(-18px) rotate(7deg); }
         }
-        @keyframes kidCarCruise {
-          from { transform:translateX(0); }
-          to { transform:translateX(160px); }
+        @keyframes kidLanternFloat {
+          from { transform:translateY(0) rotate(-2deg); }
+          to { transform:translateY(22px) rotate(3deg); }
+        }
+        @keyframes kidStreamerDrift {
+          from { transform:translateY(0) skewX(-16deg); }
+          to { transform:translateY(-20px) skewX(-16deg); }
         }
         @keyframes kidStarPulse {
           0%,100% { transform:scale(.85); opacity:.55; }
