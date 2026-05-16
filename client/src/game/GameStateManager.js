@@ -29,6 +29,7 @@ export class GameStateManager {
       player2: null,
       currentGoals: [],
       experimentType: null,
+      trialPhase: null,
       trialIndex: 0,
       gameMode: 'human-ai'
     };
@@ -39,6 +40,7 @@ export class GameStateManager {
     this.trialData = {
       trialIndex: 0,
       experimentType: null,
+      trialPhase: null,
       partnerAgentType: null,
       distanceCondition: null,
       // GPT error logging per move
@@ -125,6 +127,7 @@ export class GameStateManager {
   initializeTrial(trialIndex, experimentType, design) {
     this.trialData.trialIndex = trialIndex;
     this.trialData.experimentType = experimentType;
+    this.trialData.trialPhase = null;
     this.trialData.partnerAgentType = this.getPartnerAgentType(experimentType);
     this.trialData.trialStartTime = Date.now();
     this.gameStartTime = Date.now();

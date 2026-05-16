@@ -55,6 +55,14 @@ export function getParticipantIdFromUrl(location = getCurrentLocation()) {
   return getChildIdFromUrl(location) || getProlificPidFromUrl(location);
 }
 
+export function getKidEventIdFromUrl(location = getCurrentLocation()) {
+  return getUrlParamValue(['eventId', 'event'], location);
+}
+
+export function getKidStationIdFromUrl(location = getCurrentLocation()) {
+  return getUrlParamValue(['station', 'stationId'], location);
+}
+
 export function parseDob(dob) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dob || '').trim());
   if (!match) return null;

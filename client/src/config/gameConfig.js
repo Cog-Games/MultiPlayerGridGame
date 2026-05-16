@@ -36,7 +36,12 @@ export const CONFIG = {
     // - committed: skip matching and start directly with a committedAgent partner
     partnerMode: 'human',
     useLegacyUi: true,
-    assetBasePath: '/kids/figs'
+    assetBasePath: '/kids/figs',
+    eventId: getEnvVar('VITE_KIDS_EVENT_ID', 'default'),
+    stationId: getEnvVar('VITE_KIDS_STATION_ID', ''),
+    warmupExperimentOrder: ['1P1G', '1P2G'],
+    mainExperimentType: '2P3G',
+    teammateWaitMaxDuration: 2 * 60 * 1000
   },
 
   // Debug / logging configuration
@@ -129,7 +134,7 @@ export const CONFIG = {
       maxTrialDurationMs: 60 * 1000,
       // Minimum and maximum time to wait for partner (ms)
       waitingForPartnerMinDuration: 2 * 1000, // 9*1000, 9s
-      waitingForPartnerMaxDuration: 2 * 1000 // 290*1000, 5mins
+      waitingForPartnerMaxDuration: 2 * 60 * 1000
     },
 
     // AI agent settings

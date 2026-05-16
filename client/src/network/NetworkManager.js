@@ -160,6 +160,12 @@ export class NetworkManager {
     }
   }
 
+  leaveRoom(reason = 'client-left') {
+    if (this.isConnected) {
+      this.socket.emit('leave-room', { reason });
+    }
+  }
+
   // Game actions
   sendGameAction(action) {
     if (this.isConnected) {

@@ -19,6 +19,12 @@ if (CONFIG.kids.enabled) {
   const rawKidPartner = String(urlParams.get('kidPartner') || CONFIG.kids.partnerMode || 'human').toLowerCase();
   const kidPartner = rawKidPartner === 'committed' ? 'committed' : 'human';
   CONFIG.kids.partnerMode = kidPartner;
+  CONFIG.kids.eventId = urlParams.get('eventId') || urlParams.get('event') || CONFIG.kids.eventId || 'default';
+  CONFIG.kids.stationId = urlParams.get('station') || urlParams.get('stationId') || CONFIG.kids.stationId || '';
+  const kidWaitMs = Number(urlParams.get('kidWaitMs') || urlParams.get('teammateWaitMs'));
+  if (Number.isFinite(kidWaitMs) && kidWaitMs > 0) {
+    CONFIG.kids.teammateWaitMaxDuration = kidWaitMs;
+  }
   CONFIG.multiplayer.fallbackAIType = 'committedAgent';
 
   if (kidPartner === 'committed') {

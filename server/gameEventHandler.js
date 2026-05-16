@@ -7,14 +7,26 @@ export class GameEventHandler {
     // Join room
     socket.on('join-room', (data) => {
       try {
-        const { roomId, gameMode = 'human-ai', experimentType = '2P2G' } = data;
-        const room = this.roomManager.joinRoom(socket.id, roomId, gameMode, experimentType);
+        const {
+          roomId,
+          gameMode = 'human-ai',
+          experimentType = '2P2G',
+          eventId = 'default',
+          stationId = null,
+          childId = null
+        } = data;
+        const room = this.roomManager.joinRoom(socket.id, roomId, gameMode, experimentType, {
+          eventId,
+          stationId,
+          childId
+        });
 
         socket.join(room.id);
         socket.emit('room-joined', {
           roomId: room.id,
           gameMode: room.gameMode,
           experimentType: room.experimentType,
+          eventId: room.eventId,
           players: room.players,
           isHost: room.players[0].id === socket.id
         });
@@ -29,7 +41,10 @@ export class GameEventHandler {
         if (room.players.length === room.maxPlayers) {
           io.to(room.id).emit('room-full', {
             roomId: room.id,
+            gameMode: room.gameMode,
+            experimentType: room.experimentType,
             players: room.players,
+            eventId: room.eventId,
             connectedAt: Date.now()
           });
         }
@@ -38,6 +53,19 @@ export class GameEventHandler {
       } catch (error) {
         socket.emit('error', { message: error.message });
       }
+    });
+
+    socket.on('leave-room', (data = {}) => {
+      const room = this.roomManager.getPlayerRoom(socket.id);
+      if (!room) return;
+
+      socket.to(room.id).emit('player-disconnected', {
+        playerId: socket.id,
+        reason: data.reason || 'client-left',
+        players: room.players.filter(p => p.id !== socket.id)
+      });
+
+      this.roomManager.leaveRoom(socket.id);
     });
 
     // Player ready at the Ready screen (button click)
@@ -179,6 +207,7 @@ export class GameEventHandler {
     const gameConfig = {
       experimentType: room.experimentType,
       gameMode: room.gameMode,
+      eventId: room.eventId,
       players: room.players.map((p, index) => ({
         id: p.id,
         playerIndex: index,

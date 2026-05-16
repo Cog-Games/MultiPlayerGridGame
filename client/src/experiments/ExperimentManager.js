@@ -1323,7 +1323,7 @@ export class ExperimentManager {
   }
 
   async handleTimelineTrialStart(data) {
-    const { experimentType, experimentIndex, trialIndex, onComplete } = data;
+    const { experimentType, experimentIndex, trialIndex, trialPhase, onComplete } = data;
     console.log(`🎮 Timeline starting trial ${trialIndex} of ${experimentType}`);
 
     // Store completion callback
@@ -1351,6 +1351,12 @@ export class ExperimentManager {
 
       // Initialize trial
       this.gameStateManager.initializeTrial(trialIndex, experimentType, design);
+      if (trialPhase && this.gameStateManager.trialData) {
+        this.gameStateManager.trialData.trialPhase = trialPhase;
+        if (this.gameStateManager.currentState) {
+          this.gameStateManager.currentState.trialPhase = trialPhase;
+        }
+      }
 
       // Update UI - use timeline's game container
       this.uiManager.updateGameInfo(experimentIndex, trialIndex, experimentType);
@@ -1374,6 +1380,12 @@ export class ExperimentManager {
       // Use fallback design if everything fails
       const fallbackDesign = GameHelpers.createFallbackDesign(experimentType);
       this.gameStateManager.initializeTrial(trialIndex, experimentType, fallbackDesign);
+      if (trialPhase && this.gameStateManager.trialData) {
+        this.gameStateManager.trialData.trialPhase = trialPhase;
+        if (this.gameStateManager.currentState) {
+          this.gameStateManager.currentState.trialPhase = trialPhase;
+        }
+      }
       this.uiManager.updateGameInfo(experimentIndex, trialIndex, experimentType);
       this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
       this.startTimelineTrialExecution(experimentType);

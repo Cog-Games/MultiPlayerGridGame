@@ -7,6 +7,8 @@ import { CONFIG, GameConfigUtils } from '../config/gameConfig.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
 import {
   getChildIdFromUrl,
+  getKidEventIdFromUrl,
+  getKidStationIdFromUrl,
   getParticipantIdFromUrl,
   getProlificPidFromUrl
 } from '../utils/ParticipantUtils.js';
@@ -37,6 +39,8 @@ export class GameApplication {
 
     // Guard to prevent duplicate trial completion handling
     this._trialCompleteHandled = false;
+    this._timelineRoomJoinPromise = null;
+    this._timelineRoomJoinKey = null;
 
     // Partner inactivity tracking for human-human mode
     this._inactivityTracking = {
@@ -63,6 +67,12 @@ export class GameApplication {
       const rawKidPartner = String(urlParams.get('kidPartner') || CONFIG.kids.partnerMode || 'human').toLowerCase();
       const kidPartner = rawKidPartner === 'committed' ? 'committed' : 'human';
       CONFIG.kids.partnerMode = kidPartner;
+      CONFIG.kids.eventId = getKidEventIdFromUrl() || CONFIG.kids.eventId || 'default';
+      CONFIG.kids.stationId = getKidStationIdFromUrl() || CONFIG.kids.stationId || '';
+      const kidWaitMs = Number(urlParams.get('kidWaitMs') || urlParams.get('teammateWaitMs'));
+      if (Number.isFinite(kidWaitMs) && kidWaitMs > 0) {
+        CONFIG.kids.teammateWaitMaxDuration = kidWaitMs;
+      }
       CONFIG.multiplayer.fallbackAIType = 'committedAgent';
       GameConfigUtils.setPlayerType(2, kidPartner === 'committed' ? 'committedAgent' : 'human');
     }
@@ -189,26 +199,85 @@ export class GameApplication {
   }
 
   setupMultiplayerTimelineIntegration(experimentType, roomId) {
+    const joinTimelineRoom = async (data = {}) => {
+      const joinExperimentType = data.experimentType || CONFIG?.kids?.mainExperimentType || experimentType;
+      const eventId = data.eventId || CONFIG?.kids?.eventId || getKidEventIdFromUrl() || 'default';
+      const stationId = data.stationId || CONFIG?.kids?.stationId || getKidStationIdFromUrl() || '';
+      const childId = getChildIdFromUrl() || getParticipantIdFromUrl() || null;
+      const joinKey = JSON.stringify({
+        roomId: roomId || null,
+        gameMode: 'human-human',
+        experimentType: joinExperimentType,
+        eventId
+      });
+
+      if (this.currentRoomId && this._timelineRoomJoinKey === joinKey) {
+        return { roomId: this.currentRoomId };
+      }
+
+      if (this._timelineRoomJoinPromise && this._timelineRoomJoinKey === joinKey) {
+        return this._timelineRoomJoinPromise;
+      }
+
+      CONFIG.game.players.player2.type = 'human';
+      console.log('🎮 Set player2 type to human for multiplayer experiment');
+
+      this._timelineRoomJoinKey = joinKey;
+      this._timelineRoomJoinPromise = this.networkManager.joinRoom({
+        roomId,
+        gameMode: 'human-human',
+        experimentType: joinExperimentType,
+        eventId,
+        stationId,
+        childId
+      }).then((room) => {
+        console.log('Joined room during timeline flow:', room);
+        return room;
+      }).catch((error) => {
+        this._timelineRoomJoinPromise = null;
+        this._timelineRoomJoinKey = null;
+        throw error;
+      });
+
+      return this._timelineRoomJoinPromise;
+    };
+
     // Handle multiplayer connection within timeline flow
     this.timelineManager.on('waiting-for-partner', async (data) => {
       console.log('Timeline requesting partner connection...');
 
-      // Ensure we're in human-human mode for this experiment
-      CONFIG.game.players.player2.type = 'human';
-      console.log('🎮 Set player2 type to human for multiplayer experiment');
-
       try {
-        // Join or create room
-        const room = await this.networkManager.joinRoom({
-          roomId,
-          gameMode: 'human-human',
-          experimentType: data.experimentType
-        });
-
-        console.log('Joined room during timeline flow:', room);
+        await joinTimelineRoom(data);
       } catch (error) {
         console.error('Failed to join room during timeline:', error);
         // Could emit an error event back to timeline here
+      }
+    });
+
+    this.timelineManager.on('kid-teammate-barrier-ready', async (data) => {
+      console.log('🎮 Kid teammate barrier reached - joining room and marking match-ready');
+      if (!this.networkManager || !this.networkManager.isConnected) {
+        console.warn('⚠️ Network manager not available for kid teammate barrier');
+        return;
+      }
+
+      try {
+        await joinTimelineRoom(data);
+        this.networkManager.setMatchPlayReady();
+      } catch (error) {
+        console.error('Failed to mark kid teammate barrier ready:', error);
+      }
+    });
+
+    this.timelineManager.on('kid-matchmaking-cancelled', (data = {}) => {
+      console.log('🚪 Kid matchmaking cancelled - leaving room', data);
+      try {
+        this.networkManager?.leaveRoom?.(data.reason || 'kid-matchmaking-cancelled');
+        this.currentRoomId = null;
+        this._timelineRoomJoinPromise = null;
+        this._timelineRoomJoinKey = null;
+      } catch (error) {
+        console.warn('Failed to leave kid matchmaking room:', error);
       }
     });
 
@@ -352,6 +421,20 @@ export class GameApplication {
       }, 1000);
     });
 
+    this.timelineManager.on('kid-teammate-barrier-ready', () => {
+      console.log('🤖 Mock: Kid teammate barrier ready, simulating both players ready...');
+      setTimeout(() => {
+        this.uiManager.setPlayerInfo(0, 'human-human');
+        this.timelineManager.emit('all-players-ready', {
+          gameMode: 'human-human',
+          players: [
+            { id: 'mock-player1', playerIndex: 0 },
+            { id: 'mock-player2', playerIndex: 1 }
+          ]
+        });
+      }, 1000);
+    });
+
     console.log('✅ Mock multiplayer timeline events registered');
   }
 
@@ -388,6 +471,7 @@ export class GameApplication {
         // Best-effort: ensure exact GPT model cached before recording
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
         this.gameStateManager?.recordPartnerFallback?.({ reason, stage, at, fallbackAIType });
+        this.timelineManager?.recordKidMatchFallback?.(reason, fallbackAIType);
         // Proactively fetch and persist GPT model so fallback AI type can be exact (e.g., gpt-4o)
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
       } catch (_) { /* noop */ }
@@ -426,7 +510,7 @@ export class GameApplication {
         childId: childId || null,
         prolificPid: prolificPid || null,
         timestamp: new Date().toISOString(),
-        experimentOrder: (CONFIG?.game?.experiments?.order) || [],
+        experimentOrder: data.experimentOrder || (CONFIG?.game?.experiments?.order) || [],
         allTrialsData: gsData.allTrialsData || [],
         questionnaireData: data.questionnaire || null,
         participantDob: data.participantDob || null,
@@ -435,6 +519,17 @@ export class GameApplication {
         participantAgeMonths: data.participantAgeMonths ?? null,
         participantAgeDays: data.participantAgeDays ?? null,
         participantAgeTotalDays: data.participantAgeTotalDays ?? null,
+        eventId: data.eventId || CONFIG?.kids?.eventId || null,
+        stationId: data.stationId || CONFIG?.kids?.stationId || null,
+        queueStartTime: data.queueStartTime || null,
+        matchReadyTime: data.matchReadyTime || null,
+        warmupTrialCount: data.warmupTrialCount ?? 0,
+        neutralWaitStartTime: data.neutralWaitStartTime || null,
+        neutralWaitEndTime: data.neutralWaitEndTime || null,
+        neutralWaitMs: data.neutralWaitMs ?? null,
+        kidMatchOutcome: data.kidMatchOutcome || null,
+        fallbackReason: data.fallbackReason || null,
+        partnerFallbackAIType: data.partnerFallbackAIType || null,
         successThreshold: gsData.successThreshold || {},
         completionCode: data.completionCode || '',
         version: (CONFIG?.game?.version) || '2.0.0',
@@ -481,6 +576,17 @@ export class GameApplication {
               o.participantAgeMonths = exportObj.participantAgeMonths ?? '';
               o.participantAgeDays = exportObj.participantAgeDays ?? '';
               o.participantAgeTotalDays = exportObj.participantAgeTotalDays ?? '';
+              o.eventId = exportObj.eventId || '';
+              o.stationId = exportObj.stationId || '';
+              o.queueStartTime = exportObj.queueStartTime || '';
+              o.matchReadyTime = exportObj.matchReadyTime || '';
+              o.warmupTrialCount = exportObj.warmupTrialCount ?? '';
+              o.neutralWaitStartTime = exportObj.neutralWaitStartTime || '';
+              o.neutralWaitEndTime = exportObj.neutralWaitEndTime || '';
+              o.neutralWaitMs = exportObj.neutralWaitMs ?? '';
+              o.kidMatchOutcome = exportObj.kidMatchOutcome || '';
+              o.fallbackReason = exportObj.fallbackReason || '';
+              o.sessionPartnerFallbackAIType = exportObj.partnerFallbackAIType || '';
               // Also include explicit prolificPid for verification/debugging
               o.prolificPid = exportObj.prolificPid || '';
               // Add current player number (1 or 2) for human-human mode analysis
@@ -500,10 +606,13 @@ export class GameApplication {
 
             // Prefer a sensible column order for readability; include common fields first if present
             const preferredOrder = [
-              'trialIndex', 'experimentType', 'partnerAgentType',
-              'currentPlayer', 'participantId', 'childId', 'prolificPid', 'roomId',
+              'trialIndex', 'experimentType', 'trialPhase', 'partnerAgentType',
+              'currentPlayer', 'participantId', 'childId', 'prolificPid', 'roomId', 'eventId', 'stationId',
               'participantDob', 'participantAgeReferenceDate',
               'participantAgeYears', 'participantAgeMonths', 'participantAgeDays', 'participantAgeTotalDays',
+              'queueStartTime', 'matchReadyTime',
+              'warmupTrialCount', 'neutralWaitStartTime', 'neutralWaitEndTime', 'neutralWaitMs',
+              'kidMatchOutcome', 'fallbackReason', 'sessionPartnerFallbackAIType',
               'humanPlayerIndex', 'aiPlayerIndex',
               'player1StartPosition', 'player2StartPosition', 'initialGoalPositions',
               'partnerFallbackOccurred', 'partnerFallbackReason', 'partnerFallbackStage', 'partnerFallbackTime',
@@ -605,6 +714,17 @@ export class GameApplication {
             ['participantAgeMonths', exportObj.participantAgeMonths ?? ''],
             ['participantAgeDays', exportObj.participantAgeDays ?? ''],
             ['participantAgeTotalDays', exportObj.participantAgeTotalDays ?? ''],
+            ['eventId', exportObj.eventId || ''],
+            ['stationId', exportObj.stationId || ''],
+            ['queueStartTime', exportObj.queueStartTime || ''],
+            ['matchReadyTime', exportObj.matchReadyTime || ''],
+            ['warmupTrialCount', exportObj.warmupTrialCount ?? ''],
+            ['neutralWaitStartTime', exportObj.neutralWaitStartTime || ''],
+            ['neutralWaitEndTime', exportObj.neutralWaitEndTime || ''],
+            ['neutralWaitMs', exportObj.neutralWaitMs ?? ''],
+            ['kidMatchOutcome', exportObj.kidMatchOutcome || ''],
+            ['fallbackReason', exportObj.fallbackReason || ''],
+            ['partnerFallbackAIType', exportObj.partnerFallbackAIType || ''],
             ['roomId', exportObj.roomId || ''],
             ['experimentOrder', JSON.stringify(exportObj.experimentOrder || [])],
             ['experimentType', exportObj.experimentType],
@@ -859,6 +979,7 @@ export class GameApplication {
         // Record fallback event for export (no UI message)
         try {
           this.gameStateManager?.recordPartnerFallback?.({ reason: 'disconnect', stage: 'in-game', at: Date.now(), fallbackAIType: fallbackType });
+          this.timelineManager?.recordKidMatchFallback?.('disconnect', fallbackType);
         } catch (_) { /* noop */ }
         // Post-upgrade in case model resolved after recording
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
@@ -897,6 +1018,7 @@ export class GameApplication {
         // Record fallback event for export (no UI message)
         try {
           this.gameStateManager?.recordPartnerFallback?.({ reason: 'disconnect', stage: 'in-game', at: Date.now(), fallbackAIType: fallbackType });
+          this.timelineManager?.recordKidMatchFallback?.('disconnect', fallbackType);
         } catch (_) { /* noop */ }
         // Post-upgrade in case model resolved after recording
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
@@ -1555,6 +1677,7 @@ export class GameApplication {
         at: Date.now(),
         fallbackAIType: fallbackType
       });
+      this.timelineManager?.recordKidMatchFallback?.('partner-disconnected', fallbackType);
     } catch (error) {
       console.error('Error recording fallback event:', error);
     }
@@ -1691,6 +1814,7 @@ export class GameApplication {
         at: Date.now(),
         fallbackAIType: fallbackType
       });
+      this.timelineManager?.recordKidMatchFallback?.('partner-inactivity', fallbackType);
     } catch (error) {
       console.error('Error recording fallback event:', error);
     }

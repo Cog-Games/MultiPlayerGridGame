@@ -1,6 +1,8 @@
 import { CONFIG, GameConfigUtils } from '../config/gameConfig.js';
 import {
   calculateAgeFromDob,
+  getKidEventIdFromUrl,
+  getKidStationIdFromUrl,
   getParticipantIdFromUrl
 } from '../utils/ParticipantUtils.js';
 
@@ -29,6 +31,15 @@ export class TimelineManager {
       participantAgeMonths: null,
       participantAgeDays: null,
       participantAgeTotalDays: null,
+      eventId: getKidEventIdFromUrl() || CONFIG?.kids?.eventId || 'default',
+      stationId: getKidStationIdFromUrl() || CONFIG?.kids?.stationId || null,
+      warmupTrialCount: 0,
+      neutralWaitStartTime: null,
+      neutralWaitEndTime: null,
+      neutralWaitMs: null,
+      kidMatchOutcome: null,
+      fallbackReason: null,
+      partnerFallbackAIType: null,
       totalScore: 0,
       completed: false
     };
@@ -54,6 +65,8 @@ export class TimelineManager {
     // Player information for multiplayer games
     this.playerIndex = 0; // Default to player 0 (red)
     this.gameMode = 'human-ai'; // Default game mode
+    this.kidBackgroundMatchmakingStarted = false;
+    this.kidTeammateWaitActive = false;
   }
 
   isKidMode() {
@@ -62,6 +75,33 @@ export class TimelineManager {
 
   shouldUseHumanMatching() {
     return !this.isKidMode() || CONFIG?.kids?.partnerMode === 'human';
+  }
+
+  getMainKidExperimentType() {
+    return CONFIG?.kids?.mainExperimentType || '2P3G';
+  }
+
+  getTimelineExperimentOrder() {
+    if (!this.isKidMode()) {
+      return CONFIG.game.experiments.order;
+    }
+
+    const warmupOrder = Array.isArray(CONFIG?.kids?.warmupExperimentOrder)
+      ? CONFIG.kids.warmupExperimentOrder
+      : ['1P1G', '1P2G'];
+    return [...warmupOrder, this.getMainKidExperimentType()];
+  }
+
+  getTrialPhase(experimentType) {
+    return this.isKidMode() && String(experimentType || '').startsWith('1P')
+      ? 'warmup'
+      : 'main_2p';
+  }
+
+  getKidSessionMetadata() {
+    const eventId = getKidEventIdFromUrl() || CONFIG?.kids?.eventId || 'default';
+    const stationId = getKidStationIdFromUrl() || CONFIG?.kids?.stationId || null;
+    return { eventId, stationId };
   }
 
   // Event system
@@ -118,6 +158,12 @@ export class TimelineManager {
         type: 'dob',
         handler: () => this.showDobStage()
       });
+      if (this.shouldUseHumanMatching()) {
+        this.stages.push({
+          type: 'kid_background_matchmaking',
+          handler: () => this.startKidBackgroundMatchmaking()
+        });
+      }
       this.stages.push({
         type: 'welcome_info',
         handler: () => this.showWelcomeInfoStage()
@@ -137,7 +183,8 @@ export class TimelineManager {
     }
 
     // 3-6. Add stages for each experiment in order
-    const experimentOrder = CONFIG.game.experiments.order;
+    const experimentOrder = this.getTimelineExperimentOrder();
+    this.experimentData.experimentOrder = experimentOrder;
     for (let expIndex = 0; expIndex < experimentOrder.length; expIndex++) {
       const experimentType = experimentOrder[expIndex];
       const numTrials = CONFIG.game.experiments.numTrials[experimentType];
@@ -158,7 +205,14 @@ export class TimelineManager {
       console.log(`🔍 Experiment ${experimentType}: isMultiplayer=${isMultiplayer}`);
 
       const shouldMatchHumanPartner = !this.isKidMode() || this.shouldUseHumanMatching();
-      if (isMultiplayer && shouldMatchHumanPartner) {
+      if (this.isKidMode() && isMultiplayer && shouldMatchHumanPartner) {
+        this.stages.push({
+          type: 'kid_teammate_wait',
+          experimentType: experimentType,
+          experimentIndex: expIndex,
+          handler: () => this.showKidTeammateWaitingStage(experimentType, expIndex)
+        });
+      } else if (isMultiplayer && shouldMatchHumanPartner) {
         // Only show the partner-finding (waiting) stage once across all 2P games
         if (!this.hasShownPartnerFindingStage) {
           console.log(`➕ Adding waiting + match-play stages for ${experimentType}`);
@@ -772,6 +826,57 @@ export class TimelineManager {
     }
   }
 
+  startKidBackgroundMatchmaking(advance = true) {
+    if (!this.isKidMode() || !this.shouldUseHumanMatching()) {
+      if (advance) this.nextStage();
+      return;
+    }
+
+    if (!this.kidBackgroundMatchmakingStarted) {
+      this.kidBackgroundMatchmakingStarted = true;
+      const { eventId, stationId } = this.getKidSessionMetadata();
+      this.experimentData.eventId = eventId;
+      this.experimentData.stationId = stationId;
+      this.experimentData.queueStartTime = new Date().toISOString();
+
+      this.emit('waiting-for-partner', {
+        experimentType: this.getMainKidExperimentType(),
+        eventId,
+        stationId,
+        background: true
+      });
+    }
+
+    if (advance) this.nextStage();
+  }
+
+  recordKidMatchFallback(reason, fallbackAIType) {
+    const now = Date.now();
+    this.experimentData.kidMatchOutcome = 'committed_fallback';
+    this.experimentData.fallbackReason = reason;
+    this.experimentData.partnerFallbackAIType = fallbackAIType || null;
+    if (!this.experimentData.neutralWaitEndTime) {
+      this.experimentData.neutralWaitEndTime = new Date(now).toISOString();
+    }
+    if (this._neutralWaitStartedAtMs && this.experimentData.neutralWaitMs == null) {
+      this.experimentData.neutralWaitMs = now - this._neutralWaitStartedAtMs;
+    }
+  }
+
+  recordKidMatchSuccess() {
+    const now = Date.now();
+    this.experimentData.kidMatchOutcome = 'human';
+    this.experimentData.fallbackReason = null;
+    this.experimentData.partnerFallbackAIType = null;
+    this.experimentData.matchReadyTime = new Date(now).toISOString();
+    if (!this.experimentData.neutralWaitEndTime) {
+      this.experimentData.neutralWaitEndTime = new Date(now).toISOString();
+    }
+    if (this._neutralWaitStartedAtMs && this.experimentData.neutralWaitMs == null) {
+      this.experimentData.neutralWaitMs = now - this._neutralWaitStartedAtMs;
+    }
+  }
+
   showInstructionsStage(experimentType, experimentIndex) {
     const instructions = this.getInstructionsForExperiment(experimentType);
 
@@ -801,6 +906,165 @@ export class TimelineManager {
         this.nextStage();
       }
     });
+  }
+
+  showKidTeammateWaitingStage(experimentType, experimentIndex) {
+    if (!this.shouldUseHumanMatching()) {
+      this.gameMode = 'human-ai';
+      this.nextStage();
+      return;
+    }
+
+    if (!this.kidBackgroundMatchmakingStarted) {
+      this.startKidBackgroundMatchmaking(false);
+    }
+
+    const { eventId, stationId } = this.getKidSessionMetadata();
+    const configuredWait = Number(CONFIG?.kids?.teammateWaitMaxDuration) || (2 * 60 * 1000);
+    const maxWaitMs = Math.max(1000, Math.min(configuredWait, 2 * 60 * 1000));
+    const waitingStartTime = Date.now();
+    let finished = false;
+    let countdownTimer = null;
+    let timeoutId = null;
+
+    this.kidTeammateWaitActive = true;
+    this._neutralWaitStartedAtMs = waitingStartTime;
+    this.experimentData.eventId = eventId;
+    this.experimentData.stationId = stationId;
+    this.experimentData.neutralWaitStartTime = new Date(waitingStartTime).toISOString();
+    this.experimentData.neutralWaitEndTime = null;
+    this.experimentData.neutralWaitMs = null;
+    this.experimentData.kidMatchOutcome = 'pending';
+
+    const assetBase = CONFIG?.kids?.assetBasePath || '/kids/figs';
+    const guideSrc = `${assetBase}/guide-kid.gif`;
+    const smileSrc = `${assetBase}/smile-face.svg`;
+
+    this.container.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8f9fa;">
+        <div style="background:white;padding:32px;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,0.12);max-width:720px;width:calc(100% - 32px);text-align:center;">
+          <img src="${guideSrc}" alt="Friendly guide" style="width:120px;height:120px;object-fit:contain;margin-bottom:10px;" onerror="this.onerror=null;this.src='${smileSrc}'">
+          <h1 style="font-size:34px;color:#222;margin:8px 0 12px;">Finding your teammate...</h1>
+          <p style="font-size:22px;line-height:1.5;color:#333;margin:0 auto 18px;max-width:560px;">
+            We are looking for your teammate. Please watch this short animation while the next game gets ready.
+          </p>
+
+          <div aria-hidden="true" style="position:relative;height:190px;margin:18px auto 22px;max-width:560px;border:2px solid #b9d7ff;border-radius:10px;background:linear-gradient(#eef7ff,#fff);overflow:hidden;">
+            <div class="kid-wait-cloud" style="left:34px;top:34px;"></div>
+            <div class="kid-wait-cloud" style="left:370px;top:58px;animation-delay:.7s;"></div>
+            <div class="kid-wait-ball kid-wait-red"></div>
+            <div class="kid-wait-ball kid-wait-orange"></div>
+            <div class="kid-wait-path"></div>
+            <div class="kid-wait-star" style="left:112px;top:132px;animation-delay:.2s;"></div>
+            <div class="kid-wait-star" style="left:260px;top:46px;animation-delay:.8s;"></div>
+            <div class="kid-wait-star" style="left:450px;top:126px;animation-delay:1.2s;"></div>
+          </div>
+
+          <div style="height:12px;background:#e9ecef;border-radius:999px;overflow:hidden;margin:0 auto 12px;max-width:520px;">
+            <div id="kidWaitProgress" style="width:0%;height:100%;background:#007bff;border-radius:999px;transition:width .4s linear;"></div>
+          </div>
+          <p id="kidWaitStatus" style="font-size:18px;color:#555;margin:0;">Still looking for your teammate...</p>
+        </div>
+      </div>
+
+      <style>
+        .kid-wait-cloud {
+          position:absolute;width:116px;height:38px;border-radius:999px;background:#fff;box-shadow:0 6px 18px rgba(60,110,180,.16);
+          animation:kidCloudFloat 4s ease-in-out infinite alternate;
+        }
+        .kid-wait-cloud::before,.kid-wait-cloud::after { content:""; position:absolute; border-radius:50%; background:#fff; }
+        .kid-wait-cloud::before { width:48px;height:48px;left:18px;top:-22px; }
+        .kid-wait-cloud::after { width:58px;height:58px;right:18px;top:-30px; }
+        .kid-wait-ball {
+          position:absolute;bottom:36px;width:42px;height:42px;border-radius:50%;box-shadow:0 4px 10px rgba(0,0,0,.18);
+          animation:kidBallMeet 4.8s ease-in-out infinite alternate;
+        }
+        .kid-wait-red { left:80px;background:#ff3b30; }
+        .kid-wait-orange { right:80px;background:#ff9500;animation-direction:alternate-reverse; }
+        .kid-wait-path {
+          position:absolute;left:118px;right:118px;bottom:55px;border-top:4px dotted #7fb3ff;
+        }
+        .kid-wait-star {
+          position:absolute;width:18px;height:18px;background:#ffd43b;clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 56%,79% 91%,50% 70%,21% 91%,32% 56%,2% 35%,39% 35%);
+          animation:kidStarPulse 1.8s ease-in-out infinite;
+        }
+        @keyframes kidBallMeet {
+          from { transform:translateX(0) scale(1); }
+          to { transform:translateX(150px) scale(1.08); }
+        }
+        @keyframes kidCloudFloat {
+          from { transform:translateY(0); }
+          to { transform:translateY(12px); }
+        }
+        @keyframes kidStarPulse {
+          0%,100% { transform:scale(.85); opacity:.55; }
+          50% { transform:scale(1.25); opacity:1; }
+        }
+      </style>
+    `;
+
+    const cleanup = () => {
+      this.kidTeammateWaitActive = false;
+      if (countdownTimer) clearInterval(countdownTimer);
+      if (timeoutId) clearTimeout(timeoutId);
+      this.off('all-players-ready', allReadyHandler);
+    };
+
+    const finishWithFallback = (reason) => {
+      if (finished) return;
+      finished = true;
+      cleanup();
+
+      const waitingEndTime = Date.now();
+      const waitingDuration = waitingEndTime - waitingStartTime;
+      const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'committedAgent';
+      const aiPlayerNumber = (this.playerIndex === 0) ? 2 : 1;
+
+      this.recordWaitingTime(waitingStartTime, waitingEndTime, waitingDuration, reason, experimentType, experimentIndex);
+      this.recordKidMatchFallback(reason, fallbackType);
+      GameConfigUtils.setPlayerType(aiPlayerNumber, fallbackType);
+      this.gameMode = 'human-ai';
+
+      try { this.emit('kid-matchmaking-cancelled', { reason }); } catch (_) { /* noop */ }
+      try { this.emit('fallback-to-ai', { reason, stage: 'kid-teammate-wait', at: Date.now(), fallbackAIType: fallbackType }); } catch (_) { /* noop */ }
+      this.emit('ai-fallback-activated', { fallbackType, aiPlayerNumber });
+      this.nextStage();
+    };
+
+    const allReadyHandler = (config) => {
+      if (finished) return;
+      finished = true;
+      cleanup();
+
+      const waitingEndTime = Date.now();
+      const waitingDuration = waitingEndTime - waitingStartTime;
+      this.gameMode = 'human-human';
+      this.recordWaitingTime(waitingStartTime, waitingEndTime, waitingDuration, 'teammate_found', experimentType, experimentIndex);
+      this.recordKidMatchSuccess();
+      if (config?.gameMode) this.gameMode = config.gameMode;
+      this.nextStage();
+    };
+
+    this.on('all-players-ready', allReadyHandler);
+    this.emit('kid-teammate-barrier-ready', { experimentType, experimentIndex, eventId, stationId });
+
+    const progress = document.getElementById('kidWaitProgress');
+    const status = document.getElementById('kidWaitStatus');
+    countdownTimer = setInterval(() => {
+      const elapsed = Date.now() - waitingStartTime;
+      const pct = Math.min(100, Math.round((elapsed / maxWaitMs) * 100));
+      if (progress) progress.style.width = `${pct}%`;
+      const remainingSeconds = Math.max(0, Math.ceil((maxWaitMs - elapsed) / 1000));
+      if (status) {
+        status.textContent = remainingSeconds > 0
+          ? `Still looking for your teammate...`
+          : 'The next game is almost ready...';
+      }
+    }, 500);
+
+    timeoutId = setTimeout(() => {
+      finishWithFallback('teammate-wait-timeout');
+    }, maxWaitMs);
   }
 
   checkPartnerPresenceAndProceed(experimentType, experimentIndex) {
@@ -1172,6 +1436,7 @@ export class TimelineManager {
 
   runTrialStage(experimentType, experimentIndex, trialIndex) {
     console.log(`🎮 Starting trial ${trialIndex} of ${experimentType}`);
+    const trialPhase = this.getTrialPhase(experimentType);
 
     // Determine legend based on actual player index whenever it's a 2P experiment
     // This stays consistent even if mode switches to human-AI mid-session
@@ -1203,7 +1468,17 @@ export class TimelineManager {
       experimentType,
       experimentIndex,
       trialIndex,
+      trialPhase,
       onComplete: (result) => {
+        if (result && typeof result === 'object') {
+          result.trialPhase = trialPhase;
+          if (result.trialData && typeof result.trialData === 'object') {
+            result.trialData.trialPhase = trialPhase;
+          }
+        }
+        if (trialPhase === 'warmup') {
+          this.experimentData.warmupTrialCount = (Number(this.experimentData.warmupTrialCount) || 0) + 1;
+        }
         // Store trial result
         if (!this.experimentData.experiments[experimentType]) {
           this.experimentData.experiments[experimentType] = [];

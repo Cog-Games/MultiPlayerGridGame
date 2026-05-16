@@ -6,12 +6,13 @@ export class GameRoomManager {
     this.playerRooms = new Map(); // Track which room each player is in
   }
 
-  createRoom(gameMode = 'human-ai', experimentType = '2P2G') {
+  createRoom(gameMode = 'human-ai', experimentType = '2P2G', metadata = {}) {
     const roomId = uuidv4();
     const room = {
       id: roomId,
       gameMode, // 'human-ai' or 'human-human'
       experimentType, // '1P1G', '1P2G', '2P2G', '2P3G'
+      eventId: metadata.eventId || 'default',
       players: [],
       gameState: null,
       status: 'waiting', // 'waiting', 'playing', 'finished'
@@ -23,7 +24,7 @@ export class GameRoomManager {
     return room;
   }
 
-  joinRoom(playerId, roomId = null, gameMode = 'human-ai', experimentType = '2P2G') {
+  joinRoom(playerId, roomId = null, gameMode = 'human-ai', experimentType = '2P2G', metadata = {}) {
     let room;
     
     if (roomId) {
@@ -33,7 +34,7 @@ export class GameRoomManager {
       }
     } else {
       // Find available room or create new one
-      room = this.findAvailableRoom(gameMode, experimentType) || this.createRoom(gameMode, experimentType);
+      room = this.findAvailableRoom(gameMode, experimentType, metadata) || this.createRoom(gameMode, experimentType, metadata);
     }
 
     if (room.players.length >= room.maxPlayers) {
@@ -46,6 +47,9 @@ export class GameRoomManager {
     // Add player to room
     const player = {
       id: playerId,
+      childId: metadata.childId || null,
+      eventId: metadata.eventId || room.eventId || 'default',
+      stationId: metadata.stationId || null,
       joinedAt: new Date(),
       isReady: false,
       isMatchReady: false
@@ -73,12 +77,18 @@ export class GameRoomManager {
     }
   }
 
-  findAvailableRoom(gameMode, experimentType = '2P2G') {
+  findAvailableRoom(gameMode, experimentType = '2P2G', metadata = {}) {
+    const eventId = metadata.eventId || 'default';
+    const childId = metadata.childId || null;
     for (const room of this.rooms.values()) {
       if (room.gameMode === gameMode && 
           room.experimentType === experimentType &&
+          (room.eventId || 'default') === eventId &&
           room.status === 'waiting' && 
           room.players.length < room.maxPlayers) {
+        if (childId && room.players.some(p => p.childId === childId)) {
+          continue;
+        }
         return room;
       }
     }
