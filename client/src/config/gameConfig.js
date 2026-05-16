@@ -41,7 +41,8 @@ export const CONFIG = {
     stationId: getEnvVar('VITE_KIDS_STATION_ID', ''),
     warmupExperimentOrder: ['1P1G', '1P2G'],
     mainExperimentType: '2P3G',
-    teammateWaitMaxDuration: 2 * 60 * 1000
+    teammateWaitMaxDuration: 2 * 60 * 1000,
+    teammateReminderDuration: 2500
   },
 
   // Debug / logging configuration

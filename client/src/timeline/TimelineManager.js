@@ -877,6 +877,43 @@ export class TimelineManager {
     }
   }
 
+  showKidTeammateFoundReminder(onComplete) {
+    const isOrange = this.playerIndex === 1;
+    const ballColorName = isOrange ? 'orange' : 'red';
+    const ballColor = isOrange ? CONFIG.visual.colors.player2 : CONFIG.visual.colors.player1;
+    const partnerColor = isOrange ? CONFIG.visual.colors.player1 : CONFIG.visual.colors.player2;
+    const duration = Number(CONFIG?.kids?.teammateReminderDuration) || 2500;
+
+    this.container.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8f9fa;">
+        <div style="background:white;padding:36px;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,0.12);max-width:680px;width:calc(100% - 32px);text-align:center;">
+          <h1 style="font-size:34px;color:#222;margin:0 0 14px;">Your teammate is ready!</h1>
+          <p style="font-size:24px;line-height:1.45;color:#333;margin:0 auto 24px;max-width:560px;">
+            In the next game, your ball is the <strong style="color:${ballColor};">${ballColorName}</strong> one.
+          </p>
+          <div style="display:flex;justify-content:center;align-items:center;gap:42px;margin:18px auto 26px;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+              <div style="width:92px;height:92px;border-radius:50%;background:${ballColor};box-shadow:0 6px 14px rgba(0,0,0,0.2);border:4px solid #222;"></div>
+              <div style="font-size:20px;font-weight:bold;color:#222;">You</div>
+            </div>
+            <div style="font-size:34px;color:#777;">+</div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+              <div style="width:72px;height:72px;border-radius:50%;background:${partnerColor};box-shadow:0 5px 12px rgba(0,0,0,0.16);border:3px solid #ddd;"></div>
+              <div style="font-size:18px;color:#555;">Teammate</div>
+            </div>
+          </div>
+          <p style="font-size:20px;color:#555;margin:0;">The team game will start now.</p>
+        </div>
+      </div>
+    `;
+
+    setTimeout(() => {
+      if (typeof onComplete === 'function') {
+        onComplete();
+      }
+    }, duration);
+  }
+
   showInstructionsStage(experimentType, experimentIndex) {
     const instructions = this.getInstructionsForExperiment(experimentType);
 
@@ -1042,7 +1079,7 @@ export class TimelineManager {
       this.recordWaitingTime(waitingStartTime, waitingEndTime, waitingDuration, 'teammate_found', experimentType, experimentIndex);
       this.recordKidMatchSuccess();
       if (config?.gameMode) this.gameMode = config.gameMode;
-      this.nextStage();
+      this.showKidTeammateFoundReminder(() => this.nextStage());
     };
 
     this.on('all-players-ready', allReadyHandler);
