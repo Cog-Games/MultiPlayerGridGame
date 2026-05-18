@@ -723,22 +723,9 @@ export class TimelineManager {
   }
 
   showKidWelcomeInfoStage() {
-    const assetBase = CONFIG?.kids?.assetBasePath || '/kids/figs';
-    const guideSrc = `${assetBase}/guide-kid.gif`;
-    const smileSrc = `${assetBase}/smile-face.svg`;
-
     this.container.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8f9fa;">
         <div style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;width:100%;padding:10px;">
-          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
-            <img id="kidsGuideImg" src="${guideSrc}" alt="Friendly guide" style="width:160px;height:160px;object-fit:contain;image-rendering:-webkit-optimize-contrast;" onerror="this.onerror=null;this.src='${smileSrc}'">
-            <div id="speakControls" style="margin-top:8px;display:flex;gap:8px;align-items:center;">
-              <button id="btnSpeak" style="background:#007bff;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">Listen</button>
-              <button id="btnStop" style="background:#dc3545;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">Stop</button>
-              <span id="speakStatus" style="font-size:12px;color:#555;"></span>
-            </div>
-          </div>
-
           <div data-stage-focus="true" tabindex="-1" style="background:white;padding:10px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:800px;text-align:center;">
             <h2 style="color:#333;margin-bottom:2px;font-size:22px;">Welcome to the Game!</h2>
 
@@ -794,7 +781,8 @@ export class TimelineManager {
       </div>
     `;
 
-    this.setupKidWelcomeSpeech();
+    // Guide image and TTS controls are intentionally hidden in this version.
+    // this.setupKidWelcomeSpeech();
     this.setupStageAdvanceControls({
       onAdvance: async () => {
         try {
