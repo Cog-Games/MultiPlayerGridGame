@@ -1108,8 +1108,16 @@ export class ExperimentManager {
     return null;
   }
 
+  getWallClockTrialTimeoutMs() {
+    const experimentType = String(this.gameStateManager?.getCurrentState?.()?.experimentType || '');
+    if (CONFIG?.kids?.enabled && experimentType.startsWith('1P')) {
+      return 0;
+    }
+    return Number(CONFIG?.game?.timing?.maxTrialDurationMs) || 0;
+  }
+
   setupGameTimeout() {
-    const durationMs = Number(CONFIG?.game?.timing?.maxTrialDurationMs) || 0;
+    const durationMs = this.getWallClockTrialTimeoutMs();
     if (durationMs > 0) {
       const timeout = setTimeout(() => {
         console.log('Game timeout reached');
@@ -1117,7 +1125,7 @@ export class ExperimentManager {
       }, durationMs);
       this.gameTimeoutId = timeout;
     } else {
-      try { if (!CONFIG?.debug?.disableConsoleLogs) console.log('[DEBUG] Trial time cap disabled (maxTrialDurationMs=0)'); } catch (_) {}
+      try { if (!CONFIG?.debug?.disableConsoleLogs) console.log('[DEBUG] Trial wall-clock time cap disabled for this trial'); } catch (_) {}
     }
   }
 
@@ -1456,7 +1464,7 @@ export class ExperimentManager {
   }
 
   setupTimelineGameTimeout() {
-    const durationMs = Number(CONFIG?.game?.timing?.maxTrialDurationMs) || 0;
+    const durationMs = this.getWallClockTrialTimeoutMs();
     if (durationMs > 0) {
       const timeout = setTimeout(() => {
         console.log('Game timeout reached');
@@ -1464,7 +1472,7 @@ export class ExperimentManager {
       }, durationMs);
       this.gameTimeoutId = timeout;
     } else {
-      try { if (!CONFIG?.debug?.disableConsoleLogs) console.log('[DEBUG] Timeline trial time cap disabled (maxTrialDurationMs=0)'); } catch (_) {}
+      try { if (!CONFIG?.debug?.disableConsoleLogs) console.log('[DEBUG] Timeline trial wall-clock time cap disabled for this trial'); } catch (_) {}
     }
   }
 

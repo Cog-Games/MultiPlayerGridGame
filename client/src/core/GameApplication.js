@@ -1199,6 +1199,11 @@ export class GameApplication {
     this.networkManager.on('game-state-update', (gameState) => {
       console.log('Game state update received');
 
+      if (this.isSinglePlayerExperimentState() || this.isSinglePlayerExperimentState(gameState)) {
+        console.log('Ignoring remote game state during local single-player warmup');
+        return;
+      }
+
       // Check if we're in human-human real-time mode
       const isHumanHuman = CONFIG.game.players.player1.type === 'human' &&
                            CONFIG.game.players.player2.type === 'human';
@@ -1410,7 +1415,40 @@ export class GameApplication {
     console.log('Real-time synchronization stopped');
   }
 
+  isSinglePlayerExperimentState(gameState = null) {
+    const state = gameState || this.gameStateManager?.getCurrentState?.();
+    const experimentType = String(state?.experimentType || '');
+    return experimentType.startsWith('1P');
+  }
+
+  handleSinglePlayerLocalMove(direction) {
+    const timestamp = Date.now();
+    const moveResult = this.gameStateManager.processPlayerMove(1, direction, 0);
+
+    if (!moveResult.success) {
+      if (moveResult.reason !== 'already_at_goal') {
+        console.warn('Single-player move rejected:', moveResult.reason);
+      }
+      return;
+    }
+
+    this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
+
+    if (moveResult.trialComplete) {
+      this.handleTrialComplete({
+        ...moveResult,
+        playerIndex: 0,
+        timestamp
+      });
+    }
+  }
+
   handlePlayerMove(direction) {
+    if (this.isSinglePlayerExperimentState()) {
+      this.handleSinglePlayerLocalMove(direction);
+      return;
+    }
+
     // Use the correct player index (1-based for game logic, but add 1 since processPlayerMove expects 1 or 2)
     const playerNumber = this.playerIndex + 1; // Convert 0,1 to 1,2
     const timestamp = Date.now();
@@ -1496,6 +1534,11 @@ export class GameApplication {
 
   handleRemotePlayerAction(data) {
     const { action } = data;
+
+    if (this.isSinglePlayerExperimentState()) {
+      console.log('Ignoring remote player action during local single-player warmup');
+      return;
+    }
 
     if (action.type === 'move') {
       // Determine which player this action is from (opposite of local player)
@@ -1686,8 +1729,8 @@ export class GameApplication {
       gameState
     };
 
-    // Send completion to network so partner advances with identical payload
-    if (this.networkManager && this.networkManager.isConnected) {
+    // Send completion to network only for shared 2P games. Warmups are local-only.
+    if (!this.isSinglePlayerExperimentState(gameState) && this.networkManager && this.networkManager.isConnected) {
       this.networkManager.sendTrialComplete(finalPayload);
     }
 
@@ -1700,6 +1743,14 @@ export class GameApplication {
   }
 
   handleRemoteTrialCompleted(payload) {
+    if (
+      this.isSinglePlayerExperimentState() ||
+      this.isSinglePlayerExperimentState(payload?.gameState)
+    ) {
+      console.log('Ignoring remote trial completion during local single-player warmup');
+      return;
+    }
+
     // Partner-triggered trial completion: ensure we also advance once
     if (this._trialCompleteHandled) return;
     this._trialCompleteHandled = true;

@@ -22,6 +22,11 @@ export class GameRenderer {
   }
 
   getDisplayColor(cellType) {
+    const experimentType = String(this.gameState?.experimentType || '');
+    if (experimentType.startsWith('1P')) {
+      return getPlayerDisplayColor(cellType, 0, 'human-ai');
+    }
+
     return getPlayerDisplayColor(cellType, this.viewerPlayerIndex, this.gameMode);
   }
 
