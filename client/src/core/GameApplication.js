@@ -12,6 +12,7 @@ import {
   getParticipantIdFromUrl,
   getProlificPidFromUrl
 } from '../utils/ParticipantUtils.js';
+import { getPlayerDisplayInfo } from '../utils/DisplayPerspectiveUtils.js';
 
 export class GameApplication {
   constructor(container) {
@@ -66,6 +67,11 @@ export class GameApplication {
     if (CONFIG.kids.enabled) {
       const rawKidPartner = String(urlParams.get('kidPartner') || CONFIG.kids.partnerMode || 'human').toLowerCase();
       const kidPartner = rawKidPartner === 'committed' ? 'committed' : 'human';
+      const kidCommittedAgent = GameConfigUtils.configureKidCommittedAgent(
+        urlParams.get('kidCommittedAgent') ||
+        urlParams.get('kidCommittedAgentType') ||
+        urlParams.get('kidAI')
+      );
       CONFIG.kids.partnerMode = kidPartner;
       CONFIG.kids.eventId = getKidEventIdFromUrl() || CONFIG.kids.eventId || 'default';
       CONFIG.kids.stationId = getKidStationIdFromUrl() || CONFIG.kids.stationId || '';
@@ -73,8 +79,7 @@ export class GameApplication {
       if (Number.isFinite(kidWaitMs) && kidWaitMs > 0) {
         CONFIG.kids.teammateWaitMaxDuration = kidWaitMs;
       }
-      CONFIG.multiplayer.fallbackAIType = 'committedAgent';
-      GameConfigUtils.setPlayerType(2, kidPartner === 'committed' ? 'committedAgent' : 'human');
+      GameConfigUtils.setPlayerType(2, kidPartner === 'committed' ? kidCommittedAgent : 'human');
     }
 
     const aiParam = urlParams.get('ai');
@@ -170,16 +175,20 @@ export class GameApplication {
     const skipNetwork = urlParams.get('skipNetwork') === 'true';
 
     if (CONFIG.kids?.enabled) {
-      CONFIG.multiplayer.fallbackAIType = 'committedAgent';
+      const kidCommittedAgent = GameConfigUtils.configureKidCommittedAgent(
+        urlParams.get('kidCommittedAgent') ||
+        urlParams.get('kidCommittedAgentType') ||
+        urlParams.get('kidAI')
+      );
       if (CONFIG.kids.partnerMode === 'committed') {
-        GameConfigUtils.setPlayerType(2, 'committedAgent');
+        GameConfigUtils.setPlayerType(2, kidCommittedAgent);
       } else if (CONFIG.kids.partnerMode === 'human') {
         GameConfigUtils.setPlayerType(2, 'human');
       }
     }
 
     // Default to configured fallback AI when not explicitly set
-    if (!['llm', 'llm-tom', 'vlm', 'vlm-tom', 'human', 'rl_joint', 'rl_individual', 'committedAgent', 'alwaysCommittedAgent', 'signalAgent', 'twoStageSignalAgent', 'gpt', 'gpt-ToM', 'vlm-ToM'].includes(CONFIG.game.players.player2.type)) {
+    if (!['llm', 'llm-tom', 'vlm', 'vlm-tom', 'human', 'rl_joint', 'rl_individual', 'committedAgent', 'alwaysCommittedAgent', 'alwaysSignalAgent', 'signalAgent', 'twoStageSignalAgent', 'gpt', 'gpt-ToM', 'vlm-ToM'].includes(CONFIG.game.players.player2.type)) {
       GameConfigUtils.setPlayerType(2, CONFIG.multiplayer.fallbackAIType || 'rl_joint');
     }
     this.uiManager.setPlayerInfo(0, CONFIG.game.players.player2.type === 'human' ? 'human-human' : 'human-ai');
@@ -503,6 +512,8 @@ export class GameApplication {
 
       // Determine room id (from runtime or payload)
       const roomId = this.currentRoomId || data.roomId || null;
+      const sessionGameMode = (this.timelineManager?.gameMode === 'human-human') ? 'human-human' : 'human-ai';
+      const displayPerspective = getPlayerDisplayInfo(this.playerIndex, sessionGameMode);
 
       // Legacy-compatible export object
       const exportObj = {
@@ -530,10 +541,24 @@ export class GameApplication {
         kidMatchOutcome: data.kidMatchOutcome || null,
         fallbackReason: data.fallbackReason || null,
         partnerFallbackAIType: data.partnerFallbackAIType || null,
+        kidCommittedAgentType: CONFIG?.kids?.committedAgentType || null,
+        kidCommittedAgentLabel: CONFIG?.kids?.committedAgentLabel || null,
+        kidCommittedAgentFitSource: CONFIG?.kids?.committedAgentFitSource || null,
+        kidCommittedAgentParameters: CONFIG?.game?.agent?.alwaysSignal || null,
+        displayPerspectiveEnabled: displayPerspective.displayPerspectiveEnabled,
+        displaySelfColor: displayPerspective.displaySelfColor,
+        displayPartnerColor: displayPerspective.displayPartnerColor,
+        canonicalPlayerIndex: displayPerspective.canonicalPlayerIndex,
+        waitMinigameEnabled: data.waitMinigameEnabled ?? false,
+        waitMinigameStartTime: data.waitMinigameStartTime || null,
+        waitMinigameEndTime: data.waitMinigameEndTime || null,
+        waitMinigameDurationMs: data.waitMinigameDurationMs ?? null,
+        waitMinigameJumpCount: data.waitMinigameJumpCount ?? 0,
+        waitMinigameCollisionCount: data.waitMinigameCollisionCount ?? 0,
         successThreshold: gsData.successThreshold || {},
         completionCode: data.completionCode || '',
         version: (CONFIG?.game?.version) || '2.0.0',
-        experimentType: (this.timelineManager?.gameMode === 'human-human') ? 'human-human' : 'human-AI',
+        experimentType: sessionGameMode === 'human-human' ? 'human-human' : 'human-AI',
         roomId,
         // Add waiting time data
         waitingDuration: data.waitingDuration || 0,
@@ -587,10 +612,17 @@ export class GameApplication {
               o.kidMatchOutcome = exportObj.kidMatchOutcome || '';
               o.fallbackReason = exportObj.fallbackReason || '';
               o.sessionPartnerFallbackAIType = exportObj.partnerFallbackAIType || '';
+              o.kidCommittedAgentType = exportObj.kidCommittedAgentType || '';
+              o.kidCommittedAgentLabel = exportObj.kidCommittedAgentLabel || '';
+              o.kidCommittedAgentFitSource = exportObj.kidCommittedAgentFitSource || '';
               // Also include explicit prolificPid for verification/debugging
               o.prolificPid = exportObj.prolificPid || '';
               // Add current player number (1 or 2) for human-human mode analysis
               o.currentPlayer = (this.playerIndex !== undefined) ? (this.playerIndex + 1) : null;
+              o.displayPerspectiveEnabled = exportObj.displayPerspectiveEnabled ? 'true' : 'false';
+              o.displaySelfColor = exportObj.displaySelfColor || '';
+              o.displayPartnerColor = exportObj.displayPartnerColor || '';
+              o.canonicalPlayerIndex = exportObj.canonicalPlayerIndex ?? '';
               // Legacy naming: prefer distanceCondition in exports
               if (o.newGoalConditionType && !o.distanceCondition) {
                 o.distanceCondition = o.newGoalConditionType;
@@ -608,11 +640,13 @@ export class GameApplication {
             const preferredOrder = [
               'trialIndex', 'experimentType', 'trialPhase', 'partnerAgentType',
               'currentPlayer', 'participantId', 'childId', 'prolificPid', 'roomId', 'eventId', 'stationId',
+              'displayPerspectiveEnabled', 'displaySelfColor', 'displayPartnerColor', 'canonicalPlayerIndex',
               'participantDob', 'participantAgeReferenceDate',
               'participantAgeYears', 'participantAgeMonths', 'participantAgeDays', 'participantAgeTotalDays',
               'queueStartTime', 'matchReadyTime',
               'warmupTrialCount', 'neutralWaitStartTime', 'neutralWaitEndTime', 'neutralWaitMs',
               'kidMatchOutcome', 'fallbackReason', 'sessionPartnerFallbackAIType',
+              'kidCommittedAgentType', 'kidCommittedAgentLabel', 'kidCommittedAgentFitSource',
               'humanPlayerIndex', 'aiPlayerIndex',
               'player1StartPosition', 'player2StartPosition', 'initialGoalPositions',
               'partnerFallbackOccurred', 'partnerFallbackReason', 'partnerFallbackStage', 'partnerFallbackTime',
@@ -684,6 +718,7 @@ export class GameApplication {
             if (t === 'rl_joint') return 'joint-rl';
             if (t === 'rl_individual') return 'individual-rl';
             if (t === 'alwaysCommittedAgent') return 'alwaysCommittedAgent';
+            if (t === 'alwaysSignalAgent') return CONFIG?.kids?.committedAgentLabel || 'sampleJointGoalAndRSASignal_fromStart';
             if (t === 'signalAgent') return 'signalAgent';
             if (t === 'twoStageSignalAgent') return 'twoStageSignalAgent';
             if (t === 'ai') return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl'; // legacy safety
@@ -722,9 +757,23 @@ export class GameApplication {
             ['neutralWaitStartTime', exportObj.neutralWaitStartTime || ''],
             ['neutralWaitEndTime', exportObj.neutralWaitEndTime || ''],
             ['neutralWaitMs', exportObj.neutralWaitMs ?? ''],
+            ['waitMinigameEnabled', exportObj.waitMinigameEnabled ? 'true' : 'false'],
+            ['waitMinigameStartTime', exportObj.waitMinigameStartTime || ''],
+            ['waitMinigameEndTime', exportObj.waitMinigameEndTime || ''],
+            ['waitMinigameDurationMs', exportObj.waitMinigameDurationMs ?? ''],
+            ['waitMinigameJumpCount', exportObj.waitMinigameJumpCount ?? ''],
+            ['waitMinigameCollisionCount', exportObj.waitMinigameCollisionCount ?? ''],
             ['kidMatchOutcome', exportObj.kidMatchOutcome || ''],
             ['fallbackReason', exportObj.fallbackReason || ''],
             ['partnerFallbackAIType', exportObj.partnerFallbackAIType || ''],
+            ['kidCommittedAgentType', exportObj.kidCommittedAgentType || ''],
+            ['kidCommittedAgentLabel', exportObj.kidCommittedAgentLabel || ''],
+            ['kidCommittedAgentFitSource', exportObj.kidCommittedAgentFitSource || ''],
+            ['kidCommittedAgentParameters', JSON.stringify(exportObj.kidCommittedAgentParameters || {})],
+            ['displayPerspectiveEnabled', exportObj.displayPerspectiveEnabled ? 'true' : 'false'],
+            ['displaySelfColor', exportObj.displaySelfColor || ''],
+            ['displayPartnerColor', exportObj.displayPartnerColor || ''],
+            ['canonicalPlayerIndex', exportObj.canonicalPlayerIndex ?? ''],
             ['roomId', exportObj.roomId || ''],
             ['experimentOrder', JSON.stringify(exportObj.experimentOrder || [])],
             ['experimentType', exportObj.experimentType],

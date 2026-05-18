@@ -1,5 +1,6 @@
 import { CONFIG, GAME_OBJECTS } from '../config/gameConfig.js';
 import { GameRenderer } from './GameRenderer.js';
+import { getPlayerDisplayInfo } from '../utils/DisplayPerspectiveUtils.js';
 
 export class UIManager {
   constructor(container) {
@@ -71,7 +72,8 @@ export class UIManager {
   // Player configuration
   setPlayerInfo(playerIndex, gameMode) {
     this.playerIndex = playerIndex;
-    this.gameMode = gameMode;
+    this.gameMode = gameMode || 'human-ai';
+    this.renderer.setPlayerInfo(playerIndex, this.gameMode);
   }
 
   // Screen management
@@ -203,9 +205,7 @@ export class UIManager {
   showGameScreen() {
     this.currentScreen = 'game';
 
-    // Determine player color based on playerIndex
-    const playerColor = this.playerIndex === 0 ? CONFIG.visual.colors.player1 : CONFIG.visual.colors.player2;
-    const playerName = this.playerIndex === 0 ? 'Player 1 (Red)' : 'Player 2 (Orange)';
+    const playerDisplay = getPlayerDisplayInfo(this.playerIndex, this.gameMode);
 
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
@@ -213,7 +213,7 @@ export class UIManager {
           <h3 id="game-title" style="margin-bottom: 10px;">Game</h3>
           <h4 id="trial-info" style="margin-bottom: 20px;">Round 1</h4>
           <div id="gameCanvas" style="margin-bottom: 20px;"></div>
-          <p style="font-size: 20px;">You are ${playerName} <span style="display: inline-block; width: 18px; height: 18px; background-color: ${playerColor}; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
+          <p style="font-size: 20px;">${playerDisplay.instructionText} <span style="display: inline-block; width: 18px; height: 18px; background-color: ${playerDisplay.selfColorValue}; border-radius: 50%; vertical-align: middle;"></span> Press ↑ ↓ ← → to move.</p>
         </div>
       </div>
     `;

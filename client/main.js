@@ -18,18 +18,39 @@ if (kidModeParam === 'false') {
 if (CONFIG.kids.enabled) {
   const rawKidPartner = String(urlParams.get('kidPartner') || CONFIG.kids.partnerMode || 'human').toLowerCase();
   const kidPartner = rawKidPartner === 'committed' ? 'committed' : 'human';
+  const rawKidTestMode = String(urlParams.get('kidTestMode') || urlParams.get('kidGameTest') || '').toLowerCase();
+  const kidGameTestMode = ['game', 'true', '1', 'yes'].includes(rawKidTestMode);
+  const kidCommittedAgent = GameConfigUtils.configureKidCommittedAgent(
+    urlParams.get('kidCommittedAgent') ||
+    urlParams.get('kidCommittedAgentType') ||
+    urlParams.get('kidAI')
+  );
   CONFIG.kids.partnerMode = kidPartner;
+  CONFIG.kids.gameTestMode = kidGameTestMode;
   CONFIG.kids.eventId = urlParams.get('eventId') || urlParams.get('event') || CONFIG.kids.eventId || 'default';
   CONFIG.kids.stationId = urlParams.get('station') || urlParams.get('stationId') || CONFIG.kids.stationId || '';
   const kidWaitMs = Number(urlParams.get('kidWaitMs') || urlParams.get('teammateWaitMs'));
   if (Number.isFinite(kidWaitMs) && kidWaitMs > 0) {
     CONFIG.kids.teammateWaitMaxDuration = kidWaitMs;
   }
-  CONFIG.multiplayer.fallbackAIType = 'committedAgent';
+  if (kidGameTestMode) {
+    const testExperiment = urlParams.get('kidTestExperiment');
+    const mainExperimentOrder = testExperiment
+      ? [testExperiment]
+      : GameConfigUtils.getKidMainExperimentOrder();
+    CONFIG.kids.kidMainExperimentOrder = mainExperimentOrder;
+    CONFIG.kids.mainExperimentType = mainExperimentOrder[mainExperimentOrder.length - 1] || '2P3G';
+    CONFIG.kids.warmupExperimentOrder = [];
+    CONFIG.game.experiments.order = mainExperimentOrder;
+    Object.keys(CONFIG.game.experiments.numTrials).forEach((key) => {
+      CONFIG.game.experiments.numTrials[key] = 1;
+    });
+    CONFIG.game.successThreshold.enabled = false;
+  }
 
   if (kidPartner === 'committed') {
     mode = 'human-ai';
-    GameConfigUtils.setPlayerType(2, 'committedAgent');
+    GameConfigUtils.setPlayerType(2, kidCommittedAgent);
   } else {
     mode = 'human-human';
     GameConfigUtils.setPlayerType(2, 'human');

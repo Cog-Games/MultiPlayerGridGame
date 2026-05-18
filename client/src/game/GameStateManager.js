@@ -304,6 +304,8 @@ export class GameStateManager {
             aiTypeDesc = 'individual-rl';
           } else if (t === 'ai') {
             aiTypeDesc = (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl';
+          } else if (t === 'alwaysSignalAgent') {
+            aiTypeDesc = CONFIG?.kids?.committedAgentLabel || 'sampleJointGoalAndRSASignal_fromStart';
           } else if (t && t !== 'human') {
             aiTypeDesc = String(t);
           } else {
@@ -368,6 +370,8 @@ export class GameStateManager {
             this.trialData.partnerAgentType = 'committedAgent';
           } else if (fb === 'alwaysCommittedAgent') {
             this.trialData.partnerAgentType = 'alwaysCommittedAgent';
+          } else if (fb === 'alwaysSignalAgent') {
+            this.trialData.partnerAgentType = CONFIG?.kids?.committedAgentLabel || 'sampleJointGoalAndRSASignal_fromStart';
           } else if (fb === 'signalAgent') {
             this.trialData.partnerAgentType = 'signalAgent';
           } else if (fb === 'twoStageSignalAgent') {
@@ -860,6 +864,8 @@ export class GameStateManager {
             this.trialData.partnerAgentType = 'committedAgent';
           } else if (fb === 'alwaysCommittedAgent') {
             this.trialData.partnerAgentType = 'alwaysCommittedAgent';
+          } else if (fb === 'alwaysSignalAgent') {
+            this.trialData.partnerAgentType = CONFIG?.kids?.committedAgentLabel || 'sampleJointGoalAndRSASignal_fromStart';
           } else if (fb === 'signalAgent') {
             this.trialData.partnerAgentType = 'signalAgent';
           } else if (fb === 'twoStageSignalAgent') {
@@ -964,6 +970,8 @@ export class GameStateManager {
         return 'signalAgent';
       case 'alwayscommittedagent':
         return 'alwaysCommittedAgent';
+      case 'alwayssignalagent':
+        return CONFIG?.kids?.committedAgentLabel || 'sampleJointGoalAndRSASignal_fromStart';
       case 'ai':
         // Default AI type based on config
         return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl';
@@ -974,6 +982,7 @@ export class GameStateManager {
         // Avoid infinite recursion by handling the default directly
         if (defaultFallback === 'rl_joint') return 'joint-rl';
         if (defaultFallback === 'rl_individual') return 'individual-rl';
+        if (defaultFallback === 'alwaysSignalAgent') return CONFIG?.kids?.committedAgentLabel || 'sampleJointGoalAndRSASignal_fromStart';
         if (defaultFallback === 'llm' || defaultFallback === 'llm-tom' || defaultFallback === 'gpt') {
           const model = CONFIG?.game?.agent?.llm?.model || CONFIG?.game?.agent?.gpt?.model;
           return (model && String(model).trim()) ? String(model) : 'gpt-4o';
@@ -1042,6 +1051,7 @@ export class GameStateManager {
       if (t === 'rl_joint') return 'joint-rl';
       if (t === 'rl_individual') return 'individual-rl';
       if (t === 'alwaysCommittedAgent') return 'alwaysCommittedAgent';
+      if (t === 'alwaysSignalAgent') return CONFIG?.kids?.committedAgentLabel || 'sampleJointGoalAndRSASignal_fromStart';
       if (t === 'signalAgent') return 'signalAgent';
       if (t === 'twoStageSignalAgent') return 'twoStageSignalAgent';
       if (t === 'ai') return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl'; // legacy safety

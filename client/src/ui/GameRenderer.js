@@ -1,4 +1,5 @@
 import { CONFIG, GAME_OBJECTS } from '../config/gameConfig.js';
+import { getPlayerDisplayColor } from '../utils/DisplayPerspectiveUtils.js';
 
 export class GameRenderer {
   constructor() {
@@ -11,6 +12,17 @@ export class GameRenderer {
     // Fullscreen/responsive controls
     this.fullscreen = false;
     this.baseScale = 0.85; // percent of viewport when not fullscreen
+    this.viewerPlayerIndex = 0;
+    this.gameMode = 'human-ai';
+  }
+
+  setPlayerInfo(playerIndex, gameMode) {
+    this.viewerPlayerIndex = Number.isInteger(playerIndex) ? playerIndex : 0;
+    this.gameMode = gameMode || 'human-ai';
+  }
+
+  getDisplayColor(cellType) {
+    return getPlayerDisplayColor(cellType, this.viewerPlayerIndex, this.gameMode);
   }
 
   createCanvas() {
@@ -331,8 +343,7 @@ export class GameRenderer {
     if (players.length === 1) {
       // Single player - draw normally
       const player = players[0];
-      const color = player.type === GAME_OBJECTS.player ?
-        CONFIG.visual.colors.player1 : CONFIG.visual.colors.player2;
+      const color = this.getDisplayColor(player.type);
 
       this.ctx.fillStyle = color;
       this.ctx.beginPath();
@@ -342,8 +353,7 @@ export class GameRenderer {
       // Multiple players - draw overlapping circles with offset
       // First player (left side)
       const firstPlayer = players[0];
-      const firstColor = firstPlayer.type === GAME_OBJECTS.player ?
-        CONFIG.visual.colors.player1 : CONFIG.visual.colors.player2;
+      const firstColor = this.getDisplayColor(firstPlayer.type);
 
       this.ctx.fillStyle = firstColor;
       this.ctx.beginPath();
@@ -352,8 +362,7 @@ export class GameRenderer {
 
       // Second player (right side)
       const secondPlayer = players[1];
-      const secondColor = secondPlayer.type === GAME_OBJECTS.player ?
-        CONFIG.visual.colors.player1 : CONFIG.visual.colors.player2;
+      const secondColor = this.getDisplayColor(secondPlayer.type);
 
       this.ctx.fillStyle = secondColor;
       this.ctx.beginPath();
@@ -465,9 +474,9 @@ export class GameRenderer {
         const radius = this.cellSize * 0.35;
 
         if (cellType === GAME_OBJECTS.player) {
-          this.ctx.fillStyle = CONFIG.visual.colors.player1;
+          this.ctx.fillStyle = this.getDisplayColor(GAME_OBJECTS.player);
         } else if (cellType === GAME_OBJECTS.ai_player) {
-          this.ctx.fillStyle = CONFIG.visual.colors.player2;
+          this.ctx.fillStyle = this.getDisplayColor(GAME_OBJECTS.ai_player);
         }
 
         this.ctx.beginPath();

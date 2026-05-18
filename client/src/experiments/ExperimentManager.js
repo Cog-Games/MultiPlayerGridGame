@@ -2,6 +2,7 @@ import { CONFIG, GAME_OBJECTS, GameConfigUtils, DIRECTIONS } from '../config/gam
 import { RLAgent } from '../ai/RLAgent.js';
 import { CommittedAgent } from '../ai/CommittedAgent.js';
 import { AlwaysCommittedAgent } from '../ai/AlwaysCommittedAgent.js';
+import { AlwaysSignalAgent } from '../ai/AlwaysSignalAgent.js';
 import { SignalAgent } from '../ai/SignalAgent.js';
 import { TwoStageSignalAgent } from '../ai/TwoStageSignalAgent.js';
 import { LlmAgentClient } from '../ai/LlmAgentClient.js';
@@ -18,6 +19,7 @@ export class ExperimentManager {
     this.rlAgent = new RLAgent();
     this.committedAgent = this.createCommittedAgent();
     this.alwaysCommittedAgent = this.createAlwaysCommittedAgent();
+    this.alwaysSignalAgent = this.createAlwaysSignalAgent();
     this.signalAgent = this.createSignalAgent();
     this.twoStageSignalAgent = this.createTwoStageSignalAgent();
     this.llmClient = new LlmAgentClient();
@@ -58,6 +60,19 @@ export class ExperimentManager {
       rlAgent: this.rlAgent,
       lambda: (typeof alwaysCommittedCfg.lambda === 'number') ? alwaysCommittedCfg.lambda : undefined,
       beta: (typeof alwaysCommittedCfg.beta === 'number') ? alwaysCommittedCfg.beta : undefined
+    });
+  }
+
+  createAlwaysSignalAgent() {
+    const cfg = CONFIG?.game?.agent?.alwaysSignal || {};
+    return new AlwaysSignalAgent({
+      rlAgent: this.rlAgent,
+      alpha: (typeof cfg.alpha === 'number') ? cfg.alpha : undefined,
+      lambda: (typeof cfg.lambda === 'number') ? cfg.lambda : undefined,
+      beta: (typeof cfg.beta === 'number') ? cfg.beta : undefined,
+      score: (typeof cfg.score === 'string') ? cfg.score : undefined,
+      horizon: (typeof cfg.horizon === 'number') ? cfg.horizon : undefined,
+      gridSize: (typeof cfg.gridSize === 'number') ? cfg.gridSize : undefined
     });
   }
 
@@ -127,6 +142,9 @@ export class ExperimentManager {
       if (!this.alwaysCommittedAgent) {
         this.alwaysCommittedAgent = this.createAlwaysCommittedAgent();
       }
+      if (!this.alwaysSignalAgent) {
+        this.alwaysSignalAgent = this.createAlwaysSignalAgent();
+      }
       if (!this.signalAgent) {
         this.signalAgent = this.createSignalAgent();
       }
@@ -152,6 +170,8 @@ export class ExperimentManager {
             td.partnerAgentType = 'individual-rl';
           } else if (fallbackType === 'alwaysCommittedAgent') {
             td.partnerAgentType = 'alwaysCommittedAgent';
+          } else if (fallbackType === 'alwaysSignalAgent') {
+            td.partnerAgentType = CONFIG?.kids?.committedAgentLabel || 'sampleJointGoalAndRSASignal_fromStart';
           } else if (fallbackType === 'twoStageSignalAgent') {
             td.partnerAgentType = 'twoStageSignalAgent';
           } else if (fallbackType === 'rl_individual_python') {
@@ -426,6 +446,9 @@ export class ExperimentManager {
         }
       } else if (p2Type === 'alwaysCommittedAgent') {
         console.log('🤖 AI partner: AlwaysCommittedAgent');
+      } else if (p2Type === 'alwaysSignalAgent') {
+        const cfg = CONFIG?.game?.agent?.alwaysSignal || {};
+        console.log(`🤖 AI partner: AlwaysSignalAgent (${CONFIG?.kids?.committedAgentLabel || 'sampleJointGoalAndRSASignal_fromStart'}, lambda=${cfg.lambda}, alpha=${cfg.alpha}, score=${cfg.score || 'logposterior'})`);
       } else if (p2Type === 'signalAgent') {
         console.log('🤖 AI partner: SignalAgent');
       } else if (p2Type === 'twoStageSignalAgent') {
@@ -554,6 +577,13 @@ export class ExperimentManager {
       if (aiType === 'alwayscommittedagent' || fallbackPolicy === 'alwaysCommittedAgent') {
         if (!this.alwaysCommittedAgent) this.alwaysCommittedAgent = this.createAlwaysCommittedAgent();
         aiAction = this.alwaysCommittedAgent.getAIAction(
+          gameState,
+          this.gameStateManager.getCurrentTrialData(),
+          this.aiPlayerNumber
+        );
+      } else if (aiType === 'alwayssignalagent' || fallbackPolicy === 'alwaysSignalAgent') {
+        if (!this.alwaysSignalAgent) this.alwaysSignalAgent = this.createAlwaysSignalAgent();
+        aiAction = this.alwaysSignalAgent.getAIAction(
           gameState,
           this.gameStateManager.getCurrentTrialData(),
           this.aiPlayerNumber
@@ -765,6 +795,13 @@ export class ExperimentManager {
       if (aiType === 'alwayscommittedagent' || fallbackPolicy === 'alwaysCommittedAgent') {
         if (!this.alwaysCommittedAgent) this.alwaysCommittedAgent = this.createAlwaysCommittedAgent();
         aiAction = this.alwaysCommittedAgent.getAIAction(
+          gameState,
+          this.gameStateManager.getCurrentTrialData(),
+          this.aiPlayerNumber
+        );
+      } else if (aiType === 'alwayssignalagent' || fallbackPolicy === 'alwaysSignalAgent') {
+        if (!this.alwaysSignalAgent) this.alwaysSignalAgent = this.createAlwaysSignalAgent();
+        aiAction = this.alwaysSignalAgent.getAIAction(
           gameState,
           this.gameStateManager.getCurrentTrialData(),
           this.aiPlayerNumber

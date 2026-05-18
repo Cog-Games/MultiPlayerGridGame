@@ -5,6 +5,8 @@ import {
   getKidStationIdFromUrl,
   getParticipantIdFromUrl
 } from '../utils/ParticipantUtils.js';
+import { getPlayerDisplayInfo } from '../utils/DisplayPerspectiveUtils.js';
+import { KidWaitMinigame } from './KidWaitMinigame.js';
 
 /**
  * Timeline Manager - Orchestrates the complete experiment flow
@@ -40,6 +42,12 @@ export class TimelineManager {
       kidMatchOutcome: null,
       fallbackReason: null,
       partnerFallbackAIType: null,
+      waitMinigameEnabled: false,
+      waitMinigameStartTime: null,
+      waitMinigameEndTime: null,
+      waitMinigameDurationMs: null,
+      waitMinigameJumpCount: 0,
+      waitMinigameCollisionCount: 0,
       totalScore: 0,
       completed: false
     };
@@ -67,10 +75,15 @@ export class TimelineManager {
     this.gameMode = 'human-ai'; // Default game mode
     this.kidBackgroundMatchmakingStarted = false;
     this.kidTeammateWaitActive = false;
+    this.kidWaitMinigame = null;
   }
 
   isKidMode() {
     return !!CONFIG?.kids?.enabled;
+  }
+
+  isKidGameTestMode() {
+    return this.isKidMode() && !!CONFIG?.kids?.gameTestMode;
   }
 
   shouldUseHumanMatching() {
@@ -78,7 +91,8 @@ export class TimelineManager {
   }
 
   getMainKidExperimentType() {
-    return CONFIG?.kids?.mainExperimentType || '2P3G';
+    const mainOrder = GameConfigUtils.getKidMainExperimentOrder?.() || ['2P3G'];
+    return mainOrder[mainOrder.length - 1] || '2P3G';
   }
 
   getTimelineExperimentOrder() {
@@ -86,10 +100,15 @@ export class TimelineManager {
       return CONFIG.game.experiments.order;
     }
 
+    if (this.isKidGameTestMode()) {
+      return GameConfigUtils.getKidMainExperimentOrder?.() || [this.getMainKidExperimentType()];
+    }
+
     const warmupOrder = Array.isArray(CONFIG?.kids?.warmupExperimentOrder)
       ? CONFIG.kids.warmupExperimentOrder
       : ['1P1G', '1P2G'];
-    return [...warmupOrder, this.getMainKidExperimentType()];
+    const mainOrder = GameConfigUtils.getKidMainExperimentOrder?.() || [this.getMainKidExperimentType()];
+    return [...warmupOrder, ...mainOrder];
   }
 
   getTrialPhase(experimentType) {
@@ -137,8 +156,8 @@ export class TimelineManager {
   // Set player information for multiplayer games
   setPlayerInfo(playerIndex, gameMode) {
     this.playerIndex = playerIndex;
-    this.gameMode = gameMode;
-    console.log(`🎮 TimelineManager: Set player info - Player ${playerIndex + 1} (${playerIndex === 0 ? 'red' : 'orange'}) in ${gameMode} mode`);
+    this.gameMode = gameMode || 'human-ai';
+    console.log(`🎮 TimelineManager: Set player info - Player ${playerIndex + 1} (${playerIndex === 0 ? 'red' : 'orange'}) in ${this.gameMode} mode`);
   }
 
   /**
@@ -150,24 +169,26 @@ export class TimelineManager {
     console.log('📋 Creating comprehensive timeline stages...');
 
     if (this.isKidMode()) {
-      this.stages.push({
-        type: 'fullscreen_prompt',
-        handler: () => this.showFullscreenPromptStage()
-      });
-      this.stages.push({
-        type: 'dob',
-        handler: () => this.showDobStage()
-      });
-      if (this.shouldUseHumanMatching()) {
+      if (!this.isKidGameTestMode()) {
         this.stages.push({
-          type: 'kid_background_matchmaking',
-          handler: () => this.startKidBackgroundMatchmaking()
+          type: 'fullscreen_prompt',
+          handler: () => this.showFullscreenPromptStage()
+        });
+        this.stages.push({
+          type: 'dob',
+          handler: () => this.showDobStage()
+        });
+        if (this.shouldUseHumanMatching()) {
+          this.stages.push({
+            type: 'kid_background_matchmaking',
+            handler: () => this.startKidBackgroundMatchmaking()
+          });
+        }
+        this.stages.push({
+          type: 'welcome_info',
+          handler: () => this.showWelcomeInfoStage()
         });
       }
-      this.stages.push({
-        type: 'welcome_info',
-        handler: () => this.showWelcomeInfoStage()
-      });
     } else {
       // 1. Consent form
       this.stages.push({
@@ -192,12 +213,14 @@ export class TimelineManager {
       console.log(`📋 Adding stages for experiment: ${experimentType}`);
 
       // Instructions for this experiment
-      this.stages.push({
-        type: 'instructions',
-        experimentType: experimentType,
-        experimentIndex: expIndex,
-        handler: () => this.showInstructionsStage(experimentType, expIndex)
-      });
+      if (!this.isKidGameTestMode()) {
+        this.stages.push({
+          type: 'instructions',
+          experimentType: experimentType,
+          experimentIndex: expIndex,
+          handler: () => this.showInstructionsStage(experimentType, expIndex)
+        });
+      }
 
       // Waiting room only for true human-human multiplayer experiments
       // For human-AI mode, 2P experiments run with AI as the second player
@@ -206,12 +229,15 @@ export class TimelineManager {
 
       const shouldMatchHumanPartner = !this.isKidMode() || this.shouldUseHumanMatching();
       if (this.isKidMode() && isMultiplayer && shouldMatchHumanPartner) {
-        this.stages.push({
-          type: 'kid_teammate_wait',
-          experimentType: experimentType,
-          experimentIndex: expIndex,
-          handler: () => this.showKidTeammateWaitingStage(experimentType, expIndex)
-        });
+        if (!this.hasShownPartnerFindingStage) {
+          this.stages.push({
+            type: 'kid_teammate_wait',
+            experimentType: experimentType,
+            experimentIndex: expIndex,
+            handler: () => this.showKidTeammateWaitingStage(experimentType, expIndex)
+          });
+          this.hasShownPartnerFindingStage = true;
+        }
       } else if (isMultiplayer && shouldMatchHumanPartner) {
         // Only show the partner-finding (waiting) stage once across all 2P games
         if (!this.hasShownPartnerFindingStage) {
@@ -253,7 +279,7 @@ export class TimelineManager {
       }
 
       // Add trial stages (fixation -> trial -> feedback sequence)
-      if (experimentType.includes('2P') && CONFIG.game.successThreshold.enabled) {
+      if (experimentType.includes('2P') && CONFIG.game.successThreshold.enabled && !this.isKidGameTestMode()) {
         // Dynamic collaboration stages
         this.addCollaborationExperimentStages(experimentType, expIndex);
       } else {
@@ -264,23 +290,25 @@ export class TimelineManager {
       }
     }
 
-    // 7. Game performance feedback
-    this.stages.push({
-      type: 'game-feedback',
-      handler: () => this.showGameFeedbackStage()
-    });
+    if (!this.isKidGameTestMode()) {
+      // 7. Game performance feedback
+      this.stages.push({
+        type: 'game-feedback',
+        handler: () => this.showGameFeedbackStage()
+      });
 
-    // 8. Post-questionnaire
-    this.stages.push({
-      type: 'questionnaire',
-      handler: () => this.showQuestionnaireStage()
-    });
+      // 8. Post-questionnaire
+      this.stages.push({
+        type: 'questionnaire',
+        handler: () => this.showQuestionnaireStage()
+      });
 
-    // 9. End info with data saving
-    this.stages.push({
-      type: 'end-info',
-      handler: () => this.showEndExperimentInfoStage()
-    });
+      // 9. End info with data saving
+      this.stages.push({
+        type: 'end-info',
+        handler: () => this.showEndExperimentInfoStage()
+      });
+    }
 
     if (this.isKidMode()) {
       this.stages.push({
@@ -852,9 +880,13 @@ export class TimelineManager {
 
   recordKidMatchFallback(reason, fallbackAIType) {
     const now = Date.now();
+    const fallbackLabel = fallbackAIType === 'alwaysSignalAgent'
+      ? (CONFIG?.kids?.committedAgentLabel || 'sampleJointGoalAndRSASignal_fromStart')
+      : fallbackAIType;
+    this.stopKidWaitMinigame();
     this.experimentData.kidMatchOutcome = 'committed_fallback';
     this.experimentData.fallbackReason = reason;
-    this.experimentData.partnerFallbackAIType = fallbackAIType || null;
+    this.experimentData.partnerFallbackAIType = fallbackLabel || null;
     if (!this.experimentData.neutralWaitEndTime) {
       this.experimentData.neutralWaitEndTime = new Date(now).toISOString();
     }
@@ -865,6 +897,7 @@ export class TimelineManager {
 
   recordKidMatchSuccess() {
     const now = Date.now();
+    this.stopKidWaitMinigame();
     this.experimentData.kidMatchOutcome = 'human';
     this.experimentData.fallbackReason = null;
     this.experimentData.partnerFallbackAIType = null;
@@ -877,41 +910,105 @@ export class TimelineManager {
     }
   }
 
+  resetKidWaitMinigameData() {
+    this.experimentData.waitMinigameEnabled = false;
+    this.experimentData.waitMinigameStartTime = null;
+    this.experimentData.waitMinigameEndTime = null;
+    this.experimentData.waitMinigameDurationMs = null;
+    this.experimentData.waitMinigameJumpCount = 0;
+    this.experimentData.waitMinigameCollisionCount = 0;
+  }
+
+  startKidWaitMinigame(canvasId) {
+    this.stopKidWaitMinigame();
+    this.resetKidWaitMinigameData();
+
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || typeof canvas.getContext !== 'function') {
+      return;
+    }
+
+    try {
+      this.kidWaitMinigame = new KidWaitMinigame(canvas, {
+        onStats: (stats) => this.updateKidWaitMinigameData(stats)
+      });
+      const stats = this.kidWaitMinigame.start();
+      this.updateKidWaitMinigameData(stats);
+    } catch (error) {
+      console.warn('Unable to start kid wait mini-game:', error);
+      this.kidWaitMinigame = null;
+      this.resetKidWaitMinigameData();
+    }
+  }
+
+  stopKidWaitMinigame() {
+    if (!this.kidWaitMinigame) return null;
+
+    const minigame = this.kidWaitMinigame;
+    this.kidWaitMinigame = null;
+    const stats = minigame.stop();
+    this.updateKidWaitMinigameData(stats);
+    return stats;
+  }
+
+  updateKidWaitMinigameData(stats = {}) {
+    if (!stats || stats.enabled !== true) return;
+
+    this.experimentData.waitMinigameEnabled = true;
+    if (stats.startTime && !this.experimentData.waitMinigameStartTime) {
+      this.experimentData.waitMinigameStartTime = new Date(stats.startTime).toISOString();
+    }
+    if (stats.endTime) {
+      this.experimentData.waitMinigameEndTime = new Date(stats.endTime).toISOString();
+    }
+    if (typeof stats.durationMs === 'number') {
+      this.experimentData.waitMinigameDurationMs = stats.durationMs;
+    }
+    if (typeof stats.jumpCount === 'number') {
+      this.experimentData.waitMinigameJumpCount = stats.jumpCount;
+    }
+    if (typeof stats.collisionCount === 'number') {
+      this.experimentData.waitMinigameCollisionCount = stats.collisionCount;
+    }
+  }
+
   showKidTeammateFoundReminder(onComplete) {
-    const isOrange = this.playerIndex === 1;
-    const ballColorName = isOrange ? 'orange' : 'red';
-    const ballColor = isOrange ? CONFIG.visual.colors.player2 : CONFIG.visual.colors.player1;
-    const partnerColor = isOrange ? CONFIG.visual.colors.player1 : CONFIG.visual.colors.player2;
-    const duration = Number(CONFIG?.kids?.teammateReminderDuration) || 2500;
+    const playerDisplay = getPlayerDisplayInfo(this.playerIndex, this.gameMode);
 
     this.container.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8f9fa;">
-        <div style="background:white;padding:36px;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,0.12);max-width:680px;width:calc(100% - 32px);text-align:center;">
-          <h1 style="font-size:34px;color:#222;margin:0 0 14px;">Your teammate is ready!</h1>
-          <p style="font-size:24px;line-height:1.45;color:#333;margin:0 auto 24px;max-width:560px;">
-            In the next game, your ball is the <strong style="color:${ballColor};">${ballColorName}</strong> one.
+        <div data-stage-focus="true" tabindex="-1" style="background:white;padding:36px;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,0.12);max-width:680px;width:calc(100% - 32px);text-align:center;">
+          <h1 style="font-size:34px;color:#222;margin:0 0 14px;">We found your teammate!</h1>
+          <p style="font-size:24px;line-height:1.45;color:#333;margin:0 auto 12px;max-width:560px;">
+            Let's start the team game.
+          </p>
+          <p style="font-size:22px;line-height:1.45;color:#333;margin:0 auto 24px;max-width:560px;">
+            Remember, you are the <strong style="color:${playerDisplay.selfColorValue};">${playerDisplay.displaySelfColor}</strong> dot.
+            Your teammate is the <strong style="color:${playerDisplay.partnerColorValue};">${playerDisplay.displayPartnerColor}</strong> dot.
           </p>
           <div style="display:flex;justify-content:center;align-items:center;gap:42px;margin:18px auto 26px;">
             <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
-              <div style="width:92px;height:92px;border-radius:50%;background:${ballColor};box-shadow:0 6px 14px rgba(0,0,0,0.2);border:4px solid #222;"></div>
+              <div style="width:92px;height:92px;border-radius:50%;background:${playerDisplay.selfColorValue};box-shadow:0 6px 14px rgba(0,0,0,0.2);border:4px solid #222;"></div>
               <div style="font-size:20px;font-weight:bold;color:#222;">You</div>
             </div>
             <div style="font-size:34px;color:#777;">+</div>
             <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
-              <div style="width:72px;height:72px;border-radius:50%;background:${partnerColor};box-shadow:0 5px 12px rgba(0,0,0,0.16);border:3px solid #ddd;"></div>
+              <div style="width:72px;height:72px;border-radius:50%;background:${playerDisplay.partnerColorValue};box-shadow:0 5px 12px rgba(0,0,0,0.16);border:3px solid #ddd;"></div>
               <div style="font-size:18px;color:#555;">Teammate</div>
             </div>
           </div>
-          <p style="font-size:20px;color:#555;margin:0;">The team game will start now.</p>
+          <p style="font-size:20px;color:#555;margin:0;">Press the space bar to start.</p>
         </div>
       </div>
     `;
 
-    setTimeout(() => {
-      if (typeof onComplete === 'function') {
-        onComplete();
+    this.setupStageAdvanceControls({
+      onAdvance: async () => {
+        if (typeof onComplete === 'function') {
+          await onComplete();
+        }
       }
-    }, duration);
+    });
   }
 
   showInstructionsStage(experimentType, experimentIndex) {
@@ -963,6 +1060,7 @@ export class TimelineManager {
     let finished = false;
     let countdownTimer = null;
     let timeoutId = null;
+    let escapeSkipHandler = null;
 
     this.kidTeammateWaitActive = true;
     this._neutralWaitStartedAtMs = waitingStartTime;
@@ -983,50 +1081,12 @@ export class TimelineManager {
           <img src="${guideSrc}" alt="Friendly guide" style="width:120px;height:120px;object-fit:contain;margin-bottom:10px;" onerror="this.onerror=null;this.src='${smileSrc}'">
           <h1 style="font-size:34px;color:#222;margin:8px 0 12px;">Finding your teammate...</h1>
           <p style="font-size:22px;line-height:1.5;color:#333;margin:0 auto 18px;max-width:560px;">
-            We are looking for your teammate. Please watch this short animation while the next game gets ready.
+            We are looking for your teammate. You can press SPACE while the next game gets ready.
           </p>
 
-          <div aria-hidden="true" class="kid-wait-theater">
-            <div class="kid-wait-scene kid-wait-scene-one">
-              <div class="kid-wait-cloud" style="left:28px;top:22px;"></div>
-              <div class="kid-wait-cloud" style="left:390px;top:36px;animation-delay:.7s;"></div>
-              <div class="kid-wait-rainbow kid-wait-rainbow-one"></div>
-              <div class="kid-wait-rainbow kid-wait-rainbow-two"></div>
-              <div class="kid-wait-rainbow kid-wait-rainbow-three"></div>
-              <div class="kid-wait-bubble" style="left:92px;top:138px;--size:44px;animation-delay:.1s;"></div>
-              <div class="kid-wait-bubble" style="left:246px;top:88px;--size:34px;animation-delay:.7s;"></div>
-              <div class="kid-wait-bubble" style="left:428px;top:128px;--size:52px;animation-delay:1.1s;"></div>
-            </div>
-            <div class="kid-wait-scene kid-wait-scene-two">
-              <div class="kid-wait-balloon" style="left:74px;--balloon:#7c8cff;animation-delay:.1s;"></div>
-              <div class="kid-wait-balloon" style="left:176px;--balloon:#007bff;animation-delay:.6s;"></div>
-              <div class="kid-wait-balloon" style="left:282px;--balloon:#1fb6a6;animation-delay:.2s;"></div>
-              <div class="kid-wait-balloon" style="left:388px;--balloon:#ffdf6b;animation-delay:.8s;"></div>
-              <div class="kid-wait-balloon" style="left:492px;--balloon:#c77dff;animation-delay:.4s;"></div>
-              <div class="kid-wait-confetti" style="left:120px;top:56px;animation-delay:.1s;"></div>
-              <div class="kid-wait-confetti" style="left:262px;top:94px;animation-delay:.5s;"></div>
-              <div class="kid-wait-confetti" style="left:438px;top:48px;animation-delay:.9s;"></div>
-            </div>
-            <div class="kid-wait-scene kid-wait-scene-three">
-              <div class="kid-wait-pinwheel" style="left:100px;top:60px;--pin:#7c8cff;animation-delay:.1s;"></div>
-              <div class="kid-wait-pinwheel" style="left:260px;top:92px;--pin:#1fb6a6;animation-delay:.5s;"></div>
-              <div class="kid-wait-pinwheel" style="left:430px;top:54px;--pin:#c77dff;animation-delay:.9s;"></div>
-              <div class="kid-wait-ribbon" style="left:72px;top:172px;--ribbon:#7c8cff;animation-delay:.1s;"></div>
-              <div class="kid-wait-ribbon" style="left:230px;top:188px;--ribbon:#1fb6a6;animation-delay:.5s;"></div>
-              <div class="kid-wait-ribbon" style="left:394px;top:168px;--ribbon:#c77dff;animation-delay:.9s;"></div>
-              <div class="kid-wait-star" style="left:122px;top:54px;animation-delay:.2s;"></div>
-              <div class="kid-wait-star" style="left:266px;top:34px;animation-delay:.8s;"></div>
-              <div class="kid-wait-star" style="left:424px;top:64px;animation-delay:1.2s;"></div>
-            </div>
-            <div class="kid-wait-scene kid-wait-scene-four">
-              <div class="kid-wait-lantern" style="left:82px;--lantern:#7c8cff;animation-delay:.1s;"></div>
-              <div class="kid-wait-lantern" style="left:210px;--lantern:#1fb6a6;animation-delay:.5s;"></div>
-              <div class="kid-wait-lantern" style="left:340px;--lantern:#ffdf6b;animation-delay:.9s;"></div>
-              <div class="kid-wait-lantern" style="left:470px;--lantern:#c77dff;animation-delay:1.3s;"></div>
-              <div class="kid-wait-streamer" style="left:94px;top:150px;--stream:#7c8cff;animation-delay:.1s;"></div>
-              <div class="kid-wait-streamer" style="left:278px;top:170px;--stream:#1fb6a6;animation-delay:.5s;"></div>
-              <div class="kid-wait-streamer" style="left:448px;top:146px;--stream:#c77dff;animation-delay:.9s;"></div>
-            </div>
+          <div class="kid-wait-minigame" aria-label="Waiting mini-game">
+            <canvas id="kidWaitMinigameCanvas" class="kid-wait-minigame-canvas" width="640" height="240"></canvas>
+            <p class="kid-wait-minigame-hint">Press SPACE to hop while we look.</p>
           </div>
 
           <div style="height:12px;background:#e9ecef;border-radius:999px;overflow:hidden;margin:0 auto 12px;max-width:520px;">
@@ -1037,126 +1097,39 @@ export class TimelineManager {
       </div>
 
       <style>
-        .kid-wait-theater {
-          position:relative;height:240px;margin:18px auto 22px;max-width:600px;border:2px solid #b9d7ff;border-radius:12px;
-          background:linear-gradient(#eef7ff,#fff);overflow:hidden;
+        .kid-wait-minigame {
+          margin:18px auto 22px;
+          max-width:600px;
+          border:2px solid #b9d7ff;
+          border-radius:12px;
+          background:#eef7ff;
+          overflow:hidden;
+          box-shadow:inset 0 0 0 1px rgba(255,255,255,.7);
         }
-        .kid-wait-scene {
-          position:absolute;inset:0;opacity:0;animation:kidSceneCycle 32s linear infinite;
+        .kid-wait-minigame-canvas {
+          display:block;
+          width:100%;
+          height:240px;
         }
-        .kid-wait-scene-one { animation-delay:0s; }
-        .kid-wait-scene-two { animation-delay:8s; }
-        .kid-wait-scene-three { animation-delay:16s; }
-        .kid-wait-scene-four { animation-delay:24s; }
-        .kid-wait-rainbow {
-          position:absolute;left:76px;right:76px;border-radius:999px;border-style:solid;border-color:transparent;border-top-color:#ffcc00;
-        }
-        .kid-wait-rainbow-one { top:112px;height:86px;border-width:10px;border-top-color:#7c8cff; }
-        .kid-wait-rainbow-two { top:126px;height:62px;border-width:10px;border-top-color:#34c759; }
-        .kid-wait-rainbow-three { top:140px;height:38px;border-width:10px;border-top-color:#007bff; }
-        .kid-wait-cloud {
-          position:absolute;width:116px;height:38px;border-radius:999px;background:#fff;box-shadow:0 6px 18px rgba(60,110,180,.16);
-          animation:kidCloudFloat 4s ease-in-out infinite alternate;
-        }
-        .kid-wait-cloud::before,.kid-wait-cloud::after { content:""; position:absolute; border-radius:50%; background:#fff; }
-        .kid-wait-cloud::before { width:48px;height:48px;left:18px;top:-22px; }
-        .kid-wait-cloud::after { width:58px;height:58px;right:18px;top:-30px; }
-        .kid-wait-bubble {
-          position:absolute;width:var(--size);height:var(--size);border-radius:50%;border:3px solid rgba(0,123,255,.32);
-          background:rgba(255,255,255,.55);box-shadow:inset -8px -8px 16px rgba(123,223,242,.25);
-          animation:kidBubbleFloat 4.2s ease-in-out infinite alternate;
-        }
-        .kid-wait-balloon {
-          position:absolute;bottom:34px;width:54px;height:68px;border-radius:50% 50% 46% 46%;background:var(--balloon);
-          box-shadow:inset -8px -10px 0 rgba(0,0,0,.08),0 5px 14px rgba(0,0,0,.12);
-          animation:kidBalloonFloat 3.4s ease-in-out infinite alternate;
-        }
-        .kid-wait-balloon::after {
-          content:"";position:absolute;left:25px;top:68px;width:2px;height:76px;background:#9aa8b5;
-        }
-        .kid-wait-balloon::before {
-          content:"";position:absolute;left:22px;top:62px;border-left:5px solid transparent;border-right:5px solid transparent;border-top:10px solid var(--balloon);
-        }
-        .kid-wait-confetti {
-          position:absolute;width:16px;height:16px;border-radius:4px;background:#ffcc00;animation:kidConfettiSpin 1.6s ease-in-out infinite;
-        }
-        .kid-wait-pinwheel {
-          position:absolute;width:78px;height:78px;animation:kidPinwheelSpin 2.8s linear infinite;
-        }
-        .kid-wait-pinwheel::before,.kid-wait-pinwheel::after {
-          content:"";position:absolute;inset:0;background:var(--pin);opacity:.82;clip-path:polygon(50% 50%,100% 0,100% 42%,50% 50%,0 100%,42% 100%);
-        }
-        .kid-wait-pinwheel::after {
-          transform:rotate(90deg);opacity:.55;
-        }
-        .kid-wait-ribbon {
-          position:absolute;width:118px;height:24px;border-radius:999px;background:var(--ribbon);opacity:.72;
-          animation:kidRibbonWave 2.6s ease-in-out infinite alternate;
-        }
-        .kid-wait-lantern {
-          position:absolute;top:42px;width:58px;height:78px;border-radius:28px;background:var(--lantern);
-          box-shadow:inset 0 0 0 6px rgba(255,255,255,.35),0 6px 16px rgba(0,0,0,.14);
-          animation:kidLanternFloat 3.2s ease-in-out infinite alternate;
-        }
-        .kid-wait-lantern::before {
-          content:"";position:absolute;left:27px;top:-38px;width:2px;height:38px;background:#9aa8b5;
-        }
-        .kid-wait-streamer {
-          position:absolute;width:86px;height:30px;border-radius:999px;background:var(--stream);opacity:.65;
-          transform:skewX(-16deg);animation:kidStreamerDrift 2.7s ease-in-out infinite alternate;
-        }
-        .kid-wait-star {
-          position:absolute;width:18px;height:18px;background:#ffd43b;clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 56%,79% 91%,50% 70%,21% 91%,32% 56%,2% 35%,39% 35%);
-          animation:kidStarPulse 1.8s ease-in-out infinite;
-        }
-        @keyframes kidSceneCycle {
-          0% { opacity:0; transform:scale(.98); }
-          4%,21% { opacity:1; transform:scale(1); }
-          25%,100% { opacity:0; transform:scale(1.02); }
-        }
-        @keyframes kidCloudFloat {
-          from { transform:translateY(0); }
-          to { transform:translateY(12px); }
-        }
-        @keyframes kidBubbleFloat {
-          from { transform:translateY(0) scale(.95); opacity:.65; }
-          to { transform:translateY(-34px) scale(1.1); opacity:1; }
-        }
-        @keyframes kidBalloonFloat {
-          from { transform:translateY(0) rotate(-3deg); }
-          to { transform:translateY(-34px) rotate(4deg); }
-        }
-        @keyframes kidConfettiSpin {
-          0%,100% { transform:rotate(0deg) scale(.85); opacity:.55; }
-          50% { transform:rotate(160deg) scale(1.2); opacity:1; }
-        }
-        @keyframes kidPinwheelSpin {
-          from { transform:rotate(0deg); }
-          to { transform:rotate(360deg); }
-        }
-        @keyframes kidRibbonWave {
-          from { transform:translateY(0) rotate(-5deg); }
-          to { transform:translateY(-18px) rotate(7deg); }
-        }
-        @keyframes kidLanternFloat {
-          from { transform:translateY(0) rotate(-2deg); }
-          to { transform:translateY(22px) rotate(3deg); }
-        }
-        @keyframes kidStreamerDrift {
-          from { transform:translateY(0) skewX(-16deg); }
-          to { transform:translateY(-20px) skewX(-16deg); }
-        }
-        @keyframes kidStarPulse {
-          0%,100% { transform:scale(.85); opacity:.55; }
-          50% { transform:scale(1.25); opacity:1; }
+        .kid-wait-minigame-hint {
+          margin:0;
+          padding:10px 12px 12px;
+          font-size:18px;
+          color:#28536b;
+          background:#ffffff;
+          border-top:1px solid #d8e9ff;
         }
       </style>
     `;
 
+    this.startKidWaitMinigame('kidWaitMinigameCanvas');
+
     const cleanup = () => {
       this.kidTeammateWaitActive = false;
+      this.stopKidWaitMinigame();
       if (countdownTimer) clearInterval(countdownTimer);
       if (timeoutId) clearTimeout(timeoutId);
+      if (escapeSkipHandler) document.removeEventListener('keydown', escapeSkipHandler);
       this.off('all-players-ready', allReadyHandler);
     };
 
@@ -1167,7 +1140,9 @@ export class TimelineManager {
 
       const waitingEndTime = Date.now();
       const waitingDuration = waitingEndTime - waitingStartTime;
-      const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'committedAgent';
+      const fallbackType = (CONFIG?.multiplayer?.fallbackAIType)
+        || GameConfigUtils.resolveKidCommittedAgentType?.()
+        || 'committedAgent';
       const aiPlayerNumber = (this.playerIndex === 0) ? 2 : 1;
 
       this.recordWaitingTime(waitingStartTime, waitingEndTime, waitingDuration, reason, experimentType, experimentIndex);
@@ -1178,7 +1153,7 @@ export class TimelineManager {
       try { this.emit('kid-matchmaking-cancelled', { reason }); } catch (_) { /* noop */ }
       try { this.emit('fallback-to-ai', { reason, stage: 'kid-teammate-wait', at: Date.now(), fallbackAIType: fallbackType }); } catch (_) { /* noop */ }
       this.emit('ai-fallback-activated', { fallbackType, aiPlayerNumber });
-      this.nextStage();
+      this.showKidTeammateFoundReminder(() => this.nextStage());
     };
 
     const allReadyHandler = (config) => {
@@ -1197,6 +1172,14 @@ export class TimelineManager {
 
     this.on('all-players-ready', allReadyHandler);
     this.emit('kid-teammate-barrier-ready', { experimentType, experimentIndex, eventId, stationId });
+
+    escapeSkipHandler = (event) => {
+      if (event.code !== 'Escape' && event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      finishWithFallback('teammate-wait-escape-skip');
+    };
+    document.addEventListener('keydown', escapeSkipHandler);
 
     const progress = document.getElementById('kidWaitProgress');
     const status = document.getElementById('kidWaitStatus');
@@ -1462,6 +1445,7 @@ export class TimelineManager {
     // Unified match play gate (Game is Ready!); requires BOTH players to press SPACE to proceed
     const currentStage = this.stages[this.currentStageIndex] || {};
     const showPartnerMsg = currentStage.showPartnerFoundMessage !== false; // default true unless explicitly false
+    const playerDisplay = getPlayerDisplayInfo(this.playerIndex, this.gameMode);
     const partnerMsgHtml = showPartnerMsg
       ? `<p><strong>${this.isHumanHumanMode() ? 'Another player found!' : 'Another player found and connection established!'}</strong></p>`
       : '';
@@ -1473,8 +1457,8 @@ export class TimelineManager {
           <div style="font-size: 20px; color: #333; margin-bottom: 20px;">
             ${partnerMsgHtml}
             <p style="margin-top: 10px; font-size: 20px;">
-              You are ${this.playerIndex === 0 ? 'Player 1 (Red)' : 'Player 2 (Orange)'}
-              <span style="display:inline-block; width: 14px; height: 14px; background-color: ${this.playerIndex === 0 ? CONFIG.visual.colors.player1 : CONFIG.visual.colors.player2}; border-radius: 50%; vertical-align: middle; margin-left: 6px;"></span>
+              ${playerDisplay.instructionText}
+              <span style="display:inline-block; width: 14px; height: 14px; background-color: ${playerDisplay.selfColorValue}; border-radius: 50%; vertical-align: middle; margin-left: 6px;"></span>
             </p>
             <p>Press SPACE to start the game!</p>
             <p style="font-size: 14px;">${this.isHumanHumanMode() ? 'Both players must press SPACE to begin.' : ''}</p>
@@ -1590,11 +1574,9 @@ export class TimelineManager {
 
     // Determine legend based on actual player index whenever it's a 2P experiment
     // This stays consistent even if mode switches to human-AI mid-session
-    let playerColor = CONFIG.visual.colors.player1; // Default red
-    let playerName = 'Player 1 (Red)';
+    let playerDisplay = getPlayerDisplayInfo(0, 'human-ai');
     if (experimentType.includes('2P')) {
-      playerColor = this.playerIndex === 0 ? CONFIG.visual.colors.player1 : CONFIG.visual.colors.player2;
-      playerName = this.playerIndex === 0 ? 'Player 1 (Red)' : 'Player 2 (Orange)';
+      playerDisplay = getPlayerDisplayInfo(this.playerIndex, this.gameMode);
     }
 
     // Create trial container with game canvas area
@@ -1607,7 +1589,7 @@ export class TimelineManager {
             <!-- Game canvas will be inserted here by ExperimentManager -->
           </div>
           <div style="margin-top: 20px; font-size: 14px; color: #666;">
-            <p>You are ${playerName} <span style="display: inline-block; width: 18px; height: 18px; background-color: ${playerColor}; border-radius: 50%; vertical-align: middle;"></span>. Use arrow keys to move.</p>
+            <p>${playerDisplay.instructionText} <span style="display: inline-block; width: 18px; height: 18px; background-color: ${playerDisplay.selfColorValue}; border-radius: 50%; vertical-align: middle;"></span> Use arrow keys to move.</p>
           </div>
         </div>
       </div>

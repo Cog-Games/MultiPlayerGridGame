@@ -27,19 +27,38 @@ const DEFAULT_LLM_AGENT_CONFIG = {
   }
 };
 
+export const SHARED_AGENCY_BEST_FIT = {
+  label: 'sampleJointGoalAndRSASignal_fromStart',
+  type: 'alwaysSignalAgent',
+  fitSource: 'signal_agent_from_start_rsa_lambda_alpha_fit',
+  parameters: {
+    score: 'logposterior',
+    horizon: 1,
+    lambda: 0.325,
+    alpha: 7.25,
+    beta: 3.0,
+    gridSize: 15
+  }
+};
+
 export const CONFIG = {
   // Kid experiment branch settings
   kids: {
     enabled: getEnvVar('VITE_KIDS_MODE', 'true') !== 'false',
     // Runtime modes:
-    // - human: attempt kid-kid matching first, then fall back to committedAgent
-    // - committed: skip matching and start directly with a committedAgent partner
+    // - human: attempt kid-kid matching first, then fall back to the configured kid committed partner
+    // - committed: skip matching and start directly with the configured kid committed partner
     partnerMode: 'human',
+    committedAgentType: SHARED_AGENCY_BEST_FIT.type,
+    committedAgentLabel: SHARED_AGENCY_BEST_FIT.label,
+    committedAgentFitSource: SHARED_AGENCY_BEST_FIT.fitSource,
     useLegacyUi: true,
+    gameTestMode: false,
     assetBasePath: '/kids/figs',
     eventId: getEnvVar('VITE_KIDS_EVENT_ID', 'default'),
     stationId: getEnvVar('VITE_KIDS_STATION_ID', ''),
     warmupExperimentOrder: ['1P1G', '1P2G'],
+    kidMainExperimentOrder: ['2P2G', '2P3G'],
     mainExperimentType: '2P3G',
     teammateWaitMaxDuration: 2 * 60 * 1000,
     teammateReminderDuration: 2500
@@ -88,9 +107,9 @@ export const CONFIG = {
         // - 'human'
         // - 'llm' | 'llm-tom'
         // - 'vlm' | 'vlm-tom'
-        // - 'rl_individual' | 'rl_joint' | 'committedAgent' | 'alwaysCommittedAgent' | 'signalAgent' | 'twoStageSignalAgent'
+        // - 'rl_individual' | 'rl_joint' | 'committedAgent' | 'alwaysCommittedAgent' | 'alwaysSignalAgent' | 'signalAgent' | 'twoStageSignalAgent'
         // Legacy aliases still accepted: 'gpt'|'gpt-ToM' (-> llm/llm-tom), 'vlm-ToM' (-> vlm-tom)
-        type: 'committedAgent',
+        type: 'alwaysSignalAgent',
         color: 'orange',
         description: 'Human, GPT, or RL partner'
       }
@@ -107,7 +126,7 @@ export const CONFIG = {
         '1P1G': 1, // 3
         '1P2G': 1, // 12
         '2P2G': 1, // 8
-        '2P3G': 12, // 12
+        '2P3G': 1, // 12
       }
     },
 
@@ -154,6 +173,7 @@ export const CONFIG = {
       gpt: DEFAULT_LLM_AGENT_CONFIG,
       // When an LLM/VLM step fails (network error / invalid response / no action), choose the fallback policy.
       // - 'committedAgent': CommittedAgent wrapper around RL (default)
+      // - 'alwaysSignalAgent': AlwaysSignalAgent shared-agency RSA model from trial start
       // - 'signalAgent': SignalAgent wrapper around committed goal selection
       // - 'twoStageSignalAgent': confidence-gated deferred-commitment signaling agent
       // - 'rl_joint': joint RL planner
@@ -181,6 +201,16 @@ export const CONFIG = {
         lambda: 0.125,
         beta: 3.0,
         alpha: 0.0
+      },
+      alwaysSignal: {
+        // sampleJointGoalAndRSASignal_fromStart shared-agency model:
+        // always-on posterior timing plus RSA/log-posterior signaling.
+        score: SHARED_AGENCY_BEST_FIT.parameters.score,
+        horizon: SHARED_AGENCY_BEST_FIT.parameters.horizon,
+        lambda: SHARED_AGENCY_BEST_FIT.parameters.lambda,
+        beta: SHARED_AGENCY_BEST_FIT.parameters.beta,
+        alpha: SHARED_AGENCY_BEST_FIT.parameters.alpha,
+        gridSize: SHARED_AGENCY_BEST_FIT.parameters.gridSize
       },
       twoStageSignal: {
         // TwoStageSignalAgent continuously blends flexible joint-RL with committed signaling:
@@ -292,8 +322,8 @@ export const CONFIG = {
     // human to press space before falling back to AI partner
     matchPlayReadyTimeout: 10000,
     // Fallback AI partner type when human-human matching fails
-    // Allowed (canonical): 'llm' | 'llm-tom' | 'vlm' | 'vlm-tom' | 'rl_individual' | 'rl_joint' | 'committedAgent' | 'alwaysCommittedAgent' | 'signalAgent' | 'twoStageSignalAgent'
-    fallbackAIType: 'committedAgent',
+    // Allowed (canonical): 'llm' | 'llm-tom' | 'vlm' | 'vlm-tom' | 'rl_individual' | 'rl_joint' | 'committedAgent' | 'alwaysCommittedAgent' | 'alwaysSignalAgent' | 'signalAgent' | 'twoStageSignalAgent'
+    fallbackAIType: SHARED_AGENCY_BEST_FIT.type,
     // Partner inactivity settings
     inactivityFallback: {
       // Enable automatic fallback to AI when partner is inactive
@@ -356,6 +386,84 @@ export const DIRECTIONS = {
 
 // Export utility functions
 export const GameConfigUtils = {
+  getKidMainExperimentOrder() {
+    const candidates = [
+      CONFIG?.kids?.kidMainExperimentOrder,
+      CONFIG?.kids?.mainExperimentOrder,
+      CONFIG?.kids?.mainExperimentType
+    ];
+
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate)) {
+        const order = candidate
+          .map((experimentType) => String(experimentType || '').trim())
+          .filter(Boolean);
+        if (order.length > 0) return order;
+      }
+    }
+
+    const single = String(CONFIG?.kids?.mainExperimentType || '2P3G').trim();
+    return single ? [single] : ['2P3G'];
+  },
+
+  resolveKidCommittedAgentType(type) {
+    const raw = String(type || CONFIG?.kids?.committedAgentType || SHARED_AGENCY_BEST_FIT.type).trim();
+    const lower = raw.toLowerCase();
+    const aliases = {
+      sharedagencybestfit: SHARED_AGENCY_BEST_FIT.type,
+      'shared-agency-best-fit': SHARED_AGENCY_BEST_FIT.type,
+      shared_agency_best_fit: SHARED_AGENCY_BEST_FIT.type,
+      sharedagency: SHARED_AGENCY_BEST_FIT.type,
+      'shared-agency': SHARED_AGENCY_BEST_FIT.type,
+      bestfit: SHARED_AGENCY_BEST_FIT.type,
+      'best-fit': SHARED_AGENCY_BEST_FIT.type,
+      samplejointgoalandrsasignal_fromstart: SHARED_AGENCY_BEST_FIT.type,
+      samplejointgoalandrsasignalfromstart: SHARED_AGENCY_BEST_FIT.type,
+      'sample-joint-goal-and-rsa-signal-from-start': SHARED_AGENCY_BEST_FIT.type,
+      rsa: SHARED_AGENCY_BEST_FIT.type,
+      rsasignal: SHARED_AGENCY_BEST_FIT.type,
+      legacy: 'committedAgent',
+      committed: 'committedAgent',
+      committedagent: 'committedAgent',
+      alwayscommittedagent: 'alwaysCommittedAgent',
+      alwayssignalagent: 'alwaysSignalAgent',
+      signalagent: 'signalAgent',
+      twostagesignalagent: 'twoStageSignalAgent',
+      jointrl: 'rl_joint',
+      'joint-rl': 'rl_joint',
+      individualrl: 'rl_individual',
+      'individual-rl': 'rl_individual',
+      llm: 'llm',
+      'llm-tom': 'llm-tom',
+      vlm: 'vlm',
+      'vlm-tom': 'vlm-tom'
+    };
+    if (aliases[lower]) return aliases[lower];
+
+    const allowed = ['llm', 'llm-tom', 'vlm', 'vlm-tom', 'rl_individual', 'rl_joint', 'committedAgent', 'alwaysCommittedAgent', 'alwaysSignalAgent', 'signalAgent', 'twoStageSignalAgent'];
+    return allowed.includes(raw) ? raw : SHARED_AGENCY_BEST_FIT.type;
+  },
+
+  configureKidCommittedAgent(type) {
+    const resolved = this.resolveKidCommittedAgentType(type);
+    if (CONFIG?.kids) {
+      CONFIG.kids.committedAgentType = resolved;
+      CONFIG.kids.committedAgentLabel = (resolved === SHARED_AGENCY_BEST_FIT.type)
+        ? SHARED_AGENCY_BEST_FIT.label
+        : resolved;
+      CONFIG.kids.committedAgentFitSource = (resolved === SHARED_AGENCY_BEST_FIT.type)
+        ? SHARED_AGENCY_BEST_FIT.fitSource
+        : '';
+    }
+    if (CONFIG?.multiplayer) {
+      CONFIG.multiplayer.fallbackAIType = resolved;
+    }
+    if (resolved === SHARED_AGENCY_BEST_FIT.type && CONFIG?.game?.agent?.alwaysSignal) {
+      Object.assign(CONFIG.game.agent.alwaysSignal, SHARED_AGENCY_BEST_FIT.parameters);
+    }
+    return resolved;
+  },
+
   setPlayerType(playerIndex, type) {
     // Normalize legacy alias + legacy agent naming
     const raw = (type === 'ai') ? 'rl_joint' : type;
@@ -366,7 +474,7 @@ export const GameConfigUtils = {
         : (t === 'gpt-ToM' || lower === 'gpt-tom' || lower === 'gpttom') ? 'llm-tom'
           : (t === 'vlm-ToM' || lower === 'vlm-tom' || lower === 'vlmtom') ? 'vlm-tom'
             : t;
-    const allowed = ['human', 'llm', 'llm-tom', 'vlm', 'vlm-tom', 'gpt', 'gpt-ToM', 'vlm-ToM', 'rl_individual', 'rl_joint', 'committedAgent', 'alwaysCommittedAgent', 'signalAgent', 'twoStageSignalAgent'];
+    const allowed = ['human', 'llm', 'llm-tom', 'vlm', 'vlm-tom', 'gpt', 'gpt-ToM', 'vlm-ToM', 'rl_individual', 'rl_joint', 'committedAgent', 'alwaysCommittedAgent', 'alwaysSignalAgent', 'signalAgent', 'twoStageSignalAgent'];
     if (!allowed.includes(normalized)) return;
     CONFIG.game.players[`player${playerIndex}`].type = normalized;
 
@@ -375,7 +483,7 @@ export const GameConfigUtils = {
       if (normalized === 'rl_joint') CONFIG.game.agent.type = 'joint';
       if (normalized === 'rl_individual') CONFIG.game.agent.type = 'individual';
       // committed-style agents use joint policies internally.
-      if (normalized === 'committedAgent' || normalized === 'alwaysCommittedAgent' || normalized === 'signalAgent' || normalized === 'twoStageSignalAgent') CONFIG.game.agent.type = 'joint';
+      if (normalized === 'committedAgent' || normalized === 'alwaysCommittedAgent' || normalized === 'alwaysSignalAgent' || normalized === 'signalAgent' || normalized === 'twoStageSignalAgent') CONFIG.game.agent.type = 'joint';
     }
   },
 
