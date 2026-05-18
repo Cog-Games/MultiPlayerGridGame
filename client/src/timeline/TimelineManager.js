@@ -1154,7 +1154,9 @@ export class TimelineManager {
     this.container.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8f9fa;">
         <div style="background:white;padding:32px;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,0.12);max-width:720px;width:calc(100% - 32px);text-align:center;">
+          <!--
           <img src="${guideSrc}" alt="Friendly guide" style="width:120px;height:120px;object-fit:contain;margin-bottom:10px;" onerror="this.onerror=null;this.src='${smileSrc}'">
+          -->
           <h1 style="font-size:34px;color:#222;margin:8px 0 12px;">Finding your teammate...</h1>
           <p style="font-size:22px;line-height:1.5;color:#333;margin:0 auto 18px;max-width:560px;">
             We are looking for your teammate. You can press SPACE while the next game gets ready.
