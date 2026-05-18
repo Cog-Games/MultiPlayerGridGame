@@ -492,6 +492,49 @@ export class GameApplication {
     console.log('📡 Timeline event handlers setup completed');
   }
 
+  downloadBase64File(base64Data, filename, mimeType) {
+    try {
+      if (typeof document === 'undefined' || typeof window === 'undefined' || typeof atob !== 'function') {
+        return false;
+      }
+
+      const binary = atob(base64Data);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+
+      const blob = new Blob([bytes], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.style.display = 'none';
+
+      const parent = document.body || document.documentElement;
+      parent.appendChild(link);
+      link.click();
+      parent.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+      return true;
+    } catch (error) {
+      console.warn('⚠️ Local file download failed:', error);
+      return false;
+    }
+  }
+
+  notifyDataSaveSuccess() {
+    setTimeout(() => {
+      try {
+        if (this.timelineManager) {
+          this.timelineManager.emit('data-save-success');
+        }
+      } catch (_) {
+        // Ignore UI feedback errors
+      }
+    }, 0);
+  }
+
   saveExperimentData(data) {
     // Save/export experiment data in legacy-compatible shape
     try {
@@ -565,16 +608,14 @@ export class GameApplication {
         waitingDetails: data.waitingDetails || []
       };
 
-      const dataStr = JSON.stringify(exportObj, null, 2);
+      // Local Excel download uses the exact workbook bytes that are uploaded to Google Drive.
 
-      // Do not save locally (no localStorage / no file download)
-
-      // Try legacy-style Google Drive save via Apps Script using SheetJS if available
+      // Try legacy-style Excel export using SheetJS if available
       const scriptUrl = CONFIG.server.googleAppsScriptUrl;
       const enableGDrive = CONFIG.server.enableGoogleDriveSave;
       const hasXlsx = typeof window !== 'undefined' && typeof window.XLSX !== 'undefined';
 
-      if (enableGDrive && scriptUrl && hasXlsx) {
+      if (hasXlsx) {
         try {
           const XLSX = window.XLSX;
           const wb = XLSX.utils.book_new();
@@ -852,32 +893,53 @@ export class GameApplication {
           const safeRoom = String(exportObj.roomId || 'no-room').replace(/[^a-zA-Z0-9_-]/g, '_');
           const excelFilename = `experiment_data_${safeId}_room_${safeRoom}_${ts}.xlsx`;
 
-          const formData = new FormData();
-          formData.append('filename', excelFilename);
-          formData.append('filedata', base64);
-          formData.append('filetype', 'excel');
+          const localDownloadSucceeded = this.downloadBase64File(
+            base64,
+            excelFilename,
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          );
+          if (localDownloadSucceeded) {
+            console.log('✅ Local Excel data file download triggered:', excelFilename);
+          } else {
+            console.warn('⚠️ Local Excel data file download was not available in this browser context.');
+          }
 
-          fetch(scriptUrl, { method: 'POST', mode: 'no-cors', body: formData })
-            .then(() => {
-              console.log('✅ Google Drive save attempted via Apps Script');
-              // Provide user feedback like legacy and notify timeline
-              try {
-                if (this.timelineManager) {
-                  this.timelineManager.emit('data-save-success');
+          if (enableGDrive && scriptUrl) {
+            const formData = new FormData();
+            formData.append('filename', excelFilename);
+            formData.append('filedata', base64);
+            formData.append('filetype', 'excel');
+
+            fetch(scriptUrl, { method: 'POST', mode: 'no-cors', body: formData })
+              .then(() => {
+                console.log('✅ Google Drive save attempted via Apps Script:', excelFilename);
+                // Provide user feedback like legacy and notify timeline
+                try {
+                  if (this.timelineManager) {
+                    this.timelineManager.emit('data-save-success');
+                  }
+                  alert('Data saved successfully!');
+                } catch (e) {
+                  // Ignore UI feedback errors
                 }
-                alert('Data saved successfully!');
-              } catch (e) {
-                // Ignore UI feedback errors
-              }
-            })
-            .catch(err => {
-              console.warn('⚠️ Google Drive save failed. Local saving is disabled.', err);
-            });
+              })
+              .catch(err => {
+                console.warn('⚠️ Google Drive save failed. Local Excel download was already attempted.', err);
+                if (localDownloadSucceeded) {
+                  this.notifyDataSaveSuccess();
+                }
+              });
+          } else {
+            console.warn('⚠️ Google Drive save disabled or missing Apps Script URL. Local Excel download was attempted.');
+            if (localDownloadSucceeded) {
+              this.notifyDataSaveSuccess();
+            }
+          }
         } catch (e) {
-          console.warn('⚠️ Excel/Apps Script save failed. Local saving is disabled.', e);
+          console.warn('⚠️ Excel export failed. Local Excel download and Google Drive upload were not completed.', e);
         }
       } else {
-        console.warn('⚠️ Google Drive save disabled or XLSX not available. Local saving is disabled.');
+        console.warn('⚠️ XLSX not available. Excel file could not be created for local download or Google Drive upload.');
       }
     } catch (error) {
       console.error('Failed to save/export experiment data:', error);

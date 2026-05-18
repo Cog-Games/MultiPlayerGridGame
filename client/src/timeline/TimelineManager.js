@@ -394,6 +394,7 @@ export class TimelineManager {
 
     try {
       stage.handler();
+      this.applyKidVisualTheme();
     } catch (error) {
       console.error(`❌ Error running stage ${stage.type}:`, error);
       this.nextStage();
@@ -440,6 +441,7 @@ export class TimelineManager {
 
   setupStageAdvanceControls({ buttonId, onAdvance, focusSelector = '[data-stage-focus="true"]' }) {
     this.clearStageAdvanceControls();
+    this.applyKidVisualTheme();
 
     let advancing = false;
     const advance = async (event) => {
@@ -494,6 +496,81 @@ export class TimelineManager {
     }
   }
 
+  applyKidVisualTheme() {
+    if (!this.isKidMode() || !this.container) return;
+
+    const root = Array.from(this.container.children || []).find((child) => child.tagName !== 'STYLE');
+    if (!root) return;
+
+    root.classList.add('kid-ui-stage');
+    root.style.fontFamily = 'Arial, Helvetica, sans-serif';
+
+    if (root.querySelector('[data-kid-ui-theme="true"]')) return;
+
+    root.insertAdjacentHTML('afterbegin', `
+      <style data-kid-ui-theme="true">
+        .kid-ui-stage {
+          background: #f7fbff !important;
+          color: #1f2937;
+          font-family: Arial, Helvetica, sans-serif;
+        }
+        .kid-ui-stage [data-stage-focus="true"] {
+          background: #ffffff !important;
+          border: 2px solid #d8e9ff !important;
+          border-radius: 12px !important;
+          box-shadow: 0 10px 24px rgba(0, 70, 140, 0.12) !important;
+          color: #1f2937 !important;
+        }
+        .kid-ui-stage h1,
+        .kid-ui-stage h2 {
+          color: #1f2937 !important;
+          font-weight: 800 !important;
+          line-height: 1.15 !important;
+          letter-spacing: 0 !important;
+        }
+        .kid-ui-stage h3,
+        .kid-ui-stage h4 {
+          color: #344054 !important;
+          font-weight: 700 !important;
+          line-height: 1.2 !important;
+          letter-spacing: 0 !important;
+        }
+        .kid-ui-stage p,
+        .kid-ui-stage li,
+        .kid-ui-stage label,
+        .kid-ui-stage div {
+          letter-spacing: 0;
+        }
+        .kid-ui-stage button {
+          background: #007bff !important;
+          color: #ffffff !important;
+          border: none !important;
+          border-radius: 9px !important;
+          box-shadow: 0 4px 0 #005fc9 !important;
+          font-weight: 700 !important;
+          letter-spacing: 0 !important;
+        }
+        .kid-ui-stage button:disabled {
+          background: #9aa8b5 !important;
+          box-shadow: 0 4px 0 #7d8894 !important;
+          cursor: not-allowed !important;
+        }
+        .kid-ui-stage input,
+        .kid-ui-stage select,
+        .kid-ui-stage textarea {
+          border: 2px solid #bac7d6 !important;
+          border-radius: 8px !important;
+          background: #ffffff !important;
+          color: #1f2937 !important;
+          font-family: Arial, Helvetica, sans-serif !important;
+        }
+        .kid-ui-stage [role="alert"] {
+          color: #dc3545 !important;
+        }
+      </style>
+    `);
+  }
+
   tryEnterFullscreen() {
     try {
       if (!document.fullscreenElement && document.documentElement && document.documentElement.requestFullscreen) {
@@ -509,9 +586,20 @@ export class TimelineManager {
 
   showFullscreenPromptStage() {
     this.container.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#fff;">
-        <div data-stage-focus="true" tabindex="-1" style="color:#333;text-align:center;font-family:Arial, sans-serif;max-width:720px;padding:30px;font-size:24px;">
-          <h2 style="margin:0 0 10px;">Please press <span style="font-family:monospace;background:#f0f0f0;padding:2px 6px;border-radius:4px;">Space Bar</span> to start the game in fullscreen!</h2>
+      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f7fbff;padding:24px;font-family:Arial, sans-serif;">
+        <div data-stage-focus="true" tabindex="-1" style="color:#243044;text-align:center;max-width:760px;width:100%;padding:34px 30px;border:3px solid #007bff;border-radius:14px;background:#fff;box-shadow:0 10px 24px rgba(0, 70, 140, 0.14);">
+          <div aria-hidden="true" style="display:flex;justify-content:center;gap:10px;margin-bottom:16px;">
+            <span style="width:18px;height:18px;background:#ffcc00;border-radius:4px;transform:rotate(10deg);display:inline-block;"></span>
+            <span style="width:18px;height:18px;background:#2cc6a0;border-radius:50%;display:inline-block;"></span>
+            <span style="width:18px;height:18px;background:#7c8cff;border-radius:4px;transform:rotate(-10deg);display:inline-block;"></span>
+          </div>
+          <h1 style="margin:0 0 12px;font-size:46px;line-height:1.05;color:#1f2937;">Welcome to the Game!</h1>
+          <p style="margin:0 0 24px;font-size:25px;line-height:1.35;color:#344054;">Get ready to play.</p>
+          <div style="display:inline-flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;font-size:26px;font-weight:bold;color:#333;">
+            <span>Press</span>
+            <span style="font-family:monospace;background:#eef4ff;border:2px solid #9cc8ff;padding:8px 16px;border-radius:8px;box-shadow:0 3px 0 #b7d7ff;">Space Bar</span>
+            <span>to begin</span>
+          </div>
         </div>
       </div>
     `;
@@ -724,58 +812,58 @@ export class TimelineManager {
 
   showKidWelcomeInfoStage() {
     this.container.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8f9fa;">
-        <div style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;width:100%;padding:10px;">
-          <div data-stage-focus="true" tabindex="-1" style="background:white;padding:10px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:800px;text-align:center;">
-            <h2 style="color:#333;margin-bottom:2px;font-size:22px;">Welcome to the Game!</h2>
+      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f7fbff;padding:20px;font-family:Arial, sans-serif;">
+        <div data-stage-focus="true" tabindex="-1" style="background:white;padding:22px 26px;border-radius:12px;box-shadow:0 10px 24px rgba(0,70,140,0.12);max-width:900px;width:100%;text-align:center;border:2px solid #d8e9ff;">
+          <h1 style="color:#1f2937;margin:0 0 8px;font-size:34px;line-height:1.1;">Welcome to the Game!</h1>
 
-            <div style="display:flex;justify-content:center;align-items:center;width:100%;">
-              <div style="text-align:center;line-height:1.6;margin-bottom:2px;font-size:18px;max-width:600px;">
-                <p style="margin-bottom:2px;">You will play a navigation game where hungry travelers need to reach restaurants as quickly as possible.</p>
-                <p style="margin-bottom:2px;"><span style="color:#007bff;font-weight:bold;">Your goal: Use the arrow keys to guide your traveler to a restaurant.</span></p>
-              </div>
+          <div style="display:flex;justify-content:center;align-items:center;width:100%;">
+            <div style="text-align:center;line-height:1.5;margin-bottom:8px;font-size:20px;max-width:720px;color:#222;">
+              <p style="margin:0 0 8px;">In this game, hungry travelers need to reach restaurants as quickly as possible.</p>
+              <p style="margin:0;color:#006be6;font-weight:bold;">Your goal: Use the arrow keys to guide your traveler to a restaurant.</p>
             </div>
+          </div>
 
-            <div style="background:#f8f9fa;border:2px solid #007bff;border-radius:10px;padding:16px;margin:5px auto;max-width:700px;">
-              <h4 style="color:rgb(14,14,15);margin:0 0 12px;font-size:14px;text-align:center;">Example Game Map and Controls</h4>
-              <div style="display:flex;justify-content:center;align-items:center;gap:20px;margin-bottom:10px;flex-wrap:wrap;">
-                <div style="display:grid;grid-template-columns:repeat(5,32px);grid-template-rows:repeat(5,32px);gap:3px;border:2px solid #333;padding:6px;background:white;border-radius:8px;">
+          <div style="background:#f8fbff;border:2px solid #007bff;border-radius:12px;padding:18px;margin:12px auto 0;max-width:860px;">
+            <h2 style="color:#1f2937;margin:0 0 16px;font-size:18px;">Example Map and Buttons</h2>
+            <div style="display:grid;grid-template-columns:minmax(290px,0.85fr) minmax(430px,1.15fr);gap:22px;align-items:center;">
+              <div style="display:flex;justify-content:center;align-items:center;gap:18px;flex-wrap:wrap;">
+                <div aria-label="Example game map" style="display:grid;grid-template-columns:repeat(5,36px);grid-template-rows:repeat(5,36px);gap:3px;border:2px solid #2f3a4a;padding:7px;background:white;border-radius:9px;box-shadow:0 4px 10px rgba(0,0,0,0.06);">
                   ${Array.from({ length: 25 }, (_, i) => {
                     const goal = i === 3;
                     const player = i === 11;
                     const bg = goal ? '#007bff' : (player ? 'red' : '#f8f9fa');
-                    const radius = goal ? '3px' : (player ? '50%' : '0');
-                    return `<div style="background:${bg};border:1px solid #ddd;border-radius:${radius};"></div>`;
+                    const radius = goal ? '4px' : (player ? '50%' : '0');
+                    const shadow = player ? 'box-shadow:0 2px 5px rgba(255,0,0,0.25);' : '';
+                    return `<div style="background:${bg};border:1px solid #d7dde6;border-radius:${radius};${shadow}"></div>`;
                   }).join('')}
                 </div>
-                <div style="display:flex;flex-direction:column;gap:8px;font-size:14px;color:#333;">
-                  <div style="display:flex;align-items:center;gap:6px;"><div style="width:14px;height:14px;background:red;border-radius:50%;"></div><span>Traveler</span></div>
-                  <div style="display:flex;align-items:center;gap:6px;"><div style="width:14px;height:14px;background:#007bff;border-radius:3px;"></div><span>Restaurant</span></div>
+                <div style="display:flex;flex-direction:column;gap:10px;font-size:16px;color:#333;text-align:left;">
+                  <div style="display:flex;align-items:center;gap:8px;"><div style="width:18px;height:18px;background:red;border-radius:50%;"></div><span>Traveler</span></div>
+                  <div style="display:flex;align-items:center;gap:8px;"><div style="width:18px;height:18px;background:#007bff;border-radius:4px;"></div><span>Restaurant</span></div>
                 </div>
               </div>
 
-              <div style="display:flex;justify-content:center;align-items:flex-end;gap:24px;margin:12px auto 4px;max-width:640px;flex-wrap:wrap;">
-                <div style="display:flex;flex-direction:column;align-items:center;">
-                  <div style="width:240px;height:48px;border:1px solid #bbb;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow:inset 0 1px 0 #fff;font-size:16px;letter-spacing:1px;">SPACE BAR</div>
-                  <div style="margin-top:8px;color:#555;font-size:14px;">Press this button for starting the game</div>
-                </div>
-                <div style="display:flex;flex-direction:column;align-items:center;">
-                  <div style="display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,46px);gap:6px;">
-                    <div></div><div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow:inset 0 1px 0 #fff;font-size:20px;">Up</div><div></div>
-                    <div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow:inset 0 1px 0 #fff;font-size:20px;">Left</div>
-                    <div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow:inset 0 1px 0 #fff;font-size:20px;">Down</div>
-                    <div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow:inset 0 1px 0 #fff;font-size:20px;">Right</div>
+              <div style="display:flex;justify-content:center;align-items:center;">
+                <div style="display:grid;grid-template-columns:230px 176px;grid-template-rows:54px 54px 22px;column-gap:18px;row-gap:7px;align-items:start;justify-content:center;">
+                  <div aria-label="Space bar" style="grid-column:1;grid-row:2;width:230px;height:54px;border:2px solid #bac7d6;border-radius:9px;display:flex;align-items:center;justify-content:center;background:#fff;box-shadow:0 4px 0 #d7dde6;font-size:18px;font-weight:bold;letter-spacing:1px;color:#222;">SPACE BAR</div>
+                  <div style="grid-column:1;grid-row:3;color:#475467;font-size:15px;text-align:center;">start or continue</div>
+                  <div aria-label="Arrow keys" style="grid-column:2;grid-row:1 / span 2;display:grid;grid-template-columns:repeat(3,54px);grid-template-rows:repeat(2,54px);gap:7px;">
+                    <div></div>
+                    <div style="width:54px;height:54px;border:2px solid #bac7d6;border-radius:9px;display:flex;align-items:center;justify-content:center;background:#fff;box-shadow:0 4px 0 #d7dde6;font-size:30px;font-weight:bold;color:#1f2937;">↑</div>
+                    <div></div>
+                    <div style="width:54px;height:54px;border:2px solid #bac7d6;border-radius:9px;display:flex;align-items:center;justify-content:center;background:#fff;box-shadow:0 4px 0 #d7dde6;font-size:30px;font-weight:bold;color:#1f2937;">←</div>
+                    <div style="width:54px;height:54px;border:2px solid #bac7d6;border-radius:9px;display:flex;align-items:center;justify-content:center;background:#fff;box-shadow:0 4px 0 #d7dde6;font-size:30px;font-weight:bold;color:#1f2937;">↓</div>
+                    <div style="width:54px;height:54px;border:2px solid #bac7d6;border-radius:9px;display:flex;align-items:center;justify-content:center;background:#fff;box-shadow:0 4px 0 #d7dde6;font-size:30px;font-weight:bold;color:#1f2937;">→</div>
                   </div>
-                  <div style="margin-top:8px;color:#555;font-size:14px;">Arrow keys for navigation</div>
+                  <div style="grid-column:2;grid-row:3;color:#475467;font-size:15px;text-align:center;">move your traveler</div>
                 </div>
               </div>
             </div>
 
-            <div style="margin-top:5px;">
-              <p style="font-size:18px;font-weight:bold;color:#333;margin-bottom:5px;">
-                Next, let's see how to play the game! Press the <span style="background:#f0f0f0;padding:4px 8px;border-radius:4px;font-family:monospace;">spacebar</span> to begin!
-              </p>
-            </div>
+          <div style="margin-top:16px;">
+            <p style="font-size:22px;font-weight:bold;color:#243044;margin:0;">
+              Press the <span style="background:#eef4ff;border:2px solid #9cc8ff;padding:4px 10px;border-radius:7px;font-family:monospace;">spacebar</span> to begin!
+            </p>
           </div>
         </div>
       </div>
@@ -1048,7 +1136,7 @@ export class TimelineManager {
     let finished = false;
     let countdownTimer = null;
     let timeoutId = null;
-    let escapeSkipHandler = null;
+    let hiddenSkipHandler = null;
 
     this.kidTeammateWaitActive = true;
     this._neutralWaitStartedAtMs = waitingStartTime;
@@ -1117,7 +1205,7 @@ export class TimelineManager {
       this.stopKidWaitMinigame();
       if (countdownTimer) clearInterval(countdownTimer);
       if (timeoutId) clearTimeout(timeoutId);
-      if (escapeSkipHandler) document.removeEventListener('keydown', escapeSkipHandler);
+      if (hiddenSkipHandler) document.removeEventListener('keydown', hiddenSkipHandler);
       this.off('all-players-ready', allReadyHandler);
     };
 
@@ -1161,13 +1249,13 @@ export class TimelineManager {
     this.on('all-players-ready', allReadyHandler);
     this.emit('kid-teammate-barrier-ready', { experimentType, experimentIndex, eventId, stationId });
 
-    escapeSkipHandler = (event) => {
-      if (event.code !== 'Escape' && event.key !== 'Escape') return;
+    hiddenSkipHandler = (event) => {
+      if (event.code !== 'Enter' && event.key !== 'Enter') return;
       event.preventDefault();
       event.stopPropagation();
-      finishWithFallback('teammate-wait-escape-skip');
+      finishWithFallback('teammate-wait-enter-skip');
     };
-    document.addEventListener('keydown', escapeSkipHandler);
+    document.addEventListener('keydown', hiddenSkipHandler);
 
     const progress = document.getElementById('kidWaitProgress');
     const status = document.getElementById('kidWaitStatus');
@@ -2148,6 +2236,7 @@ export class TimelineManager {
       if (focusTarget && typeof focusTarget.focus === 'function') {
         setTimeout(() => focusTarget.focus({ preventScroll: true }), 0);
       }
+      this.applyKidVisualTheme();
     };
 
     const handleKeys = (event) => {

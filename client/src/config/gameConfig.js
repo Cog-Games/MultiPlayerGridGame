@@ -131,7 +131,7 @@ export const CONFIG = {
     },
 
     // Fullscreen settings
-    fullscreen: { defaultEnabled: false},
+    fullscreen: { defaultEnabled: true},
 
     // Success threshold for collaboration games
     successThreshold: {

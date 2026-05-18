@@ -1,4 +1,4 @@
-import { CONFIG, GAME_OBJECTS } from '../config/gameConfig.js';
+import { CONFIG, GAME_OBJECTS, GameConfigUtils } from '../config/gameConfig.js';
 import { GameRenderer } from './GameRenderer.js';
 import { getPlayerDisplayInfo } from '../utils/DisplayPerspectiveUtils.js';
 
@@ -321,9 +321,7 @@ export class UIManager {
     const trialInfo = document.getElementById('trial-info');
 
     if (gameTitle) {
-      const totalGames = Array.isArray(CONFIG?.game?.experiments?.order)
-        ? CONFIG.game.experiments.order.length
-        : null;
+      const totalGames = this.getTotalExperimentCount();
       gameTitle.textContent = (Number.isInteger(totalGames) && totalGames > 0)
         ? `Game ${experimentIndex + 1} / ${totalGames}`
         : `Game ${experimentIndex + 1}`;
@@ -337,6 +335,24 @@ export class UIManager {
         ? `Round ${trialIndex + 1} / ${totalTrials}`
         : `Round ${trialIndex + 1}`;
     }
+  }
+
+  getTotalExperimentCount() {
+    if (CONFIG?.kids?.enabled) {
+      const mainOrder = GameConfigUtils.getKidMainExperimentOrder?.() || [CONFIG?.kids?.mainExperimentType || '2P3G'];
+      if (CONFIG?.kids?.gameTestMode) {
+        return mainOrder.length;
+      }
+
+      const warmupOrder = Array.isArray(CONFIG?.kids?.warmupExperimentOrder)
+        ? CONFIG.kids.warmupExperimentOrder
+        : ['1P1G', '1P2G'];
+      return warmupOrder.length + mainOrder.length;
+    }
+
+    return Array.isArray(CONFIG?.game?.experiments?.order)
+      ? CONFIG.game.experiments.order.length
+      : null;
   }
 
   showGameStatus(message, type = 'info') {
