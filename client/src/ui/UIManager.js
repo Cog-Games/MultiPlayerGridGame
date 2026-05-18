@@ -210,8 +210,8 @@ export class UIManager {
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
         <div style="text-align: center;">
-          <h3 id="game-title" style="margin-bottom: 10px;">Game</h3>
-          <h4 id="trial-info" style="margin-bottom: 20px;">Round 1</h4>
+          <h3 id="game-title" style="margin-bottom: 20px;">Game: Round 1</h3>
+          <h4 id="trial-info" style="display:none;"></h4>
           <div id="gameCanvas" style="margin-bottom: 20px;"></div>
           <p style="font-size: 20px;">${playerDisplay.instructionText} <span style="display: inline-block; width: 18px; height: 18px; background-color: ${playerDisplay.selfColorValue}; border-radius: 50%; vertical-align: middle;"></span> Press ↑ ↓ ← → to move.</p>
         </div>
@@ -319,21 +319,19 @@ export class UIManager {
   updateGameInfo(experimentIndex, trialIndex, experimentType) {
     const gameTitle = document.getElementById('game-title');
     const trialInfo = document.getElementById('trial-info');
+    const totalTrials = (experimentType && CONFIG?.game?.experiments?.numTrials?.[experimentType])
+      ? CONFIG.game.experiments.numTrials[experimentType]
+      : null;
 
     if (gameTitle) {
-      const totalGames = this.getTotalExperimentCount();
-      gameTitle.textContent = (Number.isInteger(totalGames) && totalGames > 0)
-        ? `Game ${experimentIndex + 1} / ${totalGames}`
-        : `Game ${experimentIndex + 1}`;
+      gameTitle.textContent = (Number.isInteger(totalTrials) && totalTrials > 0)
+        ? `Game ${experimentIndex + 1}: Round ${trialIndex + 1} of ${totalTrials}`
+        : `Game ${experimentIndex + 1}: Round ${trialIndex + 1}`;
     }
 
     if (trialInfo) {
-      const totalTrials = (experimentType && CONFIG?.game?.experiments?.numTrials?.[experimentType])
-        ? CONFIG.game.experiments.numTrials[experimentType]
-        : null;
-      trialInfo.textContent = (Number.isInteger(totalTrials) && totalTrials > 0)
-        ? `Round ${trialIndex + 1} / ${totalTrials}`
-        : `Round ${trialIndex + 1}`;
+      trialInfo.textContent = '';
+      trialInfo.style.display = 'none';
     }
   }
 

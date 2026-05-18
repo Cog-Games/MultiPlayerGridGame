@@ -60,7 +60,7 @@ export const CONFIG = {
     warmupExperimentOrder: ['1P1G', '1P2G'],
     kidMainExperimentOrder: ['2P2G', '2P3G'],
     mainExperimentType: '2P3G',
-    teammateWaitMaxDuration: 2 * 60 * 1000,
+    teammateWaitMaxDuration: 3 * 60 * 1000,
     teammateReminderDuration: 2500
   },
 
@@ -123,10 +123,10 @@ export const CONFIG = {
       // order: ['1P1G', '1P2G', '2P2G', '2P3G'], // Full experiment order
 
       numTrials: {
-        '1P1G': 1, // 3
-        '1P2G': 1, // 12
-        '2P2G': 1, // 8
-        '2P3G': 1, // 12
+        '1P1G': 2, // 3
+        '1P2G': 8, // 12
+        '2P2G': 4, // 8
+        '2P3G': 8, // 12
       }
     },
 
