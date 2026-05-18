@@ -21,8 +21,11 @@ export class TimelineManager {
     // Track whether we've already shown the partner-finding stage
     this.hasShownPartnerFindingStage = false;
     this.waitingTimes = []; // Store waiting time records for export
+    this.generatedParticipantId = null;
+    this.manualParticipantId = null;
     this.experimentData = {
       participantId: this.getParticipantId(),
+      childId: null,
       startTime: new Date().toISOString(),
       consentTime: null,
       experiments: {},
@@ -616,13 +619,24 @@ export class TimelineManager {
 
   showDobStage() {
     const currentYear = new Date().getFullYear();
+    const initialParticipantId = getParticipantIdFromUrl() || '';
+    const escapedParticipantId = String(initialParticipantId)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
     this.container.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8f9fa;padding:20px;">
         <div data-stage-focus="true" tabindex="-1" style="background:white;padding:36px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:640px;width:100%;text-align:center;">
           <h2 style="color:#333;margin:0 0 12px;font-size:30px;">Before we begin</h2>
-          <p style="font-size:18px;color:#333;line-height:1.5;margin:0 0 24px;">Please enter your date of birth.</p>
+          <p style="font-size:18px;color:#333;line-height:1.5;margin:0 0 24px;">Please enter the participant ID and date of birth.</p>
 
           <form id="dobForm" style="display:flex;flex-direction:column;gap:18px;align-items:stretch;">
+            <label style="font-weight:bold;color:#333;text-align:left;">
+              Participant ID
+              <input id="participantIdInput" required type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="32" placeholder="C001" value="${escapedParticipantId}" style="width:100%;box-sizing:border-box;margin-top:6px;padding:12px;border:1px solid #bbb;border-radius:6px;font-size:16px;">
+            </label>
+
             <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;text-align:left;">
               <label style="font-weight:bold;color:#333;">
                 Month
@@ -662,21 +676,32 @@ export class TimelineManager {
 
     form.addEventListener('submit', (event) => {
       event.preventDefault();
+      const participantId = String(document.getElementById('participantIdInput')?.value || '').trim();
       const year = Number(document.getElementById('dobYear')?.value);
       const month = Number(document.getElementById('dobMonth')?.value);
       const day = Number(document.getElementById('dobDay')?.value);
       const dob = `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const ageInfo = calculateAgeFromDob(dob, new Date());
 
+      if (!participantId) {
+        setError('Please enter a participant ID.');
+        return;
+      }
+      if (!/^[A-Za-z0-9_-]+$/.test(participantId)) {
+        setError('Participant ID can use letters, numbers, hyphen, or underscore.');
+        return;
+      }
       if (!ageInfo) {
         setError('Please enter a real date of birth that is not in the future.');
         return;
       }
 
       Object.assign(this.experimentData, ageInfo);
-      this.experimentData.participantId = this.getParticipantId();
+      this.setParticipantId(participantId);
       this.nextStage();
     });
+
+    document.getElementById('participantIdInput')?.focus();
   }
 
   showConsentStage() {
@@ -939,6 +964,8 @@ export class TimelineManager {
     if (!this.kidBackgroundMatchmakingStarted) {
       this.kidBackgroundMatchmakingStarted = true;
       const { eventId, stationId } = this.getKidSessionMetadata();
+      const participantId = this.getParticipantId();
+      const childId = this.experimentData.childId || participantId;
       this.experimentData.eventId = eventId;
       this.experimentData.stationId = stationId;
       this.experimentData.queueStartTime = new Date().toISOString();
@@ -947,6 +974,8 @@ export class TimelineManager {
         experimentType: this.getMainKidExperimentType(),
         eventId,
         stationId,
+        participantId,
+        childId,
         background: true
       });
     }
@@ -1249,7 +1278,14 @@ export class TimelineManager {
     };
 
     this.on('all-players-ready', allReadyHandler);
-    this.emit('kid-teammate-barrier-ready', { experimentType, experimentIndex, eventId, stationId });
+    this.emit('kid-teammate-barrier-ready', {
+      experimentType,
+      experimentIndex,
+      eventId,
+      stationId,
+      participantId: this.getParticipantId(),
+      childId: this.experimentData.childId || this.getParticipantId()
+    });
 
     hiddenSkipHandler = (event) => {
       if (event.code !== 'Enter' && event.key !== 'Enter') return;
@@ -2559,8 +2595,33 @@ export class TimelineManager {
     return 'P' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
   }
 
+  setParticipantId(participantId) {
+    const cleanParticipantId = String(participantId || '').trim();
+    if (!cleanParticipantId) return null;
+
+    this.manualParticipantId = cleanParticipantId;
+    if (this.experimentData) {
+      this.experimentData.participantId = cleanParticipantId;
+      this.experimentData.childId = cleanParticipantId;
+    }
+    return cleanParticipantId;
+  }
+
   getParticipantId() {
-    return getParticipantIdFromUrl() || this.generateParticipantId();
+    if (this.experimentData?.participantId) {
+      return this.experimentData.participantId;
+    }
+    if (this.manualParticipantId) {
+      return this.manualParticipantId;
+    }
+    const urlParticipantId = getParticipantIdFromUrl();
+    if (urlParticipantId) {
+      return urlParticipantId;
+    }
+    if (!this.generatedParticipantId) {
+      this.generatedParticipantId = this.generateParticipantId();
+    }
+    return this.generatedParticipantId;
   }
 
   generateCompletionCode() {

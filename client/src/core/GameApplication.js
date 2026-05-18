@@ -212,7 +212,8 @@ export class GameApplication {
       const joinExperimentType = data.experimentType || CONFIG?.kids?.mainExperimentType || experimentType;
       const eventId = data.eventId || CONFIG?.kids?.eventId || getKidEventIdFromUrl() || 'default';
       const stationId = data.stationId || CONFIG?.kids?.stationId || getKidStationIdFromUrl() || '';
-      const childId = getChildIdFromUrl() || getParticipantIdFromUrl() || null;
+      const participantId = data.participantId || this.timelineManager?.experimentData?.participantId || getParticipantIdFromUrl() || null;
+      const childId = data.childId || this.timelineManager?.experimentData?.childId || getChildIdFromUrl() || participantId || null;
       const joinKey = JSON.stringify({
         roomId: roomId || null,
         gameMode: 'human-human',
@@ -547,10 +548,11 @@ export class GameApplication {
       let childId = null;
       try {
         prolificPid = getProlificPidFromUrl();
-        childId = getChildIdFromUrl();
-        participantId = getParticipantIdFromUrl() || data.participantId || `participant_${Date.now()}`;
+        childId = data.childId || getChildIdFromUrl();
+        participantId = data.participantId || getParticipantIdFromUrl() || `participant_${Date.now()}`;
       } catch (_) {
         participantId = data.participantId || `participant_${Date.now()}`;
+        childId = data.childId || null;
       }
 
       // Determine room id (from runtime or payload)
