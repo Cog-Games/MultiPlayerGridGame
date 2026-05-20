@@ -48,6 +48,7 @@ export class GameApplication {
       enabled: false,
       partnerLastMoveTime: null,
       inactivityTimerId: null,
+      experimentType: null,
       inactivityTimeoutMs: CONFIG?.multiplayer?.inactivityFallback?.timeoutMs || 60000, // 1 minute
       checkIntervalMs: CONFIG?.multiplayer?.inactivityFallback?.checkIntervalMs || 5000 // Check every 5 seconds
     };
@@ -1066,6 +1067,14 @@ export class GameApplication {
     this.networkManager.on('player-disconnected', (data) => {
       console.log('Player disconnected:', data);
 
+      if (!this.shouldApplyPartnerFallbackNow()) {
+        console.log('Ignoring partner disconnect outside an active 2P game');
+        if (!this.useTimelineFlow) {
+          this.uiManager.updatePlayerList(data.players);
+        }
+        return;
+      }
+
       if (this.useTimelineFlow) {
         // Switch to AI partner and continue via timeline
         console.log('Partner disconnected during timeline flow - switching to AI');
@@ -1421,6 +1430,16 @@ export class GameApplication {
     return experimentType.startsWith('1P');
   }
 
+  isTwoPlayerExperimentState(gameState = null) {
+    const state = gameState || this.gameStateManager?.getCurrentState?.();
+    const experimentType = String(state?.experimentType || '');
+    return experimentType.includes('2P');
+  }
+
+  shouldApplyPartnerFallbackNow() {
+    return this.isTwoPlayerExperimentState();
+  }
+
   handleSinglePlayerLocalMove(direction) {
     const timestamp = Date.now();
     const moveResult = this.gameStateManager.processPlayerMove(1, direction, 0);
@@ -1592,6 +1611,8 @@ export class GameApplication {
       if (!hhSyncEnabled) return;
       const isHost = !!(typeof window !== 'undefined' && window.__IS_HOST__);
       const fromIdx = action.playerIndex;
+      if (fromIdx === this.playerIndex) return;
+      this.updatePartnerLastMoveTime();
       // Ignore proposed moves from a player who already reached a goal
       try {
         const state = this.gameStateManager?.getCurrentState?.();
@@ -1859,9 +1880,11 @@ export class GameApplication {
     console.log(`✅ AI fallback activated - Player${aiPlayerNumber} is now ${fallbackType}`);
   }
 
-  startInactivityTracking() {
+  startInactivityTracking(experimentType = null) {
     // Check if inactivity fallback is enabled
     const inactivityFallbackEnabled = CONFIG?.multiplayer?.inactivityFallback?.enabled !== false;
+    const trackingExperimentType = String(experimentType || this.gameStateManager?.getCurrentState?.()?.experimentType || '');
+    const isTwoPlayerGame = trackingExperimentType.includes('2P');
 
     // Only enable in human-human mode
     const isHumanHuman = CONFIG.game.players.player1.type === 'human' &&
@@ -1869,17 +1892,23 @@ export class GameApplication {
 
     console.log('🔍 startInactivityTracking called:');
     console.log('  - isHumanHuman:', isHumanHuman);
+    console.log('  - experimentType:', trackingExperimentType);
+    console.log('  - isTwoPlayerGame:', isTwoPlayerGame);
     console.log('  - inactivityFallbackEnabled:', inactivityFallbackEnabled);
     console.log('  - timeoutMs:', this._inactivityTracking.inactivityTimeoutMs);
     console.log('  - checkIntervalMs:', this._inactivityTracking.checkIntervalMs);
 
-    if (!isHumanHuman || !inactivityFallbackEnabled) {
+    if (!isHumanHuman || !isTwoPlayerGame || !inactivityFallbackEnabled) {
       if (!inactivityFallbackEnabled) {
         console.log('⚠️ Partner inactivity fallback is disabled in config');
+      }
+      if (!isTwoPlayerGame) {
+        console.log('⚠️ Not in a 2P game - inactivity fallback will not run for', trackingExperimentType || 'unknown');
       }
       if (!isHumanHuman) {
         console.log('⚠️ Not in human-human mode - P1:', CONFIG.game.players.player1.type, 'P2:', CONFIG.game.players.player2.type);
       }
+      this.stopInactivityTracking();
       return;
     }
 
@@ -1895,6 +1924,7 @@ export class GameApplication {
     // Now enable and initialize tracking
     this._inactivityTracking.enabled = true;
     this._inactivityTracking.partnerLastMoveTime = Date.now(); // Initialize with current time
+    this._inactivityTracking.experimentType = trackingExperimentType;
 
     // Set up periodic check for partner inactivity
     this._inactivityTracking.inactivityTimerId = setInterval(() => {
@@ -1910,6 +1940,7 @@ export class GameApplication {
       this._inactivityTracking.inactivityTimerId = null;
     }
     this._inactivityTracking.enabled = false;
+    this._inactivityTracking.experimentType = null;
     console.log('⏹️ Partner inactivity tracking stopped');
   }
 
@@ -1925,6 +1956,12 @@ export class GameApplication {
 
     if (!this._inactivityTracking.enabled || !this._inactivityTracking.partnerLastMoveTime) {
       console.log('⚠️ Inactivity check skipped - not enabled or no last move time');
+      return;
+    }
+
+    if (!this.isTwoPlayerExperimentState()) {
+      console.log('⚠️ Inactivity tracking stopped because current trial is not a 2P game');
+      this.stopInactivityTracking();
       return;
     }
 
@@ -2008,9 +2045,10 @@ export class GameApplication {
 
     if (isHumanHuman && experimentType && experimentType.includes('2P')) {
       console.log('🕐 Starting inactivity tracking for human-human trial');
-      this.startInactivityTracking();
+      this.startInactivityTracking(experimentType);
     } else {
       console.log('⚠️ Not starting inactivity tracking - isHumanHuman:', isHumanHuman, 'is2P:', experimentType?.includes('2P'));
+      this.stopInactivityTracking();
     }
 
     // Reset trial completion guard at the start of each trial

@@ -1160,11 +1160,14 @@ export class TimelineManager {
 
     const { eventId, stationId } = this.getKidSessionMetadata();
     const configuredWait = Number(CONFIG?.kids?.teammateWaitMaxDuration) || (2 * 60 * 1000);
-    const maxWaitMs = Math.max(1000, Math.min(configuredWait, 2 * 60 * 1000));
+    const configuredMinWait = Number(CONFIG?.kids?.teammateWaitMinDuration) || 10000;
+    const minWaitMs = Math.max(0, configuredMinWait);
+    const maxWaitMs = Math.max(minWaitMs, configuredWait);
     const waitingStartTime = Date.now();
     let finished = false;
     let countdownTimer = null;
     let timeoutId = null;
+    let minimumWaitTimer = null;
     let hiddenSkipHandler = null;
 
     this.kidTeammateWaitActive = true;
@@ -1236,45 +1239,63 @@ export class TimelineManager {
       this.stopKidWaitMinigame();
       if (countdownTimer) clearInterval(countdownTimer);
       if (timeoutId) clearTimeout(timeoutId);
+      if (minimumWaitTimer) clearTimeout(minimumWaitTimer);
       if (hiddenSkipHandler) document.removeEventListener('keydown', hiddenSkipHandler);
       this.off('all-players-ready', allReadyHandler);
     };
 
-    const finishWithFallback = (reason) => {
+    const finishAfterMinimumWait = (completeFinish) => {
       if (finished) return;
       finished = true;
-      cleanup();
 
-      const waitingEndTime = Date.now();
-      const waitingDuration = waitingEndTime - waitingStartTime;
-      const fallbackType = (CONFIG?.multiplayer?.fallbackAIType)
-        || GameConfigUtils.resolveKidCommittedAgentType?.()
-        || 'committedAgent';
-      const aiPlayerNumber = (this.playerIndex === 0) ? 2 : 1;
+      const runFinish = () => {
+        cleanup();
+        completeFinish();
+      };
 
-      this.recordWaitingTime(waitingStartTime, waitingEndTime, waitingDuration, reason, experimentType, experimentIndex);
-      this.recordKidMatchFallback(reason, fallbackType);
-      GameConfigUtils.setPlayerType(aiPlayerNumber, fallbackType);
-      this.gameMode = 'human-ai';
+      const remainingMinWait = minWaitMs - (Date.now() - waitingStartTime);
+      if (remainingMinWait > 0) {
+        const status = document.getElementById('kidWaitStatus');
+        if (status) status.textContent = 'Still looking for your teammate...';
+        minimumWaitTimer = setTimeout(runFinish, remainingMinWait);
+        return;
+      }
 
-      try { this.emit('kid-matchmaking-cancelled', { reason }); } catch (_) { /* noop */ }
-      try { this.emit('fallback-to-ai', { reason, stage: 'kid-teammate-wait', at: Date.now(), fallbackAIType: fallbackType }); } catch (_) { /* noop */ }
-      this.emit('ai-fallback-activated', { fallbackType, aiPlayerNumber });
-      this.showKidTeammateFoundReminder(() => this.nextStage());
+      runFinish();
+    };
+
+    const finishWithFallback = (reason) => {
+      finishAfterMinimumWait(() => {
+        const waitingEndTime = Date.now();
+        const waitingDuration = waitingEndTime - waitingStartTime;
+        const fallbackType = (CONFIG?.multiplayer?.fallbackAIType)
+          || GameConfigUtils.resolveKidCommittedAgentType?.()
+          || 'committedAgent';
+        const aiPlayerNumber = (this.playerIndex === 0) ? 2 : 1;
+
+        this.recordWaitingTime(waitingStartTime, waitingEndTime, waitingDuration, reason, experimentType, experimentIndex);
+        this.recordKidMatchFallback(reason, fallbackType);
+        GameConfigUtils.setPlayerType(aiPlayerNumber, fallbackType);
+        this.gameMode = 'human-ai';
+
+        try { this.emit('kid-matchmaking-cancelled', { reason }); } catch (_) { /* noop */ }
+        try { this.emit('fallback-to-ai', { reason, stage: 'kid-teammate-wait', at: Date.now(), fallbackAIType: fallbackType }); } catch (_) { /* noop */ }
+        this.emit('ai-fallback-activated', { fallbackType, aiPlayerNumber });
+        this.showKidTeammateFoundReminder(() => this.nextStage());
+      });
     };
 
     const allReadyHandler = (config) => {
       if (finished) return;
-      finished = true;
-      cleanup();
-
-      const waitingEndTime = Date.now();
-      const waitingDuration = waitingEndTime - waitingStartTime;
-      this.gameMode = 'human-human';
-      this.recordWaitingTime(waitingStartTime, waitingEndTime, waitingDuration, 'teammate_found', experimentType, experimentIndex);
-      this.recordKidMatchSuccess();
-      if (config?.gameMode) this.gameMode = config.gameMode;
-      this.showKidTeammateFoundReminder(() => this.nextStage());
+      finishAfterMinimumWait(() => {
+        const waitingEndTime = Date.now();
+        const waitingDuration = waitingEndTime - waitingStartTime;
+        this.gameMode = 'human-human';
+        this.recordWaitingTime(waitingStartTime, waitingEndTime, waitingDuration, 'teammate_found', experimentType, experimentIndex);
+        this.recordKidMatchSuccess();
+        if (config?.gameMode) this.gameMode = config.gameMode;
+        this.showKidTeammateFoundReminder(() => this.nextStage());
+      });
     };
 
     this.on('all-players-ready', allReadyHandler);
