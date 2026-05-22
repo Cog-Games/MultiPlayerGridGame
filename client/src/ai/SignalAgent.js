@@ -18,6 +18,7 @@ export class SignalAgent extends CommittedAgent {
     this.horizon = Math.max(1, Math.floor(options.horizon ?? 1));
     // Grid bounds for clipping rolled-out states (assumes square grid, 0-indexed positions).
     this.gridSize = Math.max(1, Math.floor(options.gridSize ?? 15));
+    this.useUnshapedJointRL = options.useUnshapedJointRL === true;
   }
 
   getAIAction(gameState, trialData, aiPlayerNumber = 2) {
@@ -137,7 +138,7 @@ export class SignalAgent extends CommittedAgent {
       const key = `${pos[0]},${pos[1]}|${g}`;
       let pol = policyCache.get(key);
       if (!pol) {
-        pol = this.rl.getJointActionProbabilities(pos, humanPos, [goals[g]]) || {};
+        pol = this._goalActionProbabilities(pos, humanPos, goals[g]);
         policyCache.set(key, pol);
       }
       return pol;
@@ -211,17 +212,17 @@ export class SignalAgent extends CommittedAgent {
     for (const k of Object.keys(probs)) probs[k] *= inv;
 
     const baseAtStart = {};
-    const startPol = this.rl.getJointActionProbabilities(aiPos, humanPos, [goals[targetGoalIdx]]) || {};
+    const startPol = this._goalActionProbabilities(aiPos, humanPos, goals[targetGoalIdx]);
     for (let a = 0; a < numActions; a++) {
       const k = `${ACTIONS[a][0]},${ACTIONS[a][1]}`;
       baseAtStart[k] = this._safeProb(startPol[k]);
     }
 
-    return { base: baseAtStart, revealed: null, probs, scoreKind: 'trajectory_logposterior', horizon: H };
+    return { base: baseAtStart, revealed: null, probs, scoreKind: 'trajectory_logposterior', horizon: H, jointPolicyKind: this._jointPolicyKind() };
   }
 
   _signalActionPolicy(aiPos, humanPos, goals, targetGoalIdx) {
-    const base = this.rl.getJointActionProbabilities(aiPos, humanPos, [goals[targetGoalIdx]]) || {};
+    const base = this._goalActionProbabilities(aiPos, humanPos, goals[targetGoalIdx]);
     const revealed = {};
     const unnormalized = {};
     const eps = (typeof this.eps === 'number' && this.eps > 0) ? this.eps : 1e-12;
@@ -257,7 +258,7 @@ export class SignalAgent extends CommittedAgent {
     }
 
     const probs = this._normalizeActionMap(unnormalized);
-    return { base, revealed, probs, scoreKind: this.scoreKind };
+    return { base, revealed, probs, scoreKind: this.scoreKind, jointPolicyKind: this._jointPolicyKind() };
   }
 
   _revealedPosteriorForAction(aiPos, humanPos, goals, actionKey) {
@@ -265,13 +266,51 @@ export class SignalAgent extends CommittedAgent {
     let denom = 0;
     for (let g = 0; g < goals.length; g++) {
       const prior = Math.max(this.eps, this._pIntent?.[g] ?? (1 / goals.length));
-      const probs = this.rl.getJointActionProbabilities(aiPos, humanPos, [goals[g]]) || {};
+      const probs = this._goalActionProbabilities(aiPos, humanPos, goals[g]);
       const likelihood = this._safeProb(probs[actionKey]);
       out[g] = prior * likelihood;
       denom += out[g];
     }
     if (!isFinite(denom) || denom <= 0) return new Array(goals.length).fill(1 / goals.length);
     return out.map(v => v / denom);
+  }
+
+  _goalActionProbabilities(aiPos, humanPos, goal) {
+    if (this.useUnshapedJointRL && typeof this.rl?.getUnshapedJointActionProbabilities === 'function') {
+      return this.rl.getUnshapedJointActionProbabilities(aiPos, humanPos, [goal]) || {};
+    }
+    return this.rl.getJointActionProbabilities(aiPos, humanPos, [goal]) || {};
+  }
+
+  _jointPolicyKind() {
+    return this.useUnshapedJointRL ? 'unshapedJointRL' : 'defaultJointRL';
+  }
+
+  _combinedWeights(goals, aiPos, humanPos) {
+    if (!this.useUnshapedJointRL || typeof this.rl?.getUnshapedJointSoftStateValue !== 'function') {
+      return super._combinedWeights(goals, aiPos, humanPos);
+    }
+    const posterior = this._pIntent || new Array(goals.length).fill(1 / Math.max(1, goals.length));
+    const values = goals.map(goal => this.rl.getUnshapedJointSoftStateValue(aiPos, humanPos, [goal]));
+    const finiteValues = values.filter(v => isFinite(v));
+    const minValue = finiteValues.length ? Math.min(...finiteValues) : 0;
+    const maxValue = finiteValues.length ? Math.max(...finiteValues) : 0;
+    const range = Math.max(this.eps, maxValue - minValue);
+    const scaled = values.map(value => {
+      if (!isFinite(value)) return -Infinity;
+      const normalized = (value - minValue) / range;
+      return this.beta * normalized;
+    });
+    const maxScaled = Math.max(...scaled.filter(v => isFinite(v)), 0);
+    const out = [];
+    for (let i = 0; i < goals.length; i++) {
+      const pi = posterior[i] ?? (1 / goals.length);
+      const euWeight = isFinite(scaled[i]) ? Math.exp(Math.max(-700, Math.min(700, scaled[i] - maxScaled))) : 0;
+      out[i] = euWeight * Math.pow(Math.max(this.eps, pi), this.lambda);
+    }
+    const sum = out.reduce((a, b) => a + (isFinite(b) ? b : 0), 0);
+    if (!isFinite(sum) || sum <= 0) return new Array(goals.length).fill(1 / goals.length);
+    return out.map(w => w / sum);
   }
 
   _safeProb(value) {
@@ -304,18 +343,21 @@ export class SignalAgent extends CommittedAgent {
         weights: goalWeights.slice(),
         baseActionProbabilities: { ...actionPolicy.base },
         revealedIntentions: actionPolicy.revealed,
-        actionProbabilities: { ...actionPolicy.probs }
+        actionProbabilities: { ...actionPolicy.probs },
+        jointPolicyKind: actionPolicy.jointPolicyKind || this._jointPolicyKind()
       };
       trialData.signalAgentSampledJointGoal = goalIdx;
       trialData.signalAgentSampledJointGoalPosterior = sample.posterior;
       trialData.signalAgentSampledJointGoalWeights = goalWeights.slice();
       trialData.signalAgentActionProbabilities = { ...actionPolicy.probs };
       trialData.signalAgentRevealedIntentions = actionPolicy.revealed;
+      trialData.signalAgentJointPolicyKind = sample.jointPolicyKind;
       trialData[`${playerPrefix}SampledJointGoal`] = goalIdx;
       trialData[`${playerPrefix}SampledJointGoalPosterior`] = sample.posterior;
       trialData[`${playerPrefix}SampledJointGoalWeights`] = goalWeights.slice();
       trialData[`${playerPrefix}ActionProbabilities`] = { ...actionPolicy.probs };
       trialData[`${playerPrefix}RevealedIntentions`] = actionPolicy.revealed;
+      trialData[`${playerPrefix}JointPolicyKind`] = sample.jointPolicyKind;
       const historyKey = `${playerPrefix}SampledJointGoalHistory`;
       if (!Array.isArray(trialData[historyKey])) trialData[historyKey] = [];
       trialData[historyKey].push(sample);

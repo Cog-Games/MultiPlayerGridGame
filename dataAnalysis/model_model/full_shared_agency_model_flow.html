@@ -202,7 +202,7 @@ footer {
 <body>
 <header>
   <h1>Full Shared Agency Model Flow</h1>
-  <p>A conceptual diagram for the shared-agency model family: start flexible with joint-RL, infer a latent joint goal, cross a confidence gate, then commit and optionally signal.</p>
+  <p>A conceptual diagram for the shared-agency model family: infer a latent joint goal, combine it with an unshaped JointRL value model, then act through a goal-conditioned or signaling policy.</p>
 </header>
 <main>
   <section class="panel">
@@ -247,9 +247,11 @@ footer {
             <li><strong>From trial start:</strong> sample from \(W_\lambda(g)\) at every step with an initial uniform prior.</li>
           </ul>
           <div class="math">\[\rho_t=\sigma(k(C_t-\tau))\]</div>
-          <div class="math">\[W_\lambda(g)\propto \exp(\beta EU_t(g))P_t(g)^\lambda\]</div>
+          <div class="math">\[W_\lambda(g)\propto \exp(3\widetilde V_g(s_t))P_t(g)^\lambda\]</div>
+          <div class="math">\[\widetilde V_g(s_t)=\frac{V_g(s_t)-\min_{g'}V_{g'}(s_t)}{\max_{g'}V_{g'}(s_t)-\min_{g'}V_{g'}(s_t)+\epsilon}\]</div>
+          <div class="math">\[R_g(s,a,s')=30\,\mathbf 1[\mathrm{both\ reach\ }g]-1\,\mathbf 1[\mathrm{not\ done}],\quad \gamma=.9\]</div>
           <div class="math">\[g_t\sim \mathrm{Categorical}(W_\lambda(g))\]</div>
-          <div class="zero-note"><strong>If \(\lambda=0\):</strong> posterior belief no longer biases goal sampling, so \(W_\lambda(g)\propto \exp(\beta EU_t(g))\). The agent chooses among goals only by current joint utility / distance.</div>
+          <div class="zero-note"><strong>If \(\lambda=0\):</strong> posterior belief no longer biases goal sampling, so \(W_\lambda(g)\propto \exp(3\widetilde V_g(s_t))\). The agent chooses among goals only by the unshaped JointRL value model.</div>
         </div>
         <div class="param">
           <strong>Free parameters 1–2</strong>
@@ -265,8 +267,8 @@ footer {
           <p>After selecting a joint goal, the agent can either follow the goal-conditioned joint policy or bias actions to make the goal more legible. There are two useful implementations.</p>
           <div class="math">\[P(g\mid a)\propto P(g)\pi_{\mathrm{base}}(a\mid s_t,g)\]</div>
           <p><strong>Approach A: RSA / log-posterior signaling.</strong> Theoretical soft bias toward actions that increase the listener posterior for the selected goal.</p>
-          <div class="math">\[\pi_{\mathrm{signal}}(a\mid g^*)\propto \pi_{\mathrm{joint}}(a\mid s_t,g^*)P_t(g^*\mid a)^\alpha\]</div>
-          <div class="zero-note"><strong>If \(\alpha=0\):</strong> the legibility term drops out, so \(\pi_{\mathrm{signal}}(a\mid g^*)=\pi_{\mathrm{joint}}(a\mid s_t,g^*)\). The agent acts efficiently toward the sampled goal without extra signaling pressure.</div>
+          <div class="math">\[\pi_{\mathrm{signal}}(a\mid g^*)\propto \pi_{\mathrm{base}}(a\mid s_t,g^*)P_t(g^*\mid a)^\alpha\]</div>
+          <div class="zero-note"><strong>If \(\alpha=0\):</strong> the legibility term drops out, so \(\pi_{\mathrm{signal}}(a\mid g^*)=\pi_{\mathrm{base}}(a\mid s_t,g^*)\). In the current shared-agency model, \(\pi_{\mathrm{base}}\) is the unshaped JointRL marginal action policy.</div>
           <p><strong>Approach B: Bernoulli mixture signaling.</strong> Recommended fitted implementation: usually take the committed action, but sometimes replace it with the most legible progress action.</p>
           <div class="math">\[a_{\mathrm{leg}}(g^*)=\arg\max_{a\in\mathcal A^+(g^*)}P(g^*\mid a)\]</div>
           <div class="math">\[\pi_{\mathrm{signal}}(a\mid g^*)=(1-p)\pi_{\mathrm{committed}}(a\mid g^*)+p\,\delta_{a_{\mathrm{leg}}(g^*)}(a)\]</div>
@@ -309,13 +311,13 @@ footer {
           <span class="chip lambda">\(\lambda\)</span>
           <h3>How strongly to commit</h3>
           <p>Controls how much posterior belief affects sampled joint-goal weights.</p>
-          <div class="math">\[W_\lambda(g)\propto \exp(\beta EU_t(g))P_t(g)^\lambda\]</div>
+          <div class="math">\[W_\lambda(g)\propto \exp(3\widetilde V_g(s_t))P_t(g)^\lambda\]</div>
         </div>
         <div class="component">
           <span class="chip alpha">\(\alpha\) or \(p\)</span>
           <h3>How strongly to signal</h3>
           <p>Controls how much action choice favors listener inference of the selected goal. Use \(\alpha\) for the RSA/log-posterior form, or \(p\) for the fitted mixture form.</p>
-          <div class="math">\[\pi_{\mathrm{RSA}}(a\mid g^*)\propto \pi_{\mathrm{joint}}(a\mid s_t,g^*)P_t(g^*\mid a)^\alpha\]</div>
+          <div class="math">\[\pi_{\mathrm{RSA}}(a\mid g^*)\propto \pi_{\mathrm{base}}(a\mid s_t,g^*)P_t(g^*\mid a)^\alpha\]</div>
           <div class="math">\[\pi_{\mathrm{mix}}(a\mid g^*)=(1-p)\pi_{\mathrm{committed}}(a\mid g^*)+p\,\delta_{a_{\mathrm{leg}}(g^*)}(a)\]</div>
         </div>
       </div>
@@ -346,7 +348,7 @@ footer {
           </tr>
           <tr>
             <td><strong>sampleJointGoalAndRSASignal_fromStart</strong><br><span class="badge">(shared-agency model)</span></td>
-            <td>Uses the same from-start posterior timing and goal sampling as <strong>sampleJointGoalAndSignal_fromStart</strong>, but replaces mixture signaling with the RSA/log-posterior action policy.</td>
+            <td>Uses the same from-start posterior timing, but replaces distance-based goal utility and RSA action likelihoods with the same unshaped JointRL reward/value model. The fitted report model uses lambda = 0.65 and RSA alpha = 4.25 at trial level.</td>
           </tr>
           <tr>
             <td><strong>samplePosteriorOnlyGoalAndSignal_fromStart</strong></td>
@@ -368,7 +370,7 @@ footer {
       <thead><tr><th>Question</th><th>Model component</th><th>Behavioral effect</th></tr></thead>
       <tbody>
         <tr><td>Has a joint goal been established?</td><td>Posterior confidence \(C_t\) and threshold \(\tau\)</td><td>Delays premature commitment when evidence is weak.</td></tr>
-        <tr><td>Which goal should the pair pursue?</td><td>Goal weights \(W_\lambda(g)\)</td><td>Trades off efficient joint utility and inferred shared intention.</td></tr>
+        <tr><td>Which goal should the pair pursue?</td><td>Goal weights \(W_\lambda(g)\)</td><td>Trades off unshaped JointRL value and inferred shared intention.</td></tr>
         <tr><td>Should the action reveal the goal?</td><td>Signaling strength \(\alpha\) or mixture probability \(p\)</td><td>Biases action choice toward moves that help the partner infer the selected goal.</td></tr>
       </tbody>
     </table>

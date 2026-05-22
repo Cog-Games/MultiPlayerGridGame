@@ -94,6 +94,7 @@ export class AlwaysSignalAgent extends SignalAgent {
         mixtureP: p,
         mixturePicked: useLeg ? 'legibility' : 'committed',
         legActionTargetPosterior: legPosteriorAtTarget,
+        jointPolicyKind: this._jointPolicyKind(),
         alwaysSignal: true,
         everyStepResampling: true
       };
@@ -101,12 +102,15 @@ export class AlwaysSignalAgent extends SignalAgent {
       trialData.alwaysSignalAgentSampledJointGoalPosterior = sample.posterior;
       trialData.alwaysSignalAgentSampledJointGoalWeights = goalWeights.slice();
       trialData.alwaysSignalAgentEveryStepResampling = true;
+      trialData.alwaysSignalAgentJointPolicyKind = sample.jointPolicyKind;
+      trialData.alwaysSignalAgentUnshapedJointRL = this.useUnshapedJointRL === true;
       trialData[`${playerPrefix}SampledJointGoal`] = targetGoalIdx;
       trialData[`${playerPrefix}SampledJointGoalPosterior`] = sample.posterior;
       trialData[`${playerPrefix}SampledJointGoalWeights`] = goalWeights.slice();
       trialData[`${playerPrefix}MixtureP`] = p;
       trialData[`${playerPrefix}MixturePicked`] = sample.mixturePicked;
       trialData[`${playerPrefix}LegActionTargetPosterior`] = legPosteriorAtTarget;
+      trialData[`${playerPrefix}JointPolicyKind`] = sample.jointPolicyKind;
       const historyKey = `${playerPrefix}SampledJointGoalHistory`;
       if (!Array.isArray(trialData[historyKey])) trialData[historyKey] = [];
       trialData[historyKey].push(sample);
@@ -126,6 +130,7 @@ export class AlwaysSignalAgent extends SignalAgent {
         baseActionProbabilities: { ...actionPolicy.base },
         revealedIntentions: actionPolicy.revealed,
         actionProbabilities: { ...actionPolicy.probs },
+        jointPolicyKind: actionPolicy.jointPolicyKind || this._jointPolicyKind(),
         alwaysSignal: true,
         everyStepResampling: true
       };
@@ -135,11 +140,14 @@ export class AlwaysSignalAgent extends SignalAgent {
       trialData.alwaysSignalAgentActionProbabilities = { ...actionPolicy.probs };
       trialData.alwaysSignalAgentRevealedIntentions = actionPolicy.revealed;
       trialData.alwaysSignalAgentEveryStepResampling = true;
+      trialData.alwaysSignalAgentJointPolicyKind = sample.jointPolicyKind;
+      trialData.alwaysSignalAgentUnshapedJointRL = this.useUnshapedJointRL === true;
       trialData[`${playerPrefix}SampledJointGoal`] = goalIdx;
       trialData[`${playerPrefix}SampledJointGoalPosterior`] = sample.posterior;
       trialData[`${playerPrefix}SampledJointGoalWeights`] = goalWeights.slice();
       trialData[`${playerPrefix}ActionProbabilities`] = { ...actionPolicy.probs };
       trialData[`${playerPrefix}RevealedIntentions`] = actionPolicy.revealed;
+      trialData[`${playerPrefix}JointPolicyKind`] = sample.jointPolicyKind;
       const historyKey = `${playerPrefix}SampledJointGoalHistory`;
       if (!Array.isArray(trialData[historyKey])) trialData[historyKey] = [];
       trialData[historyKey].push(sample);

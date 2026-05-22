@@ -174,6 +174,8 @@ def transition(pos: Tuple[int, int], action: Tuple[int, int]) -> Tuple[int, int]
 
 
 _ACTION_PROB_CACHE: Dict[Tuple[Tuple[int, int], Tuple[int, int], Tuple[Tuple[int, int], ...]], np.ndarray] = {}
+_UNSHAPED_ACTION_PROB_CACHE: Dict[Tuple[Tuple[int, int], Tuple[int, int], Tuple[Tuple[int, int], ...]], np.ndarray] = {}
+_UNSHAPED_SOFT_VALUE_CACHE: Dict[Tuple[Tuple[int, int], Tuple[int, int], Tuple[Tuple[int, int], ...]], float] = {}
 
 
 def action_probabilities(
@@ -225,6 +227,108 @@ def action_probabilities(
     own_probs /= np.sum(own_probs)
     _ACTION_PROB_CACHE[key] = own_probs
     return own_probs
+
+
+def unshaped_completion_value(
+    self_pos: Tuple[int, int],
+    other_pos: Tuple[int, int],
+    goal: Tuple[int, int],
+) -> float:
+    if self_pos == goal and other_pos == goal:
+        return 0.0
+    steps = max(manhattan(self_pos, goal), manhattan(other_pos, goal))
+    if steps <= 0:
+        return 0.0
+    final_discount = GAMMA ** max(0, steps - 1)
+    step_return = STEP_COST * (1 - final_discount) / max(EPS, 1 - GAMMA) if steps > 1 else 0.0
+    return float(step_return + final_discount * GOAL_REWARD)
+
+
+def unshaped_hard_value(
+    self_pos: Tuple[int, int],
+    other_pos: Tuple[int, int],
+    goals: Sequence[Tuple[int, int]],
+) -> float:
+    if not goals:
+        return 0.0
+    return float(max(unshaped_completion_value(self_pos, other_pos, goal) for goal in goals))
+
+
+def unshaped_q_values(
+    self_pos: Tuple[int, int],
+    other_pos: Tuple[int, int],
+    goals: Sequence[Tuple[int, int]],
+) -> np.ndarray:
+    goal_tuple = tuple(tuple(g) for g in goals)
+    goal_set = set(goal_tuple)
+    if self_pos == other_pos and self_pos in goal_set:
+        return np.zeros(len(ACTIONS) * len(ACTIONS), dtype=np.float64)
+
+    q_values: List[float] = []
+    for self_action in ACTIONS:
+        self_next = self_pos if self_pos in goal_set else transition(self_pos, self_action)
+        for other_action in ACTIONS:
+            other_next = other_pos if other_pos in goal_set else transition(other_pos, other_action)
+            done = self_next == other_next and self_next in goal_set
+            reward = GOAL_REWARD if done else STEP_COST
+            future_value = 0.0 if done else GAMMA * unshaped_hard_value(self_next, other_next, goals)
+            q_values.append(reward + future_value)
+    return np.asarray(q_values, dtype=np.float64)
+
+
+def unshaped_action_probabilities(
+    self_pos: Tuple[int, int],
+    other_pos: Tuple[int, int],
+    goals: Sequence[Tuple[int, int]],
+) -> np.ndarray:
+    goal_tuple = tuple(tuple(g) for g in goals)
+    key = (tuple(self_pos), tuple(other_pos), goal_tuple)
+    cached = _UNSHAPED_ACTION_PROB_CACHE.get(key)
+    if cached is not None:
+        return cached
+
+    q = unshaped_q_values(self_pos, other_pos, goals)
+    if not np.any(np.isfinite(q)) or np.allclose(q, 0.0):
+        own_probs = np.full(len(ACTIONS), 1.0 / len(ACTIONS), dtype=np.float64)
+        _UNSHAPED_ACTION_PROB_CACHE[key] = own_probs
+        return own_probs
+
+    prefs = np.exp(np.clip(SOFTMAX_BETA * (q - np.max(q)), -700, 700))
+    joint_probs = prefs / max(EPS, float(np.sum(prefs)))
+    own_probs = np.asarray(
+        [
+            np.sum(joint_probs[i * len(ACTIONS) : (i + 1) * len(ACTIONS)])
+            for i in range(len(ACTIONS))
+        ],
+        dtype=np.float64,
+    )
+    own_probs = np.maximum(EPS, own_probs)
+    own_probs /= np.sum(own_probs)
+    _UNSHAPED_ACTION_PROB_CACHE[key] = own_probs
+    return own_probs
+
+
+def unshaped_soft_state_value(
+    self_pos: Tuple[int, int],
+    other_pos: Tuple[int, int],
+    goals: Sequence[Tuple[int, int]],
+) -> float:
+    goal_tuple = tuple(tuple(g) for g in goals)
+    key = (tuple(self_pos), tuple(other_pos), goal_tuple)
+    cached = _UNSHAPED_SOFT_VALUE_CACHE.get(key)
+    if cached is not None:
+        return cached
+    if self_pos == other_pos and self_pos in set(goal_tuple):
+        _UNSHAPED_SOFT_VALUE_CACHE[key] = 0.0
+        return 0.0
+    q = unshaped_q_values(self_pos, other_pos, goals)
+    if not np.any(np.isfinite(q)):
+        _UNSHAPED_SOFT_VALUE_CACHE[key] = 0.0
+        return 0.0
+    max_q = float(np.max(q))
+    value = max_q + math.log(max(EPS, float(np.sum(np.exp(np.clip(SOFTMAX_BETA * (q - max_q), -700, 700)))))) / SOFTMAX_BETA
+    _UNSHAPED_SOFT_VALUE_CACHE[key] = float(value)
+    return float(value)
 
 
 def normalize(posterior: np.ndarray) -> np.ndarray:
@@ -284,6 +388,10 @@ def compute_eu(self_pos: Tuple[int, int], other_pos: Tuple[int, int], goals: Seq
     return np.asarray([-(manhattan(self_pos, g) + manhattan(other_pos, g)) for g in goals], dtype=np.float64)
 
 
+def compute_unshaped_values(self_pos: Tuple[int, int], other_pos: Tuple[int, int], goals: Sequence[Tuple[int, int]]) -> np.ndarray:
+    return np.asarray([unshaped_soft_state_value(self_pos, other_pos, [goal]) for goal in goals], dtype=np.float64)
+
+
 def revealed_posterior(posterior: np.ndarray, by_goal_probs: np.ndarray, action_idx: int) -> np.ndarray:
     numer = posterior * by_goal_probs[:, action_idx]
     total = float(np.sum(numer))
@@ -324,6 +432,9 @@ def build_observations(rows: Sequence[Dict[str, Any]], scope: str) -> List[StepO
     observations: List[StepObs] = []
     use_committed_resize = scope in {"committed", "signal"}
     resize_fn = resize_committed if use_committed_resize else resize_always
+    use_unshaped_joint_rl = scope == "always_signal_rsa"
+    prob_fn = unshaped_action_probabilities if use_unshaped_joint_rl else action_probabilities
+    value_fn = compute_unshaped_values if use_unshaped_joint_rl else compute_eu
 
     for row in rows:
         if row.get("experimentType") != "2P3G":
@@ -368,11 +479,11 @@ def build_observations(rows: Sequence[Dict[str, Any]], scope: str) -> List[StepO
                     self_pos = self_traj[step]
                     other_pos = other_traj[step]
                     by_goal = np.vstack([
-                        action_probabilities(self_pos, other_pos, [goal])
+                        prob_fn(self_pos, other_pos, [goal])
                         for goal in goals
                     ])
-                    all_probs = action_probabilities(self_pos, other_pos, goals)
-                    eu = compute_eu(self_pos, other_pos, goals)
+                    all_probs = prob_fn(self_pos, other_pos, goals)
+                    eu = value_fn(self_pos, other_pos, goals)
                     leg = legible_indicator_for_obs(self_pos, goals, posterior, by_goal, observed_idx)
                     observations.append(
                         StepObs(
@@ -400,7 +511,7 @@ def build_observations(rows: Sequence[Dict[str, Any]], scope: str) -> List[StepO
                 if action in ACTION_TO_INDEX:
                     idx = ACTION_TO_INDEX[action]
                     likes = np.asarray([
-                        action_probabilities(p1_traj[step], p2_traj[step], [goal])[idx]
+                        prob_fn(p1_traj[step], p2_traj[step], [goal])[idx]
                         for goal in goals
                     ])
                     posterior *= likes
@@ -409,7 +520,7 @@ def build_observations(rows: Sequence[Dict[str, Any]], scope: str) -> List[StepO
                 if action in ACTION_TO_INDEX:
                     idx = ACTION_TO_INDEX[action]
                     likes = np.asarray([
-                        action_probabilities(p2_traj[step], p1_traj[step], [goal])[idx]
+                        prob_fn(p2_traj[step], p1_traj[step], [goal])[idx]
                         for goal in goals
                     ])
                     posterior *= likes
@@ -419,7 +530,18 @@ def build_observations(rows: Sequence[Dict[str, Any]], scope: str) -> List[StepO
 
 
 def goal_weights(obs: StepObs, lambda_value: float) -> np.ndarray:
-    scaled = GOAL_WEIGHT_BETA * obs.eu
+    if obs.model_scope == "always_signal_rsa":
+        finite = obs.eu[np.isfinite(obs.eu)]
+        min_value = float(np.min(finite)) if finite.size else 0.0
+        max_value = float(np.max(finite)) if finite.size else 0.0
+        value_range = max(EPS, max_value - min_value)
+        normalized_value = np.asarray(
+            [(value - min_value) / value_range if math.isfinite(float(value)) else -np.inf for value in obs.eu],
+            dtype=np.float64,
+        )
+        scaled = GOAL_WEIGHT_BETA * normalized_value
+    else:
+        scaled = GOAL_WEIGHT_BETA * obs.eu
     max_scaled = float(np.max(scaled[np.isfinite(scaled)])) if np.any(np.isfinite(scaled)) else 0.0
     eu_weight = np.exp(np.clip(scaled - max_scaled, -700, 700))
     posterior_weight = np.power(np.maximum(EPS, obs.posterior), lambda_value)
@@ -677,7 +799,7 @@ def expected_raw_path(model: str, params: Dict[str, Any], sessions: int, output_
         suffix = f"beta_3_lambda_{fmt(params['lambda'])}_alpha_{fmt(params['p_signal'])}_sessions_0_to_{sessions - 1}"
         return raw_dir / f"always_signal_vs_always_signal_2p3g_raw_trials_{suffix}.json"
     if model == "always_signal_rsa":
-        raw_dir = PROJECT_ROOT / "dataAnalysis" / "raw_data" / "model_model_simulations" / "signal_agent" / "from_start_rsa_step_level_fit_comparison"
+        raw_dir = PROJECT_ROOT / "dataAnalysis" / "raw_data" / "model_model_simulations" / "signal_agent" / "from_start_rsa_unshaped_jointrl_step_level_fit_comparison"
         suffix = f"beta_3_lambda_{fmt(params['lambda'])}_alpha_{fmt(params['alpha'])}_sessions_0_to_{sessions - 1}"
         return raw_dir / f"always_signal_vs_always_signal_2p3g_raw_trials_{suffix}.json"
     if model == "posterior_only_signal":
@@ -763,8 +885,10 @@ def run_simulations(params: Dict[str, Dict[str, Any]], sessions: int, trials: in
             "--lambda", str(params["sampleJointGoalAndRSASignal_fromStart"]["lambda"]),
             "--alpha", str(params["sampleJointGoalAndRSASignal_fromStart"]["alpha"]),
             "--beta", "3", "--score", "logposterior", "--horizon", "1",
+            "--unshaped-joint-rl",
+            "--compact-diagnostics",
             "--output-dir", str(always_signal_rsa_dir),
-            "--raw-output-dir", str(PROJECT_ROOT / "dataAnalysis" / "raw_data" / "model_model_simulations" / "signal_agent" / "from_start_rsa_step_level_fit_comparison"),
+            "--raw-output-dir", str(PROJECT_ROOT / "dataAnalysis" / "raw_data" / "model_model_simulations" / "signal_agent" / "from_start_rsa_unshaped_jointrl_step_level_fit_comparison"),
         ],
         raw if reuse else None,
     )
@@ -1016,7 +1140,7 @@ def write_html(params: Dict[str, Dict[str, Any]], fit_plots: Dict[str, Path], lo
         "sampleJointGoalAndSignal_afterNewGoal": "Same post-new-goal joint-goal sampler plus a Bernoulli mixture signaling policy.",
         "sampleJointGoal_fromStart": "Commitment model is active from trial start; new goals are added by posterior resizing.",
         "sampleJointGoalAndSignal_fromStart": "Always-on posterior timing plus the Bernoulli mixture signaling policy.",
-        "sampleJointGoalAndRSASignal_fromStart": "Always-on posterior timing plus an RSA/log-posterior signaling policy.",
+        "sampleJointGoalAndRSASignal_fromStart": "Always-on posterior timing plus unshaped JointRL value-based goal selection and an RSA/log-posterior signaling policy.",
         "samplePosteriorOnlyGoalAndSignal_fromStart": "Always-on posterior timing plus the Bernoulli mixture signaling policy, with the EU term removed from goal selection.",
         "TwoStageSignalAgent_sigmoidThreshold": "Always monitors joint-goal posterior and mixes early joint-RL with late committed-signaling policy via a sigmoid gate.",
     }
@@ -1039,8 +1163,10 @@ def write_html(params: Dict[str, Dict[str, Any]], fit_plots: Dict[str, Path], lo
         """,
         "sampleJointGoalAndRSASignal_fromStart": r"""
           <div class="eq">\[P_0(g)=1/|\mathcal G_0|,\quad P_t(g_{\mathrm{new}})=1/|\mathcal G_t|\]</div>
-          <div class="eq">\[W_\lambda(g)\propto \exp(3\,EU_t(g))P_t(g)^\lambda\]</div>
-          <div class="eq">\[\pi_{\mathrm{RSA}}(a\mid g)\propto \pi_{\mathrm{joint}}(a\mid s_t,\{g\})P_t(g\mid a)^\alpha\]</div>
+          <div class="eq">\[\widetilde V_g(s_t)=\frac{V_g(s_t)-\min_{g'}V_{g'}(s_t)}{\max_{g'}V_{g'}(s_t)-\min_{g'}V_{g'}(s_t)+\epsilon}\]</div>
+          <div class="eq">\[W_\lambda(g)\propto \exp(3\,\widetilde V_g(s_t))P_t(g)^\lambda\]</div>
+          <div class="eq">\[\pi_{\mathrm{RSA}}(a\mid g)\propto \pi_{\mathrm{base}}(a\mid s_t,g)P_t(g\mid a)^\alpha\]</div>
+          <div class="eq">\[R(s,a,s')=\mathbf 1[\mathrm{both\ at\ }g]30-\mathbf 1[\mathrm{not\ done}]1,\quad \gamma=.9\]</div>
           <div class="eq">\[\pi(a_t)=\sum_g W_\lambda(g)\pi_{\mathrm{RSA}}(a_t\mid g)\]</div>
         """,
         "samplePosteriorOnlyGoalAndSignal_fromStart": r"""
@@ -1174,7 +1300,7 @@ def main() -> None:
     always_obs = build_observations(rows, "always")
     signal_obs = build_observations(rows, "signal")
     always_signal_obs = build_observations(rows, "always_signal")
-    always_signal_rsa_obs = build_observations(rows, "always_signal")
+    always_signal_rsa_obs = build_observations(rows, "always_signal_rsa")
     posterior_only_signal_obs = build_observations(rows, "posterior_only_signal")
     two_stage_obs = build_observations(rows, "two_stage")
 
@@ -1239,7 +1365,7 @@ def main() -> None:
             "negative_log_likelihood": float(always_signal_rsa_fit["negative_log_likelihood"]),
             "step_observations": len(always_signal_rsa_obs),
             "evaluated_settings": int(always_signal_rsa_grid.shape[0]),
-            "setting": f"beta=3.0, lambda={always_signal_rsa_fit['lambda']:.3g}, RSA alpha={always_signal_rsa_fit['alpha']:.3g} from all-step adaptive RSA action likelihood",
+            "setting": f"unshaped JointRL beta=3.0, lambda={always_signal_rsa_fit['lambda']:.3g}, RSA alpha={always_signal_rsa_fit['alpha']:.3g} from all-step adaptive RSA action likelihood",
         },
         "samplePosteriorOnlyGoalAndSignal_fromStart": {
             "lambda": float(posterior_only_signal_fit["lambda"]),

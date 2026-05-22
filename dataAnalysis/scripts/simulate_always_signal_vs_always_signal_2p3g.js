@@ -27,6 +27,8 @@ function parseArgs(argv) {
     beta: 3.0,
     score: 'logposterior',
     horizon: 1,
+    unshapedJointRL: false,
+    compactDiagnostics: false,
     outputDir: DEFAULT_OUTPUT_DIR,
     rawOutputDir: DEFAULT_RAW_OUTPUT_DIR
   };
@@ -41,6 +43,9 @@ function parseArgs(argv) {
     else if (arg === '--beta' && argv[i + 1]) out.beta = Number(argv[++i]);
     else if (arg === '--score' && argv[i + 1]) out.score = String(argv[++i]);
     else if (arg === '--horizon' && argv[i + 1]) out.horizon = Number(argv[++i]);
+    else if (arg === '--unshaped-joint-rl') out.unshapedJointRL = true;
+    else if (arg === '--no-unshaped-joint-rl') out.unshapedJointRL = false;
+    else if (arg === '--compact-diagnostics') out.compactDiagnostics = true;
     else if (arg === '--output-dir' && argv[i + 1]) out.outputDir = argv[++i];
     else if (arg === '--raw-output-dir' && argv[i + 1]) out.rawOutputDir = argv[++i];
   }
@@ -220,7 +225,22 @@ function summarizeTrial(trialData, mapId, sessionIndex) {
   };
 }
 
-function buildRawTrialRecord(trialData, mapId, sessionIndex, design) {
+function compactSignalHistory(history, enabled) {
+  if (!enabled || !Array.isArray(history)) return history;
+  return history.slice(-3).map(sample => ({
+    step: sample?.step,
+    goal: sample?.goal,
+    posterior: sample?.posterior,
+    weights: sample?.weights,
+    actionProbabilities: sample?.actionProbabilities,
+    jointPolicyKind: sample?.jointPolicyKind,
+    alwaysSignal: sample?.alwaysSignal,
+    everyStepResampling: sample?.everyStepResampling
+  }));
+}
+
+function buildRawTrialRecord(trialData, mapId, sessionIndex, design, options = {}) {
+  const compactDiagnostics = options.compactDiagnostics === true;
   const initialGoals = Array.isArray(trialData.initialGoalPositions) ? trialData.initialGoalPositions : [];
   const target1 = Array.isArray(design?.target1) ? [...design.target1] : (Array.isArray(initialGoals[0]) ? [...initialGoals[0]] : null);
   const target2 = Array.isArray(design?.target2) ? [...design.target2] : (Array.isArray(initialGoals[1]) ? [...initialGoals[1]] : null);
@@ -247,14 +267,18 @@ function buildRawTrialRecord(trialData, mapId, sessionIndex, design) {
     alwaysSignalAgentPlayer2SampledJointGoal: trialData.alwaysSignalAgentPlayer2SampledJointGoal,
     alwaysSignalAgentPlayer1SampledJointGoalWeights: trialData.alwaysSignalAgentPlayer1SampledJointGoalWeights,
     alwaysSignalAgentPlayer2SampledJointGoalWeights: trialData.alwaysSignalAgentPlayer2SampledJointGoalWeights,
-    alwaysSignalAgentPlayer1SampledJointGoalHistory: trialData.alwaysSignalAgentPlayer1SampledJointGoalHistory,
-    alwaysSignalAgentPlayer2SampledJointGoalHistory: trialData.alwaysSignalAgentPlayer2SampledJointGoalHistory,
+    alwaysSignalAgentPlayer1SampledJointGoalHistory: compactSignalHistory(trialData.alwaysSignalAgentPlayer1SampledJointGoalHistory, compactDiagnostics),
+    alwaysSignalAgentPlayer2SampledJointGoalHistory: compactSignalHistory(trialData.alwaysSignalAgentPlayer2SampledJointGoalHistory, compactDiagnostics),
     alwaysSignalAgentActionProbabilities: trialData.alwaysSignalAgentActionProbabilities,
     alwaysSignalAgentRevealedIntentions: trialData.alwaysSignalAgentRevealedIntentions,
     alwaysSignalAgentPlayer1ActionProbabilities: trialData.alwaysSignalAgentPlayer1ActionProbabilities,
     alwaysSignalAgentPlayer2ActionProbabilities: trialData.alwaysSignalAgentPlayer2ActionProbabilities,
     alwaysSignalAgentPlayer1RevealedIntentions: trialData.alwaysSignalAgentPlayer1RevealedIntentions,
     alwaysSignalAgentPlayer2RevealedIntentions: trialData.alwaysSignalAgentPlayer2RevealedIntentions,
+    alwaysSignalAgentJointPolicyKind: trialData.alwaysSignalAgentJointPolicyKind,
+    alwaysSignalAgentUnshapedJointRL: trialData.alwaysSignalAgentUnshapedJointRL,
+    alwaysSignalAgentPlayer1JointPolicyKind: trialData.alwaysSignalAgentPlayer1JointPolicyKind,
+    alwaysSignalAgentPlayer2JointPolicyKind: trialData.alwaysSignalAgentPlayer2JointPolicyKind,
     alwaysSignalAgentPlayer1MixtureP: trialData.alwaysSignalAgentPlayer1MixtureP,
     alwaysSignalAgentPlayer2MixtureP: trialData.alwaysSignalAgentPlayer2MixtureP,
     alwaysSignalAgentPlayer1MixturePicked: trialData.alwaysSignalAgentPlayer1MixturePicked,
@@ -327,7 +351,7 @@ function computeSummary(trials, meta) {
   };
 }
 
-function runSimulation({ sessions, trialsPerSession, seed, sessionOffset, alpha, lambda, beta, score, horizon }) {
+function runSimulation({ sessions, trialsPerSession, seed, sessionOffset, alpha, lambda, beta, score, horizon, unshapedJointRL, compactDiagnostics }) {
   const originalPlayers = {
     player1: CONFIG.game.players.player1.type,
     player2: CONFIG.game.players.player2.type
@@ -341,7 +365,7 @@ function runSimulation({ sessions, trialsPerSession, seed, sessionOffset, alpha,
   CONFIG.game.agent.type = 'joint';
   CONFIG.game.experiments.order = ['2P3G'];
   CONFIG.game.experiments.numTrials['2P3G'] = trialsPerSession;
-  CONFIG.game.agent.signal = { alpha, lambda, beta, score, horizon };
+  CONFIG.game.agent.signal = { alpha, lambda, beta, score, horizon, unshapedJointRL };
 
   try {
     const maps = loadMapsFor2P3G().slice(0, trialsPerSession);
@@ -360,8 +384,8 @@ function runSimulation({ sessions, trialsPerSession, seed, sessionOffset, alpha,
         withSeededRandom(sessionSeed, () => {
           const gameStateManager = new GameStateManager();
           const sharedRl = new RLAgent();
-          const agent1 = new AlwaysSignalAgent({ rlAgent: sharedRl, alpha, lambda, beta, score, horizon });
-          const agent2 = new AlwaysSignalAgent({ rlAgent: sharedRl, alpha, lambda, beta, score, horizon });
+          const agent1 = new AlwaysSignalAgent({ rlAgent: sharedRl, alpha, lambda, beta, score, horizon, useUnshapedJointRL: unshapedJointRL });
+          const agent2 = new AlwaysSignalAgent({ rlAgent: sharedRl, alpha, lambda, beta, score, horizon, useUnshapedJointRL: unshapedJointRL });
 
           for (let trialIndex = 0; trialIndex < trialsPerSession; trialIndex++) {
             const { mapId, design } = maps[trialIndex];
@@ -387,7 +411,7 @@ function runSimulation({ sessions, trialsPerSession, seed, sessionOffset, alpha,
             gameStateManager.finalizeTrial(success);
             const finalizedTrial = gameStateManager.getExperimentData().allTrialsData.at(-1);
             trials.push(summarizeTrial(finalizedTrial, mapId, sessionIndex));
-            rawTrials.push(buildRawTrialRecord(finalizedTrial, mapId, sessionIndex, design));
+            rawTrials.push(buildRawTrialRecord(finalizedTrial, mapId, sessionIndex, design, { compactDiagnostics }));
           }
         });
       }
@@ -404,6 +428,9 @@ function runSimulation({ sessions, trialsPerSession, seed, sessionOffset, alpha,
           beta,
           score,
           horizon,
+          unshapedJointRL,
+          compactDiagnostics,
+          jointValueModel: unshapedJointRL ? 'unshapedJointRL(goalReward=30,stepCost=-1,gamma=0.9,softmaxBeta=3,proximityRewardWeight=0)' : 'defaultJointRL',
           agentType: 'alwaysSignalAgent',
           mapSelection: 'first_trials_per_session_sorted_maps_from_MapsFor2P3G'
         }),
@@ -421,8 +448,8 @@ function runSimulation({ sessions, trialsPerSession, seed, sessionOffset, alpha,
 }
 
 function main() {
-  const { sessions, trialsPerSession, seed, sessionOffset, alpha, lambda, beta, score, horizon, outputDir: outputDirArg, rawOutputDir: rawOutputDirArg } = parseArgs(process.argv.slice(2));
-  const result = runSimulation({ sessions, trialsPerSession, seed, sessionOffset, alpha, lambda, beta, score, horizon });
+  const { sessions, trialsPerSession, seed, sessionOffset, alpha, lambda, beta, score, horizon, unshapedJointRL, compactDiagnostics, outputDir: outputDirArg, rawOutputDir: rawOutputDirArg } = parseArgs(process.argv.slice(2));
+  const result = runSimulation({ sessions, trialsPerSession, seed, sessionOffset, alpha, lambda, beta, score, horizon, unshapedJointRL, compactDiagnostics });
 
   const outputDir = path.resolve(outputDirArg);
   const rawOutputDir = path.resolve(rawOutputDirArg);

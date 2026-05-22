@@ -35,7 +35,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 HUMAN_RAW = PROJECT_ROOT / "dataAnalysis" / "raw_data" / "human" / "equal_to_both_agent_human_comparison" / "human_human_pure_unique_2p3g_raw_trials.json"
 SIM_SCRIPT = PROJECT_ROOT / "dataAnalysis" / "scripts" / "simulate_always_signal_vs_always_signal_2p3g.js"
 DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "dataAnalysis" / "model_model" / "signal_agent" / "outputs" / "signal_agent_from_start_rsa_lambda_alpha_fit"
-DEFAULT_RAW_DIR = PROJECT_ROOT / "dataAnalysis" / "raw_data" / "model_model_simulations" / "signal_agent" / "from_start_rsa_lambda_alpha_fit"
+DEFAULT_RAW_DIR = PROJECT_ROOT / "dataAnalysis" / "raw_data" / "model_model_simulations" / "signal_agent" / "from_start_rsa_unshaped_jointrl_lambda_alpha_fit"
 
 COARSE_LAMBDAS = [0.0, 0.05, 0.1, 0.15, 0.3, 0.5, 1.0]
 COARSE_ALPHAS = [0.0, 0.5, 1.0, 2.0, 3.0, 5.0, 8.0]
@@ -113,6 +113,8 @@ def run_simulation(args: argparse.Namespace, lambda_value: float, alpha: float) 
         "--beta", str(args.beta),
         "--score", args.score,
         "--horizon", str(args.horizon),
+        "--unshaped-joint-rl",
+        "--compact-diagnostics",
         "--output-dir", str(args.output_dir / "simulations"),
         "--raw-output-dir", str(args.raw_output_dir),
     ]
@@ -267,7 +269,7 @@ def write_notebook(output_dir: Path, best_row: Dict[str, Any]) -> Path:
             "source": [
                 "# sampleJointGoalAndRSASignal_fromStart (shared-agency model) Lambda x Alpha Fit\n",
                 "\n",
-                "Always-on posterior timing with RSA/log-posterior SignalAgent action policy.\n",
+                "Always-on posterior timing with unshaped JointRL goal values and RSA/log-posterior SignalAgent action policy.\n",
                 f"Best setting: lambda = {float(best_row['lambda']):g}, alpha = {float(best_row['alpha']):g}.\n",
             ],
         },
@@ -448,6 +450,14 @@ def main() -> None:
     summary = {
         "model": MODEL,
         "implementation": "AlwaysSignalAgent",
+        "joint_value_model": "unshaped JointRL",
+        "reward_parameters": {
+            "goalReward": 30,
+            "stepCost": -1,
+            "gamma": 0.9,
+            "softmaxBeta": 3.0,
+            "proximityRewardWeight": 0.0,
+        },
         "score": args.score,
         "horizon": int(args.horizon),
         "fit_target": "trial/player-level commitment + signalingMove binomial NLL by distance condition",

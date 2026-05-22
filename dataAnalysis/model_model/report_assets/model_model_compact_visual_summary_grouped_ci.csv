@@ -64,21 +64,21 @@ equal_to_both,Equal-to-Both only,"sampleJointGoalAndSignal_fromStart
 equal_to_both,Equal-to-Both only,"sampleJointGoalAndSignal_fromStart
 (lambda=0.2, p=0.4375)",Signaling Move (%),60.555555555555564,8.030496903612939,60,sampleJointGoalAndSignal_fromStart
 average,Average all 2P3G,"sampleJointGoalAndRSASignal_fromStart (shared-agency model)
-(lambda=0.325, alpha=7.25)",Success Rate (%),94.16666666666667,2.36886735953067,30,sampleJointGoalAndRSASignal_fromStart
+(lambda=0.65, alpha=4.25)",Success Rate (%),93.33333333333334,2.4010108556587286,30,sampleJointGoalAndRSASignal_fromStart
 average,Average all 2P3G,"sampleJointGoalAndRSASignal_fromStart (shared-agency model)
-(lambda=0.325, alpha=7.25)",Coordination Efficiency (%),89.41538657877258,1.0343468140146954,60,sampleJointGoalAndRSASignal_fromStart
+(lambda=0.65, alpha=4.25)",Coordination Efficiency (%),89.39990562166561,0.8592131452907457,60,sampleJointGoalAndRSASignal_fromStart
 average,Average all 2P3G,"sampleJointGoalAndRSASignal_fromStart (shared-agency model)
-(lambda=0.325, alpha=7.25)",Commitment (%),82.85185185185185,4.185536180876093,30,sampleJointGoalAndRSASignal_fromStart
+(lambda=0.65, alpha=4.25)",Commitment (%),90.9424603174603,2.9860812912467525,30,sampleJointGoalAndRSASignal_fromStart
 average,Average all 2P3G,"sampleJointGoalAndRSASignal_fromStart (shared-agency model)
-(lambda=0.325, alpha=7.25)",Signaling Move (%),41.89947089947089,4.597612988110261,60,sampleJointGoalAndRSASignal_fromStart
+(lambda=0.65, alpha=4.25)",Signaling Move (%),42.14285714285714,4.196411884810872,60,sampleJointGoalAndRSASignal_fromStart
 equal_to_both,Equal-to-Both only,"sampleJointGoalAndRSASignal_fromStart (shared-agency model)
-(lambda=0.325, alpha=7.25)",Success Rate (%),100.0,0.0,30,sampleJointGoalAndRSASignal_fromStart
+(lambda=0.65, alpha=4.25)",Success Rate (%),97.77777777777777,3.0262762982402585,30,sampleJointGoalAndRSASignal_fromStart
 equal_to_both,Equal-to-Both only,"sampleJointGoalAndRSASignal_fromStart (shared-agency model)
-(lambda=0.325, alpha=7.25)",Coordination Efficiency (%),99.41931782209559,0.47668442729190513,54,sampleJointGoalAndRSASignal_fromStart
+(lambda=0.65, alpha=4.25)",Coordination Efficiency (%),99.56857031857031,0.36662207366843463,60,sampleJointGoalAndRSASignal_fromStart
 equal_to_both,Equal-to-Both only,"sampleJointGoalAndRSASignal_fromStart (shared-agency model)
-(lambda=0.325, alpha=7.25)",Commitment (%),96.29629629629629,7.259259259259259,27,sampleJointGoalAndRSASignal_fromStart
+(lambda=0.65, alpha=4.25)",Commitment (%),94.44444444444444,4.521365014259177,30,sampleJointGoalAndRSASignal_fromStart
 equal_to_both,Equal-to-Both only,"sampleJointGoalAndRSASignal_fromStart (shared-agency model)
-(lambda=0.325, alpha=7.25)",Signaling Move (%),61.111111111111114,10.611419352250037,54,sampleJointGoalAndRSASignal_fromStart
+(lambda=0.65, alpha=4.25)",Signaling Move (%),53.05555555555556,7.426923615611799,60,sampleJointGoalAndRSASignal_fromStart
 average,Average all 2P3G,"samplePosteriorOnlyGoalAndSignal_fromStart
 (lambda=0.325, p=0.5625)",Success Rate (%),82.77777777777776,2.5894438094368324,30,samplePosteriorOnlyGoalAndSignal_fromStart
 average,Average all 2P3G,"samplePosteriorOnlyGoalAndSignal_fromStart

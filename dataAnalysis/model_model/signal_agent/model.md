@@ -16,7 +16,7 @@ Implemented report labels:
 |---|---|---|
 | `sampleJointGoalAndSignal_afterNewGoal` | `SignalAgent` | signaling begins after new-goal presentation |
 | `sampleJointGoalAndSignal_fromStart` | `AlwaysSignalAgent` | posterior and signaling are active from trial start |
-| `sampleJointGoalAndRSASignal_fromStart` (`shared-agency model`) | `AlwaysSignalAgent` | from-start posterior timing with RSA/log-posterior signaling |
+| `sampleJointGoalAndRSASignal_fromStart` (`shared-agency model`) | `AlwaysSignalAgent` | from-start posterior timing with unshaped JointRL value-based goal choice and RSA/log-posterior signaling |
 | `samplePosteriorOnlyGoalAndSignal_fromStart` | `PosteriorOnlySignalAgent` | from-start signaling, but goal choice uses posterior only |
 
 ## 2. Task and notation
@@ -56,6 +56,53 @@ Before joint detection or new-goal presentation, `SignalAgent` uses joint-RL pla
 
 `AlwaysSignalAgent` instead maintains `P_t(g)` from trial start, resizes the posterior when the new goal appears, samples a target every step, and applies the same signaling wrapper around that sampled target.
 
+### 3.1 Shared-agency unshaped JointRL replacement
+
+The report label `sampleJointGoalAndRSASignal_fromStart` keeps the `AlwaysSignalAgent` implementation class, but its analysis path replaces the distance-based expected utility and the RSA base action likelihood with the same unshaped JointRL reward/value model.
+
+The unshaped reward is:
+
+$$
+R_g(s,a,s') =
+30 \cdot \mathbf{1}[\text{both players reach } g]
+- 1 \cdot \mathbf{1}[\text{not done}]
+$$
+
+Fixed reward/value parameters:
+
+- `goalReward = 30`
+- `stepCost = -1`
+- `gamma = 0.9`
+- `softmaxBeta = 3.0`
+- `proximityRewardWeight = 0`
+
+Goal choice uses the unshaped soft state value:
+
+$$
+\widetilde V_g(s_t)=
+\frac{V_g(s_t)-\min_{g'}V_{g'}(s_t)}
+{\max_{g'}V_{g'}(s_t)-\min_{g'}V_{g'}(s_t)+\epsilon}
+$$
+
+$$
+W_\lambda(g)\propto
+\exp\left(3\widetilde V_g(s_t)\right)P_t(g)^\lambda
+$$
+
+The RSA signaling likelihood uses the unshaped JointRL marginal own-action probabilities:
+
+$$
+\pi_{\mathrm{RSA}}(a\mid g)
+\propto
+\pi_{\mathrm{base}}(a\mid s_t,g)P_t(g\mid a)^\alpha
+$$
+
+$$
+P_t(g\mid a)\propto P_t(g)\pi_{\mathrm{base}}(a\mid s_t,g)
+$$
+
+This shared-agency path is analysis-only and is not exposed as a live app player type.
+
 ## 4. Listener posterior model
 
 When the focal agent takes action `a` in state `s`, a one-step Bayesian listener updates:
@@ -64,7 +111,9 @@ $$
 P(g \mid a) \propto P(g) \cdot \pi_{\mathrm{base}}(a \mid s, g)
 $$
 
-`pi_base(a | s, g)` is the joint-RL action probability under target goal `g`, computed by `RLAgent.getJointActionProbabilities`.
+For the non-shared-agency signal models, `pi_base(a | s, g)` is the joint-RL action probability under target goal `g`, computed by `RLAgent.getJointActionProbabilities`.
+
+For `sampleJointGoalAndRSASignal_fromStart`, `pi_base(a | s, g)` is instead computed by `RLAgent.getUnshapedJointActionProbabilities`, and goal values are computed by `RLAgent.getUnshapedJointSoftStateValue`.
 
 The listener model is naive: it does not anticipate signaling. It is symmetric across both agents.
 
@@ -226,7 +275,7 @@ $$
 \sum_g W_\lambda(g)\pi_{\mathrm{RSA}}(a_t \mid g)
 $$
 
-The primary report fits this variant with an adaptive `lambda x alpha` grid against trial/player-level commitment plus signaling binomial NLL. The step-level report fits `lambda` and RSA `alpha` against all-step human action likelihood, then simulates the best setting for report metrics and BToM caches.
+The primary report fits this variant with a fine-grained local `lambda x alpha` grid against trial/player-level commitment plus signaling binomial NLL. The step-level report fits `lambda` and RSA `alpha` against all-step human action likelihood, then simulates the best setting for report metrics and BToM caches.
 
 ## 5.7 Posterior-only from-start Bernoulli mixture
 
@@ -312,7 +361,7 @@ Post-new-goal variants use `beta = 3.0` and `lambda = 0.125`. From-start variant
 | Logpost, trajectory H=3 | `alpha = 2.25` | NLL `183.2` | 44% | 55% | about 66% | about 98% |
 | Mixture | `p = 0.375` | NLL `184.4` | 47% | 64% | about 72% | about 92% |
 | From-start mixture | `lambda = 0.20, p = 0.4375` | commitment+signaling NLL `360.9` | 44% | 61% | about 87% | about 86% |
-| From-start RSA/log-posterior | `lambda = 0.325, alpha = 7.25` | commitment+signaling NLL `357.6` | 42% | 61% | about 96% | about 94% |
+| From-start RSA/log-posterior shared-agency | `lambda = 0.65, alpha = 4.25` | commitment+signaling NLL `361.8` | 42% | 53% | about 94% | about 93% |
 | Posterior-only from-start mixture | `lambda = 0.325, p = 0.5625` | commitment+signaling NLL `357.1` | 47% | 69% | about 95% | about 83% |
 | Joint-RL baseline | none | none | 36% | 44% | about 39% | about 98% |
 | Human-Human | reference | none | 52% | 59% | about 84% | about 100% |

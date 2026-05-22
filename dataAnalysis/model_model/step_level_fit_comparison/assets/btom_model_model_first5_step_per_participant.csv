@@ -926,19 +926,19 @@ sigmoidThreshold"
 session_0_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_0_player1,sampleJointGoalAndRSASignal_fromStart,1,0.7466783875900782,"sampleJointGoal+RSA
+session_0_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6265657085645654,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_0_player1,sampleJointGoalAndRSASignal_fromStart,2,0.7671933905376569,"sampleJointGoal+RSA
+session_0_player1,sampleJointGoalAndRSASignal_fromStart,2,0.6269815135432601,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_0_player1,sampleJointGoalAndRSASignal_fromStart,3,0.8272968058279777,"sampleJointGoal+RSA
+session_0_player1,sampleJointGoalAndRSASignal_fromStart,3,0.6934717297194593,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_0_player1,sampleJointGoalAndRSASignal_fromStart,4,0.876248007243404,"sampleJointGoal+RSA
+session_0_player1,sampleJointGoalAndRSASignal_fromStart,4,0.6851805764169213,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_0_player1,sampleJointGoalAndRSASignal_fromStart,5,0.8763221166995774,"sampleJointGoal+RSA
+session_0_player1,sampleJointGoalAndRSASignal_fromStart,5,0.6458997481456964,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_0_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -1004,19 +1004,19 @@ sigmoidThreshold"
 session_0_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_0_player2,sampleJointGoalAndRSASignal_fromStart,1,0.605482416952829,"sampleJointGoal+RSA
+session_0_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7576209360863346,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_0_player2,sampleJointGoalAndRSASignal_fromStart,2,0.6513513111956767,"sampleJointGoal+RSA
+session_0_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7604031332002611,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_0_player2,sampleJointGoalAndRSASignal_fromStart,3,0.6402763730079556,"sampleJointGoal+RSA
+session_0_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7594969157087231,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_0_player2,sampleJointGoalAndRSASignal_fromStart,4,0.6788170748085542,"sampleJointGoal+RSA
+session_0_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8010163663161346,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_0_player2,sampleJointGoalAndRSASignal_fromStart,5,0.843220859049162,"sampleJointGoal+RSA
+session_0_player2,sampleJointGoalAndRSASignal_fromStart,5,0.9129889713085542,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_0_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -1082,19 +1082,19 @@ sigmoidThreshold"
 session_10_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_10_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6495147910006409,"sampleJointGoal+RSA
+session_10_player1,sampleJointGoalAndRSASignal_fromStart,1,0.713967895335128,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_10_player1,sampleJointGoalAndRSASignal_fromStart,2,0.7966532163793915,"sampleJointGoal+RSA
+session_10_player1,sampleJointGoalAndRSASignal_fromStart,2,0.6111059503667651,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_10_player1,sampleJointGoalAndRSASignal_fromStart,3,0.8728311837545291,"sampleJointGoal+RSA
+session_10_player1,sampleJointGoalAndRSASignal_fromStart,3,0.5803628445066291,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_10_player1,sampleJointGoalAndRSASignal_fromStart,4,0.8936363616035177,"sampleJointGoal+RSA
+session_10_player1,sampleJointGoalAndRSASignal_fromStart,4,0.5372693649271143,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_10_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9462398790023142,"sampleJointGoal+RSA
+session_10_player1,sampleJointGoalAndRSASignal_fromStart,5,0.6790599462289527,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_10_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -1160,19 +1160,19 @@ sigmoidThreshold"
 session_10_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_10_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7220149189139803,"sampleJointGoal+RSA
+session_10_player2,sampleJointGoalAndRSASignal_fromStart,1,0.5081988240412738,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_10_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7944703213628582,"sampleJointGoal+RSA
+session_10_player2,sampleJointGoalAndRSASignal_fromStart,2,0.5718340435749504,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_10_player2,sampleJointGoalAndRSASignal_fromStart,3,0.8385931386108326,"sampleJointGoal+RSA
+session_10_player2,sampleJointGoalAndRSASignal_fromStart,3,0.6848399374869243,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_10_player2,sampleJointGoalAndRSASignal_fromStart,4,0.831688555161611,"sampleJointGoal+RSA
+session_10_player2,sampleJointGoalAndRSASignal_fromStart,4,0.7035387786510574,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_10_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8955859656603428,"sampleJointGoal+RSA
+session_10_player2,sampleJointGoalAndRSASignal_fromStart,5,0.6899493608887096,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_10_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -1238,19 +1238,19 @@ sigmoidThreshold"
 session_11_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_11_player1,sampleJointGoalAndRSASignal_fromStart,1,0.7442744144425941,"sampleJointGoal+RSA
+session_11_player1,sampleJointGoalAndRSASignal_fromStart,1,0.620328567216569,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_11_player1,sampleJointGoalAndRSASignal_fromStart,2,0.8106572021195776,"sampleJointGoal+RSA
+session_11_player1,sampleJointGoalAndRSASignal_fromStart,2,0.7042810809261246,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_11_player1,sampleJointGoalAndRSASignal_fromStart,3,0.9851641485132107,"sampleJointGoal+RSA
+session_11_player1,sampleJointGoalAndRSASignal_fromStart,3,0.722466497569803,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_11_player1,sampleJointGoalAndRSASignal_fromStart,4,0.9888313819170963,"sampleJointGoal+RSA
+session_11_player1,sampleJointGoalAndRSASignal_fromStart,4,0.7130288657362002,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_11_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9846305897432355,"sampleJointGoal+RSA
+session_11_player1,sampleJointGoalAndRSASignal_fromStart,5,0.7457507373808469,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_11_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -1316,19 +1316,19 @@ sigmoidThreshold"
 session_11_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_11_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7523831183723078,"sampleJointGoal+RSA
+session_11_player2,sampleJointGoalAndRSASignal_fromStart,1,0.608852778979114,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_11_player2,sampleJointGoalAndRSASignal_fromStart,2,0.9928919934069275,"sampleJointGoal+RSA
+session_11_player2,sampleJointGoalAndRSASignal_fromStart,2,0.6259869924290095,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_11_player2,sampleJointGoalAndRSASignal_fromStart,3,0.99981928251342,"sampleJointGoal+RSA
+session_11_player2,sampleJointGoalAndRSASignal_fromStart,3,0.5294893404138318,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_11_player2,sampleJointGoalAndRSASignal_fromStart,4,0.9998878523642343,"sampleJointGoal+RSA
+session_11_player2,sampleJointGoalAndRSASignal_fromStart,4,0.5713797550814624,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_11_player2,sampleJointGoalAndRSASignal_fromStart,5,0.9999723214157079,"sampleJointGoal+RSA
+session_11_player2,sampleJointGoalAndRSASignal_fromStart,5,0.606711204000091,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_11_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -1394,19 +1394,19 @@ sigmoidThreshold"
 session_12_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_12_player1,sampleJointGoalAndRSASignal_fromStart,1,0.7919676855068324,"sampleJointGoal+RSA
+session_12_player1,sampleJointGoalAndRSASignal_fromStart,1,0.5463620621481109,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_12_player1,sampleJointGoalAndRSASignal_fromStart,2,0.8961743385554966,"sampleJointGoal+RSA
+session_12_player1,sampleJointGoalAndRSASignal_fromStart,2,0.7451616598374899,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_12_player1,sampleJointGoalAndRSASignal_fromStart,3,0.908104525157547,"sampleJointGoal+RSA
+session_12_player1,sampleJointGoalAndRSASignal_fromStart,3,0.866317564740897,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_12_player1,sampleJointGoalAndRSASignal_fromStart,4,0.9244561898641606,"sampleJointGoal+RSA
+session_12_player1,sampleJointGoalAndRSASignal_fromStart,4,0.914376559250354,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_12_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9297975881307889,"sampleJointGoal+RSA
+session_12_player1,sampleJointGoalAndRSASignal_fromStart,5,0.8431905713662498,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_12_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -1472,19 +1472,19 @@ sigmoidThreshold"
 session_12_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_12_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7371287976611799,"sampleJointGoal+RSA
+session_12_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7220364991753732,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_12_player2,sampleJointGoalAndRSASignal_fromStart,2,0.8615928152986788,"sampleJointGoal+RSA
+session_12_player2,sampleJointGoalAndRSASignal_fromStart,2,0.6874779252445314,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_12_player2,sampleJointGoalAndRSASignal_fromStart,3,0.9300759883169972,"sampleJointGoal+RSA
+session_12_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7879423947715892,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_12_player2,sampleJointGoalAndRSASignal_fromStart,4,0.9392171190988076,"sampleJointGoal+RSA
+session_12_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8135946378361089,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_12_player2,sampleJointGoalAndRSASignal_fromStart,5,0.9373885582838254,"sampleJointGoal+RSA
+session_12_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8175431446191191,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_12_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -1550,19 +1550,19 @@ sigmoidThreshold"
 session_13_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_13_player1,sampleJointGoalAndRSASignal_fromStart,1,0.7646012054890975,"sampleJointGoal+RSA
+session_13_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6342958218683276,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_13_player1,sampleJointGoalAndRSASignal_fromStart,2,0.8323641419395855,"sampleJointGoal+RSA
+session_13_player1,sampleJointGoalAndRSASignal_fromStart,2,0.8298318105397414,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_13_player1,sampleJointGoalAndRSASignal_fromStart,3,0.9417358008836244,"sampleJointGoal+RSA
+session_13_player1,sampleJointGoalAndRSASignal_fromStart,3,0.8377475417195875,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_13_player1,sampleJointGoalAndRSASignal_fromStart,4,0.8904981678534948,"sampleJointGoal+RSA
+session_13_player1,sampleJointGoalAndRSASignal_fromStart,4,0.8868443301981835,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_13_player1,sampleJointGoalAndRSASignal_fromStart,5,0.8900613002476996,"sampleJointGoal+RSA
+session_13_player1,sampleJointGoalAndRSASignal_fromStart,5,0.8866868289181318,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_13_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -1628,19 +1628,19 @@ sigmoidThreshold"
 session_13_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_13_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7712613710872304,"sampleJointGoal+RSA
+session_13_player2,sampleJointGoalAndRSASignal_fromStart,1,0.8042243853346738,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_13_player2,sampleJointGoalAndRSASignal_fromStart,2,0.8879880726623404,"sampleJointGoal+RSA
+session_13_player2,sampleJointGoalAndRSASignal_fromStart,2,0.6317591863311449,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_13_player2,sampleJointGoalAndRSASignal_fromStart,3,0.9420024018406582,"sampleJointGoal+RSA
+session_13_player2,sampleJointGoalAndRSASignal_fromStart,3,0.6416728706321362,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_13_player2,sampleJointGoalAndRSASignal_fromStart,4,0.9301748080216252,"sampleJointGoal+RSA
+session_13_player2,sampleJointGoalAndRSASignal_fromStart,4,0.6359728806968555,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_13_player2,sampleJointGoalAndRSASignal_fromStart,5,0.9497881369449923,"sampleJointGoal+RSA
+session_13_player2,sampleJointGoalAndRSASignal_fromStart,5,0.7183529452244699,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_13_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -1706,19 +1706,19 @@ sigmoidThreshold"
 session_14_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_14_player1,sampleJointGoalAndRSASignal_fromStart,1,0.911915664492942,"sampleJointGoal+RSA
+session_14_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6862023375448524,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_14_player1,sampleJointGoalAndRSASignal_fromStart,2,0.9962422937328649,"sampleJointGoal+RSA
+session_14_player1,sampleJointGoalAndRSASignal_fromStart,2,0.8586788485534308,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_14_player1,sampleJointGoalAndRSASignal_fromStart,3,0.9962576329822251,"sampleJointGoal+RSA
+session_14_player1,sampleJointGoalAndRSASignal_fromStart,3,0.9366372199462493,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_14_player1,sampleJointGoalAndRSASignal_fromStart,4,0.9961449069943065,"sampleJointGoal+RSA
+session_14_player1,sampleJointGoalAndRSASignal_fromStart,4,0.9229175636144206,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_14_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9964585689264261,"sampleJointGoal+RSA
+session_14_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9390813326757699,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_14_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -1784,19 +1784,19 @@ sigmoidThreshold"
 session_14_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_14_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7839616941725704,"sampleJointGoal+RSA
+session_14_player2,sampleJointGoalAndRSASignal_fromStart,1,0.645814991551909,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_14_player2,sampleJointGoalAndRSASignal_fromStart,2,0.9461692019242546,"sampleJointGoal+RSA
+session_14_player2,sampleJointGoalAndRSASignal_fromStart,2,0.600562996402004,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_14_player2,sampleJointGoalAndRSASignal_fromStart,3,0.9256995379292355,"sampleJointGoal+RSA
+session_14_player2,sampleJointGoalAndRSASignal_fromStart,3,0.6724061506943861,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_14_player2,sampleJointGoalAndRSASignal_fromStart,4,0.9985181809057754,"sampleJointGoal+RSA
+session_14_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8077333112081982,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_14_player2,sampleJointGoalAndRSASignal_fromStart,5,0.9983833733391753,"sampleJointGoal+RSA
+session_14_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8061615155433589,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_14_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -1862,19 +1862,19 @@ sigmoidThreshold"
 session_15_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_15_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6849735527664353,"sampleJointGoal+RSA
+session_15_player1,sampleJointGoalAndRSASignal_fromStart,1,0.582821367183645,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_15_player1,sampleJointGoalAndRSASignal_fromStart,2,0.9352914421082661,"sampleJointGoal+RSA
+session_15_player1,sampleJointGoalAndRSASignal_fromStart,2,0.7324395318235823,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_15_player1,sampleJointGoalAndRSASignal_fromStart,3,0.9363952553943538,"sampleJointGoal+RSA
+session_15_player1,sampleJointGoalAndRSASignal_fromStart,3,0.7679435412980423,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_15_player1,sampleJointGoalAndRSASignal_fromStart,4,0.936438910694715,"sampleJointGoal+RSA
+session_15_player1,sampleJointGoalAndRSASignal_fromStart,4,0.8914811989904471,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_15_player1,sampleJointGoalAndRSASignal_fromStart,5,0.938766732512387,"sampleJointGoal+RSA
+session_15_player1,sampleJointGoalAndRSASignal_fromStart,5,0.8813550499598892,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_15_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -1940,19 +1940,19 @@ sigmoidThreshold"
 session_15_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_15_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6212711631913022,"sampleJointGoal+RSA
+session_15_player2,sampleJointGoalAndRSASignal_fromStart,1,0.5246991637055481,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_15_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7384117605554931,"sampleJointGoal+RSA
+session_15_player2,sampleJointGoalAndRSASignal_fromStart,2,0.5573152568355219,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_15_player2,sampleJointGoalAndRSASignal_fromStart,3,0.8222616501286555,"sampleJointGoal+RSA
+session_15_player2,sampleJointGoalAndRSASignal_fromStart,3,0.6908897670572942,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_15_player2,sampleJointGoalAndRSASignal_fromStart,4,0.842806710151541,"sampleJointGoal+RSA
+session_15_player2,sampleJointGoalAndRSASignal_fromStart,4,0.6693110786879697,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_15_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8577553775071727,"sampleJointGoal+RSA
+session_15_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8490067655407711,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_15_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -2018,19 +2018,19 @@ sigmoidThreshold"
 session_16_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_16_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6804611396275989,"sampleJointGoal+RSA
+session_16_player1,sampleJointGoalAndRSASignal_fromStart,1,0.8090020478024722,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_16_player1,sampleJointGoalAndRSASignal_fromStart,2,0.6966997518755981,"sampleJointGoal+RSA
+session_16_player1,sampleJointGoalAndRSASignal_fromStart,2,0.8254924710678033,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_16_player1,sampleJointGoalAndRSASignal_fromStart,3,0.955175945610428,"sampleJointGoal+RSA
+session_16_player1,sampleJointGoalAndRSASignal_fromStart,3,0.9991942834085291,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_16_player1,sampleJointGoalAndRSASignal_fromStart,4,0.9421431589318159,"sampleJointGoal+RSA
+session_16_player1,sampleJointGoalAndRSASignal_fromStart,4,0.9997698487559704,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_16_player1,sampleJointGoalAndRSASignal_fromStart,5,0.965006275233208,"sampleJointGoal+RSA
+session_16_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9996687001792255,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_16_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -2096,19 +2096,19 @@ sigmoidThreshold"
 session_16_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_16_player2,sampleJointGoalAndRSASignal_fromStart,1,0.5499793194836985,"sampleJointGoal+RSA
+session_16_player2,sampleJointGoalAndRSASignal_fromStart,1,0.5773357344464485,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_16_player2,sampleJointGoalAndRSASignal_fromStart,2,0.6313981187279917,"sampleJointGoal+RSA
+session_16_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7885070751707782,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_16_player2,sampleJointGoalAndRSASignal_fromStart,3,0.6991353154740065,"sampleJointGoal+RSA
+session_16_player2,sampleJointGoalAndRSASignal_fromStart,3,0.979601820545119,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_16_player2,sampleJointGoalAndRSASignal_fromStart,4,0.7903893677707564,"sampleJointGoal+RSA
+session_16_player2,sampleJointGoalAndRSASignal_fromStart,4,0.9981847678013963,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_16_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8165997037518683,"sampleJointGoal+RSA
+session_16_player2,sampleJointGoalAndRSASignal_fromStart,5,0.9994576192618542,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_16_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -2174,19 +2174,19 @@ sigmoidThreshold"
 session_17_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_17_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6575217260886008,"sampleJointGoal+RSA
+session_17_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6700379607688726,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_17_player1,sampleJointGoalAndRSASignal_fromStart,2,0.7836053980841402,"sampleJointGoal+RSA
+session_17_player1,sampleJointGoalAndRSASignal_fromStart,2,0.6936657087203539,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_17_player1,sampleJointGoalAndRSASignal_fromStart,3,0.750350183825627,"sampleJointGoal+RSA
+session_17_player1,sampleJointGoalAndRSASignal_fromStart,3,0.7814121793368958,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_17_player1,sampleJointGoalAndRSASignal_fromStart,4,0.8522056080146541,"sampleJointGoal+RSA
+session_17_player1,sampleJointGoalAndRSASignal_fromStart,4,0.9974549209690883,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_17_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9307662175901336,"sampleJointGoal+RSA
+session_17_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9992727809306553,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_17_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -2252,19 +2252,19 @@ sigmoidThreshold"
 session_17_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_17_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7327289656689392,"sampleJointGoal+RSA
+session_17_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7746984695861657,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_17_player2,sampleJointGoalAndRSASignal_fromStart,2,0.8322147467832627,"sampleJointGoal+RSA
+session_17_player2,sampleJointGoalAndRSASignal_fromStart,2,0.8327471896330743,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_17_player2,sampleJointGoalAndRSASignal_fromStart,3,0.8907171736094571,"sampleJointGoal+RSA
+session_17_player2,sampleJointGoalAndRSASignal_fromStart,3,0.872793146555593,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_17_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8910006256693972,"sampleJointGoal+RSA
+session_17_player2,sampleJointGoalAndRSASignal_fromStart,4,0.944370187049977,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_17_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8778871675787409,"sampleJointGoal+RSA
+session_17_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8408885823878351,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_17_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -2330,19 +2330,19 @@ sigmoidThreshold"
 session_18_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_18_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6715886856538883,"sampleJointGoal+RSA
+session_18_player1,sampleJointGoalAndRSASignal_fromStart,1,0.5562956063626073,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_18_player1,sampleJointGoalAndRSASignal_fromStart,2,0.723719184065346,"sampleJointGoal+RSA
+session_18_player1,sampleJointGoalAndRSASignal_fromStart,2,0.628564694274694,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_18_player1,sampleJointGoalAndRSASignal_fromStart,3,0.7806975115532147,"sampleJointGoal+RSA
+session_18_player1,sampleJointGoalAndRSASignal_fromStart,3,0.6924031285743514,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_18_player1,sampleJointGoalAndRSASignal_fromStart,4,0.8467477271220738,"sampleJointGoal+RSA
+session_18_player1,sampleJointGoalAndRSASignal_fromStart,4,0.6553235875295637,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_18_player1,sampleJointGoalAndRSASignal_fromStart,5,0.846706954940131,"sampleJointGoal+RSA
+session_18_player1,sampleJointGoalAndRSASignal_fromStart,5,0.7735079973807684,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_18_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -2408,19 +2408,19 @@ sigmoidThreshold"
 session_18_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_18_player2,sampleJointGoalAndRSASignal_fromStart,1,0.5653498141464803,"sampleJointGoal+RSA
+session_18_player2,sampleJointGoalAndRSASignal_fromStart,1,0.5582352854076905,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_18_player2,sampleJointGoalAndRSASignal_fromStart,2,0.6870094139099474,"sampleJointGoal+RSA
+session_18_player2,sampleJointGoalAndRSASignal_fromStart,2,0.71886278572882,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_18_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7156697081662926,"sampleJointGoal+RSA
+session_18_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7390828900396865,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_18_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8206208322020371,"sampleJointGoal+RSA
+session_18_player2,sampleJointGoalAndRSASignal_fromStart,4,0.81001080844081,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_18_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8695657981393434,"sampleJointGoal+RSA
+session_18_player2,sampleJointGoalAndRSASignal_fromStart,5,0.7586924023039615,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_18_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -2486,19 +2486,19 @@ sigmoidThreshold"
 session_19_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_19_player1,sampleJointGoalAndRSASignal_fromStart,1,0.7467772067481471,"sampleJointGoal+RSA
+session_19_player1,sampleJointGoalAndRSASignal_fromStart,1,0.5912778813570747,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_19_player1,sampleJointGoalAndRSASignal_fromStart,2,0.8181256342210468,"sampleJointGoal+RSA
+session_19_player1,sampleJointGoalAndRSASignal_fromStart,2,0.6032450023500259,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_19_player1,sampleJointGoalAndRSASignal_fromStart,3,0.8831667286325886,"sampleJointGoal+RSA
+session_19_player1,sampleJointGoalAndRSASignal_fromStart,3,0.6699070121614751,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_19_player1,sampleJointGoalAndRSASignal_fromStart,4,0.9565954050397951,"sampleJointGoal+RSA
+session_19_player1,sampleJointGoalAndRSASignal_fromStart,4,0.7898783732258116,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_19_player1,sampleJointGoalAndRSASignal_fromStart,5,0.973715526020967,"sampleJointGoal+RSA
+session_19_player1,sampleJointGoalAndRSASignal_fromStart,5,0.8440581979415067,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_19_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -2564,19 +2564,19 @@ sigmoidThreshold"
 session_19_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_19_player2,sampleJointGoalAndRSASignal_fromStart,1,0.8678316357126922,"sampleJointGoal+RSA
+session_19_player2,sampleJointGoalAndRSASignal_fromStart,1,0.46003850759196296,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_19_player2,sampleJointGoalAndRSASignal_fromStart,2,0.9379670828560622,"sampleJointGoal+RSA
+session_19_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7224834367019122,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_19_player2,sampleJointGoalAndRSASignal_fromStart,3,0.9383576384782135,"sampleJointGoal+RSA
+session_19_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7252087718131406,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_19_player2,sampleJointGoalAndRSASignal_fromStart,4,0.9384060602575081,"sampleJointGoal+RSA
+session_19_player2,sampleJointGoalAndRSASignal_fromStart,4,0.7625293733931893,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_19_player2,sampleJointGoalAndRSASignal_fromStart,5,0.9382041511122912,"sampleJointGoal+RSA
+session_19_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8286949263499677,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_19_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -2642,19 +2642,19 @@ sigmoidThreshold"
 session_1_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_1_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6610660569941541,"sampleJointGoal+RSA
+session_1_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6772073453473172,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_1_player1,sampleJointGoalAndRSASignal_fromStart,2,0.6690849205832244,"sampleJointGoal+RSA
+session_1_player1,sampleJointGoalAndRSASignal_fromStart,2,0.6479009426981595,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_1_player1,sampleJointGoalAndRSASignal_fromStart,3,0.7612659913036586,"sampleJointGoal+RSA
+session_1_player1,sampleJointGoalAndRSASignal_fromStart,3,0.7803684679175312,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_1_player1,sampleJointGoalAndRSASignal_fromStart,4,0.7918586528172501,"sampleJointGoal+RSA
+session_1_player1,sampleJointGoalAndRSASignal_fromStart,4,0.8496208360262101,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_1_player1,sampleJointGoalAndRSASignal_fromStart,5,0.812314503438264,"sampleJointGoal+RSA
+session_1_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9415088723091973,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_1_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -2720,19 +2720,19 @@ sigmoidThreshold"
 session_1_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_1_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6615691758273786,"sampleJointGoal+RSA
+session_1_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6580903047046314,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_1_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7185741150565004,"sampleJointGoal+RSA
+session_1_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7418392215710452,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_1_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7382609565764631,"sampleJointGoal+RSA
+session_1_player2,sampleJointGoalAndRSASignal_fromStart,3,0.8234646320370793,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_1_player2,sampleJointGoalAndRSASignal_fromStart,4,0.7709318197457704,"sampleJointGoal+RSA
+session_1_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8333511889081242,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_1_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8444237280274012,"sampleJointGoal+RSA
+session_1_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8288030739128174,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_1_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -2798,19 +2798,19 @@ sigmoidThreshold"
 session_20_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_20_player1,sampleJointGoalAndRSASignal_fromStart,1,0.7653259587104926,"sampleJointGoal+RSA
+session_20_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6464195635397887,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_20_player1,sampleJointGoalAndRSASignal_fromStart,2,0.9187564742593064,"sampleJointGoal+RSA
+session_20_player1,sampleJointGoalAndRSASignal_fromStart,2,0.6929484825340305,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_20_player1,sampleJointGoalAndRSASignal_fromStart,3,0.9543293454888471,"sampleJointGoal+RSA
+session_20_player1,sampleJointGoalAndRSASignal_fromStart,3,0.8334215564483365,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_20_player1,sampleJointGoalAndRSASignal_fromStart,4,0.8459806982429953,"sampleJointGoal+RSA
+session_20_player1,sampleJointGoalAndRSASignal_fromStart,4,0.7628616405559797,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_20_player1,sampleJointGoalAndRSASignal_fromStart,5,0.8850600834588997,"sampleJointGoal+RSA
+session_20_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9329637952598774,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_20_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -2876,19 +2876,19 @@ sigmoidThreshold"
 session_20_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_20_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6002976596478721,"sampleJointGoal+RSA
+session_20_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7479895000313792,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_20_player2,sampleJointGoalAndRSASignal_fromStart,2,0.8949105887587478,"sampleJointGoal+RSA
+session_20_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7047759981536131,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_20_player2,sampleJointGoalAndRSASignal_fromStart,3,0.8958729059894424,"sampleJointGoal+RSA
+session_20_player2,sampleJointGoalAndRSASignal_fromStart,3,0.8168352199111357,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_20_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8964815329692659,"sampleJointGoal+RSA
+session_20_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8169460785291228,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_20_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8957496244833656,"sampleJointGoal+RSA
+session_20_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8231173121726727,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_20_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -2954,19 +2954,19 @@ sigmoidThreshold"
 session_21_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_21_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6950052637856091,"sampleJointGoal+RSA
+session_21_player1,sampleJointGoalAndRSASignal_fromStart,1,0.8421069243141197,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_21_player1,sampleJointGoalAndRSASignal_fromStart,2,0.8061445486440098,"sampleJointGoal+RSA
+session_21_player1,sampleJointGoalAndRSASignal_fromStart,2,0.8515977450840524,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_21_player1,sampleJointGoalAndRSASignal_fromStart,3,0.8199943813898876,"sampleJointGoal+RSA
+session_21_player1,sampleJointGoalAndRSASignal_fromStart,3,0.927073014378012,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_21_player1,sampleJointGoalAndRSASignal_fromStart,4,0.8796550434735129,"sampleJointGoal+RSA
+session_21_player1,sampleJointGoalAndRSASignal_fromStart,4,0.9470258690060298,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_21_player1,sampleJointGoalAndRSASignal_fromStart,5,0.876527366301957,"sampleJointGoal+RSA
+session_21_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9238409309539265,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_21_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -3032,19 +3032,19 @@ sigmoidThreshold"
 session_21_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_21_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6788349473256949,"sampleJointGoal+RSA
+session_21_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7265334352633445,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_21_player2,sampleJointGoalAndRSASignal_fromStart,2,0.8860561052950258,"sampleJointGoal+RSA
+session_21_player2,sampleJointGoalAndRSASignal_fromStart,2,0.9938818935359438,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_21_player2,sampleJointGoalAndRSASignal_fromStart,3,0.8891380816267402,"sampleJointGoal+RSA
+session_21_player2,sampleJointGoalAndRSASignal_fromStart,3,0.9976120515854436,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_21_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8997203245441006,"sampleJointGoal+RSA
+session_21_player2,sampleJointGoalAndRSASignal_fromStart,4,0.9976827303691823,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_21_player2,sampleJointGoalAndRSASignal_fromStart,5,0.9002377000404095,"sampleJointGoal+RSA
+session_21_player2,sampleJointGoalAndRSASignal_fromStart,5,0.9964744455261574,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_21_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -3110,19 +3110,19 @@ sigmoidThreshold"
 session_22_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_22_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6258715756943781,"sampleJointGoal+RSA
+session_22_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6422397775161645,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_22_player1,sampleJointGoalAndRSASignal_fromStart,2,0.6681563538867163,"sampleJointGoal+RSA
+session_22_player1,sampleJointGoalAndRSASignal_fromStart,2,0.7841795745568779,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_22_player1,sampleJointGoalAndRSASignal_fromStart,3,0.8882005936403664,"sampleJointGoal+RSA
+session_22_player1,sampleJointGoalAndRSASignal_fromStart,3,0.7968488789408468,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_22_player1,sampleJointGoalAndRSASignal_fromStart,4,0.889756284059417,"sampleJointGoal+RSA
+session_22_player1,sampleJointGoalAndRSASignal_fromStart,4,0.946846934813088,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_22_player1,sampleJointGoalAndRSASignal_fromStart,5,0.8772040276695248,"sampleJointGoal+RSA
+session_22_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9476050030418717,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_22_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -3188,19 +3188,19 @@ sigmoidThreshold"
 session_22_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_22_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6792422118172046,"sampleJointGoal+RSA
+session_22_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7119935813551136,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_22_player2,sampleJointGoalAndRSASignal_fromStart,2,0.771369045941615,"sampleJointGoal+RSA
+session_22_player2,sampleJointGoalAndRSASignal_fromStart,2,0.6730716158296389,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_22_player2,sampleJointGoalAndRSASignal_fromStart,3,0.8872439772224986,"sampleJointGoal+RSA
+session_22_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7855774923525894,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_22_player2,sampleJointGoalAndRSASignal_fromStart,4,0.886670671886082,"sampleJointGoal+RSA
+session_22_player2,sampleJointGoalAndRSASignal_fromStart,4,0.7856320735575553,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_22_player2,sampleJointGoalAndRSASignal_fromStart,5,0.9414900938205208,"sampleJointGoal+RSA
+session_22_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8713442878530238,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_22_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -3266,19 +3266,19 @@ sigmoidThreshold"
 session_23_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_23_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6169534631474392,"sampleJointGoal+RSA
+session_23_player1,sampleJointGoalAndRSASignal_fromStart,1,0.5622288138129592,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_23_player1,sampleJointGoalAndRSASignal_fromStart,2,0.7170374129851558,"sampleJointGoal+RSA
+session_23_player1,sampleJointGoalAndRSASignal_fromStart,2,0.5891805787334783,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_23_player1,sampleJointGoalAndRSASignal_fromStart,3,0.7855098121306653,"sampleJointGoal+RSA
+session_23_player1,sampleJointGoalAndRSASignal_fromStart,3,0.8374395820584272,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_23_player1,sampleJointGoalAndRSASignal_fromStart,4,0.9049022722857387,"sampleJointGoal+RSA
+session_23_player1,sampleJointGoalAndRSASignal_fromStart,4,0.851662953787883,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_23_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9114027803280621,"sampleJointGoal+RSA
+session_23_player1,sampleJointGoalAndRSASignal_fromStart,5,0.8544486769696549,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_23_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -3344,19 +3344,19 @@ sigmoidThreshold"
 session_23_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_23_player2,sampleJointGoalAndRSASignal_fromStart,1,0.8057590529462022,"sampleJointGoal+RSA
+session_23_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6041381455631497,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_23_player2,sampleJointGoalAndRSASignal_fromStart,2,0.8433672158196877,"sampleJointGoal+RSA
+session_23_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7087220353091319,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_23_player2,sampleJointGoalAndRSASignal_fromStart,3,0.8551233826879683,"sampleJointGoal+RSA
+session_23_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7325574994716122,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_23_player2,sampleJointGoalAndRSASignal_fromStart,4,0.778812220652635,"sampleJointGoal+RSA
+session_23_player2,sampleJointGoalAndRSASignal_fromStart,4,0.7128545483906255,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_23_player2,sampleJointGoalAndRSASignal_fromStart,5,0.7666858538676127,"sampleJointGoal+RSA
+session_23_player2,sampleJointGoalAndRSASignal_fromStart,5,0.7609370459240627,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_23_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -3422,19 +3422,19 @@ sigmoidThreshold"
 session_24_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_24_player1,sampleJointGoalAndRSASignal_fromStart,1,0.5966735082115151,"sampleJointGoal+RSA
+session_24_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6493777676469198,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_24_player1,sampleJointGoalAndRSASignal_fromStart,2,0.6786091131770972,"sampleJointGoal+RSA
+session_24_player1,sampleJointGoalAndRSASignal_fromStart,2,0.6890997896359993,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_24_player1,sampleJointGoalAndRSASignal_fromStart,3,0.8450289787221704,"sampleJointGoal+RSA
+session_24_player1,sampleJointGoalAndRSASignal_fromStart,3,0.8777520935238603,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_24_player1,sampleJointGoalAndRSASignal_fromStart,4,0.9247199432150861,"sampleJointGoal+RSA
+session_24_player1,sampleJointGoalAndRSASignal_fromStart,4,0.8789844433182997,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_24_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9343751258430948,"sampleJointGoal+RSA
+session_24_player1,sampleJointGoalAndRSASignal_fromStart,5,0.88734097660967,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_24_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -3500,19 +3500,19 @@ sigmoidThreshold"
 session_24_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_24_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7668597211077288,"sampleJointGoal+RSA
+session_24_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7740664283869368,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_24_player2,sampleJointGoalAndRSASignal_fromStart,2,0.8156259306998899,"sampleJointGoal+RSA
+session_24_player2,sampleJointGoalAndRSASignal_fromStart,2,0.9023559258609244,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_24_player2,sampleJointGoalAndRSASignal_fromStart,3,0.826019627141729,"sampleJointGoal+RSA
+session_24_player2,sampleJointGoalAndRSASignal_fromStart,3,0.9208691082590676,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_24_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8766243443779123,"sampleJointGoal+RSA
+session_24_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8928487237866966,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_24_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8786974090051604,"sampleJointGoal+RSA
+session_24_player2,sampleJointGoalAndRSASignal_fromStart,5,0.9974368300287535,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_24_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -3578,19 +3578,19 @@ sigmoidThreshold"
 session_25_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_25_player1,sampleJointGoalAndRSASignal_fromStart,1,0.5614986184113843,"sampleJointGoal+RSA
+session_25_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6836546127739296,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_25_player1,sampleJointGoalAndRSASignal_fromStart,2,0.6236060991395894,"sampleJointGoal+RSA
+session_25_player1,sampleJointGoalAndRSASignal_fromStart,2,0.6855871517018777,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_25_player1,sampleJointGoalAndRSASignal_fromStart,3,0.6810170659833237,"sampleJointGoal+RSA
+session_25_player1,sampleJointGoalAndRSASignal_fromStart,3,0.8904615209456158,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_25_player1,sampleJointGoalAndRSASignal_fromStart,4,0.7516570663781764,"sampleJointGoal+RSA
+session_25_player1,sampleJointGoalAndRSASignal_fromStart,4,0.8193444883673954,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_25_player1,sampleJointGoalAndRSASignal_fromStart,5,0.7639961601056001,"sampleJointGoal+RSA
+session_25_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9001019873842013,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_25_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -3656,19 +3656,19 @@ sigmoidThreshold"
 session_25_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_25_player2,sampleJointGoalAndRSASignal_fromStart,1,0.719153478958948,"sampleJointGoal+RSA
+session_25_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7688453617165177,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_25_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7826011386813164,"sampleJointGoal+RSA
+session_25_player2,sampleJointGoalAndRSASignal_fromStart,2,0.8716397969842443,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_25_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7783870743522378,"sampleJointGoal+RSA
+session_25_player2,sampleJointGoalAndRSASignal_fromStart,3,0.9180569634782569,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_25_player2,sampleJointGoalAndRSASignal_fromStart,4,0.811886232309216,"sampleJointGoal+RSA
+session_25_player2,sampleJointGoalAndRSASignal_fromStart,4,0.9351430334239113,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_25_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8606424347891636,"sampleJointGoal+RSA
+session_25_player2,sampleJointGoalAndRSASignal_fromStart,5,0.9458336103956644,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_25_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -3734,19 +3734,19 @@ sigmoidThreshold"
 session_26_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_26_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6869322690391717,"sampleJointGoal+RSA
+session_26_player1,sampleJointGoalAndRSASignal_fromStart,1,0.7019439432682278,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_26_player1,sampleJointGoalAndRSASignal_fromStart,2,0.8878291561480247,"sampleJointGoal+RSA
+session_26_player1,sampleJointGoalAndRSASignal_fromStart,2,0.684935648789617,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_26_player1,sampleJointGoalAndRSASignal_fromStart,3,0.9369780083530367,"sampleJointGoal+RSA
+session_26_player1,sampleJointGoalAndRSASignal_fromStart,3,0.7823891443586107,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_26_player1,sampleJointGoalAndRSASignal_fromStart,4,0.9379531959978176,"sampleJointGoal+RSA
+session_26_player1,sampleJointGoalAndRSASignal_fromStart,4,0.8003456348048348,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_26_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9472929083844586,"sampleJointGoal+RSA
+session_26_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9080356810087467,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_26_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -3812,19 +3812,19 @@ sigmoidThreshold"
 session_26_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_26_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7017085355665941,"sampleJointGoal+RSA
+session_26_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6863736044075932,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_26_player2,sampleJointGoalAndRSASignal_fromStart,2,0.8938348993433125,"sampleJointGoal+RSA
+session_26_player2,sampleJointGoalAndRSASignal_fromStart,2,0.8803404800996906,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_26_player2,sampleJointGoalAndRSASignal_fromStart,3,0.9004325263420571,"sampleJointGoal+RSA
+session_26_player2,sampleJointGoalAndRSASignal_fromStart,3,0.79438453765109,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_26_player2,sampleJointGoalAndRSASignal_fromStart,4,0.9665686258234155,"sampleJointGoal+RSA
+session_26_player2,sampleJointGoalAndRSASignal_fromStart,4,0.9764042897417772,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_26_player2,sampleJointGoalAndRSASignal_fromStart,5,0.9808343129123099,"sampleJointGoal+RSA
+session_26_player2,sampleJointGoalAndRSASignal_fromStart,5,0.9879751979946214,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_26_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -3890,19 +3890,19 @@ sigmoidThreshold"
 session_27_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_27_player1,sampleJointGoalAndRSASignal_fromStart,1,0.7714703301721747,"sampleJointGoal+RSA
+session_27_player1,sampleJointGoalAndRSASignal_fromStart,1,0.7649772813572355,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_27_player1,sampleJointGoalAndRSASignal_fromStart,2,0.8002856594163417,"sampleJointGoal+RSA
+session_27_player1,sampleJointGoalAndRSASignal_fromStart,2,0.872679462883221,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_27_player1,sampleJointGoalAndRSASignal_fromStart,3,0.8132372318865337,"sampleJointGoal+RSA
+session_27_player1,sampleJointGoalAndRSASignal_fromStart,3,0.8135500899310365,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_27_player1,sampleJointGoalAndRSASignal_fromStart,4,0.8656832185541358,"sampleJointGoal+RSA
+session_27_player1,sampleJointGoalAndRSASignal_fromStart,4,0.8140305735095666,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_27_player1,sampleJointGoalAndRSASignal_fromStart,5,0.8687428954752944,"sampleJointGoal+RSA
+session_27_player1,sampleJointGoalAndRSASignal_fromStart,5,0.8143101650472969,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_27_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -3968,19 +3968,19 @@ sigmoidThreshold"
 session_27_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_27_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6938700282177093,"sampleJointGoal+RSA
+session_27_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6357355614197836,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_27_player2,sampleJointGoalAndRSASignal_fromStart,2,0.8509938880488599,"sampleJointGoal+RSA
+session_27_player2,sampleJointGoalAndRSASignal_fromStart,2,0.8583437922625408,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_27_player2,sampleJointGoalAndRSASignal_fromStart,3,0.8449401484691264,"sampleJointGoal+RSA
+session_27_player2,sampleJointGoalAndRSASignal_fromStart,3,0.8445551462194899,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_27_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8461870389157554,"sampleJointGoal+RSA
+session_27_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8470302580271956,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_27_player2,sampleJointGoalAndRSASignal_fromStart,5,0.824078928972285,"sampleJointGoal+RSA
+session_27_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8683821274384309,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_27_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -4046,19 +4046,19 @@ sigmoidThreshold"
 session_28_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_28_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6787545486037039,"sampleJointGoal+RSA
+session_28_player1,sampleJointGoalAndRSASignal_fromStart,1,0.5619965048075579,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_28_player1,sampleJointGoalAndRSASignal_fromStart,2,0.7922501183365167,"sampleJointGoal+RSA
+session_28_player1,sampleJointGoalAndRSASignal_fromStart,2,0.7487677575483233,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_28_player1,sampleJointGoalAndRSASignal_fromStart,3,0.8728373255819,"sampleJointGoal+RSA
+session_28_player1,sampleJointGoalAndRSASignal_fromStart,3,0.7973233674209776,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_28_player1,sampleJointGoalAndRSASignal_fromStart,4,0.9468982034391753,"sampleJointGoal+RSA
+session_28_player1,sampleJointGoalAndRSASignal_fromStart,4,0.8231627283959944,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_28_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9548079441016449,"sampleJointGoal+RSA
+session_28_player1,sampleJointGoalAndRSASignal_fromStart,5,0.8242981813581126,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_28_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -4124,19 +4124,19 @@ sigmoidThreshold"
 session_28_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_28_player2,sampleJointGoalAndRSASignal_fromStart,1,0.815945281236462,"sampleJointGoal+RSA
+session_28_player2,sampleJointGoalAndRSASignal_fromStart,1,0.5961819519784359,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_28_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7553070926533232,"sampleJointGoal+RSA
+session_28_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7077581806627373,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_28_player2,sampleJointGoalAndRSASignal_fromStart,3,0.8385294605102638,"sampleJointGoal+RSA
+session_28_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7451676873140642,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_28_player2,sampleJointGoalAndRSASignal_fromStart,4,0.9813847375407118,"sampleJointGoal+RSA
+session_28_player2,sampleJointGoalAndRSASignal_fromStart,4,0.7305031859520192,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_28_player2,sampleJointGoalAndRSASignal_fromStart,5,0.9857112593884395,"sampleJointGoal+RSA
+session_28_player2,sampleJointGoalAndRSASignal_fromStart,5,0.7529878736658097,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_28_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -4202,19 +4202,19 @@ sigmoidThreshold"
 session_29_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_29_player1,sampleJointGoalAndRSASignal_fromStart,1,0.700653716480849,"sampleJointGoal+RSA
+session_29_player1,sampleJointGoalAndRSASignal_fromStart,1,0.5353238628011411,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_29_player1,sampleJointGoalAndRSASignal_fromStart,2,0.7751353926168087,"sampleJointGoal+RSA
+session_29_player1,sampleJointGoalAndRSASignal_fromStart,2,0.6060641572612854,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_29_player1,sampleJointGoalAndRSASignal_fromStart,3,0.835181154718826,"sampleJointGoal+RSA
+session_29_player1,sampleJointGoalAndRSASignal_fromStart,3,0.7034295483046937,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_29_player1,sampleJointGoalAndRSASignal_fromStart,4,0.9019270417704103,"sampleJointGoal+RSA
+session_29_player1,sampleJointGoalAndRSASignal_fromStart,4,0.7425779432246244,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_29_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9997512796599143,"sampleJointGoal+RSA
+session_29_player1,sampleJointGoalAndRSASignal_fromStart,5,0.7321767890360087,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_29_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -4280,19 +4280,19 @@ sigmoidThreshold"
 session_29_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_29_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7827901657969518,"sampleJointGoal+RSA
+session_29_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6665895372273846,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_29_player2,sampleJointGoalAndRSASignal_fromStart,2,0.8720590285886775,"sampleJointGoal+RSA
+session_29_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7857706416991622,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_29_player2,sampleJointGoalAndRSASignal_fromStart,3,0.8727425552646667,"sampleJointGoal+RSA
+session_29_player2,sampleJointGoalAndRSASignal_fromStart,3,0.6934306094793647,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_29_player2,sampleJointGoalAndRSASignal_fromStart,4,0.86618511902589,"sampleJointGoal+RSA
+session_29_player2,sampleJointGoalAndRSASignal_fromStart,4,0.6718686321357329,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_29_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8875523314918667,"sampleJointGoal+RSA
+session_29_player2,sampleJointGoalAndRSASignal_fromStart,5,0.7702699339111199,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_29_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -4358,19 +4358,19 @@ sigmoidThreshold"
 session_2_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_2_player1,sampleJointGoalAndRSASignal_fromStart,1,0.7279816612243691,"sampleJointGoal+RSA
+session_2_player1,sampleJointGoalAndRSASignal_fromStart,1,0.523833837361973,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_2_player1,sampleJointGoalAndRSASignal_fromStart,2,0.7193422739084068,"sampleJointGoal+RSA
+session_2_player1,sampleJointGoalAndRSASignal_fromStart,2,0.4344629793705761,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_2_player1,sampleJointGoalAndRSASignal_fromStart,3,0.793864872985848,"sampleJointGoal+RSA
+session_2_player1,sampleJointGoalAndRSASignal_fromStart,3,0.4844305598753751,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_2_player1,sampleJointGoalAndRSASignal_fromStart,4,0.8739583297976918,"sampleJointGoal+RSA
+session_2_player1,sampleJointGoalAndRSASignal_fromStart,4,0.49129804102058683,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_2_player1,sampleJointGoalAndRSASignal_fromStart,5,0.884048726828722,"sampleJointGoal+RSA
+session_2_player1,sampleJointGoalAndRSASignal_fromStart,5,0.6151373864560975,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_2_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -4436,19 +4436,19 @@ sigmoidThreshold"
 session_2_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_2_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6116866222109442,"sampleJointGoal+RSA
+session_2_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6750421577277829,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_2_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7218519071392435,"sampleJointGoal+RSA
+session_2_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7344248479199821,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_2_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7165380567196278,"sampleJointGoal+RSA
+session_2_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7142757919300169,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_2_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8358371807771529,"sampleJointGoal+RSA
+session_2_player2,sampleJointGoalAndRSASignal_fromStart,4,0.7991182207869334,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_2_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8515089387103941,"sampleJointGoal+RSA
+session_2_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8141833435714588,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_2_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -4514,19 +4514,19 @@ sigmoidThreshold"
 session_3_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_3_player1,sampleJointGoalAndRSASignal_fromStart,1,0.7415894377874621,"sampleJointGoal+RSA
+session_3_player1,sampleJointGoalAndRSASignal_fromStart,1,0.810615648820844,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_3_player1,sampleJointGoalAndRSASignal_fromStart,2,0.8287816822014508,"sampleJointGoal+RSA
+session_3_player1,sampleJointGoalAndRSASignal_fromStart,2,0.8853806850208373,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_3_player1,sampleJointGoalAndRSASignal_fromStart,3,0.871707384317412,"sampleJointGoal+RSA
+session_3_player1,sampleJointGoalAndRSASignal_fromStart,3,0.897167095803579,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_3_player1,sampleJointGoalAndRSASignal_fromStart,4,0.9994282924993807,"sampleJointGoal+RSA
+session_3_player1,sampleJointGoalAndRSASignal_fromStart,4,0.9976382486361551,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_3_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9999821887635694,"sampleJointGoal+RSA
+session_3_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9993325861906197,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_3_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -4592,19 +4592,19 @@ sigmoidThreshold"
 session_3_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_3_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6858783092199339,"sampleJointGoal+RSA
+session_3_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7455704083612591,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_3_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7027456389779617,"sampleJointGoal+RSA
+session_3_player2,sampleJointGoalAndRSASignal_fromStart,2,0.8235313647685828,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_3_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7613348027927502,"sampleJointGoal+RSA
+session_3_player2,sampleJointGoalAndRSASignal_fromStart,3,0.8669333454668345,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_3_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8343120191702857,"sampleJointGoal+RSA
+session_3_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8898281021597417,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_3_player2,sampleJointGoalAndRSASignal_fromStart,5,0.7979678811393379,"sampleJointGoal+RSA
+session_3_player2,sampleJointGoalAndRSASignal_fromStart,5,0.9179488039610071,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_3_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -4670,19 +4670,19 @@ sigmoidThreshold"
 session_4_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_4_player1,sampleJointGoalAndRSASignal_fromStart,1,0.5497630045699204,"sampleJointGoal+RSA
+session_4_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6094214747008169,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_4_player1,sampleJointGoalAndRSASignal_fromStart,2,0.6645586525698396,"sampleJointGoal+RSA
+session_4_player1,sampleJointGoalAndRSASignal_fromStart,2,0.6117102438688576,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_4_player1,sampleJointGoalAndRSASignal_fromStart,3,0.7492903288580951,"sampleJointGoal+RSA
+session_4_player1,sampleJointGoalAndRSASignal_fromStart,3,0.5765866632243791,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_4_player1,sampleJointGoalAndRSASignal_fromStart,4,0.7986248656825108,"sampleJointGoal+RSA
+session_4_player1,sampleJointGoalAndRSASignal_fromStart,4,0.6621474041755556,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_4_player1,sampleJointGoalAndRSASignal_fromStart,5,0.8347861616496056,"sampleJointGoal+RSA
+session_4_player1,sampleJointGoalAndRSASignal_fromStart,5,0.7587776967157894,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_4_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -4748,19 +4748,19 @@ sigmoidThreshold"
 session_4_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_4_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6154164284660468,"sampleJointGoal+RSA
+session_4_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7215868629074668,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_4_player2,sampleJointGoalAndRSASignal_fromStart,2,0.77044776585984,"sampleJointGoal+RSA
+session_4_player2,sampleJointGoalAndRSASignal_fromStart,2,0.6519700910294739,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_4_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7890640562746564,"sampleJointGoal+RSA
+session_4_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7105549224089732,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_4_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8622669535328672,"sampleJointGoal+RSA
+session_4_player2,sampleJointGoalAndRSASignal_fromStart,4,0.7910437206037998,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_4_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8548455735633936,"sampleJointGoal+RSA
+session_4_player2,sampleJointGoalAndRSASignal_fromStart,5,0.7357504070653919,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_4_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -4826,19 +4826,19 @@ sigmoidThreshold"
 session_5_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_5_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6463486949123091,"sampleJointGoal+RSA
+session_5_player1,sampleJointGoalAndRSASignal_fromStart,1,0.7536671995297859,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_5_player1,sampleJointGoalAndRSASignal_fromStart,2,0.7809382921180229,"sampleJointGoal+RSA
+session_5_player1,sampleJointGoalAndRSASignal_fromStart,2,0.7474715313390807,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_5_player1,sampleJointGoalAndRSASignal_fromStart,3,0.7893680247006889,"sampleJointGoal+RSA
+session_5_player1,sampleJointGoalAndRSASignal_fromStart,3,0.9249087223801603,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_5_player1,sampleJointGoalAndRSASignal_fromStart,4,0.791168197727903,"sampleJointGoal+RSA
+session_5_player1,sampleJointGoalAndRSASignal_fromStart,4,0.9369931011215691,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_5_player1,sampleJointGoalAndRSASignal_fromStart,5,0.7913511294150596,"sampleJointGoal+RSA
+session_5_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9238947841488874,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_5_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -4904,19 +4904,19 @@ sigmoidThreshold"
 session_5_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_5_player2,sampleJointGoalAndRSASignal_fromStart,1,0.5013153577357116,"sampleJointGoal+RSA
+session_5_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6255242783024334,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_5_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7224831796867891,"sampleJointGoal+RSA
+session_5_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7492961716418092,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_5_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7468337924947058,"sampleJointGoal+RSA
+session_5_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7943825941046767,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_5_player2,sampleJointGoalAndRSASignal_fromStart,4,0.7647541333962596,"sampleJointGoal+RSA
+session_5_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8587092590113193,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_5_player2,sampleJointGoalAndRSASignal_fromStart,5,0.7707230724219328,"sampleJointGoal+RSA
+session_5_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8666405449311823,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_5_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -4982,19 +4982,19 @@ sigmoidThreshold"
 session_6_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_6_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6039806227385418,"sampleJointGoal+RSA
+session_6_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6956121505064787,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_6_player1,sampleJointGoalAndRSASignal_fromStart,2,0.8494631049915553,"sampleJointGoal+RSA
+session_6_player1,sampleJointGoalAndRSASignal_fromStart,2,0.7507028251759434,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_6_player1,sampleJointGoalAndRSASignal_fromStart,3,0.9553765799498519,"sampleJointGoal+RSA
+session_6_player1,sampleJointGoalAndRSASignal_fromStart,3,0.8269419870603187,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_6_player1,sampleJointGoalAndRSASignal_fromStart,4,0.971454711798309,"sampleJointGoal+RSA
+session_6_player1,sampleJointGoalAndRSASignal_fromStart,4,0.7251854836160088,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_6_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9998791577611119,"sampleJointGoal+RSA
+session_6_player1,sampleJointGoalAndRSASignal_fromStart,5,0.8595105707719545,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_6_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -5060,19 +5060,19 @@ sigmoidThreshold"
 session_6_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_6_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6786881017375349,"sampleJointGoal+RSA
+session_6_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6811807651406497,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_6_player2,sampleJointGoalAndRSASignal_fromStart,2,0.8016468839589536,"sampleJointGoal+RSA
+session_6_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7447789541664761,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_6_player2,sampleJointGoalAndRSASignal_fromStart,3,0.924259292456807,"sampleJointGoal+RSA
+session_6_player2,sampleJointGoalAndRSASignal_fromStart,3,0.8077043982060913,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_6_player2,sampleJointGoalAndRSASignal_fromStart,4,0.9556511561544468,"sampleJointGoal+RSA
+session_6_player2,sampleJointGoalAndRSASignal_fromStart,4,0.7969240690831414,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_6_player2,sampleJointGoalAndRSASignal_fromStart,5,0.9999821227942876,"sampleJointGoal+RSA
+session_6_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8738055135944084,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_6_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -5138,19 +5138,19 @@ sigmoidThreshold"
 session_7_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_7_player1,sampleJointGoalAndRSASignal_fromStart,1,0.5250831658813404,"sampleJointGoal+RSA
+session_7_player1,sampleJointGoalAndRSASignal_fromStart,1,0.493115839443815,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_7_player1,sampleJointGoalAndRSASignal_fromStart,2,0.620109964207603,"sampleJointGoal+RSA
+session_7_player1,sampleJointGoalAndRSASignal_fromStart,2,0.6031066625358635,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_7_player1,sampleJointGoalAndRSASignal_fromStart,3,0.7033931470226948,"sampleJointGoal+RSA
+session_7_player1,sampleJointGoalAndRSASignal_fromStart,3,0.8575756464710338,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_7_player1,sampleJointGoalAndRSASignal_fromStart,4,0.674060127496251,"sampleJointGoal+RSA
+session_7_player1,sampleJointGoalAndRSASignal_fromStart,4,0.8454181466333441,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_7_player1,sampleJointGoalAndRSASignal_fromStart,5,0.7471086497759939,"sampleJointGoal+RSA
+session_7_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9384011722585917,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_7_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -5216,19 +5216,19 @@ sigmoidThreshold"
 session_7_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_7_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6093376077155067,"sampleJointGoal+RSA
+session_7_player2,sampleJointGoalAndRSASignal_fromStart,1,0.8069965155175656,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_7_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7192954058605266,"sampleJointGoal+RSA
+session_7_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7948178231819181,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_7_player2,sampleJointGoalAndRSASignal_fromStart,3,0.711021158451211,"sampleJointGoal+RSA
+session_7_player2,sampleJointGoalAndRSASignal_fromStart,3,0.8753712701689811,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_7_player2,sampleJointGoalAndRSASignal_fromStart,4,0.7412794855008354,"sampleJointGoal+RSA
+session_7_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8771616406545419,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_7_player2,sampleJointGoalAndRSASignal_fromStart,5,0.749369586479192,"sampleJointGoal+RSA
+session_7_player2,sampleJointGoalAndRSASignal_fromStart,5,0.86617157629998,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_7_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -5294,19 +5294,19 @@ sigmoidThreshold"
 session_8_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_8_player1,sampleJointGoalAndRSASignal_fromStart,1,0.8004962191096822,"sampleJointGoal+RSA
+session_8_player1,sampleJointGoalAndRSASignal_fromStart,1,0.6271187907667826,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_8_player1,sampleJointGoalAndRSASignal_fromStart,2,0.8583328863282118,"sampleJointGoal+RSA
+session_8_player1,sampleJointGoalAndRSASignal_fromStart,2,0.6051043731562074,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_8_player1,sampleJointGoalAndRSASignal_fromStart,3,0.9392473009858389,"sampleJointGoal+RSA
+session_8_player1,sampleJointGoalAndRSASignal_fromStart,3,0.6174054123344258,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_8_player1,sampleJointGoalAndRSASignal_fromStart,4,0.9436869624543155,"sampleJointGoal+RSA
+session_8_player1,sampleJointGoalAndRSASignal_fromStart,4,0.6896498586205337,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_8_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9447294973202269,"sampleJointGoal+RSA
+session_8_player1,sampleJointGoalAndRSASignal_fromStart,5,0.7372963010773275,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_8_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -5372,19 +5372,19 @@ sigmoidThreshold"
 session_8_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_8_player2,sampleJointGoalAndRSASignal_fromStart,1,0.55942961358691,"sampleJointGoal+RSA
+session_8_player2,sampleJointGoalAndRSASignal_fromStart,1,0.6119633015930284,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_8_player2,sampleJointGoalAndRSASignal_fromStart,2,0.6855320451929551,"sampleJointGoal+RSA
+session_8_player2,sampleJointGoalAndRSASignal_fromStart,2,0.6953500282480048,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_8_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7663381579493894,"sampleJointGoal+RSA
+session_8_player2,sampleJointGoalAndRSASignal_fromStart,3,0.7240518020371511,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_8_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8210323095073951,"sampleJointGoal+RSA
+session_8_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8066632656279982,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_8_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8167204825901901,"sampleJointGoal+RSA
+session_8_player2,sampleJointGoalAndRSASignal_fromStart,5,0.7793518810248034,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_8_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -5450,19 +5450,19 @@ sigmoidThreshold"
 session_9_player1,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_9_player1,sampleJointGoalAndRSASignal_fromStart,1,0.7165519346253747,"sampleJointGoal+RSA
+session_9_player1,sampleJointGoalAndRSASignal_fromStart,1,0.7637128974184876,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_9_player1,sampleJointGoalAndRSASignal_fromStart,2,0.7170147177063564,"sampleJointGoal+RSA
+session_9_player1,sampleJointGoalAndRSASignal_fromStart,2,0.87342847382414,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_9_player1,sampleJointGoalAndRSASignal_fromStart,3,0.7511608719240042,"sampleJointGoal+RSA
+session_9_player1,sampleJointGoalAndRSASignal_fromStart,3,0.9378553376384469,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_9_player1,sampleJointGoalAndRSASignal_fromStart,4,0.7799123530672449,"sampleJointGoal+RSA
+session_9_player1,sampleJointGoalAndRSASignal_fromStart,4,0.938456562025999,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_9_player1,sampleJointGoalAndRSASignal_fromStart,5,0.9296593440064709,"sampleJointGoal+RSA
+session_9_player1,sampleJointGoalAndRSASignal_fromStart,5,0.937711317863768,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_9_player1,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
@@ -5528,19 +5528,19 @@ sigmoidThreshold"
 session_9_player2,sampleJointGoalAndRSASignal_fromStart,0,0.5,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_9_player2,sampleJointGoalAndRSASignal_fromStart,1,0.7190367541522245,"sampleJointGoal+RSA
+session_9_player2,sampleJointGoalAndRSASignal_fromStart,1,0.502347735673055,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_9_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7319706121282397,"sampleJointGoal+RSA
+session_9_player2,sampleJointGoalAndRSASignal_fromStart,2,0.7007996550597732,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_9_player2,sampleJointGoalAndRSASignal_fromStart,3,0.8855903150883812,"sampleJointGoal+RSA
+session_9_player2,sampleJointGoalAndRSASignal_fromStart,3,0.8530976033296661,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_9_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8865763176373593,"sampleJointGoal+RSA
+session_9_player2,sampleJointGoalAndRSASignal_fromStart,4,0.8231266968317025,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
-session_9_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8846249931067659,"sampleJointGoal+RSA
+session_9_player2,sampleJointGoalAndRSASignal_fromStart,5,0.8164869159390981,"sampleJointGoal+RSA
 (shared-agency model)
 fromStart"
 session_9_player2,sampleJointGoalAndSignal_afterNewGoal,0,0.5,"sampleJointGoal+Signal
