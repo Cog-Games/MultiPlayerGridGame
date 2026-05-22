@@ -28,16 +28,17 @@ const DEFAULT_LLM_AGENT_CONFIG = {
 };
 
 export const SHARED_AGENCY_BEST_FIT = {
-  label: 'sampleJointGoalAndRSASignal_fromStart',
+  label: 'sampleJointGoalAndRSASignal_fromStart (shared-agency model)',
   type: 'alwaysSignalAgent',
   fitSource: 'signal_agent_from_start_rsa_lambda_alpha_fit',
   parameters: {
     score: 'logposterior',
     horizon: 1,
-    lambda: 0.325,
-    alpha: 7.25,
+    lambda: 0.65,
+    alpha: 4.25,
     beta: 3.0,
-    gridSize: 15
+    gridSize: 15,
+    useUnshapedJointRL: true
   }
 };
 
@@ -205,13 +206,14 @@ export const CONFIG = {
       },
       alwaysSignal: {
         // sampleJointGoalAndRSASignal_fromStart shared-agency model:
-        // always-on posterior timing plus RSA/log-posterior signaling.
+        // always-on posterior timing with unshaped JointRL value/RSA likelihoods.
         score: SHARED_AGENCY_BEST_FIT.parameters.score,
         horizon: SHARED_AGENCY_BEST_FIT.parameters.horizon,
         lambda: SHARED_AGENCY_BEST_FIT.parameters.lambda,
         beta: SHARED_AGENCY_BEST_FIT.parameters.beta,
         alpha: SHARED_AGENCY_BEST_FIT.parameters.alpha,
-        gridSize: SHARED_AGENCY_BEST_FIT.parameters.gridSize
+        gridSize: SHARED_AGENCY_BEST_FIT.parameters.gridSize,
+        useUnshapedJointRL: SHARED_AGENCY_BEST_FIT.parameters.useUnshapedJointRL
       },
       twoStageSignal: {
         // TwoStageSignalAgent continuously blends flexible joint-RL with committed signaling:

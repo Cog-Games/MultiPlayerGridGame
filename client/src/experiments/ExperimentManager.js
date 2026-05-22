@@ -72,7 +72,8 @@ export class ExperimentManager {
       beta: (typeof cfg.beta === 'number') ? cfg.beta : undefined,
       score: (typeof cfg.score === 'string') ? cfg.score : undefined,
       horizon: (typeof cfg.horizon === 'number') ? cfg.horizon : undefined,
-      gridSize: (typeof cfg.gridSize === 'number') ? cfg.gridSize : undefined
+      gridSize: (typeof cfg.gridSize === 'number') ? cfg.gridSize : undefined,
+      useUnshapedJointRL: cfg.useUnshapedJointRL === true
     });
   }
 
@@ -448,7 +449,8 @@ export class ExperimentManager {
         console.log('🤖 AI partner: AlwaysCommittedAgent');
       } else if (p2Type === 'alwaysSignalAgent') {
         const cfg = CONFIG?.game?.agent?.alwaysSignal || {};
-        console.log(`🤖 AI partner: AlwaysSignalAgent (${CONFIG?.kids?.committedAgentLabel || 'sampleJointGoalAndRSASignal_fromStart'}, lambda=${cfg.lambda}, alpha=${cfg.alpha}, score=${cfg.score || 'logposterior'})`);
+        const policyKind = cfg.useUnshapedJointRL ? 'unshapedJointRL' : 'defaultJointRL';
+        console.log(`🤖 AI partner: AlwaysSignalAgent (${CONFIG?.kids?.committedAgentLabel || 'sampleJointGoalAndRSASignal_fromStart'}, lambda=${cfg.lambda}, alpha=${cfg.alpha}, score=${cfg.score || 'logposterior'}, policy=${policyKind})`);
       } else if (p2Type === 'signalAgent') {
         console.log('🤖 AI partner: SignalAgent');
       } else if (p2Type === 'twoStageSignalAgent') {

@@ -379,6 +379,143 @@ const JointBFSPlanner = (() => {
   return { getAction, getActionProbabilities, precalc, clear };
 })();
 
+// ---------- Unshaped JointRL helper for shared-agency model ----------
+const UnshapedJointRL = (() => {
+  const ROWS = RL_AGENT_CONFIG.gridSize || 15;
+  const COLS = RL_AGENT_CONFIG.gridSize || 15;
+  const actionSpace = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+  const toIdx = (r, c) => r * COLS + c;
+  const rowOf = i => Math.floor(i / COLS);
+  const colOf = i => i % COLS;
+  const inGrid = (r, c) => r >= 0 && r < ROWS && c >= 0 && c < COLS;
+  const stepIdx = (idx, actionIdx) => {
+    const r = rowOf(idx);
+    const c = colOf(idx);
+    const [dr, dc] = actionSpace[actionIdx];
+    const nr = r + dr;
+    const nc = c + dc;
+    return inGrid(nr, nc) ? toIdx(nr, nc) : idx;
+  };
+  const valueCache = new Map();
+
+  function normalizeGoals(goals) {
+    if (!Array.isArray(goals)) return [];
+    return Array.isArray(goals[0]) ? goals : [goals];
+  }
+
+  function manhattanIdx(a, b) {
+    return Math.abs(rowOf(a) - rowOf(b)) + Math.abs(colOf(a) - colOf(b));
+  }
+
+  function terminal(aiIdx, plIdx, goalSet) {
+    return aiIdx === plIdx && goalSet.has(aiIdx);
+  }
+
+  function exactUnshapedValue(aiIdx, plIdx, goalIdx) {
+    if (aiIdx === goalIdx && plIdx === goalIdx) return 0;
+    const steps = Math.max(manhattanIdx(aiIdx, goalIdx), manhattanIdx(plIdx, goalIdx));
+    if (steps <= 0) return 0;
+    const gamma = RL_AGENT_CONFIG.gamma || 0.9;
+    const rewardGoal = RL_AGENT_CONFIG.goalReward;
+    const stepCost = RL_AGENT_CONFIG.stepCost;
+    const finalDiscount = Math.pow(gamma, Math.max(0, steps - 1));
+    const stepReturn = steps > 1
+      ? stepCost * (1 - finalDiscount) / Math.max(1e-12, 1 - gamma)
+      : 0;
+    return stepReturn + finalDiscount * rewardGoal;
+  }
+
+  function hardStateValue(aiIdx, plIdx, goalIdxs) {
+    let best = -Infinity;
+    for (const goalIdx of goalIdxs) {
+      const value = exactUnshapedValue(aiIdx, plIdx, goalIdx);
+      if (value > best) best = value;
+    }
+    return isFinite(best) ? best : 0;
+  }
+
+  function qValues(aiState, playerState, goals) {
+    const normalizedGoals = normalizeGoals(goals);
+    if (!normalizedGoals.length) return new Array(16).fill(0);
+    const goalIdxs = normalizedGoals.map(([r, c]) => toIdx(r, c));
+    const goalSet = new Set(goalIdxs);
+    const aiIdx = toIdx(aiState[0], aiState[1]);
+    const plIdx = toIdx(playerState[0], playerState[1]);
+    if (terminal(aiIdx, plIdx, goalSet)) return new Array(16).fill(0);
+
+    const values = [];
+    const rewardGoal = RL_AGENT_CONFIG.goalReward;
+    const stepCost = RL_AGENT_CONFIG.stepCost;
+    const gamma = RL_AGENT_CONFIG.gamma || 0.9;
+    for (let aAI = 0; aAI < 4; aAI++) {
+      const nextAI = goalSet.has(aiIdx) ? aiIdx : stepIdx(aiIdx, aAI);
+      for (let aPL = 0; aPL < 4; aPL++) {
+        const nextPL = goalSet.has(plIdx) ? plIdx : stepIdx(plIdx, aPL);
+        const done = terminal(nextAI, nextPL, goalSet);
+        const reward = done ? rewardGoal : stepCost;
+        const future = done ? 0 : gamma * hardStateValue(nextAI, nextPL, goalIdxs);
+        values.push(reward + future);
+      }
+    }
+    return values;
+  }
+
+  function getActionProbabilities(aiState, playerState, goals, beta = null) {
+    if (beta == null) beta = RL_AGENT_CONFIG.softmaxBeta;
+    const q = qValues(aiState, playerState, goals);
+    if (q.every(v => v === 0)) {
+      return Object.fromEntries(actionSpace.map(a => [a.toString(), 0.25]));
+    }
+    const maxQ = Math.max(...q);
+    if (!isFinite(maxQ)) return Object.fromEntries(actionSpace.map(a => [a.toString(), 0.25]));
+    const prefs = q.map(v => Math.exp(Math.max(-700, Math.min(700, beta * (v - maxQ)))));
+    const total = prefs.reduce((a, b) => a + b, 0);
+    if (!isFinite(total) || total <= 0) {
+      return Object.fromEntries(actionSpace.map(a => [a.toString(), 0.25]));
+    }
+    const marginal = [0, 0, 0, 0];
+    for (let j = 0; j < 16; j++) marginal[Math.floor(j / 4)] += prefs[j] / total;
+    return Object.fromEntries(actionSpace.map((a, i) => [a.toString(), marginal[i]]));
+  }
+
+  function getSoftStateValue(aiState, playerState, goals, beta = null) {
+    if (beta == null) beta = RL_AGENT_CONFIG.softmaxBeta;
+    const normalizedGoals = normalizeGoals(goals);
+    if (!normalizedGoals.length) return 0;
+    const key = [
+      aiState.toString(),
+      playerState.toString(),
+      hashGoals(normalizedGoals),
+      beta,
+      RL_AGENT_CONFIG.goalReward,
+      RL_AGENT_CONFIG.stepCost,
+      RL_AGENT_CONFIG.gamma,
+      'unshaped'
+    ].join('|');
+    if (valueCache.has(key)) return valueCache.get(key);
+    const goalSet = new Set(normalizedGoals.map(([r, c]) => toIdx(r, c)));
+    const aiIdx = toIdx(aiState[0], aiState[1]);
+    const plIdx = toIdx(playerState[0], playerState[1]);
+    if (terminal(aiIdx, plIdx, goalSet)) {
+      valueCache.set(key, 0);
+      return 0;
+    }
+    const q = qValues(aiState, playerState, normalizedGoals);
+    const maxQ = Math.max(...q);
+    if (!isFinite(maxQ)) {
+      valueCache.set(key, 0);
+      return 0;
+    }
+    const sumExp = q.reduce((acc, v) => acc + Math.exp(Math.max(-700, Math.min(700, beta * (v - maxQ)))), 0);
+    const value = maxQ + Math.log(Math.max(1e-12, sumExp)) / Math.max(1e-12, beta);
+    valueCache.set(key, value);
+    return value;
+  }
+
+  function clear() { valueCache.clear(); }
+  return { getActionProbabilities, getSoftStateValue, clear };
+})();
+
 export class RLAgent {
   constructor() { this.isPreCalculating = false; }
   getAIAction(_gridMatrix, currentPos, goals, playerPos = null) {
@@ -406,6 +543,16 @@ export class RLAgent {
     return (impl === 'bfs')
       ? JointBFSPlanner.getActionProbabilities(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta)
       : JointPlanner4Action.getActionProbabilities(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta);
+  }
+  getUnshapedJointActionProbabilities(currentPos, playerPos, goals) {
+    if (!goals || goals.length === 0 || !playerPos) {
+      return { '0,-1': 0.25, '0,1': 0.25, '-1,0': 0.25, '1,0': 0.25 };
+    }
+    return UnshapedJointRL.getActionProbabilities(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta);
+  }
+  getUnshapedJointSoftStateValue(currentPos, playerPos, goals) {
+    if (!goals || goals.length === 0 || !playerPos) return 0;
+    return UnshapedJointRL.getSoftStateValue(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta);
   }
   getIndividualActionProbabilities(currentPos, goals) {
     const policy = IndividualPolicyCache.getPolicy(goals);
