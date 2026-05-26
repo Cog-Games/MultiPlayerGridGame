@@ -1,0 +1,73 @@
+group,metric,mean_percent,ci95_percent,n,condition_scope
+"Full shared-agency
+(lambda=0.65, alpha=4.25)",Success Rate (%),93.33333333333333,2.5803677529835887,360,average_all_2p3g
+"Full shared-agency
+(lambda=0.65, alpha=4.25)",Coordination Efficiency (%),89.39990562166561,0.8592131452907457,60,average_all_2p3g
+"Full shared-agency
+(lambda=0.65, alpha=4.25)",Commitment (%),70.40343915343914,3.6858618825591596,60,average_all_2p3g
+"Full shared-agency
+(lambda=0.65, alpha=4.25)",Signaling Move (%),42.14285714285714,4.196411884810872,60,average_all_2p3g
+"No RSA signaling
+(lambda=0.65, alpha=0)",Success Rate (%),96.38888888888889,1.9299353447776013,360,average_all_2p3g
+"No RSA signaling
+(lambda=0.65, alpha=0)",Coordination Efficiency (%),89.6110429095665,0.77216885135311,60,average_all_2p3g
+"No RSA signaling
+(lambda=0.65, alpha=0)",Commitment (%),87.03703703703704,2.573323717447731,60,average_all_2p3g
+"No RSA signaling
+(lambda=0.65, alpha=0)",Signaling Move (%),37.91666666666667,3.946095094177618,60,average_all_2p3g
+"No posterior weighting
+(lambda=0, alpha=4.25)",Success Rate (%),88.88888888888889,3.250957793088153,360,average_all_2p3g
+"No posterior weighting
+(lambda=0, alpha=4.25)",Coordination Efficiency (%),60.49295896903761,1.7443240531946764,60,average_all_2p3g
+"No posterior weighting
+(lambda=0, alpha=4.25)",Commitment (%),41.478174603174594,3.15105396292773,60,average_all_2p3g
+"No posterior weighting
+(lambda=0, alpha=4.25)",Signaling Move (%),33.12830687830688,4.3364573313267405,60,average_all_2p3g
+"Value/base only
+(lambda=0, alpha=0)",Success Rate (%),95.0,2.254528096062045,360,average_all_2p3g
+"Value/base only
+(lambda=0, alpha=0)",Coordination Efficiency (%),75.18518236260049,1.6521910050860815,60,average_all_2p3g
+"Value/base only
+(lambda=0, alpha=0)",Commitment (%),64.0376984126984,3.8274962211165726,60,average_all_2p3g
+"Value/base only
+(lambda=0, alpha=0)",Signaling Move (%),33.42261904761904,4.181503783029963,60,average_all_2p3g
+Human-Human,Success Rate (%),100.0,0.0,189,average_all_2p3g
+Human-Human,Coordination Efficiency (%),81.57604663510541,3.0088168401228863,32,average_all_2p3g
+Human-Human,Commitment (%),64.97395833333334,10.970724409578962,32,average_all_2p3g
+Human-Human,Signaling Move (%),52.5297619047619,7.596550149484699,32,average_all_2p3g
+"Full shared-agency
+(lambda=0.65, alpha=4.25)",Success Rate (%),97.77777777777777,3.062491503664175,90,equal_to_both
+"Full shared-agency
+(lambda=0.65, alpha=4.25)",Coordination Efficiency (%),99.56857031857031,0.36662207366843463,60,equal_to_both
+"Full shared-agency
+(lambda=0.65, alpha=4.25)",Commitment (%),80.0,6.00438843489387,60,equal_to_both
+"Full shared-agency
+(lambda=0.65, alpha=4.25)",Signaling Move (%),53.05555555555556,7.426923615611799,60,equal_to_both
+"No RSA signaling
+(lambda=0.65, alpha=0)",Success Rate (%),100.0,0.0,90,equal_to_both
+"No RSA signaling
+(lambda=0.65, alpha=0)",Coordination Efficiency (%),99.42534317534317,0.4046807573238784,60,equal_to_both
+"No RSA signaling
+(lambda=0.65, alpha=0)",Commitment (%),91.94444444444444,4.357285438018236,60,equal_to_both
+"No RSA signaling
+(lambda=0.65, alpha=0)",Signaling Move (%),47.22222222222222,7.249255505063543,60,equal_to_both
+"No posterior weighting
+(lambda=0, alpha=4.25)",Success Rate (%),90.0,6.232787534437397,90,equal_to_both
+"No posterior weighting
+(lambda=0, alpha=4.25)",Coordination Efficiency (%),68.95012707827514,3.178840437895017,60,equal_to_both
+"No posterior weighting
+(lambda=0, alpha=4.25)",Commitment (%),16.11111111111111,5.911631456926904,60,equal_to_both
+"No posterior weighting
+(lambda=0, alpha=4.25)",Signaling Move (%),47.49999999999999,7.3998154911593215,60,equal_to_both
+"Value/base only
+(lambda=0, alpha=0)",Success Rate (%),97.77777777777777,3.062491503664174,90,equal_to_both
+"Value/base only
+(lambda=0, alpha=0)",Coordination Efficiency (%),86.41930248854268,2.2338137001060185,60,equal_to_both
+"Value/base only
+(lambda=0, alpha=0)",Commitment (%),39.44444444444445,6.632548603928158,60,equal_to_both
+"Value/base only
+(lambda=0, alpha=0)",Signaling Move (%),34.72222222222222,6.9575033523596534,60,equal_to_both
+Human-Human,Success Rate (%),100.0,0.0,47,equal_to_both
+Human-Human,Coordination Efficiency (%),96.6397607022607,1.9427338715409046,32,equal_to_both
+Human-Human,Commitment (%),84.375,10.155508485475568,32,equal_to_both
+Human-Human,Signaling Move (%),59.375,12.697364383051536,32,equal_to_both

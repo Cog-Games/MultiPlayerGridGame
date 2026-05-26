@@ -14,7 +14,7 @@ Each model folder has:
 |---|---|
 | `committed_agent/` | Main CommittedAgent variants and commitment fits |
 | `always_committed_agent/` | Always-on committed goal-selection model |
-| `signal_agent/` | Signaling variants built on committed goal selection, including `sampleJointGoalAndSignal_fromStart`, `sampleJointGoalAndRSASignal_fromStart` (`shared-agency model`, unshaped JointRL value/RSA likelihood), and `samplePosteriorOnlyGoalAndSignal_fromStart` |
+| `signal_agent/` | Signaling variants built on committed goal selection, including `sampleJointGoalAndSignal_fromStart`, `sampleJointGoalAndRSASignal_fromStart` (`shared-agency model`, unshaped JointRL value with Communicative Action Mixture (Legibility Over Alternatives)), and `samplePosteriorOnlyGoalAndSignal_fromStart` |
 | `two_stage_signal_agent/` | Confidence-gated two-stage signal model |
 | `joint_rl/` | Joint-RL baseline |
 

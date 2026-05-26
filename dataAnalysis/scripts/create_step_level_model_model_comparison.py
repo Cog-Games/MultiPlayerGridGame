@@ -36,6 +36,17 @@ OUT_DIR = PROJECT_ROOT / "dataAnalysis" / "model_model" / "step_level_fit_compar
 ASSET_DIR = OUT_DIR / "assets"
 SIM_DIR = OUT_DIR / "simulations"
 HTML_PATH = PROJECT_ROOT / "dataAnalysis" / "model_model" / "model_model_comparison_step_level_fit.html"
+COSTLY_MIXTURE_STEP_DIR = PROJECT_ROOT / "dataAnalysis" / "model_model" / "shared_agency_costly_mixture_step_level_fit"
+COSTLY_MIXTURE_STEP_BEST_CSV = COSTLY_MIXTURE_STEP_DIR / "step1_3_model_summary.csv"
+COSTLY_MIXTURE_STEP_GRID_CSV = COSTLY_MIXTURE_STEP_DIR / "step1_3_rho_sweep.csv"
+COSTLY_MIXTURE_STEP_RAW_DIR = (
+    PROJECT_ROOT
+    / "dataAnalysis"
+    / "raw_data"
+    / "model_model_simulations"
+    / "joint_rl"
+    / "shared_agency_costly_mixture_step_level_fit"
+)
 
 ACTIONS: List[Tuple[int, int]] = [(0, -1), (0, 1), (-1, 0), (1, 0)]
 ACTION_TO_INDEX = {a: i for i, a in enumerate(ACTIONS)}
@@ -72,7 +83,7 @@ SHORT_LABELS = {
     "sampleJointGoalAndSignal_afterNewGoal": "sample+signal",
     "sampleJointGoal_fromStart": "sampleFromStart",
     "sampleJointGoalAndSignal_fromStart": "sample+signalStart",
-    "sampleJointGoalAndRSASignal_fromStart": "sample+RSAStart\n(shared-agency)",
+    "sampleJointGoalAndRSASignal_fromStart": "shared agency\ncommunicative\naction mixture",
     "samplePosteriorOnlyGoalAndSignal_fromStart": "posteriorOnly+signal",
     "TwoStageSignalAgent_sigmoidThreshold": "sigmoidThreshold",
     "Human-Human": "Human",
@@ -81,6 +92,7 @@ SHORT_LABELS = {
 ADAPTIVE_LAMBDAS = [0, 0.05, 0.1, 0.15, 0.3, 0.5, 1, 2, 5, 10, 20, 50]
 ADAPTIVE_PS = [0, 0.1, 0.25, 0.375, 0.5, 0.75, 1.0]
 ADAPTIVE_ALPHAS = [0, 0.5, 1, 2, 3, 5, 8]
+CAM_NAME = "Communicative Action Mixture (Legibility Over Alternatives)"
 
 
 @dataclass
@@ -236,12 +248,8 @@ def unshaped_completion_value(
 ) -> float:
     if self_pos == goal and other_pos == goal:
         return 0.0
-    steps = max(manhattan(self_pos, goal), manhattan(other_pos, goal))
-    if steps <= 0:
-        return 0.0
-    final_discount = GAMMA ** max(0, steps - 1)
-    step_return = STEP_COST * (1 - final_discount) / max(EPS, 1 - GAMMA) if steps > 1 else 0.0
-    return float(step_return + final_discount * GOAL_REWARD)
+    joint_distance = manhattan(self_pos, goal) + manhattan(other_pos, goal)
+    return float(GOAL_REWARD + STEP_COST * joint_distance)
 
 
 def unshaped_hard_value(
@@ -270,8 +278,9 @@ def unshaped_q_values(
         for other_action in ACTIONS:
             other_next = other_pos if other_pos in goal_set else transition(other_pos, other_action)
             done = self_next == other_next and self_next in goal_set
-            reward = GOAL_REWARD if done else STEP_COST
-            future_value = 0.0 if done else GAMMA * unshaped_hard_value(self_next, other_next, goals)
+            active_agents = int(self_pos not in goal_set) + int(other_pos not in goal_set)
+            reward = (GOAL_REWARD if done else 0.0) + STEP_COST * active_agents
+            future_value = 0.0 if done else unshaped_hard_value(self_next, other_next, goals)
             q_values.append(reward + future_value)
     return np.asarray(q_values, dtype=np.float64)
 
@@ -321,12 +330,7 @@ def unshaped_soft_state_value(
     if self_pos == other_pos and self_pos in set(goal_tuple):
         _UNSHAPED_SOFT_VALUE_CACHE[key] = 0.0
         return 0.0
-    q = unshaped_q_values(self_pos, other_pos, goals)
-    if not np.any(np.isfinite(q)):
-        _UNSHAPED_SOFT_VALUE_CACHE[key] = 0.0
-        return 0.0
-    max_q = float(np.max(q))
-    value = max_q + math.log(max(EPS, float(np.sum(np.exp(np.clip(SOFTMAX_BETA * (q - max_q), -700, 700)))))) / SOFTMAX_BETA
+    value = unshaped_hard_value(self_pos, other_pos, goals)
     _UNSHAPED_SOFT_VALUE_CACHE[key] = float(value)
     return float(value)
 
@@ -799,6 +803,10 @@ def expected_raw_path(model: str, params: Dict[str, Any], sessions: int, output_
         suffix = f"beta_3_lambda_{fmt(params['lambda'])}_alpha_{fmt(params['p_signal'])}_sessions_0_to_{sessions - 1}"
         return raw_dir / f"always_signal_vs_always_signal_2p3g_raw_trials_{suffix}.json"
     if model == "always_signal_rsa":
+        if params.get("score") == "costly_mixture":
+            raw_dir = COSTLY_MIXTURE_STEP_RAW_DIR / str(params.get("raw_subdir", "step1_3_fit"))
+            suffix = f"beta_3_lambda_{fmt(params['lambda'])}_alpha_{fmt(params['rho'])}_score_costly_mixture_sessions_0_to_{sessions - 1}"
+            return raw_dir / f"always_signal_vs_always_signal_2p3g_raw_trials_{suffix}.json"
         raw_dir = PROJECT_ROOT / "dataAnalysis" / "raw_data" / "model_model_simulations" / "signal_agent" / "from_start_rsa_unshaped_jointrl_step_level_fit_comparison"
         suffix = f"beta_3_lambda_{fmt(params['lambda'])}_alpha_{fmt(params['alpha'])}_sessions_0_to_{sessions - 1}"
         return raw_dir / f"always_signal_vs_always_signal_2p3g_raw_trials_{suffix}.json"
@@ -878,17 +886,27 @@ def run_simulations(params: Dict[str, Dict[str, Any]], sessions: int, trials: in
 
     always_signal_rsa_dir = SIM_DIR / "always_signal_rsa_agent"
     raw = expected_raw_path("always_signal_rsa", params["sampleJointGoalAndRSASignal_fromStart"], sessions, always_signal_rsa_dir)
+    shared_score = params["sampleJointGoalAndRSASignal_fromStart"].get("score", "logposterior")
+    shared_alpha = params["sampleJointGoalAndRSASignal_fromStart"].get(
+        "rho",
+        params["sampleJointGoalAndRSASignal_fromStart"].get("alpha", 0.0),
+    )
+    shared_raw_dir = (
+        COSTLY_MIXTURE_STEP_RAW_DIR / str(params["sampleJointGoalAndRSASignal_fromStart"].get("raw_subdir", "step1_3_fit"))
+        if shared_score == "costly_mixture"
+        else PROJECT_ROOT / "dataAnalysis" / "raw_data" / "model_model_simulations" / "signal_agent" / "from_start_rsa_unshaped_jointrl_step_level_fit_comparison"
+    )
     result = run_command(
         [
             "node", "dataAnalysis/scripts/simulate_always_signal_vs_always_signal_2p3g.js",
             "--sessions", str(sessions), "--trials", str(trials), "--seed", str(seed),
             "--lambda", str(params["sampleJointGoalAndRSASignal_fromStart"]["lambda"]),
-            "--alpha", str(params["sampleJointGoalAndRSASignal_fromStart"]["alpha"]),
-            "--beta", "3", "--score", "logposterior", "--horizon", "1",
+            "--alpha", str(shared_alpha),
+            "--beta", "3", "--score", str(shared_score), "--horizon", "1",
             "--unshaped-joint-rl",
             "--compact-diagnostics",
             "--output-dir", str(always_signal_rsa_dir),
-            "--raw-output-dir", str(PROJECT_ROOT / "dataAnalysis" / "raw_data" / "model_model_simulations" / "signal_agent" / "from_start_rsa_unshaped_jointrl_step_level_fit_comparison"),
+            "--raw-output-dir", str(shared_raw_dir),
         ],
         raw if reuse else None,
     )
@@ -1047,15 +1065,41 @@ def plot_fit_grids(
     plot_heatmap(always_signal_grid, params["sampleJointGoalAndSignal_fromStart"], "sampleJointGoalAndSignal_fromStart Step-Level Fit", path)
     out["sampleJointGoalAndSignal_fromStart"] = path
 
-    path = ASSET_DIR / "step_level_sampleJointGoalAndRSASignal_fromStart_lambda_alpha_fit.png"
-    plot_heatmap(
-        always_signal_rsa_grid,
-        params["sampleJointGoalAndRSASignal_fromStart"],
-        "sampleJointGoalAndRSASignal_fromStart Step-Level Fit",
-        path,
-        param_col="alpha",
-        y_label="RSA alpha",
-    )
+    path = ASSET_DIR / "step_level_sampleJointGoalAndRSASignal_fromStart_costly_mixture_rho_fit.png"
+    if params["sampleJointGoalAndRSASignal_fromStart"].get("score") == "costly_mixture" and COSTLY_MIXTURE_STEP_GRID_CSV.exists():
+        grid = pd.read_csv(COSTLY_MIXTURE_STEP_GRID_CSV).sort_values("rho")
+        fig, axes = plt.subplots(2, 2, figsize=(13.5, 8.4))
+        axes = axes.ravel()
+        series = [
+            ("negative_log_likelihood", "Human Action NLL", "#4f79a8"),
+            ("expected_signal_move", "Expected Signaling Move", "#59a14f"),
+            ("expected_btom_legibility", "Expected BToM Legibility", "#e15759"),
+            ("expected_mean_log_odds", "Expected Goal Log-Odds", "#b07aa1"),
+        ]
+        best_rho = float(params["sampleJointGoalAndRSASignal_fromStart"]["rho"])
+        for ax, (col, label, color) in zip(axes, series):
+            ax.plot(grid["rho"], grid[col], marker="o", linewidth=2.2, color=color)
+            ax.axvline(best_rho, color="#111827", linestyle="--", linewidth=1.2)
+            ax.set_title(label, fontweight="bold")
+            ax.set_xlabel("rho")
+            ax.grid(axis="y", color="#d8dde3")
+            ax.grid(axis="x", visible=False)
+            for spine in ["top", "right"]:
+                ax.spines[spine].set_visible(False)
+        fig.suptitle(f"sampleJointGoalAndRSASignal_fromStart {CAM_NAME} Step 1-3 Fit", fontsize=15, fontweight="bold", y=1.02)
+        fig.tight_layout()
+        fig.savefig(path, dpi=200, bbox_inches="tight")
+        plt.close(fig)
+    else:
+        path = ASSET_DIR / "step_level_sampleJointGoalAndRSASignal_fromStart_lambda_alpha_fit.png"
+        plot_heatmap(
+            always_signal_rsa_grid,
+            params["sampleJointGoalAndRSASignal_fromStart"],
+            "sampleJointGoalAndRSASignal_fromStart Step-Level Fit",
+            path,
+            param_col="alpha",
+            y_label="RSA alpha",
+        )
     out["sampleJointGoalAndRSASignal_fromStart"] = path
 
     path = ASSET_DIR / "step_level_samplePosteriorOnlyGoalAndSignal_fromStart_lambda_p_fit.png"
@@ -1109,7 +1153,7 @@ def metric_value(pivot: pd.DataFrame, group: str, scope: str, metric: str) -> fl
 
 def display_model_name(model: str) -> str:
     if model == "sampleJointGoalAndRSASignal_fromStart":
-        return f"{model} (shared-agency model)"
+        return f"{model} (shared-agency {CAM_NAME})"
     return model
 
 
@@ -1140,7 +1184,7 @@ def write_html(params: Dict[str, Dict[str, Any]], fit_plots: Dict[str, Path], lo
         "sampleJointGoalAndSignal_afterNewGoal": "Same post-new-goal joint-goal sampler plus a Bernoulli mixture signaling policy.",
         "sampleJointGoal_fromStart": "Commitment model is active from trial start; new goals are added by posterior resizing.",
         "sampleJointGoalAndSignal_fromStart": "Always-on posterior timing plus the Bernoulli mixture signaling policy.",
-        "sampleJointGoalAndRSASignal_fromStart": "Always-on posterior timing plus unshaped JointRL value-based goal selection and an RSA/log-posterior signaling policy.",
+        "sampleJointGoalAndRSASignal_fromStart": f"Always-on posterior timing plus unshaped JointRL value-based goal selection and {CAM_NAME}.",
         "samplePosteriorOnlyGoalAndSignal_fromStart": "Always-on posterior timing plus the Bernoulli mixture signaling policy, with the EU term removed from goal selection.",
         "TwoStageSignalAgent_sigmoidThreshold": "Always monitors joint-goal posterior and mixes early joint-RL with late committed-signaling policy via a sigmoid gate.",
     }
@@ -1165,9 +1209,10 @@ def write_html(params: Dict[str, Dict[str, Any]], fit_plots: Dict[str, Path], lo
           <div class="eq">\[P_0(g)=1/|\mathcal G_0|,\quad P_t(g_{\mathrm{new}})=1/|\mathcal G_t|\]</div>
           <div class="eq">\[\widetilde V_g(s_t)=\frac{V_g(s_t)-\min_{g'}V_{g'}(s_t)}{\max_{g'}V_{g'}(s_t)-\min_{g'}V_{g'}(s_t)+\epsilon}\]</div>
           <div class="eq">\[W_\lambda(g)\propto \exp(3\,\widetilde V_g(s_t))P_t(g)^\lambda\]</div>
-          <div class="eq">\[\pi_{\mathrm{RSA}}(a\mid g)\propto \pi_{\mathrm{base}}(a\mid s_t,g)P_t(g\mid a)^\alpha\]</div>
-          <div class="eq">\[R(s,a,s')=\mathbf 1[\mathrm{both\ at\ }g]30-\mathbf 1[\mathrm{not\ done}]1,\quad \gamma=.9\]</div>
-          <div class="eq">\[\pi(a_t)=\sum_g W_\lambda(g)\pi_{\mathrm{RSA}}(a_t\mid g)\]</div>
+          <div class="eq">\[\pi_{\mathrm{comm}}(a\mid g)\propto \pi_{\mathrm{base}}(a\mid s_t,g)\exp\left(\log\frac{P_t(g\mid a)}{1-P_t(g\mid a)}\right)\]</div>
+          <div class="eq">\[\pi_{\mathrm{CAM}}(a\mid g)=(1-\rho)\pi_{\mathrm{base}}(a\mid s_t,g)+\rho\,\pi_{\mathrm{comm}}(a\mid g)\]</div>
+          <div class="eq">\[R(s,a,s')=30\,\mathbf 1[\mathrm{both\ reach\ }g]-1\cdot N_{\mathrm{active}},\quad \gamma=.9\]</div>
+          <div class="eq">\[\pi(a_t)=\sum_g W_\lambda(g)\pi_{\mathrm{CAM}}(a_t\mid g)\]</div>
         """,
         "samplePosteriorOnlyGoalAndSignal_fromStart": r"""
           <div class="eq">\[P_0(g)=1/|\mathcal G_0|,\quad P_t(g_{\mathrm{new}})=1/|\mathcal G_t|\]</div>
@@ -1180,6 +1225,10 @@ def write_html(params: Dict[str, Dict[str, Any]], fit_plots: Dict[str, Path], lo
         """,
     }
     for model in MODEL_ORDER:
+        extra_links = ""
+        if model == "sampleJointGoalAndRSASignal_fromStart":
+            extra_links = """
+      <p class="links"><a href="shared_agency_costly_mixture_step_level_fit.html">communicative action mixture step-level report</a></p>"""
         cards.append(
             f"""
     <section class="card" id="{model}">
@@ -1190,6 +1239,7 @@ def write_html(params: Dict[str, Dict[str, Any]], fit_plots: Dict[str, Path], lo
       <div class="equations">{equations[model]}</div>
       <h3>Step-Level Fit Surface</h3>
       <a href="{relative(fit_plots[model])}"><img src="{relative(fit_plots[model])}" alt="{html.escape(model)} step-level fit plot"></a>
+      {extra_links}
     </section>
             """
         )
@@ -1330,6 +1380,11 @@ def main() -> None:
     always_signal_rsa_grid, always_signal_rsa_fit = fit_adaptive_alpha_grid(always_signal_rsa_obs, "always_signal_rsa", ADAPTIVE_LAMBDAS, ADAPTIVE_ALPHAS)
     posterior_only_signal_grid, posterior_only_signal_fit = fit_adaptive_grid(posterior_only_signal_obs, "posterior_only_signal", ADAPTIVE_LAMBDAS, ADAPTIVE_PS)
     two_stage_grid, two_stage_fit = fit_grid(two_stage_obs, "two_stage", lambda_grid, p_grid)
+    costly_mixture_step_fit = pd.read_csv(COSTLY_MIXTURE_STEP_BEST_CSV)
+    costly_rows = costly_mixture_step_fit[
+        costly_mixture_step_fit["model"].isin(["communicative action mixture rho fit", "costly mixture rho fit"])
+    ]
+    costly_mixture_step_row = costly_rows.iloc[0].to_dict()
 
     params = {
         "sampleJointGoal_afterNewGoal": {
@@ -1360,12 +1415,14 @@ def main() -> None:
             "setting": f"beta=3.0, lambda={always_signal_fit['lambda']:.3g}, mixture p={always_signal_fit['p_signal']:.3g} from all-step adaptive action likelihood",
         },
         "sampleJointGoalAndRSASignal_fromStart": {
-            "lambda": float(always_signal_rsa_fit["lambda"]),
-            "alpha": float(always_signal_rsa_fit["alpha"]),
-            "negative_log_likelihood": float(always_signal_rsa_fit["negative_log_likelihood"]),
+            "lambda": 0.2,
+            "rho": float(costly_mixture_step_row["rho"]),
+            "score": "costly_mixture",
+            "raw_subdir": "step1_3_fit",
+            "negative_log_likelihood": float(costly_mixture_step_row["in_sample_nll"]),
             "step_observations": len(always_signal_rsa_obs),
-            "evaluated_settings": int(always_signal_rsa_grid.shape[0]),
-            "setting": f"unshaped JointRL beta=3.0, lambda={always_signal_rsa_fit['lambda']:.3g}, RSA alpha={always_signal_rsa_fit['alpha']:.3g} from all-step adaptive RSA action likelihood",
+            "evaluated_settings": int(pd.read_csv(COSTLY_MIXTURE_STEP_GRID_CSV).shape[0]),
+            "setting": f"unshaped JointRL beta=3.0, lambda=0.2, communicative action mixture rho={float(costly_mixture_step_row['rho']):.3g} from new-goal step 1-3 action likelihood",
         },
         "samplePosteriorOnlyGoalAndSignal_fromStart": {
             "lambda": float(posterior_only_signal_fit["lambda"]),

@@ -351,18 +351,19 @@ th {{ color:#44515f; background:#f1f5f9; position:sticky; top:0; }}
 
   <section class="card">
     <h2>Model</h2>
-    <p>The agent uses from-start joint-goal sampling from <code>AlwaysSignalAgent</code>, with goal values and RSA base-action likelihoods from the same unshaped JointRL reward model. The fit objective is trial/player-level commitment plus signaling binomial NLL by distance condition.</p>
+    <p>The agent uses from-start joint-goal sampling from <code>AlwaysSignalAgent</code>, with goal values and RSA base-action likelihoods from the same unshaped JointRL reward model. The goal-selection value is equivalent to joint Manhattan distance sum, so equal <code>d_self + d_other</code> gives equal EU. The fit objective is trial/player-level commitment plus signaling binomial NLL by distance condition.</p>
     <div class="equation">\\[
       W_\\lambda(g) \\propto \\exp(3\\widetilde V_g(s_t))P_t(g)^\\lambda,\\qquad
       \\pi_{{\\mathrm{{RSA}}}}(a\\mid g)\\propto \\pi_{{\\mathrm{{base}}}}(a\\mid s_t,g)P_t(g\\mid a)^\\alpha
     \\]</div>
     <div class="equation">\\[
-      R(s,a,s')=30\\,\\mathbf 1[\\mathrm{{both\\ reach\\ }}g]-1\\,\\mathbf 1[\\mathrm{{not\\ done}}],\\quad
-      \\gamma=.9,\\quad \\mathrm{{softmax}}\\ \\beta=3,\\quad \\mathrm{{proximityRewardWeight}}=0
+      \\widetilde V_g(s)=30-(d_{{self}}(g)+d_{{other}}(g)),\\qquad
+      R(s,a,s')=30\\,\\mathbf 1[\\mathrm{{both\\ reach\\ }}g]-\\mathbf 1[\\mathrm{{self\\ active}}]-\\mathbf 1[\\mathrm{{other\\ active}}]
     \\]</div>
     <p class="links">
       <a href="{rel(outputs['grid_csv'])}">full grid CSV</a>
       <a href="{rel(outputs['summary_json'])}">summary JSON</a>
+      <a href="sampleJointGoalAndRSASignal_fromStart_ablation_comparison.html">ablation comparison</a>
       <a href="model_model_comparison.html#always_signal_rsa_agent">main model-model subsection</a>
       <a href="signal_agent/model.md">model.md</a>
     </p>

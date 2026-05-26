@@ -1,0 +1,54 @@
+{
+  "html": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_costly_mixture_step_level_fit.html",
+  "fixed_lambda": 0.2,
+  "windows": {
+    "step0": {
+      "actions": 282,
+      "best": {
+        "rho": 0.0125,
+        "negative_log_likelihood": 260.26561027248493,
+        "expected_signal_move": 0.7140584430084822,
+        "expected_btom_legibility": 0.7712007903917001,
+        "expected_mean_log_odds": 3.156067442657239,
+        "fit_stage": "refine"
+      },
+      "best_heldout_model": "no signaling, lambda=.2"
+    },
+    "step1": {
+      "actions": 254,
+      "best": {
+        "rho": 0.05,
+        "negative_log_likelihood": 172.94592073591522,
+        "expected_signal_move": 0.7427170565211485,
+        "expected_btom_legibility": 0.836542431868338,
+        "expected_mean_log_odds": 8.925334809578096,
+        "fit_stage": "coarse"
+      },
+      "best_heldout_model": "no signaling, lambda=.2"
+    },
+    "step1_3": {
+      "actions": 688,
+      "best": {
+        "rho": 0.1,
+        "negative_log_likelihood": 436.44917471239285,
+        "expected_signal_move": 0.7587319995038576,
+        "expected_btom_legibility": 0.8845201932544771,
+        "expected_mean_log_odds": 14.38021572864717,
+        "fit_stage": "coarse"
+      },
+      "best_heldout_model": "no signaling, lambda=.2"
+    }
+  },
+  "posterior_predictive_outputs": {
+    "metric_long_csv": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_costly_mixture_step_level_fit/costly_mixture_step_level_metric_long.csv",
+    "summary_csv": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_costly_mixture_step_level_fit/costly_mixture_step_level_summary.csv",
+    "raw_sources_csv": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_costly_mixture_step_level_fit/costly_mixture_step_level_raw_sources.csv",
+    "average_plot": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_costly_mixture_step_level_fit/assets/costly_mixture_step_level_average_6panel.png",
+    "equal_plot": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_costly_mixture_step_level_fit/assets/costly_mixture_step_level_equal_to_both_6panel.png",
+    "btom_trajectory_plot": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_costly_mixture_step_level_fit/assets/costly_mixture_step_level_btom_first5_trajectory.png",
+    "btom_step_csv": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_costly_mixture_step_level_fit/costly_mixture_step_level_btom_first5_step_per_participant.csv",
+    "btom_mean_csv": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_costly_mixture_step_level_fit/costly_mixture_step_level_btom_first5_mean_per_participant.csv",
+    "btom_trajectory_csv": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_costly_mixture_step_level_fit/costly_mixture_step_level_btom_player_trajectories.csv"
+  },
+  "notebook": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/joint_rl/notebooks/shared_agency_costly_mixture_step_level_fit/shared_agency_costly_mixture_step_level_fit.ipynb"
+}

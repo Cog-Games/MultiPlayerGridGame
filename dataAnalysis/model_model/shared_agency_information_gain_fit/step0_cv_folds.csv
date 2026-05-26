@@ -1,0 +1,26 @@
+fold,model,variant,eta,lambda,n_params,train_negative_log_likelihood,test_negative_log_likelihood,train_actions,test_actions
+0,"no signaling, lambda=.2",none,,0.2,0,197.79860696431027,62.4740672222296,212,70
+0,constant RSA alpha=1,rsa,1.0,0.2,0,214.6375858321678,64.6306809691515,212,70
+0,trial-level best lambda=.15 alpha=.5,rsa,0.5,0.15,0,207.98921071237982,64.06242860987338,212,70
+0,information gain: target posterior lift,posterior_lift,0.0,0.2,1,197.79860696431027,62.4740672222296,212,70
+0,information gain: entropy reduction,entropy_reduction,0.25,0.2,1,197.71482691259962,62.302578871066274,212,70
+1,"no signaling, lambda=.2",none,,0.2,0,204.85047963472357,55.422194551816226,228,54
+1,constant RSA alpha=1,rsa,1.0,0.2,0,221.96789246474253,57.300374336576475,228,54
+1,trial-level best lambda=.15 alpha=.5,rsa,0.5,0.15,0,215.34442967258755,56.70720964966565,228,54
+1,information gain: target posterior lift,posterior_lift,0.0,0.2,1,204.85047963472357,55.422194551816226,228,54
+1,information gain: entropy reduction,entropy_reduction,0.0,0.2,1,204.85047963472357,55.422194551816226,228,54
+2,"no signaling, lambda=.2",none,,0.2,0,214.27542972537518,45.99724446116475,230,52
+2,constant RSA alpha=1,rsa,1.0,0.2,0,228.44497102047458,50.82329578084457,230,52
+2,trial-level best lambda=.15 alpha=.5,rsa,0.5,0.15,0,223.21062671363225,48.84101260862097,230,52
+2,information gain: target posterior lift,posterior_lift,0.0,0.2,1,214.27542972537518,45.99724446116475,230,52
+2,information gain: entropy reduction,entropy_reduction,0.6,0.2,1,213.7197260818423,46.253433702631256,230,52
+3,"no signaling, lambda=.2",none,,0.2,0,204.46541941735393,55.807254769185995,230,52
+3,constant RSA alpha=1,rsa,1.0,0.2,0,217.5689222647758,61.69934453654334,230,52
+3,trial-level best lambda=.15 alpha=.5,rsa,0.5,0.15,0,212.66476008531583,59.386879236937396,230,52
+3,information gain: target posterior lift,posterior_lift,0.0,0.2,1,204.46541941735393,55.807254769185995,230,52
+3,information gain: entropy reduction,entropy_reduction,0.8,0.2,1,203.58209402202888,56.52693297199372,230,52
+4,"no signaling, lambda=.2",none,,0.2,0,219.70076100439684,40.57191318214308,228,54
+4,constant RSA alpha=1,rsa,1.0,0.2,0,234.45369562311566,44.814571178203444,228,54
+4,trial-level best lambda=.15 alpha=.5,rsa,0.5,0.15,0,228.99753010509744,43.05410921715575,228,54
+4,information gain: target posterior lift,posterior_lift,0.0,0.2,1,219.70076100439684,40.57191318214308,228,54
+4,information gain: entropy reduction,entropy_reduction,0.8,0.2,1,219.0879819480518,41.02104504597083,228,54

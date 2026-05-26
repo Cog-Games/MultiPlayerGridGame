@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shared-Agency Step-Level Communicative Action Mixture (Legibility Over Alternatives) Comparison</title>
+<style>
+body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#f6f8fb; color:#1f2933; }
+header { padding:34px 48px 24px; background:#ffffff; border-bottom:1px solid #d9e2ec; }
+main { max-width:1200px; margin:0 auto; padding:28px 24px 60px; }
+h1 { margin:0 0 8px; font-size:31px; }
+h2 { margin:30px 0 12px; font-size:21px; }
+p { line-height:1.55; }
+.note { color:#52606d; max-width:980px; }
+.panel { background:#fff; border:1px solid #d9e2ec; border-radius:8px; padding:18px; margin:18px 0; }
+.links a { display:inline-block; margin:0 12px 10px 0; color:#2458a6; text-decoration:none; }
+img { width:100%; height:auto; display:block; border:1px solid #d9e2ec; border-radius:6px; background:white; }
+table { width:100%; border-collapse:collapse; font-size:13px; background:white; }
+th,td { border:1px solid #d9e2ec; padding:8px 10px; text-align:left; vertical-align:top; }
+th { background:#eef3f8; }
+td.num { text-align:right; font-variant-numeric:tabular-nums; }
+code { background:#eef3f8; padding:2px 5px; border-radius:4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Shared-Agency Step-Level Communicative Action Mixture (Legibility Over Alternatives) Comparison</h1>
+  <p class="note">Human actions are fit on the new-goal signal window, steps 1-3 after the new goal appears. The primary full shared-agency row is Communicative Action Mixture (Legibility Over Alternatives) with fixed lambda=0.2 and fitted rho.</p>
+  <div class="links">
+    <a href="shared_agency_step_level_model_comparison/step_level_model_comparison_nll.csv">model NLL CSV</a>
+    <a href="shared_agency_step_level_model_comparison/shared_agency_step_level_costly_mixture_rho_grid.csv">communicative action mixture rho grid CSV</a>
+    <a href="shared_agency_step_level_model_comparison/legacy_rsa_step_level_lambda_alpha_grid.csv">legacy RSA lambda x alpha grid CSV</a>
+    <a href="shared_agency_step_level_model_comparison/shared_agency_step_level_behavior_summary.csv">behavior summary CSV</a>
+    <a href="shared_agency_step_level_model_comparison/trial_level_vs_step_level_best_shared_agency.csv">trial-vs-step CSV</a>
+    <a href="joint_rl/notebooks/shared_agency_step_level_model_comparison/shared_agency_step_level_model_comparison.ipynb">notebook</a>
+    <a href="shared_agency_signal_window_model_comparison.html">signal-window fit report</a>
+    <a href="shared_agency_uncertainty_gated_rho_fit.html">uncertainty-gated rho fit</a>
+    <a href="shared_agency_information_gain_fit.html">information-gain fit</a>
+    <a href="shared_agency_tiebreak_signal_fit.html">tie-break signaling fit</a>
+    <a href="shared_agency_costly_legibility_fit.html">costly legibility fit</a>
+    <a href="shared_agency_log_odds_legibility_fit.html">log-odds legibility fit</a>
+    <a href="shared_agency_log_odds_eta_sweep.html">log-odds full eta sweep</a>
+    <a href="shared_agency_costly_mixture_rho_sweep.html">communicative action mixture rho sweep</a>
+    <a href="shared_agency_costly_mixture_step_level_fit.html">communicative action mixture step-level report</a>
+    <a href="shared_agency_joint_lambda_alpha_baseline_comparison.html">trial-level baseline report</a>
+  </div>
+</header>
+<main>
+  <section class="panel">
+    <h2>Primary Signal-Window Model Comparison</h2>
+    <p class="note">Best held-out model: <strong>Shared agency commitment no signaling</strong>. Lower NLL is better. Held-out folds are grouped by room ID to avoid scoring actions from the same dyad in both train and test splits.</p>
+    <table><thead><tr><th>model</th><th>lambda</th><th>alpha</th><th>rho</th><th>n_params</th><th>actions</th><th>in_sample_nll</th><th>heldout_nll</th><th>heldout_nll_per_action</th><th>delta_heldout_nll</th><th>aic</th><th>bic</th></tr></thead><tbody><tr><td class="">Shared agency commitment no signaling</td><td class="num">0.24</td><td class="num">0.00</td><td class="num"></td><td class="">1</td><td class="">688</td><td class="num">435.534</td><td class="num">437.669</td><td class="num">0.636</td><td class="num">0.000</td><td class="num">873.07</td><td class="num">877.60</td></tr><tr><td class="">Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives))</td><td class="num">0.20</td><td class="num"></td><td class="num">0.10</td><td class="">1</td><td class="">688</td><td class="num">436.449</td><td class="num">438.117</td><td class="num">0.637</td><td class="num">0.448</td><td class="num">874.90</td><td class="num">879.43</td></tr><tr><td class="">Shared agency no commitment no signaling</td><td class="num">0.00</td><td class="num">0.00</td><td class="num"></td><td class="">0</td><td class="">688</td><td class="num">567.505</td><td class="num">567.505</td><td class="num">0.825</td><td class="num">129.837</td><td class="num">1135.01</td><td class="num">1135.01</td></tr><tr><td class="">Joint RL</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="">0</td><td class="">688</td><td class="num">827.107</td><td class="num">827.107</td><td class="num">1.202</td><td class="num">389.438</td><td class="num">1654.21</td><td class="num">1654.21</td></tr><tr><td class="">Individual RL</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="">0</td><td class="">688</td><td class="num">2431.148</td><td class="num">2431.148</td><td class="num">3.534</td><td class="num">1993.479</td><td class="num">4862.30</td><td class="num">4862.30</td></tr></tbody></table>
+  </section>
+
+  <section class="panel">
+    <h2>Full Shared-Agency Communicative Action Mixture (Legibility Over Alternatives) Fit</h2>
+    <p class="note">Full-data signal-window best: lambda=0.2, rho=0.1, NLL=436.45. This setting is used for the simulated shared-agency commitment+signaling row below.</p>
+    <a href="shared_agency_step_level_model_comparison/assets/shared_agency_step_level_costly_mixture_rho_sweep.png"><img src="shared_agency_step_level_model_comparison/assets/shared_agency_step_level_costly_mixture_rho_sweep.png" alt="shared agency step-level communicative action mixture rho sweep"></a>
+  </section>
+
+  <section class="panel">
+    <h2>Legacy RSA Lambda x Alpha Diagnostic</h2>
+    <p class="note">The former RSA/log-posterior signaling fit is retained as a diagnostic only. Full-data legacy best: lambda=0.2375, alpha=0, NLL=435.53. It is not the primary full shared-agency row.</p>
+    <a href="shared_agency_step_level_model_comparison/assets/legacy_rsa_step_level_lambda_alpha_heatmap.png"><img src="shared_agency_step_level_model_comparison/assets/legacy_rsa_step_level_lambda_alpha_heatmap.png" alt="legacy RSA step-level lambda alpha heatmap"></a>
+  </section>
+
+  <section class="panel">
+    <h2>Held-Out NLL Plot</h2>
+    <a href="shared_agency_step_level_model_comparison/assets/step_level_model_nll_comparison.png"><img src="shared_agency_step_level_model_comparison/assets/step_level_model_nll_comparison.png" alt="held-out step-level NLL comparison"></a>
+  </section>
+
+  <section class="panel">
+    <h2>Posterior Predictive Checks: All Distance Conditions</h2>
+    <a href="shared_agency_step_level_model_comparison/assets/shared_agency_step_level_average_6panel.png"><img src="shared_agency_step_level_model_comparison/assets/shared_agency_step_level_average_6panel.png" alt="step-level fitted all-distance behavioral comparison"></a>
+  </section>
+
+  <section class="panel">
+    <h2>Posterior Predictive Checks: Equal-to-Both</h2>
+    <a href="shared_agency_step_level_model_comparison/assets/shared_agency_step_level_equal_to_both_6panel.png"><img src="shared_agency_step_level_model_comparison/assets/shared_agency_step_level_equal_to_both_6panel.png" alt="step-level fitted equal-to-both behavioral comparison"></a>
+  </section>
+
+  <section class="panel">
+    <h2>BToM Trajectory</h2>
+    <a href="shared_agency_step_level_model_comparison/assets/shared_agency_step_level_btom_first5_trajectory.png"><img src="shared_agency_step_level_model_comparison/assets/shared_agency_step_level_btom_first5_trajectory.png" alt="step-level fitted BToM trajectory"></a>
+  </section>
+
+  <section class="panel">
+    <h2>Trial-Level Best vs Step-Level Best</h2>
+    <p class="note">This table compares the Communicative Action Mixture (Legibility Over Alternatives) setting selected by trial-level commitment+signaling binomial NLL against the setting selected by new-goal steps 1-3 human action NLL.</p>
+    <table><thead><tr><th>fit_source</th><th>lambda</th><th>rho</th><th>signal_window_step_level_nll</th><th>average_commitment_percent</th><th>average_signaling_percent</th><th>equal_commitment_percent</th><th>equal_signaling_percent</th></tr></thead><tbody><tr><td class="">trial-level commitment+signaling binomial NLL</td><td class="num">0.20</td><td class="num">0.50</td><td class="num">453.990</td><td class="num">72.42</td><td class="num">42.44</td><td class="num">93.89</td><td class="num">65.00</td></tr><tr><td class="">step-level new-goal steps 1-3 action NLL</td><td class="num">0.20</td><td class="num">0.10</td><td class="num">436.449</td><td class="num">78.23</td><td class="num">38.38</td><td class="num">95.28</td><td class="num">56.67</td></tr></tbody></table>
+  </section>
+
+  <section class="panel">
+    <h2>Raw Sources</h2>
+    <table><thead><tr><th>model</th><th>lambda</th><th>alpha</th><th>rho</th><th>score</th><th>rawTrialsPath</th></tr></thead><tbody><tr><td class="">Individual RL</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_step_level_model_comparison/individual_rl/joint_rl_vs_joint_rl_2p3g_raw_trials_individual_sessions_0_to_29.json.zst</td></tr><tr><td class="">Joint RL</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_step_level_model_comparison/joint_rl/joint_rl_vs_joint_rl_2p3g_raw_trials_unshaped_sessions_0_to_29.json.zst</td></tr><tr><td class="">Shared agency no commitment no signaling</td><td class="num">0.00</td><td class="num">0.00</td><td class="num"></td><td class="num"></td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_step_level_model_comparison/shared_agency_no_commitment_no_signaling/always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0_alpha_0_sessions_0_to_29.json.zst</td></tr><tr><td class="">Shared agency commitment no signaling</td><td class="num">0.24</td><td class="num">0.00</td><td class="num"></td><td class="num"></td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_step_level_model_comparison/shared_agency_commitment_no_signaling/always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0p2375_alpha_0_sessions_0_to_29.json.zst</td></tr><tr><td class="">Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives))</td><td class="num">0.20</td><td class="num"></td><td class="num">0.10</td><td class="">costly_mixture</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_costly_mixture_step_level_fit/step1_3_fit/always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0p2_alpha_0p1_score_costly_mixture_sessions_0_to_29.json.zst</td></tr></tbody></table>
+  </section>
+</main>
+</body>
+</html>

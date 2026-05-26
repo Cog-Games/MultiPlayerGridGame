@@ -1,0 +1,26 @@
+fold,model,lambda,alpha,rho,train_negative_log_likelihood,test_negative_log_likelihood,train_actions,test_actions
+0,Individual RL,,,,2076.34840721676,354.79957936225077,536,152
+0,Joint RL,,,,732.1993846531856,94.90728022288778,536,152
+0,Shared agency no commitment no signaling,0.0,0.0,,486.59746722206324,80.90800518610227,536,152
+0,Shared agency commitment no signaling,0.3,0.0,,378.9199072618432,56.76543521050527,536,152
+0,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.2,,0.1,379.7550197455699,56.694154966823376,536,152
+1,Individual RL,,,,1950.492094868707,480.65589171030456,554,134
+1,Joint RL,,,,633.1760037301156,193.9306611459557,554,134
+1,Shared agency no commitment no signaling,0.0,0.0,,425.6146603841357,141.89081202403042,554,134
+1,Shared agency commitment no signaling,0.2375,0.0,,315.7927856850193,119.74168274892284,554,134
+1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.2,,0.075,316.944528634179,119.56956259920118,554,134
+2,Individual RL,,,,1824.7662587632094,606.3817278158022,558,130
+2,Joint RL,,,,621.7299896155894,205.37667526048227,558,130
+2,Shared agency no commitment no signaling,0.0,0.0,,451.67927975326916,115.82619265489681,558,130
+2,Shared agency commitment no signaling,0.3,0.0,,340.9416085174534,94.74373395489515,558,130
+2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.2,,0.175,342.24004955884914,94.7501168242017,558,130
+3,Individual RL,,,,1888.331453652267,542.8165329267456,538,150
+3,Joint RL,,,,642.4835123074481,184.62315256862337,538,150
+3,Shared agency no commitment no signaling,0.0,0.0,,438.95085447508876,128.5546179330773,538,150
+3,Shared agency commitment no signaling,0.2375,0.0,,351.875823998044,83.65864443589746,538,150
+3,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.2,,0.05,351.6542290474337,85.04622182289766,538,150
+4,Individual RL,,,,1984.6537318151031,446.4942547639084,566,122
+4,Joint RL,,,,678.8377691979506,148.2688956781216,566,122
+4,Shared agency no commitment no signaling,0.0,0.0,,467.1796277981067,100.3258446100592,566,122
+4,Shared agency commitment no signaling,0.3,0.0,,352.9259549737266,82.75938749862205,566,122
+4,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.2,,0.075,354.4568034590113,82.05728777436936,566,122

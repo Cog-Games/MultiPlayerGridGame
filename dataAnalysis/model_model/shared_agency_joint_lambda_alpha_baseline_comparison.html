@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shared-Agency Communicative Action Mixture (Legibility Over Alternatives) Baseline Comparison</title>
+  <style>
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1f2933; background: #f6f8fb; }
+    header { padding: 36px 48px 24px; background: #ffffff; border-bottom: 1px solid #d9e2ec; }
+    main { max-width: 1180px; margin: 0 auto; padding: 28px 24px 56px; }
+    h1 { margin: 0 0 10px; font-size: 30px; }
+    h2 { margin: 34px 0 14px; font-size: 21px; }
+    p { line-height: 1.55; }
+    .note { color: #52606d; max-width: 980px; }
+    .links a { display: inline-block; margin: 0 12px 10px 0; color: #2458a6; text-decoration: none; }
+    .panel { background: #ffffff; border: 1px solid #d9e2ec; border-radius: 8px; padding: 18px; margin: 18px 0; }
+    img { width: 100%; height: auto; display: block; border: 1px solid #d9e2ec; border-radius: 6px; background: white; }
+    table { border-collapse: collapse; width: 100%; font-size: 13px; background: white; }
+    th, td { border: 1px solid #d9e2ec; padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: #eef3f8; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    code { background: #eef3f8; padding: 2px 5px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Shared-Agency Communicative Action Mixture (Legibility Over Alternatives) Baseline Comparison</h1>
+  <p class="note">Compares Individual RL, Joint RL, and <code>sampleJointGoalAndRSASignal_fromStart</code> baselines with Human-Human. The full shared-agency row uses Communicative Action Mixture (Legibility Over Alternatives) with lambda = 0.2 and rho = 0.5.</p>
+  <div class="links">
+    <a href="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/no_latent_joint_rl_shared_agency_metric_long.csv">metric long CSV</a>
+    <a href="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/no_latent_joint_rl_shared_agency_summary.csv">summary CSV</a>
+    <a href="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/shared_agency_commitment_no_signaling_lambda_sweep.csv">commitment lambda sweep CSV</a>
+    <a href="shared_agency_costly_mixture_rho_sweep/shared_agency_costly_mixture_best_rho.csv">communicative action mixture best rho CSV</a>
+    <a href="shared_agency_costly_mixture_rho_sweep/shared_agency_costly_mixture_rho_sweep.csv">communicative action mixture rho sweep CSV</a>
+    <a href="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/shared_agency_commitment_signaling_alpha_sweep.csv">legacy RSA alpha sweep CSV</a>
+    <a href="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/shared_agency_commitment_signaling_joint_lambda_alpha_sweep.csv">legacy RSA lambda x alpha CSV</a>
+    <a href="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/no_latent_joint_rl_shared_agency_raw_sources.csv">raw sources CSV</a>
+    <a href="joint_rl/notebooks/no_latent_joint_rl_shared_agency_baseline/no_latent_joint_rl_shared_agency_baseline_comparison.ipynb">notebook</a>
+    <a href="shared_agency_step_level_model_comparison.html">step-level model comparison</a>
+    <a href="shared_agency_signal_window_model_comparison.html">signal-window fit report</a>
+    <a href="shared_agency_uncertainty_gated_rho_fit.html">uncertainty-gated rho fit</a>
+    <a href="shared_agency_information_gain_fit.html">information-gain fit</a>
+    <a href="shared_agency_tiebreak_signal_fit.html">tie-break signaling fit</a>
+    <a href="shared_agency_costly_legibility_fit.html">costly legibility fit</a>
+    <a href="shared_agency_log_odds_legibility_fit.html">log-odds legibility fit</a>
+    <a href="shared_agency_log_odds_eta_sweep.html">log-odds full eta sweep</a>
+    <a href="shared_agency_costly_mixture_rho_sweep.html">communicative action mixture rho sweep</a>
+    <a href="sampleJointGoalAndRSASignal_fromStart_ablation_comparison.html">shared-agency ablation report</a>
+  </div>
+</header>
+<main>
+  <section class="panel">
+    <h2>Model Definitions</h2>
+    <p><strong>Individual RL</strong>: no partner-position input; each player uses the existing IndividualRL policy over current goals with goal feature reward +30, step cost -1 per own action step, gamma 0.9, transition noise 0, softmax beta 3, and argmax action selection with random tie-breaking.</p>
+    <p><strong>Joint RL</strong>: no inferred goal, no posterior, no lambda, no alpha; actions are sampled from the unshaped JointRL marginal policy over all current goals.</p>
+    <p><strong>Shared agency no commitment no signaling</strong>: samples a latent goal from unshaped value weights, then acts through the same unshaped JointRL base policy for that sampled goal. With lambda=0 and rho=0, posterior and signaling mixture terms are disabled.</p>
+    <p><strong>Shared agency commitment no signaling</strong>: fixes the signaling parameter at 0, sweeps lambda, and uses the best lambda selected by commitment-only binomial NLL.</p>
+    <p><strong>Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives))</strong>: fixes lambda=0.2 and uses the rho selected by commitment + signaling binomial NLL. The signaling policy mixes the base JointRL policy with a communicative policy that increases sampled-goal legibility over alternatives.</p>
+  </section>
+
+  <section class="panel">
+    <h2>All Distance Conditions</h2>
+    <a href="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/no_latent_joint_rl_shared_agency_average_6panel.png"><img src="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/no_latent_joint_rl_shared_agency_average_6panel.png" alt="All-distance comparison"></a>
+  </section>
+
+  <section class="panel">
+    <h2>Equal-to-Both</h2>
+    <a href="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/no_latent_joint_rl_shared_agency_equal_to_both_6panel.png"><img src="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/no_latent_joint_rl_shared_agency_equal_to_both_6panel.png" alt="Equal-to-both comparison"></a>
+  </section>
+
+  <section class="panel">
+    <h2>Commitment-Only Lambda Sweep</h2>
+    <p class="note">The commitment/no-signaling shared-agency row fixes alpha=0 and selects lambda by commitment-only binomial NLL. The sweep plot shows the five report metrics as lambda changes.</p>
+    <a href="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/shared_agency_commitment_no_signaling_lambda_sweep.png"><img src="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/shared_agency_commitment_no_signaling_lambda_sweep.png" alt="Shared-agency commitment-only lambda sweep"></a>
+    <h2>Best Lambda</h2>
+    <table><thead><tr><th>lambda</th><th>commitment_nll</th><th>signaling_nll</th><th>binomial_nll</th><th>average_commitment_percent</th><th>average_signaling_percent</th><th>equal_commitment_percent</th><th>equal_signaling_percent</th></tr></thead><tbody><tr><td class="num">0.10</td><td class="num">173.95</td><td class="num">200.25</td><td class="num">374.20</td><td class="num">66.88</td><td class="num">32.42</td><td class="num">79.72</td><td class="num">45.56</td></tr></tbody></table>
+  </section>
+
+  <section class="panel">
+    <h2>Full Shared-Agency Communicative Action Mixture (Legibility Over Alternatives) Rho Sweep</h2>
+    <p class="note">The full shared-agency row in the main comparison uses this Communicative Action Mixture (Legibility Over Alternatives) fit. Lambda is fixed at 0.2 and rho is selected by commitment NLL + signaling NLL across the human distance-condition targets.</p>
+    <a href="shared_agency_costly_mixture_rho_sweep/shared_agency_costly_mixture_rho_sweep.png"><img src="shared_agency_costly_mixture_rho_sweep/shared_agency_costly_mixture_rho_sweep.png" alt="Shared-agency communicative action mixture rho sweep"></a>
+    <h2>Best Communicative Action Mixture (Legibility Over Alternatives) Setting</h2>
+    <table><thead><tr><th>lambda</th><th>rho</th><th>commitment_nll</th><th>signaling_nll</th><th>binomial_nll</th><th>average_commitment_percent</th><th>average_signaling_percent</th><th>equal_commitment_percent</th><th>equal_signaling_percent</th></tr></thead><tbody><tr><td class="num">0.20</td><td class="num">0.50</td><td class="num">175.19</td><td class="num">186.21</td><td class="num">361.40</td><td class="num">72.42</td><td class="num">42.44</td><td class="num">93.89</td><td class="num">65.00</td></tr></tbody></table>
+  </section>
+
+  <section class="panel">
+    <h2>Legacy RSA Diagnostics</h2>
+    <p class="note">These alpha and lambda x alpha searches are retained for comparison only. They are no longer used as the full shared-agency row in this report.</p>
+    <h2>Legacy RSA Alpha Sweep</h2>
+    <a href="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/shared_agency_commitment_signaling_alpha_sweep.png"><img src="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/shared_agency_commitment_signaling_alpha_sweep.png" alt="Legacy shared-agency RSA alpha sweep"></a>
+    <h2>Best Legacy RSA Alpha</h2>
+    <table><thead><tr><th>lambda</th><th>commitment_nll</th><th>signaling_nll</th><th>binomial_nll</th><th>average_commitment_percent</th><th>average_signaling_percent</th><th>equal_commitment_percent</th><th>equal_signaling_percent</th></tr></thead><tbody><tr><td class="num">0.10</td><td class="num">178.20</td><td class="num">189.90</td><td class="num">368.10</td><td class="num">59.02</td><td class="num">38.69</td><td class="num">68.61</td><td class="num">56.67</td></tr></tbody></table>
+    <h2>Legacy RSA Joint Lambda x Alpha Search</h2>
+    <a href="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/shared_agency_commitment_signaling_joint_lambda_alpha_heatmap.png"><img src="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/shared_agency_commitment_signaling_joint_lambda_alpha_heatmap.png" alt="Legacy shared-agency joint lambda alpha search heatmap"></a>
+    <h2>Best Legacy RSA Joint Pair</h2>
+    <table><thead><tr><th>lambda</th><th>commitment_nll</th><th>signaling_nll</th><th>binomial_nll</th><th>average_commitment_percent</th><th>average_signaling_percent</th><th>equal_commitment_percent</th><th>equal_signaling_percent</th></tr></thead><tbody><tr><td class="num">0.15</td><td class="num">175.50</td><td class="num">186.80</td><td class="num">362.29</td><td class="num">67.68</td><td class="num">39.96</td><td class="num">77.78</td><td class="num">51.39</td></tr></tbody></table>
+  </section>
+
+  <section class="panel">
+    <h2>BToM Legibility</h2>
+    <p class="note">BToM posterior is computed over the old shared goal versus the new goal from each post-new-goal trajectory, scored as the posterior probability of the player's final reached goal. Step 0 is the new-goal presentation moment.</p>
+    <a href="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/no_latent_joint_rl_shared_agency_btom_first5_trajectory.png"><img src="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/no_latent_joint_rl_shared_agency_btom_first5_trajectory.png" alt="BToM posterior over first five steps after new-goal presentation"></a>
+    <p class="links">
+      <a href="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/no_latent_joint_rl_shared_agency_btom_summary.csv">BToM summary CSV</a>
+      <a href="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/no_latent_joint_rl_shared_agency_btom_step1_summary.csv">BToM step 1 CSV</a>
+      <a href="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/no_latent_joint_rl_shared_agency_btom_first5_step_per_participant.csv">BToM step CSV</a>
+      <a href="joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/no_latent_joint_rl_shared_agency_btom_first5_mean_per_participant.csv">BToM mean CSV</a>
+    </p>
+  </section>
+
+  <section class="panel">
+    <h2>Summary Table</h2>
+    <table><thead><tr><th>condition_scope</th><th>group</th><th>Success Rate (%)</th><th>Coordination Efficiency (%)</th><th>Commitment (%)</th><th>Signaling Move (%)</th><th>BToM Step 1 (%)</th></tr></thead><tbody><tr><td class="">average</td><td class="">Individual RL</td><td class="num">20.56</td><td class="num">100.00</td><td class="num">51.64</td><td class="num">43.98</td><td class="num">70.35</td></tr><tr><td class="">average</td><td class="">Joint RL</td><td class="num">97.78</td><td class="num">89.96</td><td class="num">51.42</td><td class="num">32.85</td><td class="num">64.45</td></tr><tr><td class="">average</td><td class="">Shared agency no commitment no signaling</td><td class="num">88.06</td><td class="num">77.93</td><td class="num">46.71</td><td class="num">26.65</td><td class="num">58.17</td></tr><tr><td class="">average</td><td class="">Shared agency commitment no signaling</td><td class="num">86.11</td><td class="num">85.15</td><td class="num">66.88</td><td class="num">32.42</td><td class="num">62.47</td></tr><tr><td class="">average</td><td class="">Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives))</td><td class="num">91.11</td><td class="num">87.64</td><td class="num">72.42</td><td class="num">42.44</td><td class="num">69.14</td></tr><tr><td class="">average</td><td class="">Human-Human</td><td class="num">100.00</td><td class="num">81.58</td><td class="num">64.97</td><td class="num">52.53</td><td class="num">73.75</td></tr><tr><td class="">equal_to_both</td><td class="">Individual RL</td><td class="num">28.89</td><td class="num">100.00</td><td class="num">54.17</td><td class="num">62.80</td><td class="num">80.90</td></tr><tr><td class="">equal_to_both</td><td class="">Joint RL</td><td class="num">98.89</td><td class="num">98.66</td><td class="num">41.67</td><td class="num">41.39</td><td class="num">67.09</td></tr><tr><td class="">equal_to_both</td><td class="">Shared agency no commitment no signaling</td><td class="num">96.67</td><td class="num">87.53</td><td class="num">38.06</td><td class="num">37.78</td><td class="num">63.82</td></tr><tr><td class="">equal_to_both</td><td class="">Shared agency commitment no signaling</td><td class="num">97.78</td><td class="num">93.59</td><td class="num">79.72</td><td class="num">45.56</td><td class="num">69.07</td></tr><tr><td class="">equal_to_both</td><td class="">Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives))</td><td class="num">100.00</td><td class="num">98.01</td><td class="num">93.89</td><td class="num">65.00</td><td class="num">78.43</td></tr><tr><td class="">equal_to_both</td><td class="">Human-Human</td><td class="num">100.00</td><td class="num">96.64</td><td class="num">84.38</td><td class="num">59.38</td><td class="num">80.28</td></tr></tbody></table>
+  </section>
+
+  <section class="panel">
+    <h2>Raw Sources</h2>
+    <table><thead><tr><th>label</th><th>raw_trials</th><th>summary_path</th><th>trials_path</th></tr></thead><tbody><tr><td class="">Individual RL</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/no_latent_joint_rl_shared_agency_baseline/individual_rl_legacy/joint_rl_vs_joint_rl_2p3g_raw_trials_individual_sessions_0_to_29.json.zst</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/simulations/individual_rl_legacy/joint_rl_vs_joint_rl_2p3g_summary_individual_sessions_0_to_29.json</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/simulations/individual_rl_legacy/joint_rl_vs_joint_rl_2p3g_trials_individual_sessions_0_to_29.json</td></tr><tr><td class="">Joint RL</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/no_latent_joint_rl_shared_agency_baseline/no_latent_joint_rl/joint_rl_vs_joint_rl_2p3g_raw_trials_unshaped_sessions_0_to_29.json.zst</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/simulations/no_latent_joint_rl/joint_rl_vs_joint_rl_2p3g_summary_unshaped_sessions_0_to_29.json</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/simulations/no_latent_joint_rl/joint_rl_vs_joint_rl_2p3g_trials_unshaped_sessions_0_to_29.json</td></tr><tr><td class="">Shared agency no commitment no signaling</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/no_latent_joint_rl_shared_agency_baseline/shared_agency_lambda0_alpha0/always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0_alpha_0_sessions_0_to_29.json.zst</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/simulations/shared_agency_lambda0_alpha0/always_signal_vs_always_signal_2p3g_summary_beta_3_lambda_0_alpha_0_sessions_0_to_29.json</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/simulations/shared_agency_lambda0_alpha0/always_signal_vs_always_signal_2p3g_trials_beta_3_lambda_0_alpha_0_sessions_0_to_29.json</td></tr><tr><td class="">Shared agency commitment no signaling</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/no_latent_joint_rl_shared_agency_baseline/shared_agency_commitment_no_signaling_lambda_sweep/always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0p1_alpha_0_sessions_0_to_29.json.zst</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/simulations/shared_agency_commitment_no_signaling_lambda_sweep/always_signal_vs_always_signal_2p3g_summary_beta_3_lambda_0p1_alpha_0_sessions_0_to_29.json</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/joint_rl/outputs/no_latent_joint_rl_shared_agency_baseline/simulations/shared_agency_commitment_no_signaling_lambda_sweep/always_signal_vs_always_signal_2p3g_trials_beta_3_lambda_0p1_alpha_0_sessions_0_to_29.json</td></tr><tr><td class="">Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives))</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_costly_mixture_rho_sweep/costly_mixture_rho_sweep/always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0p2_alpha_0p5_score_costly_mixture_sessions_0_to_29.json.zst</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_costly_mixture_rho_sweep/simulations/costly_mixture_rho_sweep/always_signal_vs_always_signal_2p3g_summary_beta_3_lambda_0p2_alpha_0p5_score_costly_mixture_sessions_0_to_29.json</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_costly_mixture_rho_sweep/simulations/costly_mixture_rho_sweep/always_signal_vs_always_signal_2p3g_trials_beta_3_lambda_0p2_alpha_0p5_score_costly_mixture_sessions_0_to_29.json</td></tr></tbody></table>
+  </section>
+</main>
+</body>
+</html>

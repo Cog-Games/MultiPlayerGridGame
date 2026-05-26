@@ -412,16 +412,10 @@ const UnshapedJointRL = (() => {
 
   function exactUnshapedValue(aiIdx, plIdx, goalIdx) {
     if (aiIdx === goalIdx && plIdx === goalIdx) return 0;
-    const steps = Math.max(manhattanIdx(aiIdx, goalIdx), manhattanIdx(plIdx, goalIdx));
-    if (steps <= 0) return 0;
-    const gamma = RL_AGENT_CONFIG.gamma || 0.9;
     const rewardGoal = RL_AGENT_CONFIG.goalReward;
     const stepCost = RL_AGENT_CONFIG.stepCost;
-    const finalDiscount = Math.pow(gamma, Math.max(0, steps - 1));
-    const stepReturn = steps > 1
-      ? stepCost * (1 - finalDiscount) / Math.max(1e-12, 1 - gamma)
-      : 0;
-    return stepReturn + finalDiscount * rewardGoal;
+    const jointDistance = manhattanIdx(aiIdx, goalIdx) + manhattanIdx(plIdx, goalIdx);
+    return rewardGoal + stepCost * jointDistance;
   }
 
   function hardStateValue(aiIdx, plIdx, goalIdxs) {
@@ -445,14 +439,14 @@ const UnshapedJointRL = (() => {
     const values = [];
     const rewardGoal = RL_AGENT_CONFIG.goalReward;
     const stepCost = RL_AGENT_CONFIG.stepCost;
-    const gamma = RL_AGENT_CONFIG.gamma || 0.9;
     for (let aAI = 0; aAI < 4; aAI++) {
       const nextAI = goalSet.has(aiIdx) ? aiIdx : stepIdx(aiIdx, aAI);
       for (let aPL = 0; aPL < 4; aPL++) {
         const nextPL = goalSet.has(plIdx) ? plIdx : stepIdx(plIdx, aPL);
         const done = terminal(nextAI, nextPL, goalSet);
-        const reward = done ? rewardGoal : stepCost;
-        const future = done ? 0 : gamma * hardStateValue(nextAI, nextPL, goalIdxs);
+        const activeAgents = (goalSet.has(aiIdx) ? 0 : 1) + (goalSet.has(plIdx) ? 0 : 1);
+        const reward = (done ? rewardGoal : 0) + stepCost * activeAgents;
+        const future = done ? 0 : hardStateValue(nextAI, nextPL, goalIdxs);
         values.push(reward + future);
       }
     }
@@ -488,8 +482,7 @@ const UnshapedJointRL = (() => {
       beta,
       RL_AGENT_CONFIG.goalReward,
       RL_AGENT_CONFIG.stepCost,
-      RL_AGENT_CONFIG.gamma,
-      'unshaped'
+      'distance-sum-unshaped'
     ].join('|');
     if (valueCache.has(key)) return valueCache.get(key);
     const goalSet = new Set(normalizedGoals.map(([r, c]) => toIdx(r, c)));
@@ -499,14 +492,7 @@ const UnshapedJointRL = (() => {
       valueCache.set(key, 0);
       return 0;
     }
-    const q = qValues(aiState, playerState, normalizedGoals);
-    const maxQ = Math.max(...q);
-    if (!isFinite(maxQ)) {
-      valueCache.set(key, 0);
-      return 0;
-    }
-    const sumExp = q.reduce((acc, v) => acc + Math.exp(Math.max(-700, Math.min(700, beta * (v - maxQ)))), 0);
-    const value = maxQ + Math.log(Math.max(1e-12, sumExp)) / Math.max(1e-12, beta);
+    const value = hardStateValue(aiIdx, plIdx, normalizedGoals.map(([r, c]) => toIdx(r, c)));
     valueCache.set(key, value);
     return value;
   }

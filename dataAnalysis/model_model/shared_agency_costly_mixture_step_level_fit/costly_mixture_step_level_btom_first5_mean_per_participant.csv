@@ -1,0 +1,213 @@
+participantId,group,posterior
+human_1d1f4cf9-e5f0-4ef5-8d74-ab6b134f25eb_player1,Human-Human,0.7064479510777425
+human_1d1f4cf9-e5f0-4ef5-8d74-ab6b134f25eb_player2,Human-Human,0.7660259607896821
+human_2ed9e54f-be52-49b9-a758-abb5f5ef5150_player1,Human-Human,0.8547391366377343
+human_2ed9e54f-be52-49b9-a758-abb5f5ef5150_player2,Human-Human,0.8249205185364219
+human_31e13002-490a-484d-a0f6-1781673d477a_player1,Human-Human,0.8904982675472978
+human_31e13002-490a-484d-a0f6-1781673d477a_player2,Human-Human,0.9027717780257473
+human_6558f174-56b6-4592-b53b-bf9ff8c7f3ca_player1,Human-Human,0.6938879854073292
+human_6558f174-56b6-4592-b53b-bf9ff8c7f3ca_player2,Human-Human,0.8943915765718597
+human_6b3ca33d-6a91-4de7-aaef-b55bcb13d712_player1,Human-Human,0.7226218879397933
+human_6b3ca33d-6a91-4de7-aaef-b55bcb13d712_player2,Human-Human,0.716753596315283
+human_74ea1778-cc30-4c70-92fe-ee112edef228_player1,Human-Human,0.6849940350056855
+human_74ea1778-cc30-4c70-92fe-ee112edef228_player2,Human-Human,0.6919375153841454
+human_975b16bb-4262-4523-94e3-02521faeb953_player1,Human-Human,0.7322160423401628
+human_975b16bb-4262-4523-94e3-02521faeb953_player2,Human-Human,0.7325912810944099
+human_9efbe63f-05a0-4f24-b469-a246d7732c10_player1,Human-Human,0.500315852408757
+human_9efbe63f-05a0-4f24-b469-a246d7732c10_player2,Human-Human,0.5236904068836873
+human_a5a659ea-c541-4c54-9bad-d736222acbb9_player1,Human-Human,0.8324211851106377
+human_a5a659ea-c541-4c54-9bad-d736222acbb9_player2,Human-Human,0.8941322418992527
+human_a9a91c71-c38b-4e78-9be4-3c2f5c450004_player1,Human-Human,0.8397810244549248
+human_a9a91c71-c38b-4e78-9be4-3c2f5c450004_player2,Human-Human,0.6643838108501658
+human_b40d6c2e-46aa-4680-8f62-ef715fd65b79_player1,Human-Human,0.8279204342976518
+human_b40d6c2e-46aa-4680-8f62-ef715fd65b79_player2,Human-Human,0.8577869710523244
+human_bf70b991-4d12-4b4f-9ce5-57687e7d0c35_player1,Human-Human,0.7337322641838704
+human_bf70b991-4d12-4b4f-9ce5-57687e7d0c35_player2,Human-Human,0.710220465613674
+human_c252dec7-11a7-48c1-9696-691e0511cbc2_player1,Human-Human,0.7240890175229904
+human_c252dec7-11a7-48c1-9696-691e0511cbc2_player2,Human-Human,0.8236653554347487
+human_c70d7765-1724-49bf-9fed-d8647822e9f2_player1,Human-Human,0.8543943780098272
+human_c70d7765-1724-49bf-9fed-d8647822e9f2_player2,Human-Human,0.845192998894275
+human_cb6a41aa-0534-4a15-86a4-80d9c232a01e_player1,Human-Human,0.642930060534218
+human_cb6a41aa-0534-4a15-86a4-80d9c232a01e_player2,Human-Human,0.6586424569478491
+human_dbe27c5c-9678-4808-9506-13690c5d442a_player1,Human-Human,0.8382990924434042
+human_dbe27c5c-9678-4808-9506-13690c5d442a_player2,Human-Human,0.6028280427846004
+session_0_player1,Communicative action mixture step-1 fit,0.7835808543216355
+session_0_player1,Communicative action mixture step-1-3 fit,0.8210154788159816
+session_0_player1,Shared agency no signaling,0.7835808543216355
+session_0_player2,Communicative action mixture step-1 fit,0.7803232181825834
+session_0_player2,Communicative action mixture step-1-3 fit,0.687188298660733
+session_0_player2,Shared agency no signaling,0.7803232181825834
+session_10_player1,Communicative action mixture step-1 fit,0.7572504560894447
+session_10_player1,Communicative action mixture step-1-3 fit,0.7572504560894447
+session_10_player1,Shared agency no signaling,0.7572504560894447
+session_10_player2,Communicative action mixture step-1 fit,0.6619980042000005
+session_10_player2,Communicative action mixture step-1-3 fit,0.6619980042000005
+session_10_player2,Shared agency no signaling,0.6619980042000005
+session_11_player1,Communicative action mixture step-1 fit,0.7866067035100446
+session_11_player1,Communicative action mixture step-1-3 fit,0.829437366624952
+session_11_player1,Shared agency no signaling,0.7866067035100446
+session_11_player2,Communicative action mixture step-1 fit,0.7742538144634017
+session_11_player2,Communicative action mixture step-1-3 fit,0.7647695555807905
+session_11_player2,Shared agency no signaling,0.7742538144634017
+session_12_player1,Communicative action mixture step-1 fit,0.6825042090576606
+session_12_player1,Communicative action mixture step-1-3 fit,0.6825042090576606
+session_12_player1,Shared agency no signaling,0.7052085073340945
+session_12_player2,Communicative action mixture step-1 fit,0.7140236942841622
+session_12_player2,Communicative action mixture step-1-3 fit,0.715687028884215
+session_12_player2,Shared agency no signaling,0.6024032471105119
+session_13_player1,Communicative action mixture step-1 fit,0.7909827606435794
+session_13_player1,Communicative action mixture step-1-3 fit,0.8398643834885828
+session_13_player1,Shared agency no signaling,0.790986635948216
+session_13_player2,Communicative action mixture step-1 fit,0.8116368355915831
+session_13_player2,Communicative action mixture step-1-3 fit,0.7396024779053839
+session_13_player2,Shared agency no signaling,0.8116368355915831
+session_14_player1,Communicative action mixture step-1 fit,0.8968351097909087
+session_14_player1,Communicative action mixture step-1-3 fit,0.8968351097909087
+session_14_player1,Shared agency no signaling,0.8677453377134765
+session_14_player2,Communicative action mixture step-1 fit,0.5806106236896353
+session_14_player2,Communicative action mixture step-1-3 fit,0.5806106236896353
+session_14_player2,Shared agency no signaling,0.6215140022918741
+session_15_player1,Communicative action mixture step-1 fit,0.8046490230610533
+session_15_player1,Communicative action mixture step-1-3 fit,0.718691677030353
+session_15_player1,Shared agency no signaling,0.7075879065105174
+session_15_player2,Communicative action mixture step-1 fit,0.7078861721162496
+session_15_player2,Communicative action mixture step-1-3 fit,0.7020849675361467
+session_15_player2,Shared agency no signaling,0.7153804078677877
+session_16_player1,Communicative action mixture step-1 fit,0.7365290930131467
+session_16_player1,Communicative action mixture step-1-3 fit,0.751054760289156
+session_16_player1,Shared agency no signaling,0.7016097357400555
+session_16_player2,Communicative action mixture step-1 fit,0.7671681945900545
+session_16_player2,Communicative action mixture step-1-3 fit,0.7741068097883486
+session_16_player2,Shared agency no signaling,0.8333769389405563
+session_17_player1,Communicative action mixture step-1 fit,0.7390927044586029
+session_17_player1,Communicative action mixture step-1-3 fit,0.7449432783921587
+session_17_player1,Shared agency no signaling,0.7432639381164639
+session_17_player2,Communicative action mixture step-1 fit,0.7430386594953379
+session_17_player2,Communicative action mixture step-1-3 fit,0.6701513880682226
+session_17_player2,Shared agency no signaling,0.7427384901081888
+session_18_player1,Communicative action mixture step-1 fit,0.6730598708464658
+session_18_player1,Communicative action mixture step-1-3 fit,0.7268572250232146
+session_18_player1,Shared agency no signaling,0.7813192068794166
+session_18_player2,Communicative action mixture step-1 fit,0.6392033754487219
+session_18_player2,Communicative action mixture step-1-3 fit,0.771341032475856
+session_18_player2,Shared agency no signaling,0.722580419332147
+session_19_player1,Communicative action mixture step-1 fit,0.8121315178602726
+session_19_player1,Communicative action mixture step-1-3 fit,0.8212287411355381
+session_19_player1,Shared agency no signaling,0.8262697818744072
+session_19_player2,Communicative action mixture step-1 fit,0.8259709655545222
+session_19_player2,Communicative action mixture step-1-3 fit,0.8259709655545222
+session_19_player2,Shared agency no signaling,0.8259709655545222
+session_1_player1,Communicative action mixture step-1 fit,0.7046687195573234
+session_1_player1,Communicative action mixture step-1-3 fit,0.7182307175415644
+session_1_player1,Shared agency no signaling,0.696824927285728
+session_1_player2,Communicative action mixture step-1 fit,0.8175803817686665
+session_1_player2,Communicative action mixture step-1-3 fit,0.8448641773400553
+session_1_player2,Shared agency no signaling,0.8152758159724987
+session_20_player1,Communicative action mixture step-1 fit,0.7499734259969895
+session_20_player1,Communicative action mixture step-1-3 fit,0.8304928322773318
+session_20_player1,Shared agency no signaling,0.7082929700500975
+session_20_player2,Communicative action mixture step-1 fit,0.7587531010789044
+session_20_player2,Communicative action mixture step-1-3 fit,0.7255626560266877
+session_20_player2,Shared agency no signaling,0.7458726541472094
+session_21_player1,Communicative action mixture step-1 fit,0.8043792289922506
+session_21_player1,Communicative action mixture step-1-3 fit,0.83165713290562
+session_21_player1,Shared agency no signaling,0.7952197171827878
+session_21_player2,Communicative action mixture step-1 fit,0.7631774452052237
+session_21_player2,Communicative action mixture step-1-3 fit,0.763724043112811
+session_21_player2,Shared agency no signaling,0.763198003318032
+session_22_player1,Communicative action mixture step-1 fit,0.7726607204373201
+session_22_player1,Communicative action mixture step-1-3 fit,0.792612100547983
+session_22_player1,Shared agency no signaling,0.8426097076404547
+session_22_player2,Communicative action mixture step-1 fit,0.7383618566452754
+session_22_player2,Communicative action mixture step-1-3 fit,0.7127185144151676
+session_22_player2,Shared agency no signaling,0.7192574229126596
+session_23_player1,Communicative action mixture step-1 fit,0.6147384277716041
+session_23_player1,Communicative action mixture step-1-3 fit,0.758547605360834
+session_23_player1,Shared agency no signaling,0.720668355862765
+session_23_player2,Communicative action mixture step-1 fit,0.8283219407107147
+session_23_player2,Communicative action mixture step-1-3 fit,0.8260432696287034
+session_23_player2,Shared agency no signaling,0.7100788292695729
+session_24_player1,Communicative action mixture step-1 fit,0.7913075796467557
+session_24_player1,Communicative action mixture step-1-3 fit,0.727169834135079
+session_24_player1,Shared agency no signaling,0.7913075796467557
+session_24_player2,Communicative action mixture step-1 fit,0.8067864764989898
+session_24_player2,Communicative action mixture step-1-3 fit,0.7848601620382641
+session_24_player2,Shared agency no signaling,0.8067864764989898
+session_25_player1,Communicative action mixture step-1 fit,0.6251853021930853
+session_25_player1,Communicative action mixture step-1-3 fit,0.6750437730276595
+session_25_player1,Shared agency no signaling,0.6251853021930853
+session_25_player2,Communicative action mixture step-1 fit,0.7102489946507333
+session_25_player2,Communicative action mixture step-1-3 fit,0.6048831356693787
+session_25_player2,Shared agency no signaling,0.7292537930180004
+session_26_player1,Communicative action mixture step-1 fit,0.662411714915988
+session_26_player1,Communicative action mixture step-1-3 fit,0.6323606840642143
+session_26_player1,Shared agency no signaling,0.7739909241505676
+session_26_player2,Communicative action mixture step-1 fit,0.7664247053656189
+session_26_player2,Communicative action mixture step-1-3 fit,0.8258920918050192
+session_26_player2,Shared agency no signaling,0.769044513021534
+session_27_player1,Communicative action mixture step-1 fit,0.6921160521274659
+session_27_player1,Communicative action mixture step-1-3 fit,0.692156308700632
+session_27_player1,Shared agency no signaling,0.6921160521274659
+session_27_player2,Communicative action mixture step-1 fit,0.7078366895603448
+session_27_player2,Communicative action mixture step-1-3 fit,0.7214143456813369
+session_27_player2,Shared agency no signaling,0.6470814129905247
+session_28_player1,Communicative action mixture step-1 fit,0.7264522126517585
+session_28_player1,Communicative action mixture step-1-3 fit,0.7490447699497038
+session_28_player1,Shared agency no signaling,0.8126067341018834
+session_28_player2,Communicative action mixture step-1 fit,0.8565181524093017
+session_28_player2,Communicative action mixture step-1-3 fit,0.8565181524093017
+session_28_player2,Shared agency no signaling,0.7422932900916474
+session_29_player1,Communicative action mixture step-1 fit,0.6874288884737989
+session_29_player1,Communicative action mixture step-1-3 fit,0.6620018084684336
+session_29_player1,Shared agency no signaling,0.7015509580877737
+session_29_player2,Communicative action mixture step-1 fit,0.8080142532337522
+session_29_player2,Communicative action mixture step-1-3 fit,0.6968581473253044
+session_29_player2,Shared agency no signaling,0.6222570768854552
+session_2_player1,Communicative action mixture step-1 fit,0.7450265643397346
+session_2_player1,Communicative action mixture step-1-3 fit,0.7980393205944107
+session_2_player1,Shared agency no signaling,0.659019968766732
+session_2_player2,Communicative action mixture step-1 fit,0.8340555505736839
+session_2_player2,Communicative action mixture step-1-3 fit,0.8149865158595566
+session_2_player2,Shared agency no signaling,0.7489646199866908
+session_3_player1,Communicative action mixture step-1 fit,0.780650755379411
+session_3_player1,Communicative action mixture step-1-3 fit,0.7366242474902497
+session_3_player1,Shared agency no signaling,0.7802477683681224
+session_3_player2,Communicative action mixture step-1 fit,0.7597535377334266
+session_3_player2,Communicative action mixture step-1-3 fit,0.7012595087303287
+session_3_player2,Shared agency no signaling,0.8238011026497115
+session_4_player1,Communicative action mixture step-1 fit,0.6764903094730085
+session_4_player1,Communicative action mixture step-1-3 fit,0.7083823793141709
+session_4_player1,Shared agency no signaling,0.6828371688883286
+session_4_player2,Communicative action mixture step-1 fit,0.7087831318908115
+session_4_player2,Communicative action mixture step-1-3 fit,0.7440510438743685
+session_4_player2,Shared agency no signaling,0.7088438037779087
+session_5_player1,Communicative action mixture step-1 fit,0.6696632211719559
+session_5_player1,Communicative action mixture step-1-3 fit,0.6696632211719559
+session_5_player1,Shared agency no signaling,0.6696632211719559
+session_5_player2,Communicative action mixture step-1 fit,0.7546635467378647
+session_5_player2,Communicative action mixture step-1-3 fit,0.7546635467378647
+session_5_player2,Shared agency no signaling,0.7546635467378647
+session_6_player1,Communicative action mixture step-1 fit,0.7808964682702018
+session_6_player1,Communicative action mixture step-1-3 fit,0.8554020601216884
+session_6_player1,Shared agency no signaling,0.7585685316098644
+session_6_player2,Communicative action mixture step-1 fit,0.7352659749885478
+session_6_player2,Communicative action mixture step-1-3 fit,0.7645407109983462
+session_6_player2,Shared agency no signaling,0.7905109661727157
+session_7_player1,Communicative action mixture step-1 fit,0.6865959092417987
+session_7_player1,Communicative action mixture step-1-3 fit,0.6889706314139695
+session_7_player1,Shared agency no signaling,0.7237717878558334
+session_7_player2,Communicative action mixture step-1 fit,0.701942549100706
+session_7_player2,Communicative action mixture step-1-3 fit,0.7378511620404846
+session_7_player2,Shared agency no signaling,0.6437630057740086
+session_8_player1,Communicative action mixture step-1 fit,0.7559954631106183
+session_8_player1,Communicative action mixture step-1-3 fit,0.7559954631106183
+session_8_player1,Shared agency no signaling,0.676578000959654
+session_8_player2,Communicative action mixture step-1 fit,0.7541240877660407
+session_8_player2,Communicative action mixture step-1-3 fit,0.7542940192461929
+session_8_player2,Shared agency no signaling,0.7194450360193514
+session_9_player1,Communicative action mixture step-1 fit,0.756469847671563
+session_9_player1,Communicative action mixture step-1-3 fit,0.7256411408968495
+session_9_player1,Shared agency no signaling,0.7749357783377755
+session_9_player2,Communicative action mixture step-1 fit,0.776179385394743
+session_9_player2,Communicative action mixture step-1-3 fit,0.6433412815889198
+session_9_player2,Shared agency no signaling,0.6753839816361834

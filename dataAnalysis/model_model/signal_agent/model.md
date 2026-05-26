@@ -16,7 +16,7 @@ Implemented report labels:
 |---|---|---|
 | `sampleJointGoalAndSignal_afterNewGoal` | `SignalAgent` | signaling begins after new-goal presentation |
 | `sampleJointGoalAndSignal_fromStart` | `AlwaysSignalAgent` | posterior and signaling are active from trial start |
-| `sampleJointGoalAndRSASignal_fromStart` (`shared-agency model`) | `AlwaysSignalAgent` | from-start posterior timing with unshaped JointRL value-based goal choice and RSA/log-posterior signaling |
+| `sampleJointGoalAndRSASignal_fromStart` (`shared-agency model`) | `AlwaysSignalAgent` | from-start posterior timing with unshaped JointRL value-based goal choice and Communicative Action Mixture (Legibility Over Alternatives) |
 | `samplePosteriorOnlyGoalAndSignal_fromStart` | `PosteriorOnlySignalAgent` | from-start signaling, but goal choice uses posterior only |
 
 ## 2. Task and notation
@@ -60,23 +60,29 @@ Before joint detection or new-goal presentation, `SignalAgent` uses joint-RL pla
 
 The report label `sampleJointGoalAndRSASignal_fromStart` keeps the `AlwaysSignalAgent` implementation class, but its analysis path replaces the distance-based expected utility and the RSA base action likelihood with the same unshaped JointRL reward/value model.
 
-The unshaped reward is:
+The unshaped reward charges step cost per active player/agent step:
 
 $$
 R_g(s,a,s') =
 30 \cdot \mathbf{1}[\text{both players reach } g]
-- 1 \cdot \mathbf{1}[\text{not done}]
+- \mathbf{1}[\text{player 1 active}]
+- \mathbf{1}[\text{player 2 active}]
 $$
 
 Fixed reward/value parameters:
 
 - `goalReward = 30`
-- `stepCost = -1`
-- `gamma = 0.9`
+- `stepCost = -1` per active player/agent step
 - `softmaxBeta = 3.0`
 - `proximityRewardWeight = 0`
 
-Goal choice uses the unshaped soft state value:
+Goal choice uses a distance-sum completion value, so equal joint Manhattan distance sum gives equal EU:
+
+$$
+V_g(s_t)=30-\left(d_{\text{self}}(g)+d_{\text{other}}(g)\right)
+$$
+
+It is normalized across currently available goals before softmax weighting:
 
 $$
 \widetilde V_g(s_t)=
@@ -250,7 +256,7 @@ $$
 
 The primary report fits this variant with an adaptive `lambda x p` grid against trial/player-level commitment plus signaling binomial NLL. The step-level report fits the same two parameters against all-step human action likelihood.
 
-## 5.6 From-start RSA/log-posterior signaling
+## 5.6 From-start Communicative Action Mixture (Legibility Over Alternatives)
 
 `sampleJointGoalAndRSASignal_fromStart` is labeled as the `shared-agency model` in reports. It is analysis-only and is not exposed as a live app player type.
 
@@ -261,21 +267,43 @@ W_\lambda(g) \propto
 \exp\left(\beta \cdot \mathrm{EU}(g)\right) \cdot P_t(g)^\lambda
 $$
 
-Only the signaling action policy changes. For a sampled target goal, the RSA/log-posterior policy is:
+Only the signaling action policy changes. For a sampled target goal, the communicative policy first measures how much action `a` makes the sampled goal legible over alternatives:
 
 $$
-\pi_{\mathrm{RSA}}(a \mid g^*) \propto
-\pi_{\mathrm{base}}(a \mid s_t, g^*) \cdot P_t(g^* \mid a)^\alpha
+L_t(a,g^*) =
+\log P_t(g^* \mid a)
+-
+\log \sum_{g' \neq g^*} P_t(g' \mid a)
+$$
+
+The communicative policy is:
+
+$$
+\pi_{\mathrm{comm}}(a \mid s_t,g^*) \propto
+\pi_{\mathrm{base}}(a \mid s_t,g^*)
+\exp
+\left[
+L_t(a,g^*)
+\right]
+$$
+
+The final signaling policy mixes efficient and communicative movement:
+
+$$
+\pi_{\mathrm{CAM}}(a \mid s_t,g^*) =
+(1-\rho)\pi_{\mathrm{base}}(a \mid s_t,g^*)
++
+\rho\pi_{\mathrm{comm}}(a \mid s_t,g^*)
 $$
 
 The marginal likelihood used by the step-level fit sums over sampled goals:
 
 $$
 \pi(a_t) =
-\sum_g W_\lambda(g)\pi_{\mathrm{RSA}}(a_t \mid g)
+\sum_g W_\lambda(g)\pi_{\mathrm{CAM}}(a_t \mid g)
 $$
 
-The primary report fits this variant with a fine-grained local `lambda x alpha` grid against trial/player-level commitment plus signaling binomial NLL. The step-level report fits `lambda` and RSA `alpha` against all-step human action likelihood, then simulates the best setting for report metrics and BToM caches.
+The primary report fixes `lambda=0.2` and fits `rho` against trial/player-level commitment plus signaling binomial NLL. The step-level report fits `rho` against new-goal step 1-3 human action likelihood, then simulates the best setting for report metrics and BToM caches.
 
 ## 5.7 Posterior-only from-start Bernoulli mixture
 

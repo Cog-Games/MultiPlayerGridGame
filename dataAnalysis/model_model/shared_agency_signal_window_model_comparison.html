@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shared-Agency Signal-Window Model Comparison</title>
+<style>
+body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#f6f8fb; color:#1f2933; }
+header { padding:34px 48px 24px; background:#ffffff; border-bottom:1px solid #d9e2ec; }
+main { max-width:1200px; margin:0 auto; padding:28px 24px 60px; }
+h1 { margin:0 0 8px; font-size:31px; }
+h2 { margin:30px 0 12px; font-size:21px; }
+p { line-height:1.55; }
+.note { color:#52606d; max-width:980px; }
+.panel { background:#fff; border:1px solid #d9e2ec; border-radius:8px; padding:18px; margin:18px 0; }
+.links a { display:inline-block; margin:0 12px 10px 0; color:#2458a6; text-decoration:none; }
+img { width:100%; height:auto; display:block; border:1px solid #d9e2ec; border-radius:6px; background:white; }
+table { width:100%; border-collapse:collapse; font-size:13px; background:white; }
+th,td { border:1px solid #d9e2ec; padding:8px 10px; text-align:left; vertical-align:top; }
+th { background:#eef3f8; }
+td.num { text-align:right; font-variant-numeric:tabular-nums; }
+code { background:#eef3f8; padding:2px 5px; border-radius:4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Shared-Agency Signal-Window Model Comparison</h1>
+  <p class="note">Legacy RSA/log-posterior signal-window comparison. The current full shared-agency model used in the main trial-level and step-level reports is Communicative Action Mixture (Legibility Over Alternatives): trial-level lambda = 0.2, rho = 0.5; step-level lambda = 0.2, rho = 0.1.</p>
+  <div class="links">
+    <a href="shared_agency_signal_window_model_comparison/signal_window_model_comparison_nll.csv">model NLL CSV</a>
+    <a href="shared_agency_signal_window_model_comparison/signal_window_lambda_alpha_grid.csv">lambda x alpha grid CSV</a>
+    <a href="shared_agency_signal_window_model_comparison/trial_level_vs_signal_window_best_shared_agency.csv">trial-vs-signal-window CSV</a>
+    <a href="joint_rl/notebooks/shared_agency_signal_window_model_comparison/shared_agency_signal_window_model_comparison.ipynb">notebook</a>
+    <a href="shared_agency_step1_model_comparison.html">step-1 fit report</a>
+    <a href="shared_agency_uncertainty_gated_rho_fit.html">uncertainty-gated rho fit</a>
+    <a href="shared_agency_information_gain_fit.html">information-gain fit</a>
+    <a href="shared_agency_tiebreak_signal_fit.html">tie-break signaling fit</a>
+    <a href="shared_agency_costly_legibility_fit.html">costly legibility fit</a>
+    <a href="shared_agency_log_odds_legibility_fit.html">log-odds legibility fit</a>
+    <a href="shared_agency_log_odds_eta_sweep.html">log-odds full eta sweep</a>
+    <a href="shared_agency_costly_mixture_rho_sweep.html">communicative action mixture rho sweep</a>
+    <a href="shared_agency_costly_mixture_step_level_fit.html">current communicative action mixture step-level fit</a>
+    <a href="shared_agency_step_level_model_comparison.html">all-step step-level report</a>
+    <a href="shared_agency_joint_lambda_alpha_baseline_comparison.html">trial-level baseline report</a>
+  </div>
+</header>
+<main>
+  <section class="panel">
+    <h2>Primary Signal-Window Model Comparison</h2>
+    <p class="note">The fit uses 688 player-actions from post-new-goal relative steps 1, 2, and 3. Held-out folds are grouped by room ID.</p>
+    <table><thead><tr><th>model</th><th>lambda</th><th>alpha</th><th>n_params</th><th>actions</th><th>in_sample_nll</th><th>heldout_nll</th><th>heldout_nll_per_action</th><th>delta_heldout_nll</th><th>aic</th><th>bic</th></tr></thead><tbody><tr><td class="">Shared agency commitment no signaling</td><td class="num">0.24</td><td class="num">0.00</td><td class="">1</td><td class="">688</td><td class="num">435.534</td><td class="num">437.669</td><td class="num">0.636</td><td class="num">0.000</td><td class="num">873.07</td><td class="num">877.60</td></tr><tr><td class="">Shared agency commitment signaling</td><td class="num">0.24</td><td class="num">0.00</td><td class="">2</td><td class="">688</td><td class="num">435.534</td><td class="num">437.669</td><td class="num">0.636</td><td class="num">0.000</td><td class="num">875.07</td><td class="num">884.14</td></tr><tr><td class="">Shared agency no commitment no signaling</td><td class="num">0.00</td><td class="num">0.00</td><td class="">0</td><td class="">688</td><td class="num">567.505</td><td class="num">567.505</td><td class="num">0.825</td><td class="num">129.837</td><td class="num">1135.01</td><td class="num">1135.01</td></tr><tr><td class="">Joint RL</td><td class="num">nan</td><td class="num">nan</td><td class="">0</td><td class="">688</td><td class="num">827.107</td><td class="num">827.107</td><td class="num">1.202</td><td class="num">389.438</td><td class="num">1654.21</td><td class="num">1654.21</td></tr><tr><td class="">Individual RL</td><td class="num">nan</td><td class="num">nan</td><td class="">0</td><td class="">688</td><td class="num">2431.148</td><td class="num">2431.148</td><td class="num">3.534</td><td class="num">1993.479</td><td class="num">4862.30</td><td class="num">4862.30</td></tr></tbody></table>
+  </section>
+  <section class="panel">
+    <h2>Shared-Agency Lambda x Alpha Signal-Window Fit</h2>
+    <p class="note">Full-data best pair: lambda=0.2375, alpha=0, signal-window NLL=435.53.</p>
+    <a href="shared_agency_signal_window_model_comparison/assets/signal_window_lambda_alpha_heatmap.png"><img src="shared_agency_signal_window_model_comparison/assets/signal_window_lambda_alpha_heatmap.png" alt="signal-window lambda alpha heatmap"></a>
+  </section>
+  <section class="panel">
+    <h2>Held-Out Signal-Window NLL Plot</h2>
+    <a href="shared_agency_signal_window_model_comparison/assets/signal_window_model_nll_comparison.png"><img src="shared_agency_signal_window_model_comparison/assets/signal_window_model_nll_comparison.png" alt="held-out signal-window NLL comparison"></a>
+  </section>
+  <section class="panel">
+    <h2>Posterior Predictive Checks: All Distance Conditions</h2>
+    <a href="shared_agency_signal_window_model_comparison/assets/shared_agency_step_level_average_6panel.png"><img src="shared_agency_signal_window_model_comparison/assets/shared_agency_step_level_average_6panel.png" alt="signal-window fitted all-distance behavioral comparison"></a>
+  </section>
+  <section class="panel">
+    <h2>Posterior Predictive Checks: Equal-to-Both</h2>
+    <a href="shared_agency_signal_window_model_comparison/assets/shared_agency_step_level_equal_to_both_6panel.png"><img src="shared_agency_signal_window_model_comparison/assets/shared_agency_step_level_equal_to_both_6panel.png" alt="signal-window fitted equal-to-both behavioral comparison"></a>
+  </section>
+  <section class="panel">
+    <h2>BToM Trajectory</h2>
+    <a href="shared_agency_signal_window_model_comparison/assets/shared_agency_step_level_btom_first5_trajectory.png"><img src="shared_agency_signal_window_model_comparison/assets/shared_agency_step_level_btom_first5_trajectory.png" alt="signal-window fitted BToM trajectory"></a>
+  </section>
+  <section class="panel">
+    <h2>Trial-Level Best vs Signal-Window Best</h2>
+    <table><thead><tr><th>fit_source</th><th>lambda</th><th>alpha</th><th>human_step_level_nll</th><th>average_commitment_percent</th><th>average_signaling_percent</th><th>equal_commitment_percent</th><th>equal_signaling_percent</th></tr></thead><tbody><tr><td class="">trial-level commitment+signaling NLL</td><td class="num">0.15</td><td class="num">0.50</td><td class="num">469.945</td><td class="num">67.68</td><td class="num">39.96</td><td class="num">77.78</td><td class="num">51.39</td></tr><tr><td class="">signal-window human action NLL</td><td class="num">0.24</td><td class="num">0.00</td><td class="num">435.534</td><td class="num">79.85</td><td class="num">35.49</td><td class="num">95.98</td><td class="num">40.80</td></tr></tbody></table>
+  </section>
+  <section class="panel">
+    <h2>Raw Sources</h2>
+    <table><thead><tr><th>model</th><th>lambda</th><th>alpha</th><th>rawTrialsPath</th></tr></thead><tbody><tr><td class="">Individual RL</td><td class="num">nan</td><td class="num">nan</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_signal_window_model_comparison/individual_rl/joint_rl_vs_joint_rl_2p3g_raw_trials_individual_sessions_0_to_29.json.zst</td></tr><tr><td class="">Joint RL</td><td class="num">nan</td><td class="num">nan</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_signal_window_model_comparison/joint_rl/joint_rl_vs_joint_rl_2p3g_raw_trials_unshaped_sessions_0_to_29.json.zst</td></tr><tr><td class="">Shared agency no commitment no signaling</td><td class="num">0.00</td><td class="num">0.00</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_signal_window_model_comparison/shared_agency_no_commitment_no_signaling/always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0_alpha_0_sessions_0_to_29.json.zst</td></tr><tr><td class="">Shared agency commitment no signaling</td><td class="num">0.24</td><td class="num">0.00</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_signal_window_model_comparison/shared_agency_commitment_no_signaling/always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0p2375_alpha_0_sessions_0_to_29.json.zst</td></tr><tr><td class="">Shared agency commitment signaling</td><td class="num">0.24</td><td class="num">0.00</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_signal_window_model_comparison/shared_agency_commitment_signaling/always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0p2375_alpha_0_sessions_0_to_29.json.zst</td></tr></tbody></table>
+  </section>
+</main>
+</body>
+</html>

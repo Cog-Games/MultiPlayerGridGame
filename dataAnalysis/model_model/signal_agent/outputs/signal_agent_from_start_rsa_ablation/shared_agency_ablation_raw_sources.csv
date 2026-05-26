@@ -1,0 +1,9 @@
+key,label,lambda,alpha,raw_source,raw_trials
+full,"Full shared-agency
+(lambda=0.65, alpha=4.25)",0.65,4.25,reused current full-model best raw,/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/signal_agent/from_start_rsa_unshaped_jointrl_lambda_alpha_fit/always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0p65_alpha_4p25_sessions_0_to_29.json.zst
+no_rsa_signaling,"No RSA signaling
+(lambda=0.65, alpha=0)",0.65,0.0,rerun ablation raw,/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/signal_agent/from_start_rsa_unshaped_jointrl_ablation/always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0p65_alpha_0_sessions_0_to_29.json.zst
+no_posterior_weighting,"No posterior weighting
+(lambda=0, alpha=4.25)",0.0,4.25,rerun ablation raw,/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/signal_agent/from_start_rsa_unshaped_jointrl_ablation/always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0_alpha_4p25_sessions_0_to_29.json.zst
+value_base_only,"Value/base only
+(lambda=0, alpha=0)",0.0,0.0,rerun ablation raw,/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/signal_agent/from_start_rsa_unshaped_jointrl_ablation/always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0_alpha_0_sessions_0_to_29.json.zst

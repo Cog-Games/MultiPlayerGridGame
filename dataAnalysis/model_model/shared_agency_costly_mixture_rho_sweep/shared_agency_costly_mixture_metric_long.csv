@@ -1,0 +1,31 @@
+group,metric,mean_percent,ci95_percent,n,condition_scope
+Shared agency no signaling,Success Rate (%),91.38888888888889,2.9019180390993333,360,average
+Shared agency no signaling,Coordination Efficiency (%),88.3888189068118,1.2318092220595203,60,average
+Shared agency no signaling,Commitment (%),78.68716931216932,3.5703128434458513,60,average
+Shared agency no signaling,Signaling Move (%),33.64087301587302,4.651021397886006,60,average
+Shared agency Communicative Action Mixture (Legibility Over Alternatives),Success Rate (%),91.11111111111111,2.9438674884242473,360,average
+Shared agency Communicative Action Mixture (Legibility Over Alternatives),Coordination Efficiency (%),87.63551939035133,1.2228377813711215,60,average
+Shared agency Communicative Action Mixture (Legibility Over Alternatives),Commitment (%),72.41732804232804,4.084661759918318,60,average
+Shared agency Communicative Action Mixture (Legibility Over Alternatives),Signaling Move (%),42.43716931216931,4.477879472252182,60,average
+Human-Human,Success Rate (%),100.0,0.0,189,average
+Human-Human,Coordination Efficiency (%),81.57604663510541,3.0088168401228863,32,average
+Human-Human,Commitment (%),64.97395833333334,10.970724409578962,32,average
+Human-Human,Signaling Move (%),52.5297619047619,7.596550149484699,32,average
+Shared agency no signaling,Success Rate (%),98.88888888888889,2.177777777777778,90,equal_to_both
+Shared agency no signaling,Coordination Efficiency (%),98.38193288193288,0.7368547086249945,60,equal_to_both
+Shared agency no signaling,Commitment (%),94.44444444444444,3.777345715848792,60,equal_to_both
+Shared agency no signaling,Signaling Move (%),43.888888888888886,8.433305667784975,60,equal_to_both
+Shared agency Communicative Action Mixture (Legibility Over Alternatives),Success Rate (%),100.0,0.0,90,equal_to_both
+Shared agency Communicative Action Mixture (Legibility Over Alternatives),Coordination Efficiency (%),98.00744163244163,0.9217260190598917,60,equal_to_both
+Shared agency Communicative Action Mixture (Legibility Over Alternatives),Commitment (%),93.88888888888887,3.8012112473605115,60,equal_to_both
+Shared agency Communicative Action Mixture (Legibility Over Alternatives),Signaling Move (%),65.0,9.210118892763132,60,equal_to_both
+Human-Human,Success Rate (%),100.0,0.0,47,equal_to_both
+Human-Human,Coordination Efficiency (%),96.6397607022607,1.9427338715409046,32,equal_to_both
+Human-Human,Commitment (%),84.375,10.155508485475568,32,equal_to_both
+Human-Human,Signaling Move (%),59.375,12.697364383051536,32,equal_to_both
+Shared agency no signaling,BToM Step 1 (%),65.48639548602895,2.3562839031363554,60,average
+Shared agency Communicative Action Mixture (Legibility Over Alternatives),BToM Step 1 (%),69.14269045489002,3.1022850694093194,60,average
+Human-Human,BToM Step 1 (%),73.75406679082373,4.382293553900151,32,average
+Shared agency no signaling,BToM Step 1 (%),69.9650138481724,4.66561553058553,60,equal_to_both
+Shared agency Communicative Action Mixture (Legibility Over Alternatives),BToM Step 1 (%),78.42897732984723,6.15059528574807,60,equal_to_both
+Human-Human,BToM Step 1 (%),80.28227897014428,7.629482043096219,32,equal_to_both

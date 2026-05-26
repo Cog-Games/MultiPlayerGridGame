@@ -1,0 +1,61 @@
+group,metric,mean_percent,ci95_percent,n,condition_scope
+Shared agency no signaling,Success Rate (%),91.38888888888889,2.9019180390993333,360,average
+Shared agency no signaling,Coordination Efficiency (%),88.3888189068118,1.2318092220595203,60,average
+Shared agency no signaling,Commitment (%),78.68716931216932,3.5703128434458513,60,average
+Shared agency no signaling,Signaling Move (%),33.64087301587302,4.651021397886006,60,average
+Opportunity-gated communicative action mixture,Success Rate (%),93.88888888888889,2.4778558459234894,360,average
+Opportunity-gated communicative action mixture,Coordination Efficiency (%),87.96106552912109,1.2553742413410274,60,average
+Opportunity-gated communicative action mixture,Commitment (%),68.03637566137566,4.259915709327252,60,average
+Opportunity-gated communicative action mixture,Signaling Move (%),36.51785714285714,4.446288785752781,60,average
+Goal-contrast signaling,Success Rate (%),89.72222222222223,3.14129316607873,360,average
+Goal-contrast signaling,Coordination Efficiency (%),88.19604930355982,1.1487674783319681,60,average
+Goal-contrast signaling,Commitment (%),72.50330687830687,4.1104435019904475,60,average
+Goal-contrast signaling,Signaling Move (%),43.23412698412698,4.492258944381998,60,average
+One-step deliberate signal,Success Rate (%),90.83333333333333,2.9849509057311985,360,average
+One-step deliberate signal,Coordination Efficiency (%),88.66651124572613,1.1947407859823496,60,average
+One-step deliberate signal,Commitment (%),74.91071428571429,3.6351780998466627,60,average
+One-step deliberate signal,Signaling Move (%),34.71560846560847,4.429696648660459,60,average
+Human-Human,Success Rate (%),100.0,0.0,189,average
+Human-Human,Coordination Efficiency (%),81.57604663510541,3.0088168401228863,32,average
+Human-Human,Commitment (%),64.97395833333334,10.970724409578962,32,average
+Human-Human,Signaling Move (%),52.5297619047619,7.596550149484699,32,average
+Shared agency no signaling,Success Rate (%),98.88888888888889,2.177777777777778,90,equal_to_both
+Shared agency no signaling,Coordination Efficiency (%),98.38193288193288,0.7368547086249945,60,equal_to_both
+Shared agency no signaling,Commitment (%),94.44444444444444,3.777345715848792,60,equal_to_both
+Shared agency no signaling,Signaling Move (%),43.888888888888886,8.433305667784975,60,equal_to_both
+Opportunity-gated communicative action mixture,Success Rate (%),100.0,0.0,90,equal_to_both
+Opportunity-gated communicative action mixture,Coordination Efficiency (%),97.95648795648795,0.8402090732790178,58,equal_to_both
+Opportunity-gated communicative action mixture,Commitment (%),87.64367816091954,6.355035210206485,58,equal_to_both
+Opportunity-gated communicative action mixture,Signaling Move (%),48.56321839080459,10.172182287626041,58,equal_to_both
+Goal-contrast signaling,Success Rate (%),100.0,0.0,90,equal_to_both
+Goal-contrast signaling,Coordination Efficiency (%),98.33578921078922,0.7590676153199124,60,equal_to_both
+Goal-contrast signaling,Commitment (%),95.83333333333334,3.2597384156717855,60,equal_to_both
+Goal-contrast signaling,Signaling Move (%),64.72222222222221,8.787768873521298,60,equal_to_both
+One-step deliberate signal,Success Rate (%),98.88888888888889,2.177777777777778,90,equal_to_both
+One-step deliberate signal,Coordination Efficiency (%),98.2589339672673,0.7335752389528721,60,equal_to_both
+One-step deliberate signal,Commitment (%),93.33333333333333,3.9743749187737722,60,equal_to_both
+One-step deliberate signal,Signaling Move (%),46.111111111111114,7.817461849725831,60,equal_to_both
+Human-Human,Success Rate (%),100.0,0.0,47,equal_to_both
+Human-Human,Coordination Efficiency (%),96.6397607022607,1.9427338715409046,32,equal_to_both
+Human-Human,Commitment (%),84.375,10.155508485475568,32,equal_to_both
+Human-Human,Signaling Move (%),59.375,12.697364383051536,32,equal_to_both
+Shared agency no signaling,BToM Step 1 (%),65.48639548602895,2.3562839031363554,60,average
+Opportunity-gated communicative action mixture,BToM Step 1 (%),67.02167595254288,2.6370323041044132,60,average
+Goal-contrast signaling,BToM Step 1 (%),70.0307207902355,2.661279978306862,60,average
+One-step deliberate signal,BToM Step 1 (%),66.2736908822533,2.2536419499357176,60,average
+Human-Human,BToM Step 1 (%),73.75406679082373,4.382293553900151,32,average
+Shared agency no signaling,BToM Step 1 (%),69.9650138481724,4.66561553058553,60,equal_to_both
+Opportunity-gated communicative action mixture,BToM Step 1 (%),72.9050333140534,5.113745829864859,58,equal_to_both
+Goal-contrast signaling,BToM Step 1 (%),79.75079674352516,5.010683073727836,60,equal_to_both
+One-step deliberate signal,BToM Step 1 (%),70.85221033969358,4.330344728122103,60,equal_to_both
+Human-Human,BToM Step 1 (%),80.28227897014428,7.629482043096219,32,equal_to_both
+Shared agency no signaling,BToM Step 1-3 (%),73.54556581814502,2.079348103799231,60,average
+Opportunity-gated communicative action mixture,BToM Step 1-3 (%),74.15804023651637,2.0379935511322294,60,average
+Goal-contrast signaling,BToM Step 1-3 (%),75.7312517898589,2.227454928455961,60,average
+One-step deliberate signal,BToM Step 1-3 (%),75.99378970736737,1.8784534893818619,60,average
+Human-Human,BToM Step 1-3 (%),77.25838482286721,4.845317191568023,32,average
+Shared agency no signaling,BToM Step 1-3 (%),80.57885926070959,3.702383945225167,60,equal_to_both
+Opportunity-gated communicative action mixture,BToM Step 1-3 (%),81.70813113818883,4.334885619695718,58,equal_to_both
+Goal-contrast signaling,BToM Step 1-3 (%),86.81202133962432,3.802598589354704,60,equal_to_both
+One-step deliberate signal,BToM Step 1-3 (%),84.66762682985954,2.8030820914423993,60,equal_to_both
+Human-Human,BToM Step 1-3 (%),84.79273962523133,6.4871877098394375,32,equal_to_both

@@ -1,0 +1,63 @@
+{
+  "html": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_information_gain_fit.html",
+  "fixed_lambda": 0.2,
+  "windows": {
+    "step0": {
+      "actions": 282,
+      "mean_uncertainty": 0.5943871440794362,
+      "best_by_variant": {
+        "posterior_lift": {
+          "eta": 0.0,
+          "negative_log_likelihood": 260.27267418654003,
+          "fit_stage": "coarse"
+        },
+        "entropy_reduction": {
+          "eta": 0.5,
+          "negative_log_likelihood": 259.9489002333076,
+          "fit_stage": "refine"
+        }
+      },
+      "best_heldout_model": "no signaling, lambda=.2"
+    },
+    "step1": {
+      "actions": 254,
+      "mean_uncertainty": 0.1720633728845634,
+      "best_by_variant": {
+        "posterior_lift": {
+          "eta": 0.0,
+          "negative_log_likelihood": 172.99541717331968,
+          "fit_stage": "coarse"
+        },
+        "entropy_reduction": {
+          "eta": 0.0,
+          "negative_log_likelihood": 172.99541717331968,
+          "fit_stage": "coarse"
+        }
+      },
+      "best_heldout_model": "no signaling, lambda=.2"
+    },
+    "step1_3": {
+      "actions": 688,
+      "mean_uncertainty": 0.10518291007092544,
+      "best_by_variant": {
+        "posterior_lift": {
+          "eta": 0.0,
+          "negative_log_likelihood": 437.4377522635165,
+          "fit_stage": "coarse"
+        },
+        "entropy_reduction": {
+          "eta": 0.0,
+          "negative_log_likelihood": 437.4377522635165,
+          "fit_stage": "coarse"
+        }
+      },
+      "best_heldout_model": "no signaling, lambda=.2"
+    }
+  },
+  "outputs": {
+    "notebook": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/joint_rl/notebooks/shared_agency_information_gain_fit/shared_agency_information_gain_fit.ipynb",
+    "step0_summary": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_information_gain_fit/step0_model_summary.csv",
+    "step1_summary": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_information_gain_fit/step1_model_summary.csv",
+    "step1_3_summary": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_information_gain_fit/step1_3_model_summary.csv"
+  }
+}

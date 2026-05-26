@@ -12,6 +12,8 @@ const DEFAULT_SESSIONS = 30;
 const DEFAULT_TRIALS_PER_SESSION = 12;
 const DEFAULT_SEED = 42;
 const DEFAULT_OUTPUT_DIR = 'dataAnalysis/model_model/joint_rl/outputs/joint_rl_vs_joint_rl_simulation';
+const DEFAULT_RAW_OUTPUT_DIR = 'dataAnalysis/raw_data/model_model_simulations/joint_rl/joint_rl_vs_joint_rl_simulation';
+const ACTIONS = [[0, -1], [0, 1], [-1, 0], [1, 0]];
 
 function parseArgs(argv) {
   const out = {
@@ -19,7 +21,10 @@ function parseArgs(argv) {
     trialsPerSession: DEFAULT_TRIALS_PER_SESSION,
     seed: DEFAULT_SEED,
     sessionOffset: 0,
-    outputDir: DEFAULT_OUTPUT_DIR
+    unshapedJointRL: false,
+    policy: 'joint',
+    outputDir: DEFAULT_OUTPUT_DIR,
+    rawOutputDir: null
   };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -31,10 +36,28 @@ function parseArgs(argv) {
       out.sessionOffset = Number(argv[++i]);
     } else if (arg === '--seed' && argv[i + 1]) {
       out.seed = Number(argv[++i]);
+    } else if (arg === '--unshaped-joint-rl') {
+      out.unshapedJointRL = true;
+    } else if (arg === '--no-unshaped-joint-rl') {
+      out.unshapedJointRL = false;
+    } else if (arg === '--individual-rl') {
+      out.policy = 'individual';
+      out.unshapedJointRL = false;
+    } else if (arg === '--policy' && argv[i + 1]) {
+      out.policy = argv[++i];
     } else if (arg === '--output-dir' && argv[i + 1]) {
       out.outputDir = argv[++i];
+    } else if (arg === '--raw-output-dir' && argv[i + 1]) {
+      out.rawOutputDir = argv[++i];
     }
   }
+  if (!['joint', 'individual'].includes(out.policy)) {
+    throw new Error(`Unsupported --policy ${out.policy}. Expected "joint" or "individual".`);
+  }
+  if (out.policy === 'individual') {
+    out.unshapedJointRL = false;
+  }
+  if (!out.rawOutputDir) out.rawOutputDir = out.unshapedJointRL ? DEFAULT_RAW_OUTPUT_DIR : out.outputDir;
   return out;
 }
 
@@ -126,6 +149,40 @@ function actionToDirection(action) {
   return null;
 }
 
+function sampleActionFromPolicy(probs) {
+  const keys = ACTIONS.map(action => action.toString());
+  const weights = keys.map(key => {
+    const value = probs?.[key];
+    return (typeof value === 'number' && isFinite(value) && value > 0) ? value : 0;
+  });
+  const total = weights.reduce((a, b) => a + b, 0);
+  if (!isFinite(total) || total <= 0) {
+    return ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
+  }
+  const r = Math.random() * total;
+  let acc = 0;
+  for (let i = 0; i < weights.length; i++) {
+    acc += weights[i];
+    if (r < acc) return keys[i].split(',').map(Number);
+  }
+  return keys[keys.length - 1].split(',').map(Number);
+}
+
+function getJointRLAction(sharedRl, currentPos, otherPos, goals, unshapedJointRL) {
+  if (unshapedJointRL) {
+    const probs = sharedRl.getUnshapedJointActionProbabilities(currentPos, otherPos, goals);
+    return sampleActionFromPolicy(probs);
+  }
+  return sharedRl.getJointRLAction(currentPos, otherPos, goals);
+}
+
+function getRLAction(sharedRl, currentPos, otherPos, goals, policy, unshapedJointRL) {
+  if (policy === 'individual') {
+    return sharedRl.getIndividualRLAction(currentPos, goals);
+  }
+  return getJointRLAction(sharedRl, currentPos, otherPos, goals, unshapedJointRL);
+}
+
 function maybePresentNewGoal(gameStateManager) {
   const state = gameStateManager.currentState;
   const trial = gameStateManager.trialData;
@@ -209,15 +266,15 @@ function summarizeTrial(trialData, mapId, sessionIndex) {
   };
 }
 
-function buildRawTrialRecord(trialData, mapId, sessionIndex, design) {
+function buildRawTrialRecord(trialData, mapId, sessionIndex, design, agentTag = 'joint_rl') {
   const initialGoals = Array.isArray(trialData.initialGoalPositions) ? trialData.initialGoalPositions : [];
   const target1 = Array.isArray(design?.target1) ? [...design.target1] : (Array.isArray(initialGoals[0]) ? [...initialGoals[0]] : null);
   const target2 = Array.isArray(design?.target2) ? [...design.target2] : (Array.isArray(initialGoals[1]) ? [...initialGoals[1]] : null);
   return {
     sessionIndex,
-    participantId_player1: `joint_rl_session_${sessionIndex}_player1`,
-    participantId_player2: `joint_rl_session_${sessionIndex}_player2`,
-    partnerType: 'joint_rl',
+    participantId_player1: `${agentTag}_session_${sessionIndex}_player1`,
+    participantId_player2: `${agentTag}_session_${sessionIndex}_player2`,
+    partnerType: agentTag,
     experimentType: '2P3G',
     trialIndex: trialData.trialIndex,
     mapId,
@@ -332,7 +389,7 @@ function computeSummary(trials, meta) {
   };
 }
 
-function runSimulation({ sessions, trialsPerSession, seed, sessionOffset }) {
+function runSimulation({ sessions, trialsPerSession, seed, sessionOffset, unshapedJointRL, policy }) {
   const originalPlayers = {
     player1: CONFIG.game.players.player1.type,
     player2: CONFIG.game.players.player2.type
@@ -341,9 +398,10 @@ function runSimulation({ sessions, trialsPerSession, seed, sessionOffset }) {
   const originalOrder = [...CONFIG.game.experiments.order];
   const originalAgentType = CONFIG.game.agent.type;
 
-  CONFIG.game.players.player1.type = 'rl_joint';
-  CONFIG.game.players.player2.type = 'rl_joint';
-  CONFIG.game.agent.type = 'joint';
+  const isIndividual = policy === 'individual';
+  CONFIG.game.players.player1.type = isIndividual ? 'rl_individual' : 'rl_joint';
+  CONFIG.game.players.player2.type = isIndividual ? 'rl_individual' : 'rl_joint';
+  CONFIG.game.agent.type = isIndividual ? 'individual' : 'joint';
   CONFIG.game.experiments.order = ['2P3G'];
   CONFIG.game.experiments.numTrials['2P3G'] = trialsPerSession;
 
@@ -375,8 +433,8 @@ function runSimulation({ sessions, trialsPerSession, seed, sessionOffset }) {
 
               const state = gameStateManager.getCurrentState();
               const goals = Array.isArray(state.currentGoals) ? state.currentGoals : [];
-              const action1 = sharedRl.getJointRLAction(state.player1, state.player2, goals);
-              const action2 = sharedRl.getJointRLAction(state.player2, state.player1, goals);
+              const action1 = getRLAction(sharedRl, state.player1, state.player2, goals, policy, unshapedJointRL);
+              const action2 = getRLAction(sharedRl, state.player2, state.player1, goals, policy, unshapedJointRL);
               const direction1 = actionToDirection(action1);
               const direction2 = actionToDirection(action2);
 
@@ -389,7 +447,13 @@ function runSimulation({ sessions, trialsPerSession, seed, sessionOffset }) {
             gameStateManager.finalizeTrial(success);
             const finalizedTrial = gameStateManager.getExperimentData().allTrialsData.at(-1);
             trials.push(summarizeTrial(finalizedTrial, mapId, sessionIndex));
-            rawTrials.push(buildRawTrialRecord(finalizedTrial, mapId, sessionIndex, design));
+            rawTrials.push(buildRawTrialRecord(
+              finalizedTrial,
+              mapId,
+              sessionIndex,
+              design,
+              isIndividual ? 'individual_rl_legacy' : 'joint_rl'
+            ));
           }
         });
       }
@@ -401,8 +465,16 @@ function runSimulation({ sessions, trialsPerSession, seed, sessionOffset }) {
           sessions,
           trialsPerSession,
           totalPlannedTrials: sessions * trialsPerSession,
-          agentType: 'joint_rl',
+          agentType: isIndividual ? 'individual_rl_legacy' : (unshapedJointRL ? 'unshaped_joint_rl' : 'joint_rl'),
+          policy,
           jointRLImplementation: CONFIG.game.agent.jointRLImplementation,
+          unshapedJointRL,
+          jointValueModel: unshapedJointRL
+            ? 'unshapedJointRL(goalReward=30,stepCost=-1 per active player,goalValue=goalReward+stepCost*(d1+d2),softmaxBeta=3,proximityRewardWeight=0)'
+            : (isIndividual ? null : 'defaultJointRL'),
+          individualRLRewardModel: isIndividual
+            ? 'legacyIndividualRL(goalReward=30,stepCost=-1 per own action step,gamma=0.9,softmaxBeta=3,noise=0,goalFeature=+30,currentGoals,partnerPositionIgnored)'
+            : null,
           mapSelection: 'first_trials_per_session_sorted_maps_from_MapsFor2P3G'
         }),
         trials,
@@ -419,16 +491,18 @@ function runSimulation({ sessions, trialsPerSession, seed, sessionOffset }) {
 }
 
 function main() {
-  const { sessions, trialsPerSession, seed, sessionOffset, outputDir: outputDirArg } = parseArgs(process.argv.slice(2));
-  const result = runSimulation({ sessions, trialsPerSession, seed, sessionOffset });
+  const { sessions, trialsPerSession, seed, sessionOffset, unshapedJointRL, policy, outputDir: outputDirArg, rawOutputDir: rawOutputDirArg } = parseArgs(process.argv.slice(2));
+  const result = runSimulation({ sessions, trialsPerSession, seed, sessionOffset, unshapedJointRL, policy });
 
   const outputDir = path.resolve(outputDirArg);
+  const rawOutputDir = path.resolve(rawOutputDirArg);
   fs.mkdirSync(outputDir, { recursive: true });
+  fs.mkdirSync(rawOutputDir, { recursive: true });
 
-  const suffix = `sessions_${sessionOffset}_to_${sessionOffset + sessions - 1}`;
+  const suffix = `${policy === 'individual' ? 'individual_' : ''}${unshapedJointRL ? 'unshaped_' : ''}sessions_${sessionOffset}_to_${sessionOffset + sessions - 1}`;
   const summaryPath = path.join(outputDir, `joint_rl_vs_joint_rl_2p3g_summary_${suffix}.json`);
   const trialsPath = path.join(outputDir, `joint_rl_vs_joint_rl_2p3g_trials_${suffix}.json`);
-  const rawTrialsPath = path.join(outputDir, `joint_rl_vs_joint_rl_2p3g_raw_trials_${suffix}.json`);
+  const rawTrialsPath = path.join(rawOutputDir, `joint_rl_vs_joint_rl_2p3g_raw_trials_${suffix}.json`);
   fs.writeFileSync(summaryPath, JSON.stringify(result.summary, null, 2));
   fs.writeFileSync(trialsPath, JSON.stringify(result.trials, null, 2));
   fs.writeFileSync(rawTrialsPath, JSON.stringify(result.rawTrials, null, 2));

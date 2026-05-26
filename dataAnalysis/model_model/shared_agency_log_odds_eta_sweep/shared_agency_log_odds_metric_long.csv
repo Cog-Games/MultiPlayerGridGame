@@ -1,0 +1,31 @@
+group,metric,mean_percent,ci95_percent,n,condition_scope
+Shared agency no signaling,Success Rate (%),91.38888888888889,2.9019180390993333,360,average
+Shared agency no signaling,Coordination Efficiency (%),88.3888189068118,1.2318092220595203,60,average
+Shared agency no signaling,Commitment (%),78.68716931216932,3.5703128434458513,60,average
+Shared agency no signaling,Signaling Move (%),33.64087301587302,4.651021397886006,60,average
+Shared agency log-odds signaling,Success Rate (%),91.66666666666666,2.859064437604025,360,average
+Shared agency log-odds signaling,Coordination Efficiency (%),87.84919152775865,1.2004573201949227,60,average
+Shared agency log-odds signaling,Commitment (%),75.53571428571429,3.664521167459881,60,average
+Shared agency log-odds signaling,Signaling Move (%),37.47023809523809,4.345883652813496,60,average
+Human-Human,Success Rate (%),100.0,0.0,189,average
+Human-Human,Coordination Efficiency (%),81.57604663510541,3.0088168401228863,32,average
+Human-Human,Commitment (%),64.97395833333334,10.970724409578962,32,average
+Human-Human,Signaling Move (%),52.5297619047619,7.596550149484699,32,average
+Shared agency no signaling,Success Rate (%),98.88888888888889,2.177777777777778,90,equal_to_both
+Shared agency no signaling,Coordination Efficiency (%),98.38193288193288,0.7368547086249945,60,equal_to_both
+Shared agency no signaling,Commitment (%),94.44444444444444,3.777345715848792,60,equal_to_both
+Shared agency no signaling,Signaling Move (%),43.888888888888886,8.433305667784975,60,equal_to_both
+Shared agency log-odds signaling,Success Rate (%),98.88888888888889,2.177777777777778,90,equal_to_both
+Shared agency log-odds signaling,Coordination Efficiency (%),97.63713410772235,0.9489940408023216,60,equal_to_both
+Shared agency log-odds signaling,Commitment (%),95.0,3.583504791588411,60,equal_to_both
+Shared agency log-odds signaling,Signaling Move (%),49.722222222222214,9.836586862141953,60,equal_to_both
+Human-Human,Success Rate (%),100.0,0.0,47,equal_to_both
+Human-Human,Coordination Efficiency (%),96.6397607022607,1.9427338715409046,32,equal_to_both
+Human-Human,Commitment (%),84.375,10.155508485475568,32,equal_to_both
+Human-Human,Signaling Move (%),59.375,12.697364383051536,32,equal_to_both
+Shared agency no signaling,BToM Step 1 (%),65.48639548602895,2.3562839031363554,60,average
+Shared agency log-odds signaling,BToM Step 1 (%),66.16383168710077,2.650278084476733,60,average
+Human-Human,BToM Step 1 (%),73.75406679082373,4.382293553900151,32,average
+Shared agency no signaling,BToM Step 1 (%),69.9650138481724,4.66561553058553,60,equal_to_both
+Shared agency log-odds signaling,BToM Step 1 (%),71.46146155887027,5.473234335624727,60,equal_to_both
+Human-Human,BToM Step 1 (%),80.28227897014428,7.629482043096219,32,equal_to_both

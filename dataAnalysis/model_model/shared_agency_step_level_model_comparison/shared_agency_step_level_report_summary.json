@@ -1,0 +1,53 @@
+{
+  "html": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_step_level_model_comparison.html",
+  "actions": 688,
+  "signal_window": {
+    "start": 1,
+    "end": 3
+  },
+  "cv_folds": 5,
+  "best_heldout_model": "Shared agency commitment no signaling",
+  "full_data_fits": {
+    "Individual RL": {
+      "negative_log_likelihood": 2431.147986579007,
+      "n_params": 0
+    },
+    "Joint RL": {
+      "negative_log_likelihood": 827.1066648760744,
+      "n_params": 0
+    },
+    "Shared agency no commitment no signaling": {
+      "lambda": 0.0,
+      "alpha": 0.0,
+      "negative_log_likelihood": 567.5054724081664,
+      "n_params": 0
+    },
+    "Shared agency commitment no signaling": {
+      "lambda": 0.2375,
+      "alpha": 0.0,
+      "negative_log_likelihood": 435.5344684339411,
+      "n_params": 1
+    },
+    "Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives))": {
+      "lambda": 0.2,
+      "rho": 0.1,
+      "negative_log_likelihood": 436.44917471239285,
+      "n_params": 1
+    }
+  },
+  "legacy_rsa_fit": {
+    "lambda": 0.2375,
+    "alpha": 0.0,
+    "negative_log_likelihood": 435.5344684339411,
+    "n_params": 2
+  },
+  "outputs": {
+    "model_nll_csv": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_step_level_model_comparison/step_level_model_comparison_nll.csv",
+    "costly_mixture_rho_grid_csv": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_step_level_model_comparison/shared_agency_step_level_costly_mixture_rho_grid.csv",
+    "costly_mixture_rho_sweep": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_step_level_model_comparison/assets/shared_agency_step_level_costly_mixture_rho_sweep.png",
+    "legacy_rsa_lambda_alpha_grid_csv": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_step_level_model_comparison/legacy_rsa_step_level_lambda_alpha_grid.csv",
+    "legacy_rsa_lambda_alpha_heatmap": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_step_level_model_comparison/assets/legacy_rsa_step_level_lambda_alpha_heatmap.png",
+    "behavior_summary_csv": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_step_level_model_comparison/shared_agency_step_level_behavior_summary.csv",
+    "notebook": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/joint_rl/notebooks/shared_agency_step_level_model_comparison/shared_agency_step_level_model_comparison.ipynb"
+  }
+}

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shared-Agency Communicative Action Mixture (Legibility Over Alternatives) Rho Sweep</title>
+<style>
+body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#f6f8fb; color:#1f2933; }
+header { padding:34px 48px 24px; background:#ffffff; border-bottom:1px solid #d9e2ec; }
+main { max-width:1180px; margin:0 auto; padding:28px 24px 60px; }
+h1 { margin:0 0 8px; font-size:31px; }
+h2 { margin:30px 0 12px; font-size:21px; }
+p { line-height:1.55; }
+.note { color:#52606d; max-width:980px; }
+.panel { background:#fff; border:1px solid #d9e2ec; border-radius:8px; padding:18px; margin:18px 0; }
+.links a { display:inline-block; margin:0 12px 10px 0; color:#2458a6; text-decoration:none; }
+img { width:100%; height:auto; display:block; border:1px solid #d9e2ec; border-radius:6px; background:white; margin:12px 0; }
+table { width:100%; border-collapse:collapse; font-size:13px; background:white; }
+th,td { border:1px solid #d9e2ec; padding:8px 10px; text-align:left; vertical-align:top; }
+th { background:#eef3f8; }
+td.num { text-align:right; font-variant-numeric:tabular-nums; }
+code { background:#eef3f8; padding:2px 5px; border-radius:4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Shared-Agency Communicative Action Mixture (Legibility Over Alternatives) Rho Sweep</h1>
+  <p class="note">Full model-model simulation for Communicative Action Mixture (Legibility Over Alternatives). Fixed lambda=0.2; rho mixes the base policy with a communicative policy that increases goal legibility over alternatives. Best rho is selected by trial/player-level commitment + signalingMove binomial NLL.</p>
+  <div class="links">
+    <a href="shared_agency_costly_mixture_rho_sweep/shared_agency_costly_mixture_rho_sweep.csv">rho sweep CSV</a>
+    <a href="shared_agency_costly_mixture_rho_sweep/shared_agency_costly_mixture_best_rho.csv">best rho CSV</a>
+    <a href="shared_agency_costly_mixture_rho_sweep/shared_agency_costly_mixture_summary.csv">summary CSV</a>
+    <a href="shared_agency_costly_mixture_rho_sweep/shared_agency_costly_mixture_metric_long.csv">metric long CSV</a>
+    <a href="shared_agency_costly_mixture_rho_sweep/shared_agency_costly_mixture_raw_sources.csv">raw sources CSV</a>
+    <a href="joint_rl/notebooks/shared_agency_costly_mixture_rho_sweep/shared_agency_costly_mixture_rho_sweep.ipynb">notebook</a>
+    <a href="shared_agency_costly_mixture_step_level_fit.html">communicative action mixture step-level fit</a>
+    <a href="shared_agency_log_odds_eta_sweep.html">log-odds full eta sweep</a>
+    <a href="shared_agency_log_odds_legibility_fit.html">step-level log-odds likelihood report</a>
+    <a href="shared_agency_joint_lambda_alpha_baseline_comparison.html">trial-level baseline report</a>
+  </div>
+</header>
+<main>
+  <section class="panel">
+    <h2>Best Rho</h2>
+    <table><thead><tr><th>rho</th><th>commitment_nll</th><th>signaling_nll</th><th>binomial_nll</th><th>average_commitment_percent</th><th>average_signaling_percent</th><th>average_btom_step1_percent</th><th>equal_commitment_percent</th><th>equal_signaling_percent</th><th>equal_btom_step1_percent</th></tr></thead><tbody><tr><td class="num">0.50</td><td class="num">175.186</td><td class="num">186.212</td><td class="num">361.398</td><td class="num">72.42</td><td class="num">42.44</td><td class="num">68.11</td><td class="num">93.89</td><td class="num">65.00</td><td class="num">78.43</td></tr></tbody></table>
+  </section>
+  <section class="panel">
+    <h2>Rho Sweep</h2>
+    <a href="shared_agency_costly_mixture_rho_sweep/shared_agency_costly_mixture_rho_sweep.png"><img src="shared_agency_costly_mixture_rho_sweep/shared_agency_costly_mixture_rho_sweep.png" alt="communicative action mixture rho sweep"></a>
+    <table><thead><tr><th>rho</th><th>commitment_nll</th><th>signaling_nll</th><th>binomial_nll</th><th>average_commitment_percent</th><th>average_signaling_percent</th><th>average_btom_step1_percent</th><th>equal_commitment_percent</th><th>equal_signaling_percent</th><th>equal_btom_step1_percent</th></tr></thead><tbody><tr><td class="num">0.00</td><td class="num">184.586</td><td class="num">195.968</td><td class="num">380.554</td><td class="num">78.69</td><td class="num">33.64</td><td class="num">64.86</td><td class="num">94.44</td><td class="num">43.89</td><td class="num">69.97</td></tr><tr><td class="num">0.03</td><td class="num">181.333</td><td class="num">193.973</td><td class="num">375.306</td><td class="num">77.32</td><td class="num">34.48</td><td class="num">65.00</td><td class="num">95.00</td><td class="num">45.83</td><td class="num">70.80</td></tr><tr><td class="num">0.05</td><td class="num">181.841</td><td class="num">189.748</td><td class="num">371.589</td><td class="num">78.53</td><td class="num">37.69</td><td class="num">66.35</td><td class="num">97.78</td><td class="num">54.72</td><td class="num">75.07</td></tr><tr><td class="num">0.07</td><td class="num">182.232</td><td class="num">189.535</td><td class="num">371.768</td><td class="num">78.12</td><td class="num">37.97</td><td class="num">66.77</td><td class="num">95.83</td><td class="num">54.72</td><td class="num">74.99</td></tr><tr><td class="num">0.10</td><td class="num">181.788</td><td class="num">189.130</td><td class="num">370.918</td><td class="num">78.23</td><td class="num">38.38</td><td class="num">66.94</td><td class="num">95.28</td><td class="num">56.67</td><td class="num">75.40</td></tr><tr><td class="num">0.15</td><td class="num">181.901</td><td class="num">189.543</td><td class="num">371.443</td><td class="num">77.55</td><td class="num">36.96</td><td class="num">65.31</td><td class="num">97.22</td><td class="num">51.39</td><td class="num">72.73</td></tr><tr><td class="num">0.20</td><td class="num">180.470</td><td class="num">189.948</td><td class="num">370.418</td><td class="num">77.35</td><td class="num">38.82</td><td class="num">66.63</td><td class="num">96.67</td><td class="num">54.72</td><td class="num">74.49</td></tr><tr><td class="num">0.30</td><td class="num">177.622</td><td class="num">191.055</td><td class="num">368.678</td><td class="num">75.23</td><td class="num">37.75</td><td class="num">66.70</td><td class="num">93.61</td><td class="num">52.78</td><td class="num">74.56</td></tr><tr><td class="num">0.40</td><td class="num">176.583</td><td class="num">193.411</td><td class="num">369.994</td><td class="num">74.75</td><td class="num">38.84</td><td class="num">66.80</td><td class="num">96.39</td><td class="num">64.72</td><td class="num">79.69</td></tr><tr><td class="num">0.50</td><td class="num">175.186</td><td class="num">186.212</td><td class="num">361.398</td><td class="num">72.42</td><td class="num">42.44</td><td class="num">68.11</td><td class="num">93.89</td><td class="num">65.00</td><td class="num">78.43</td></tr><tr><td class="num">0.75</td><td class="num">174.753</td><td class="num">197.798</td><td class="num">372.551</td><td class="num">70.68</td><td class="num">47.95</td><td class="num">70.94</td><td class="num">96.39</td><td class="num">85.00</td><td class="num">88.86</td></tr><tr><td class="num">1.00</td><td class="num">176.318</td><td class="num">203.133</td><td class="num">379.451</td><td class="num">63.30</td><td class="num">48.82</td><td class="num">71.21</td><td class="num">87.35</td><td class="num">86.42</td><td class="num">87.74</td></tr></tbody></table>
+  </section>
+  <section class="panel">
+    <h2>All Distance 6-Panel</h2>
+    <a href="shared_agency_costly_mixture_rho_sweep/shared_agency_costly_mixture_average_6panel.png"><img src="shared_agency_costly_mixture_rho_sweep/shared_agency_costly_mixture_average_6panel.png" alt="all distance 6 panel"></a>
+  </section>
+  <section class="panel">
+    <h2>Equal-to-Both 6-Panel</h2>
+    <a href="shared_agency_costly_mixture_rho_sweep/shared_agency_costly_mixture_equal_to_both_6panel.png"><img src="shared_agency_costly_mixture_rho_sweep/shared_agency_costly_mixture_equal_to_both_6panel.png" alt="equal to both 6 panel"></a>
+  </section>
+  <section class="panel">
+    <h2>BToM Trajectory</h2>
+    <a href="shared_agency_costly_mixture_rho_sweep/shared_agency_costly_mixture_btom_first5_trajectory.png"><img src="shared_agency_costly_mixture_rho_sweep/shared_agency_costly_mixture_btom_first5_trajectory.png" alt="BToM trajectory"></a>
+  </section>
+  <section class="panel">
+    <h2>Summary</h2>
+    <table><thead><tr><th>condition_scope</th><th>group</th><th>Success Rate (%)</th><th>Coordination Efficiency (%)</th><th>Commitment (%)</th><th>Signaling Move (%)</th><th>BToM Step 1 (%)</th></tr></thead><tbody><tr><td class="">average</td><td class="">Shared agency no signaling</td><td class="num">91.39</td><td class="num">88.39</td><td class="num">78.69</td><td class="num">33.64</td><td class="num">65.49</td></tr><tr><td class="">average</td><td class="">Shared agency Communicative Action Mixture (Legibility Over Alternatives)</td><td class="num">91.11</td><td class="num">87.64</td><td class="num">72.42</td><td class="num">42.44</td><td class="num">69.14</td></tr><tr><td class="">average</td><td class="">Human-Human</td><td class="num">100.00</td><td class="num">81.58</td><td class="num">64.97</td><td class="num">52.53</td><td class="num">73.75</td></tr><tr><td class="">equal_to_both</td><td class="">Shared agency no signaling</td><td class="num">98.89</td><td class="num">98.38</td><td class="num">94.44</td><td class="num">43.89</td><td class="num">69.97</td></tr><tr><td class="">equal_to_both</td><td class="">Shared agency Communicative Action Mixture (Legibility Over Alternatives)</td><td class="num">100.00</td><td class="num">98.01</td><td class="num">93.89</td><td class="num">65.00</td><td class="num">78.43</td></tr><tr><td class="">equal_to_both</td><td class="">Human-Human</td><td class="num">100.00</td><td class="num">96.64</td><td class="num">84.38</td><td class="num">59.38</td><td class="num">80.28</td></tr></tbody></table>
+  </section>
+  <section class="panel">
+    <h2>Raw Sources</h2>
+    <table><thead><tr><th>key</th><th>label</th><th>raw_trials</th><th>lambda</th><th>rho</th><th>fit_objective</th></tr></thead><tbody><tr><td class="">shared_agency_no_signaling_lambda02</td><td class="">Shared agency no signaling</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_costly_mixture_rho_sweep/costly_mixture_rho_sweep/always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0p2_alpha_0_score_costly_mixture_sessions_0_to_29.json.zst</td><td class="num">0.20</td><td class="num">0.00</td><td class="">reference</td></tr><tr><td class="">shared_agency_costly_mixture_best_rho</td><td class="">Shared agency Communicative Action Mixture (Legibility Over Alternatives)</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_costly_mixture_rho_sweep/costly_mixture_rho_sweep/always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0p2_alpha_0p5_score_costly_mixture_sessions_0_to_29.json.zst</td><td class="num">0.20</td><td class="num">0.50</td><td class="">commitment_plus_signaling_nll</td></tr></tbody></table>
+  </section>
+</main>
+</body>
+</html>

@@ -31,14 +31,14 @@ sampleJointGoalAndSignal_fromStart,Success Rate (%),100.0,0.0,90,Equal-to-both
 sampleJointGoalAndSignal_fromStart,Coordination Efficiency (%),99.43210955710956,0.39203426671640784,60,Equal-to-both
 sampleJointGoalAndSignal_fromStart,Commitment (%),98.88888888888889,1.5268154819094166,60,Equal-to-both
 sampleJointGoalAndSignal_fromStart,Signaling Move (%),55.55555555555555,9.110298066704377,60,Equal-to-both
-sampleJointGoalAndRSASignal_fromStart,Success Rate (%),95.0,2.254528096062045,360,Average all 2P3G
-sampleJointGoalAndRSASignal_fromStart,Coordination Efficiency (%),82.28089208163551,1.2468000595576139,60,Average all 2P3G
-sampleJointGoalAndRSASignal_fromStart,Commitment (%),74.95370370370371,3.7781301686266,60,Average all 2P3G
-sampleJointGoalAndRSASignal_fromStart,Signaling Move (%),35.61177248677249,4.050231930509199,60,Average all 2P3G
-sampleJointGoalAndRSASignal_fromStart,Success Rate (%),98.88888888888889,2.177777777777778,90,Equal-to-both
-sampleJointGoalAndRSASignal_fromStart,Coordination Efficiency (%),90.59554146748476,1.8509148338668273,60,Equal-to-both
-sampleJointGoalAndRSASignal_fromStart,Commitment (%),64.16666666666667,8.570110030710275,60,Equal-to-both
-sampleJointGoalAndRSASignal_fromStart,Signaling Move (%),34.72222222222222,8.264511165227342,60,Equal-to-both
+sampleJointGoalAndRSASignal_fromStart,Success Rate (%),93.05555555555556,2.629654876419592,360,Average all 2P3G
+sampleJointGoalAndRSASignal_fromStart,Coordination Efficiency (%),88.1528453058682,1.2204643186930713,60,Average all 2P3G
+sampleJointGoalAndRSASignal_fromStart,Commitment (%),78.23082010582011,3.8720013770109163,60,Average all 2P3G
+sampleJointGoalAndRSASignal_fromStart,Signaling Move (%),38.379629629629626,4.457284294912219,60,Average all 2P3G
+sampleJointGoalAndRSASignal_fromStart,Success Rate (%),100.0,0.0,90,Equal-to-both
+sampleJointGoalAndRSASignal_fromStart,Coordination Efficiency (%),98.16360455085945,0.7560656132456625,60,Equal-to-both
+sampleJointGoalAndRSASignal_fromStart,Commitment (%),95.27777777777777,3.392658210644571,60,Equal-to-both
+sampleJointGoalAndRSASignal_fromStart,Signaling Move (%),56.666666666666664,9.704176850020412,60,Equal-to-both
 samplePosteriorOnlyGoalAndSignal_fromStart,Success Rate (%),92.77777777777779,2.6777267287738984,360,Average all 2P3G
 samplePosteriorOnlyGoalAndSignal_fromStart,Coordination Efficiency (%),85.3344403743631,1.8497602197048368,60,Average all 2P3G
 samplePosteriorOnlyGoalAndSignal_fromStart,Commitment (%),72.8260582010582,3.8934004992141413,60,Average all 2P3G

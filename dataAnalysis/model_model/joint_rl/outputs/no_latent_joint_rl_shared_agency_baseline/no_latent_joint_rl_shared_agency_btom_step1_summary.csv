@@ -1,0 +1,13 @@
+condition_scope,group,stepFromNewGoal,mean,ci95,count
+average,Individual RL,1,0.7034505504998327,0.032002729859856104,60
+average,Joint RL,1,0.644511833023833,0.027068331204674816,60
+average,Shared agency no commitment no signaling,1,0.5817106947000025,0.028003011889420434,60
+average,Shared agency commitment no signaling,1,0.62465295668706,0.0289087142694013,60
+average,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),1,0.6914269045489002,0.031022850694093194,60
+average,Human-Human,1,0.7375406679082372,0.04382293553900151,32
+equal_to_both,Individual RL,1,0.8090033258610035,0.046236497545806804,56
+equal_to_both,Joint RL,1,0.670893473999747,0.04637670022758458,60
+equal_to_both,Shared agency no commitment no signaling,1,0.6381570605837287,0.054690492811962074,59
+equal_to_both,Shared agency commitment no signaling,1,0.6907188403038181,0.05331342564766076,60
+equal_to_both,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),1,0.7842897732984723,0.06150595285748069,60
+equal_to_both,Human-Human,1,0.8028227897014427,0.0762948204309622,32

@@ -1,0 +1,7 @@
+group,mean,std,count
+Human-Human,0.7559132372500048,0.10566885482739026,32
+Individual RL,0.7714427849904393,0.08551819953356671,60
+Joint RL,0.7335743791739169,0.06787599975902008,60
+Shared agency commitment no signaling,0.6965383522185452,0.07282574212692167,60
+Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7415084844105934,0.07607292607997085,60
+Shared agency no commitment no signaling,0.6461747935465619,0.07767921880747168,60

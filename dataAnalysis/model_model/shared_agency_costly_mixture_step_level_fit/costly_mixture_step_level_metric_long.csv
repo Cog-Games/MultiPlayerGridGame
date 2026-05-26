@@ -1,0 +1,41 @@
+group,metric,mean_percent,ci95_percent,n,condition_scope
+Shared agency no signaling,Success Rate (%),91.38888888888889,2.9019180390993333,360,average
+Shared agency no signaling,Coordination Efficiency (%),88.3888189068118,1.2318092220595203,60,average
+Shared agency no signaling,Commitment (%),78.68716931216932,3.5703128434458513,60,average
+Shared agency no signaling,Signaling Move (%),33.64087301587302,4.651021397886006,60,average
+Communicative action mixture step-1 fit,Success Rate (%),91.66666666666666,2.859064437604025,360,average
+Communicative action mixture step-1 fit,Coordination Efficiency (%),88.3490592056638,1.2636705647319035,60,average
+Communicative action mixture step-1 fit,Commitment (%),78.53174603174602,3.912674591551265,60,average
+Communicative action mixture step-1 fit,Signaling Move (%),37.69179894179894,4.70583033789466,60,average
+Communicative action mixture step-1-3 fit,Success Rate (%),93.05555555555556,2.629654876419592,360,average
+Communicative action mixture step-1-3 fit,Coordination Efficiency (%),88.1528453058682,1.2204643186930713,60,average
+Communicative action mixture step-1-3 fit,Commitment (%),78.23082010582011,3.8720013770109163,60,average
+Communicative action mixture step-1-3 fit,Signaling Move (%),38.379629629629626,4.457284294912219,60,average
+Human-Human,Success Rate (%),100.0,0.0,189,average
+Human-Human,Coordination Efficiency (%),81.57604663510541,3.0088168401228863,32,average
+Human-Human,Commitment (%),64.97395833333334,10.970724409578962,32,average
+Human-Human,Signaling Move (%),52.5297619047619,7.596550149484699,32,average
+Shared agency no signaling,Success Rate (%),98.88888888888889,2.177777777777778,90,equal_to_both
+Shared agency no signaling,Coordination Efficiency (%),98.38193288193288,0.7368547086249945,60,equal_to_both
+Shared agency no signaling,Commitment (%),94.44444444444444,3.777345715848792,60,equal_to_both
+Shared agency no signaling,Signaling Move (%),43.888888888888886,8.433305667784975,60,equal_to_both
+Communicative action mixture step-1 fit,Success Rate (%),100.0,0.0,90,equal_to_both
+Communicative action mixture step-1 fit,Coordination Efficiency (%),98.29341954341953,0.7571592390942148,60,equal_to_both
+Communicative action mixture step-1 fit,Commitment (%),97.77777777777779,2.6292796598324624,60,equal_to_both
+Communicative action mixture step-1 fit,Signaling Move (%),54.72222222222223,8.753399005017062,60,equal_to_both
+Communicative action mixture step-1-3 fit,Success Rate (%),100.0,0.0,90,equal_to_both
+Communicative action mixture step-1-3 fit,Coordination Efficiency (%),98.16360455085945,0.7560656132456625,60,equal_to_both
+Communicative action mixture step-1-3 fit,Commitment (%),95.27777777777777,3.392658210644571,60,equal_to_both
+Communicative action mixture step-1-3 fit,Signaling Move (%),56.666666666666664,9.704176850020412,60,equal_to_both
+Human-Human,Success Rate (%),100.0,0.0,47,equal_to_both
+Human-Human,Coordination Efficiency (%),96.6397607022607,1.9427338715409046,32,equal_to_both
+Human-Human,Commitment (%),84.375,10.155508485475568,32,equal_to_both
+Human-Human,Signaling Move (%),59.375,12.697364383051536,32,equal_to_both
+Shared agency no signaling,BToM Step 1 (%),65.48639548602895,2.3562839031363554,60,average
+Communicative action mixture step-1 fit,BToM Step 1 (%),67.44979779229206,2.682877590771786,60,average
+Communicative action mixture step-1-3 fit,BToM Step 1 (%),67.4458272107554,2.648920576856374,60,average
+Human-Human,BToM Step 1 (%),73.75406679082373,4.382293553900151,32,average
+Shared agency no signaling,BToM Step 1 (%),69.9650138481724,4.66561553058553,60,equal_to_both
+Communicative action mixture step-1 fit,BToM Step 1 (%),75.07388345009679,4.981054914242584,60,equal_to_both
+Communicative action mixture step-1-3 fit,BToM Step 1 (%),75.39733323412855,5.586419155577631,60,equal_to_both
+Human-Human,BToM Step 1 (%),80.28227897014428,7.629482043096219,32,equal_to_both

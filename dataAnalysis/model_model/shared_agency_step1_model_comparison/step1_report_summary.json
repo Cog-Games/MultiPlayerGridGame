@@ -1,0 +1,40 @@
+{
+  "html": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_step1_model_comparison.html",
+  "fit_window": "first post-new-goal step only",
+  "actions": 254,
+  "best_heldout_model": "Shared agency commitment no signaling",
+  "full_data_fits": {
+    "Individual RL": {
+      "negative_log_likelihood": 1182.571366348132,
+      "n_params": 0
+    },
+    "Joint RL": {
+      "negative_log_likelihood": 405.76092088920325,
+      "n_params": 0
+    },
+    "Shared agency no commitment no signaling": {
+      "lambda": 0.0,
+      "alpha": 0.0,
+      "negative_log_likelihood": 220.54953496430286,
+      "n_params": 0
+    },
+    "Shared agency commitment no signaling": {
+      "lambda": 0.3,
+      "alpha": 0.0,
+      "negative_log_likelihood": 170.11420277496978,
+      "n_params": 1
+    },
+    "Shared agency commitment signaling": {
+      "lambda": 0.3,
+      "alpha": 0.0,
+      "negative_log_likelihood": 170.11420277496978,
+      "n_params": 2
+    }
+  },
+  "outputs": {
+    "model_nll_csv": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_step1_model_comparison/step1_model_comparison_nll.csv",
+    "lambda_alpha_grid_csv": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_step1_model_comparison/step1_lambda_alpha_grid.csv",
+    "lambda_alpha_heatmap": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_step1_model_comparison/assets/step1_lambda_alpha_heatmap.png",
+    "notebook": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/joint_rl/notebooks/shared_agency_step1_model_comparison/shared_agency_step1_model_comparison.ipynb"
+  }
+}

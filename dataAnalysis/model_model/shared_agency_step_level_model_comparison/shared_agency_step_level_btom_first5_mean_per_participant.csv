@@ -1,0 +1,333 @@
+participantId,group,posterior
+human_1d1f4cf9-e5f0-4ef5-8d74-ab6b134f25eb_player1,Human-Human,0.7064479510777425
+human_1d1f4cf9-e5f0-4ef5-8d74-ab6b134f25eb_player2,Human-Human,0.7660259607896821
+human_2ed9e54f-be52-49b9-a758-abb5f5ef5150_player1,Human-Human,0.8547391366377343
+human_2ed9e54f-be52-49b9-a758-abb5f5ef5150_player2,Human-Human,0.8249205185364219
+human_31e13002-490a-484d-a0f6-1781673d477a_player1,Human-Human,0.8904982675472978
+human_31e13002-490a-484d-a0f6-1781673d477a_player2,Human-Human,0.9027717780257473
+human_6558f174-56b6-4592-b53b-bf9ff8c7f3ca_player1,Human-Human,0.6938879854073292
+human_6558f174-56b6-4592-b53b-bf9ff8c7f3ca_player2,Human-Human,0.8943915765718597
+human_6b3ca33d-6a91-4de7-aaef-b55bcb13d712_player1,Human-Human,0.7226218879397933
+human_6b3ca33d-6a91-4de7-aaef-b55bcb13d712_player2,Human-Human,0.716753596315283
+human_74ea1778-cc30-4c70-92fe-ee112edef228_player1,Human-Human,0.6849940350056855
+human_74ea1778-cc30-4c70-92fe-ee112edef228_player2,Human-Human,0.6919375153841454
+human_975b16bb-4262-4523-94e3-02521faeb953_player1,Human-Human,0.7322160423401628
+human_975b16bb-4262-4523-94e3-02521faeb953_player2,Human-Human,0.7325912810944099
+human_9efbe63f-05a0-4f24-b469-a246d7732c10_player1,Human-Human,0.500315852408757
+human_9efbe63f-05a0-4f24-b469-a246d7732c10_player2,Human-Human,0.5236904068836873
+human_a5a659ea-c541-4c54-9bad-d736222acbb9_player1,Human-Human,0.8324211851106377
+human_a5a659ea-c541-4c54-9bad-d736222acbb9_player2,Human-Human,0.8941322418992527
+human_a9a91c71-c38b-4e78-9be4-3c2f5c450004_player1,Human-Human,0.8397810244549248
+human_a9a91c71-c38b-4e78-9be4-3c2f5c450004_player2,Human-Human,0.6643838108501658
+human_b40d6c2e-46aa-4680-8f62-ef715fd65b79_player1,Human-Human,0.8279204342976518
+human_b40d6c2e-46aa-4680-8f62-ef715fd65b79_player2,Human-Human,0.8577869710523244
+human_bf70b991-4d12-4b4f-9ce5-57687e7d0c35_player1,Human-Human,0.7337322641838704
+human_bf70b991-4d12-4b4f-9ce5-57687e7d0c35_player2,Human-Human,0.710220465613674
+human_c252dec7-11a7-48c1-9696-691e0511cbc2_player1,Human-Human,0.7240890175229904
+human_c252dec7-11a7-48c1-9696-691e0511cbc2_player2,Human-Human,0.8236653554347487
+human_c70d7765-1724-49bf-9fed-d8647822e9f2_player1,Human-Human,0.8543943780098272
+human_c70d7765-1724-49bf-9fed-d8647822e9f2_player2,Human-Human,0.845192998894275
+human_cb6a41aa-0534-4a15-86a4-80d9c232a01e_player1,Human-Human,0.642930060534218
+human_cb6a41aa-0534-4a15-86a4-80d9c232a01e_player2,Human-Human,0.6586424569478491
+human_dbe27c5c-9678-4808-9506-13690c5d442a_player1,Human-Human,0.8382990924434042
+human_dbe27c5c-9678-4808-9506-13690c5d442a_player2,Human-Human,0.6028280427846004
+individual_rl_legacy_session_0_player1,Individual RL,0.7088716515609964
+individual_rl_legacy_session_0_player2,Individual RL,0.6811810088912478
+individual_rl_legacy_session_10_player1,Individual RL,0.7021241135429509
+individual_rl_legacy_session_10_player2,Individual RL,0.8788148190382642
+individual_rl_legacy_session_11_player1,Individual RL,0.7750762585122805
+individual_rl_legacy_session_11_player2,Individual RL,0.7907647546374974
+individual_rl_legacy_session_12_player1,Individual RL,0.8587511713891061
+individual_rl_legacy_session_12_player2,Individual RL,0.8440548241722174
+individual_rl_legacy_session_13_player1,Individual RL,0.7777923238748624
+individual_rl_legacy_session_13_player2,Individual RL,0.8311606587040264
+individual_rl_legacy_session_14_player1,Individual RL,0.5751561916741031
+individual_rl_legacy_session_14_player2,Individual RL,0.5084394224110024
+individual_rl_legacy_session_15_player1,Individual RL,0.598449552318655
+individual_rl_legacy_session_15_player2,Individual RL,0.6703926643386006
+individual_rl_legacy_session_16_player1,Individual RL,0.7609683024570563
+individual_rl_legacy_session_16_player2,Individual RL,0.87206894995823
+individual_rl_legacy_session_17_player1,Individual RL,0.7900709665083823
+individual_rl_legacy_session_17_player2,Individual RL,0.7987787073139744
+individual_rl_legacy_session_18_player1,Individual RL,0.7550379206701068
+individual_rl_legacy_session_18_player2,Individual RL,0.6911351433123086
+individual_rl_legacy_session_19_player1,Individual RL,0.8496927597553214
+individual_rl_legacy_session_19_player2,Individual RL,0.9013425257957138
+individual_rl_legacy_session_1_player1,Individual RL,0.7707419127498719
+individual_rl_legacy_session_1_player2,Individual RL,0.6153825172375771
+individual_rl_legacy_session_20_player1,Individual RL,0.8842970614693062
+individual_rl_legacy_session_20_player2,Individual RL,0.8688199632153755
+individual_rl_legacy_session_21_player1,Individual RL,0.8014574469185518
+individual_rl_legacy_session_21_player2,Individual RL,0.6963376966396964
+individual_rl_legacy_session_22_player1,Individual RL,0.8025929612418717
+individual_rl_legacy_session_22_player2,Individual RL,0.7709118227212642
+individual_rl_legacy_session_23_player1,Individual RL,0.8943126587625448
+individual_rl_legacy_session_23_player2,Individual RL,0.8909517518499429
+individual_rl_legacy_session_24_player1,Individual RL,0.757220499247651
+individual_rl_legacy_session_24_player2,Individual RL,0.7834018048667298
+individual_rl_legacy_session_25_player1,Individual RL,0.7061636974385227
+individual_rl_legacy_session_25_player2,Individual RL,0.687589452385984
+individual_rl_legacy_session_26_player1,Individual RL,0.816673297448766
+individual_rl_legacy_session_26_player2,Individual RL,0.7658788592263007
+individual_rl_legacy_session_27_player1,Individual RL,0.8586444272905109
+individual_rl_legacy_session_27_player2,Individual RL,0.8828917967198219
+individual_rl_legacy_session_28_player1,Individual RL,0.640427587928804
+individual_rl_legacy_session_28_player2,Individual RL,0.6209160103607616
+individual_rl_legacy_session_29_player1,Individual RL,0.7985192572947419
+individual_rl_legacy_session_29_player2,Individual RL,0.7767201165316724
+individual_rl_legacy_session_2_player1,Individual RL,0.7643030168529149
+individual_rl_legacy_session_2_player2,Individual RL,0.7800886153967886
+individual_rl_legacy_session_3_player1,Individual RL,0.713500722167335
+individual_rl_legacy_session_3_player2,Individual RL,0.7793726193693207
+individual_rl_legacy_session_4_player1,Individual RL,0.7098482548369394
+individual_rl_legacy_session_4_player2,Individual RL,0.6972648002385211
+individual_rl_legacy_session_5_player1,Individual RL,0.7774665282441373
+individual_rl_legacy_session_5_player2,Individual RL,0.7841519175894106
+individual_rl_legacy_session_6_player1,Individual RL,0.8463057082694717
+individual_rl_legacy_session_6_player2,Individual RL,0.8077892400731673
+individual_rl_legacy_session_7_player1,Individual RL,0.818176824557598
+individual_rl_legacy_session_7_player2,Individual RL,0.8633442495877468
+individual_rl_legacy_session_8_player1,Individual RL,0.7866249905725058
+individual_rl_legacy_session_8_player2,Individual RL,0.7727774811918097
+individual_rl_legacy_session_9_player1,Individual RL,0.8413901858522702
+individual_rl_legacy_session_9_player2,Individual RL,0.8331846542432432
+joint_rl_session_0_player1,Joint RL,0.7454340192733849
+joint_rl_session_0_player2,Joint RL,0.7540693804561832
+joint_rl_session_10_player1,Joint RL,0.7493304653535655
+joint_rl_session_10_player2,Joint RL,0.7426774923160475
+joint_rl_session_11_player1,Joint RL,0.7530439559757316
+joint_rl_session_11_player2,Joint RL,0.6546057572186714
+joint_rl_session_12_player1,Joint RL,0.6256183934966129
+joint_rl_session_12_player2,Joint RL,0.723878755062849
+joint_rl_session_13_player1,Joint RL,0.7617135713151686
+joint_rl_session_13_player2,Joint RL,0.7562575402437814
+joint_rl_session_14_player1,Joint RL,0.8478031742908861
+joint_rl_session_14_player2,Joint RL,0.7902905944539107
+joint_rl_session_15_player1,Joint RL,0.6489323745345082
+joint_rl_session_15_player2,Joint RL,0.8030360055193984
+joint_rl_session_16_player1,Joint RL,0.7415467834568285
+joint_rl_session_16_player2,Joint RL,0.8354504713268324
+joint_rl_session_17_player1,Joint RL,0.5262273752642105
+joint_rl_session_17_player2,Joint RL,0.8338603747483458
+joint_rl_session_18_player1,Joint RL,0.6847853465773079
+joint_rl_session_18_player2,Joint RL,0.6578390731451732
+joint_rl_session_19_player1,Joint RL,0.7141297019643305
+joint_rl_session_19_player2,Joint RL,0.7259763041499573
+joint_rl_session_1_player1,Joint RL,0.7060129399433887
+joint_rl_session_1_player2,Joint RL,0.624203607981332
+joint_rl_session_20_player1,Joint RL,0.8086621117508194
+joint_rl_session_20_player2,Joint RL,0.796399642839723
+joint_rl_session_21_player1,Joint RL,0.8258844464697631
+joint_rl_session_21_player2,Joint RL,0.7731109343585153
+joint_rl_session_22_player1,Joint RL,0.6372375258539366
+joint_rl_session_22_player2,Joint RL,0.749382444845949
+joint_rl_session_23_player1,Joint RL,0.7447287072831686
+joint_rl_session_23_player2,Joint RL,0.6871686997592535
+joint_rl_session_24_player1,Joint RL,0.6606602496776888
+joint_rl_session_24_player2,Joint RL,0.7384226853860334
+joint_rl_session_25_player1,Joint RL,0.633622757336325
+joint_rl_session_25_player2,Joint RL,0.7120687429421589
+joint_rl_session_26_player1,Joint RL,0.7659947252952526
+joint_rl_session_26_player2,Joint RL,0.7867221128488654
+joint_rl_session_27_player1,Joint RL,0.7968782783996112
+joint_rl_session_27_player2,Joint RL,0.7155291311763989
+joint_rl_session_28_player1,Joint RL,0.6841786723909199
+joint_rl_session_28_player2,Joint RL,0.6934914319055046
+joint_rl_session_29_player1,Joint RL,0.744296916628397
+joint_rl_session_29_player2,Joint RL,0.7478967791575853
+joint_rl_session_2_player1,Joint RL,0.6883483880941408
+joint_rl_session_2_player2,Joint RL,0.7074202866630945
+joint_rl_session_3_player1,Joint RL,0.7392000244850252
+joint_rl_session_3_player2,Joint RL,0.7556546537237268
+joint_rl_session_4_player1,Joint RL,0.8108628285347156
+joint_rl_session_4_player2,Joint RL,0.7555787019012805
+joint_rl_session_5_player1,Joint RL,0.7725908326313939
+joint_rl_session_5_player2,Joint RL,0.8025885232543564
+joint_rl_session_6_player1,Joint RL,0.8179160649535786
+joint_rl_session_6_player2,Joint RL,0.8965580491128762
+joint_rl_session_7_player1,Joint RL,0.7660914881742195
+joint_rl_session_7_player2,Joint RL,0.7608283249267479
+joint_rl_session_8_player1,Joint RL,0.7106885031589065
+joint_rl_session_8_player2,Joint RL,0.6491713305824315
+joint_rl_session_9_player1,Joint RL,0.6463687580931488
+joint_rl_session_9_player2,Joint RL,0.6255355377710967
+session_0_player1,Shared agency commitment no signaling,0.7835808543216355
+session_0_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.8210154788159816
+session_0_player1,Shared agency no commitment no signaling,0.6024170516445787
+session_0_player2,Shared agency commitment no signaling,0.7803232181825834
+session_0_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.687188298660733
+session_0_player2,Shared agency no commitment no signaling,0.7496251074357688
+session_10_player1,Shared agency commitment no signaling,0.7396666364991299
+session_10_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7572504560894447
+session_10_player1,Shared agency no commitment no signaling,0.6615141621623601
+session_10_player2,Shared agency commitment no signaling,0.6577314364699137
+session_10_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.6619980042000005
+session_10_player2,Shared agency no commitment no signaling,0.7033350780006189
+session_11_player1,Shared agency commitment no signaling,0.8287464097221187
+session_11_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.829437366624952
+session_11_player1,Shared agency no commitment no signaling,0.6219690348628832
+session_11_player2,Shared agency commitment no signaling,0.8675772610747708
+session_11_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7647695555807905
+session_11_player2,Shared agency no commitment no signaling,0.6664301503998272
+session_12_player1,Shared agency commitment no signaling,0.6443915951090403
+session_12_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.6825042090576606
+session_12_player1,Shared agency no commitment no signaling,0.6528039673799438
+session_12_player2,Shared agency commitment no signaling,0.6436476462510823
+session_12_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.715687028884215
+session_12_player2,Shared agency no commitment no signaling,0.46573289793828543
+session_13_player1,Shared agency commitment no signaling,0.8490824017128681
+session_13_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.8398643834885828
+session_13_player1,Shared agency no commitment no signaling,0.661335900926785
+session_13_player2,Shared agency commitment no signaling,0.821457884016073
+session_13_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7396024779053839
+session_13_player2,Shared agency no commitment no signaling,0.557179063312941
+session_14_player1,Shared agency commitment no signaling,0.8855497821448162
+session_14_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.8968351097909087
+session_14_player1,Shared agency no commitment no signaling,0.6278026746263135
+session_14_player2,Shared agency commitment no signaling,0.6215140022918741
+session_14_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.5806106236896353
+session_14_player2,Shared agency no commitment no signaling,0.6249878451436621
+session_15_player1,Shared agency commitment no signaling,0.7081800798375677
+session_15_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.718691677030353
+session_15_player1,Shared agency no commitment no signaling,0.725022661463695
+session_15_player2,Shared agency commitment no signaling,0.6867345952962408
+session_15_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7020849675361467
+session_15_player2,Shared agency no commitment no signaling,0.708004969179842
+session_16_player1,Shared agency commitment no signaling,0.7523804318560189
+session_16_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.751054760289156
+session_16_player1,Shared agency no commitment no signaling,0.7009365923070423
+session_16_player2,Shared agency commitment no signaling,0.8514532171228564
+session_16_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7741068097883486
+session_16_player2,Shared agency no commitment no signaling,0.5478746698920453
+session_17_player1,Shared agency commitment no signaling,0.7432714174579321
+session_17_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7449432783921587
+session_17_player1,Shared agency no commitment no signaling,0.723092077532506
+session_17_player2,Shared agency commitment no signaling,0.742818735874291
+session_17_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.6701513880682226
+session_17_player2,Shared agency no commitment no signaling,0.7594711935360142
+session_18_player1,Shared agency commitment no signaling,0.7813192068794166
+session_18_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7268572250232146
+session_18_player1,Shared agency no commitment no signaling,0.6539992467981779
+session_18_player2,Shared agency commitment no signaling,0.722580419332147
+session_18_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.771341032475856
+session_18_player2,Shared agency no commitment no signaling,0.694091171696275
+session_19_player1,Shared agency commitment no signaling,0.8262697818744072
+session_19_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.8212287411355381
+session_19_player1,Shared agency no commitment no signaling,0.8302716340785162
+session_19_player2,Shared agency commitment no signaling,0.8259709655545222
+session_19_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.8259709655545222
+session_19_player2,Shared agency no commitment no signaling,0.7075691070804273
+session_1_player1,Shared agency commitment no signaling,0.7480574682914394
+session_1_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7182307175415644
+session_1_player1,Shared agency no commitment no signaling,0.5902379311083424
+session_1_player2,Shared agency commitment no signaling,0.7593016233039923
+session_1_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.8448641773400553
+session_1_player2,Shared agency no commitment no signaling,0.6321123008199653
+session_20_player1,Shared agency commitment no signaling,0.7234131843103642
+session_20_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.8304928322773318
+session_20_player1,Shared agency no commitment no signaling,0.7063465233616021
+session_20_player2,Shared agency commitment no signaling,0.7658788924900273
+session_20_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7255626560266877
+session_20_player2,Shared agency no commitment no signaling,0.6129533585326566
+session_21_player1,Shared agency commitment no signaling,0.8339288891941342
+session_21_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.83165713290562
+session_21_player1,Shared agency no commitment no signaling,0.6600389144650656
+session_21_player2,Shared agency commitment no signaling,0.7766483879608518
+session_21_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.763724043112811
+session_21_player2,Shared agency no commitment no signaling,0.5130755620717725
+session_22_player1,Shared agency commitment no signaling,0.8426097076404547
+session_22_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.792612100547983
+session_22_player1,Shared agency no commitment no signaling,0.7071567802409494
+session_22_player2,Shared agency commitment no signaling,0.7192574229126596
+session_22_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7127185144151676
+session_22_player2,Shared agency no commitment no signaling,0.5707392088191674
+session_23_player1,Shared agency commitment no signaling,0.720668355862765
+session_23_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.758547605360834
+session_23_player1,Shared agency no commitment no signaling,0.6744158781290407
+session_23_player2,Shared agency commitment no signaling,0.7192744678835609
+session_23_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.8260432696287034
+session_23_player2,Shared agency no commitment no signaling,0.690877947683035
+session_24_player1,Shared agency commitment no signaling,0.7913075796467557
+session_24_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.727169834135079
+session_24_player1,Shared agency no commitment no signaling,0.5995935461946874
+session_24_player2,Shared agency commitment no signaling,0.8067864764989898
+session_24_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7848601620382641
+session_24_player2,Shared agency no commitment no signaling,0.6906047919149569
+session_25_player1,Shared agency commitment no signaling,0.6251853021930853
+session_25_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.6750437730276595
+session_25_player1,Shared agency no commitment no signaling,0.625206584193352
+session_25_player2,Shared agency commitment no signaling,0.7292537930180004
+session_25_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.6048831356693787
+session_25_player2,Shared agency no commitment no signaling,0.42081147842749966
+session_26_player1,Shared agency commitment no signaling,0.8315057882160386
+session_26_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.6323606840642143
+session_26_player1,Shared agency no commitment no signaling,0.7126108244520795
+session_26_player2,Shared agency commitment no signaling,0.8681262773142235
+session_26_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.8258920918050192
+session_26_player2,Shared agency no commitment no signaling,0.7379609971967462
+session_27_player1,Shared agency commitment no signaling,0.6921160521274659
+session_27_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.692156308700632
+session_27_player1,Shared agency no commitment no signaling,0.6715765942190617
+session_27_player2,Shared agency commitment no signaling,0.6470814129905247
+session_27_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7214143456813369
+session_27_player2,Shared agency no commitment no signaling,0.6264609040119036
+session_28_player1,Shared agency commitment no signaling,0.8476464052720156
+session_28_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7490447699497038
+session_28_player1,Shared agency no commitment no signaling,0.7074536642093262
+session_28_player2,Shared agency commitment no signaling,0.7421158874567024
+session_28_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.8565181524093017
+session_28_player2,Shared agency no commitment no signaling,0.7035501721552363
+session_29_player1,Shared agency commitment no signaling,0.6834967600462925
+session_29_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.6620018084684336
+session_29_player1,Shared agency no commitment no signaling,0.6770500209744147
+session_29_player2,Shared agency commitment no signaling,0.672670385133789
+session_29_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.6968581473253044
+session_29_player2,Shared agency no commitment no signaling,0.6015083419916176
+session_2_player1,Shared agency commitment no signaling,0.659019968766732
+session_2_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7980393205944107
+session_2_player1,Shared agency no commitment no signaling,0.6189400093886905
+session_2_player2,Shared agency commitment no signaling,0.7489646199866908
+session_2_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.8149865158595566
+session_2_player2,Shared agency no commitment no signaling,0.7057356762769197
+session_3_player1,Shared agency commitment no signaling,0.7802477683681224
+session_3_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7366242474902497
+session_3_player1,Shared agency no commitment no signaling,0.5615156361916266
+session_3_player2,Shared agency commitment no signaling,0.8238011026497115
+session_3_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7012595087303287
+session_3_player2,Shared agency no commitment no signaling,0.5628330741659091
+session_4_player1,Shared agency commitment no signaling,0.6828371688883286
+session_4_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7083823793141709
+session_4_player1,Shared agency no commitment no signaling,0.5531771673327421
+session_4_player2,Shared agency commitment no signaling,0.7088438037779087
+session_4_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7440510438743685
+session_4_player2,Shared agency no commitment no signaling,0.6980260842162491
+session_5_player1,Shared agency commitment no signaling,0.6368516117538511
+session_5_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.6696632211719559
+session_5_player1,Shared agency no commitment no signaling,0.6457712511229933
+session_5_player2,Shared agency commitment no signaling,0.6418891814600204
+session_5_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7546635467378647
+session_5_player2,Shared agency no commitment no signaling,0.6502064922600973
+session_6_player1,Shared agency commitment no signaling,0.7379676100765944
+session_6_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.8554020601216884
+session_6_player1,Shared agency no commitment no signaling,0.7205247237465311
+session_6_player2,Shared agency commitment no signaling,0.7710182099679453
+session_6_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7645407109983462
+session_6_player2,Shared agency no commitment no signaling,0.5920491086564861
+session_7_player1,Shared agency commitment no signaling,0.7237717878558334
+session_7_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.6889706314139695
+session_7_player1,Shared agency no commitment no signaling,0.7343726874418797
+session_7_player2,Shared agency commitment no signaling,0.6437630057740086
+session_7_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7378511620404846
+session_7_player2,Shared agency no commitment no signaling,0.4970196933494042
+session_8_player1,Shared agency commitment no signaling,0.676578000959654
+session_8_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7559954631106183
+session_8_player1,Shared agency no commitment no signaling,0.6955575318310365
+session_8_player2,Shared agency commitment no signaling,0.7194450360193514
+session_8_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7542940192461929
+session_8_player2,Shared agency no commitment no signaling,0.6846418980080923
+session_9_player1,Shared agency commitment no signaling,0.7749357783377755
+session_9_player1,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.7256411408968495
+session_9_player1,Shared agency no commitment no signaling,0.5036615504772777
+session_9_player2,Shared agency commitment no signaling,0.6753839816361834
+session_9_player2,Shared agency commitment signaling (Communicative Action Mixture (Legibility Over Alternatives)),0.6433412815889198
+session_9_player2,Shared agency no commitment no signaling,0.5686464457567926

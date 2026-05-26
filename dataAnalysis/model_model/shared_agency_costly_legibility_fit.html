@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shared-Agency Costly Legibility Utility Fit</title>
+<style>
+body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#f6f8fb; color:#1f2933; }
+header { padding:34px 48px 24px; background:#ffffff; border-bottom:1px solid #d9e2ec; }
+main { max-width:1120px; margin:0 auto; padding:28px 24px 60px; }
+h1 { margin:0 0 8px; font-size:31px; }
+h2 { margin:30px 0 12px; font-size:21px; }
+p { line-height:1.55; }
+.note { color:#52606d; max-width:980px; }
+.panel { background:#fff; border:1px solid #d9e2ec; border-radius:8px; padding:18px; margin:18px 0; }
+.links a { display:inline-block; margin:0 12px 10px 0; color:#2458a6; text-decoration:none; }
+img { width:100%; height:auto; display:block; border:1px solid #d9e2ec; border-radius:6px; background:white; margin:12px 0; }
+table { width:100%; border-collapse:collapse; font-size:13px; background:white; }
+th,td { border:1px solid #d9e2ec; padding:8px 10px; text-align:left; vertical-align:top; }
+th { background:#eef3f8; }
+td.num { text-align:right; font-variant-numeric:tabular-nums; }
+code { background:#eef3f8; padding:2px 5px; border-radius:4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Shared-Agency Costly Legibility Utility Fit</h1>
+  <p class="note">Model 1: fixed lambda=0.2, costly action signaling utility with one free eta. This allows legible actions even when they are not value-safe tie-breaks.</p>
+  <div class="links">
+    <a href="shared_agency_costly_legibility_fit/step0_model_summary.csv">presentation-step summary CSV</a>
+    <a href="shared_agency_costly_legibility_fit/step1_model_summary.csv">step-1 summary CSV</a>
+    <a href="shared_agency_costly_legibility_fit/step1_3_model_summary.csv">step 1-3 summary CSV</a>
+    <a href="joint_rl/notebooks/shared_agency_costly_legibility_fit/shared_agency_costly_legibility_fit.ipynb">notebook</a>
+    <a href="shared_agency_log_odds_legibility_fit.html">log-odds legibility fit</a>
+    <a href="shared_agency_log_odds_eta_sweep.html">log-odds full eta sweep</a>
+    <a href="shared_agency_costly_mixture_rho_sweep.html">communicative action mixture rho sweep</a>
+    <a href="shared_agency_tiebreak_signal_fit.html">tie-break signaling fit</a>
+    <a href="shared_agency_information_gain_fit.html">information-gain fit</a>
+    <a href="shared_agency_uncertainty_gated_rho_fit.html">uncertainty-gated rho fit</a>
+    <a href="shared_agency_step1_model_comparison.html">step-1 alpha fit report</a>
+    <a href="shared_agency_signal_window_model_comparison.html">step 1-3 alpha fit report</a>
+    <a href="shared_agency_step_level_model_comparison.html">all-step step-level report</a>
+    <a href="shared_agency_joint_lambda_alpha_baseline_comparison.html">trial-level baseline report</a>
+  </div>
+</header>
+<main>
+  <section class="panel">
+    <h2>Model</h2>
+    <p class="note">The base term is the existing unshaped JointRL goal-conditioned action policy. The signaling term is target posterior lift, so eta controls costly willingness to make the sampled goal more legible.</p>
+    <p><code>pi_eta(a|s,g,P) proportional to pi_base(a|s,g) exp(eta [log P(g|a) - log P(g)])</code></p>
+  </section>
+
+  <section class="panel">
+    <h2>New-goal presentation step</h2>
+    <p class="note">Actions=282. Fixed lambda=0.2; only eta is fitted. Goal weights are unchanged for every eta.</p>
+    <a href="shared_agency_costly_legibility_fit/assets/step0_eta_sweep.png"><img src="shared_agency_costly_legibility_fit/assets/step0_eta_sweep.png" alt="New-goal presentation step eta sweep"></a>
+    <a href="shared_agency_costly_legibility_fit/assets/step0_model_summary.png"><img src="shared_agency_costly_legibility_fit/assets/step0_model_summary.png" alt="New-goal presentation step model summary"></a>
+    <table><thead><tr><th>model</th><th>eta</th><th>lambda</th><th>n_params</th><th>actions</th><th>in_sample_nll</th><th>heldout_nll</th><th>heldout_nll_per_action</th><th>delta_heldout_nll</th><th>expected_signal_move</th><th>expected_btom_legibility</th><th>expected_mean_posterior_lift</th><th>aic</th><th>bic</th></tr></thead><tbody><tr><td class="">no signaling, lambda=.2</td><td class="num">0.00</td><td class="num">0.20</td><td class="">0</td><td class="">282</td><td class="num">260.273</td><td class="num">260.273</td><td class="num">0.923</td><td class="num">0.000</td><td class="num">0.71</td><td class="num">0.77</td><td class="num">0.48</td><td class="num">520.55</td><td class="num">520.55</td></tr><tr><td class="">costly legibility utility</td><td class="num">0.00</td><td class="num">0.20</td><td class="">1</td><td class="">282</td><td class="num">260.273</td><td class="num">260.273</td><td class="num">0.923</td><td class="num">0.000</td><td class="num">0.71</td><td class="num">0.77</td><td class="num">0.48</td><td class="num">522.55</td><td class="num">526.19</td></tr><tr><td class="">trial-level best lambda=.15 alpha=.5</td><td class="num">0.50</td><td class="num">0.15</td><td class="">0</td><td class="">282</td><td class="num">272.052</td><td class="num">272.052</td><td class="num">0.965</td><td class="num">11.779</td><td class="num">0.76</td><td class="num">0.80</td><td class="num">0.54</td><td class="num">544.10</td><td class="num">544.10</td></tr><tr><td class="">constant RSA alpha=1</td><td class="num">1.00</td><td class="num">0.20</td><td class="">0</td><td class="">282</td><td class="num">279.268</td><td class="num">279.268</td><td class="num">0.990</td><td class="num">18.996</td><td class="num">0.80</td><td class="num">0.82</td><td class="num">0.58</td><td class="num">558.54</td><td class="num">558.54</td></tr></tbody></table>
+  </section>
+
+  <section class="panel">
+    <h2>Step 1 after new goal</h2>
+    <p class="note">Actions=254. Fixed lambda=0.2; only eta is fitted. Goal weights are unchanged for every eta.</p>
+    <a href="shared_agency_costly_legibility_fit/assets/step1_eta_sweep.png"><img src="shared_agency_costly_legibility_fit/assets/step1_eta_sweep.png" alt="Step 1 after new goal eta sweep"></a>
+    <a href="shared_agency_costly_legibility_fit/assets/step1_model_summary.png"><img src="shared_agency_costly_legibility_fit/assets/step1_model_summary.png" alt="Step 1 after new goal model summary"></a>
+    <table><thead><tr><th>model</th><th>eta</th><th>lambda</th><th>n_params</th><th>actions</th><th>in_sample_nll</th><th>heldout_nll</th><th>heldout_nll_per_action</th><th>delta_heldout_nll</th><th>expected_signal_move</th><th>expected_btom_legibility</th><th>expected_mean_posterior_lift</th><th>aic</th><th>bic</th></tr></thead><tbody><tr><td class="">no signaling, lambda=.2</td><td class="num">0.00</td><td class="num">0.20</td><td class="">0</td><td class="">254</td><td class="num">172.995</td><td class="num">172.995</td><td class="num">0.681</td><td class="num">0.000</td><td class="num">0.73</td><td class="num">0.83</td><td class="num">0.48</td><td class="num">345.99</td><td class="num">345.99</td></tr><tr><td class="">costly legibility utility</td><td class="num">0.00</td><td class="num">0.20</td><td class="">1</td><td class="">254</td><td class="num">172.995</td><td class="num">172.995</td><td class="num">0.681</td><td class="num">0.000</td><td class="num">0.73</td><td class="num">0.83</td><td class="num">0.48</td><td class="num">347.99</td><td class="num">351.53</td></tr><tr><td class="">constant RSA alpha=1</td><td class="num">1.00</td><td class="num">0.20</td><td class="">0</td><td class="">254</td><td class="num">189.350</td><td class="num">189.350</td><td class="num">0.745</td><td class="num">16.354</td><td class="num">0.78</td><td class="num">0.86</td><td class="num">0.67</td><td class="num">378.70</td><td class="num">378.70</td></tr><tr><td class="">trial-level best lambda=.15 alpha=.5</td><td class="num">0.50</td><td class="num">0.15</td><td class="">0</td><td class="">254</td><td class="num">190.991</td><td class="num">190.991</td><td class="num">0.752</td><td class="num">17.995</td><td class="num">0.77</td><td class="num">0.86</td><td class="num">0.63</td><td class="num">381.98</td><td class="num">381.98</td></tr></tbody></table>
+  </section>
+
+  <section class="panel">
+    <h2>Steps 1-3 after new goal</h2>
+    <p class="note">Actions=688. Fixed lambda=0.2; only eta is fitted. Goal weights are unchanged for every eta.</p>
+    <a href="shared_agency_costly_legibility_fit/assets/step1_3_eta_sweep.png"><img src="shared_agency_costly_legibility_fit/assets/step1_3_eta_sweep.png" alt="Steps 1-3 after new goal eta sweep"></a>
+    <a href="shared_agency_costly_legibility_fit/assets/step1_3_model_summary.png"><img src="shared_agency_costly_legibility_fit/assets/step1_3_model_summary.png" alt="Steps 1-3 after new goal model summary"></a>
+    <table><thead><tr><th>model</th><th>eta</th><th>lambda</th><th>n_params</th><th>actions</th><th>in_sample_nll</th><th>heldout_nll</th><th>heldout_nll_per_action</th><th>delta_heldout_nll</th><th>expected_signal_move</th><th>expected_btom_legibility</th><th>expected_mean_posterior_lift</th><th>aic</th><th>bic</th></tr></thead><tbody><tr><td class="">no signaling, lambda=.2</td><td class="num">0.00</td><td class="num">0.20</td><td class="">0</td><td class="">688</td><td class="num">437.438</td><td class="num">437.438</td><td class="num">0.636</td><td class="num">0.000</td><td class="num">0.74</td><td class="num">0.88</td><td class="num">0.33</td><td class="num">874.88</td><td class="num">874.88</td></tr><tr><td class="">costly legibility utility</td><td class="num">0.00</td><td class="num">0.20</td><td class="">1</td><td class="">688</td><td class="num">437.438</td><td class="num">437.438</td><td class="num">0.636</td><td class="num">0.000</td><td class="num">0.74</td><td class="num">0.88</td><td class="num">0.33</td><td class="num">876.88</td><td class="num">881.41</td></tr><tr><td class="">constant RSA alpha=1</td><td class="num">1.00</td><td class="num">0.20</td><td class="">0</td><td class="">688</td><td class="num">467.448</td><td class="num">467.448</td><td class="num">0.679</td><td class="num">30.010</td><td class="num">0.78</td><td class="num">0.90</td><td class="num">0.47</td><td class="num">934.90</td><td class="num">934.90</td></tr><tr><td class="">trial-level best lambda=.15 alpha=.5</td><td class="num">0.50</td><td class="num">0.15</td><td class="">0</td><td class="">688</td><td class="num">469.945</td><td class="num">469.945</td><td class="num">0.683</td><td class="num">32.507</td><td class="num">0.77</td><td class="num">0.90</td><td class="num">0.45</td><td class="num">939.89</td><td class="num">939.89</td></tr></tbody></table>
+  </section>
+
+</main>
+</body>
+</html>

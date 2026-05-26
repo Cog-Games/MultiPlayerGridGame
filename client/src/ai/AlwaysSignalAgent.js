@@ -35,7 +35,7 @@ export class AlwaysSignalAgent extends SignalAgent {
 
     const actionPolicy = this.horizon > 1
       ? this._signalActionPolicyTrajectory(aiPos, otherPos, goals, targetGoalIdx)
-      : this._signalActionPolicy(aiPos, otherPos, goals, targetGoalIdx);
+      : this._signalActionPolicy(aiPos, otherPos, goals, targetGoalIdx, null, trialData);
     this._recordSignalSample(trialData, aiPlayerNumber, targetGoalIdx, goalWeights, actionPolicy);
     return this._sampleActionFromPolicy(actionPolicy.probs);
   }
@@ -134,6 +134,9 @@ export class AlwaysSignalAgent extends SignalAgent {
         alwaysSignal: true,
         everyStepResampling: true
       };
+      if (typeof actionPolicy.signalingMixtureWeight === 'number') {
+        sample.signalingMixtureWeight = actionPolicy.signalingMixtureWeight;
+      }
       trialData.alwaysSignalAgentSampledJointGoal = goalIdx;
       trialData.alwaysSignalAgentSampledJointGoalPosterior = sample.posterior;
       trialData.alwaysSignalAgentSampledJointGoalWeights = goalWeights.slice();

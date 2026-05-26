@@ -450,11 +450,12 @@ def main() -> None:
     summary = {
         "model": MODEL,
         "implementation": "AlwaysSignalAgent",
-        "joint_value_model": "unshaped JointRL",
+        "joint_value_model": "unshaped JointRL with distance-sum completion value",
         "reward_parameters": {
             "goalReward": 30,
             "stepCost": -1,
-            "gamma": 0.9,
+            "stepCostAppliedTo": "each active player/agent step",
+            "goalSelectionValue": "goalReward + stepCost * (d_self + d_other)",
             "softmaxBeta": 3.0,
             "proximityRewardWeight": 0.0,
         },

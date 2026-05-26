@@ -1,0 +1,273 @@
+participantId,group,posterior
+human_1d1f4cf9-e5f0-4ef5-8d74-ab6b134f25eb_player1,Human-Human,0.7064479510777425
+human_1d1f4cf9-e5f0-4ef5-8d74-ab6b134f25eb_player2,Human-Human,0.7660259607896821
+human_2ed9e54f-be52-49b9-a758-abb5f5ef5150_player1,Human-Human,0.8547391366377343
+human_2ed9e54f-be52-49b9-a758-abb5f5ef5150_player2,Human-Human,0.8249205185364219
+human_31e13002-490a-484d-a0f6-1781673d477a_player1,Human-Human,0.8904982675472978
+human_31e13002-490a-484d-a0f6-1781673d477a_player2,Human-Human,0.9027717780257473
+human_6558f174-56b6-4592-b53b-bf9ff8c7f3ca_player1,Human-Human,0.6938879854073292
+human_6558f174-56b6-4592-b53b-bf9ff8c7f3ca_player2,Human-Human,0.8943915765718597
+human_6b3ca33d-6a91-4de7-aaef-b55bcb13d712_player1,Human-Human,0.7226218879397933
+human_6b3ca33d-6a91-4de7-aaef-b55bcb13d712_player2,Human-Human,0.716753596315283
+human_74ea1778-cc30-4c70-92fe-ee112edef228_player1,Human-Human,0.6849940350056855
+human_74ea1778-cc30-4c70-92fe-ee112edef228_player2,Human-Human,0.6919375153841454
+human_975b16bb-4262-4523-94e3-02521faeb953_player1,Human-Human,0.7322160423401628
+human_975b16bb-4262-4523-94e3-02521faeb953_player2,Human-Human,0.7325912810944099
+human_9efbe63f-05a0-4f24-b469-a246d7732c10_player1,Human-Human,0.500315852408757
+human_9efbe63f-05a0-4f24-b469-a246d7732c10_player2,Human-Human,0.5236904068836873
+human_a5a659ea-c541-4c54-9bad-d736222acbb9_player1,Human-Human,0.8324211851106377
+human_a5a659ea-c541-4c54-9bad-d736222acbb9_player2,Human-Human,0.8941322418992527
+human_a9a91c71-c38b-4e78-9be4-3c2f5c450004_player1,Human-Human,0.8397810244549248
+human_a9a91c71-c38b-4e78-9be4-3c2f5c450004_player2,Human-Human,0.6643838108501658
+human_b40d6c2e-46aa-4680-8f62-ef715fd65b79_player1,Human-Human,0.8279204342976518
+human_b40d6c2e-46aa-4680-8f62-ef715fd65b79_player2,Human-Human,0.8577869710523244
+human_bf70b991-4d12-4b4f-9ce5-57687e7d0c35_player1,Human-Human,0.7337322641838704
+human_bf70b991-4d12-4b4f-9ce5-57687e7d0c35_player2,Human-Human,0.710220465613674
+human_c252dec7-11a7-48c1-9696-691e0511cbc2_player1,Human-Human,0.7240890175229904
+human_c252dec7-11a7-48c1-9696-691e0511cbc2_player2,Human-Human,0.8236653554347487
+human_c70d7765-1724-49bf-9fed-d8647822e9f2_player1,Human-Human,0.8543943780098272
+human_c70d7765-1724-49bf-9fed-d8647822e9f2_player2,Human-Human,0.845192998894275
+human_cb6a41aa-0534-4a15-86a4-80d9c232a01e_player1,Human-Human,0.642930060534218
+human_cb6a41aa-0534-4a15-86a4-80d9c232a01e_player2,Human-Human,0.6586424569478491
+human_dbe27c5c-9678-4808-9506-13690c5d442a_player1,Human-Human,0.8382990924434042
+human_dbe27c5c-9678-4808-9506-13690c5d442a_player2,Human-Human,0.6028280427846004
+session_0_player1,Goal-contrast signaling,0.7708847922633592
+session_0_player1,One-step deliberate signal,0.7835808543216355
+session_0_player1,Opportunity-gated communicative action mixture,0.6995984188962971
+session_0_player1,Shared agency no signaling,0.7835808543216355
+session_0_player2,Goal-contrast signaling,0.5734709520034557
+session_0_player2,One-step deliberate signal,0.7803232181825834
+session_0_player2,Opportunity-gated communicative action mixture,0.6950192086985331
+session_0_player2,Shared agency no signaling,0.7803232181825834
+session_10_player1,Goal-contrast signaling,0.7614816360000493
+session_10_player1,One-step deliberate signal,0.7870760765263749
+session_10_player1,Opportunity-gated communicative action mixture,0.7617741750731768
+session_10_player1,Shared agency no signaling,0.7572504560894447
+session_10_player2,Goal-contrast signaling,0.7176306352804409
+session_10_player2,One-step deliberate signal,0.6703635276911887
+session_10_player2,Opportunity-gated communicative action mixture,0.8302615104681705
+session_10_player2,Shared agency no signaling,0.6619980042000005
+session_11_player1,Goal-contrast signaling,0.6790809799564292
+session_11_player1,One-step deliberate signal,0.7866067035100446
+session_11_player1,Opportunity-gated communicative action mixture,0.6680547487258587
+session_11_player1,Shared agency no signaling,0.7866067035100446
+session_11_player2,Goal-contrast signaling,0.8350054216436
+session_11_player2,One-step deliberate signal,0.7834281293800145
+session_11_player2,Opportunity-gated communicative action mixture,0.7675569287240094
+session_11_player2,Shared agency no signaling,0.7742538144634017
+session_12_player1,Goal-contrast signaling,0.7856849293382873
+session_12_player1,One-step deliberate signal,0.7500340660745903
+session_12_player1,Opportunity-gated communicative action mixture,0.7263654637851569
+session_12_player1,Shared agency no signaling,0.7052085073340945
+session_12_player2,Goal-contrast signaling,0.7057365929908562
+session_12_player2,One-step deliberate signal,0.7739145800408493
+session_12_player2,Opportunity-gated communicative action mixture,0.6485835989920786
+session_12_player2,Shared agency no signaling,0.6024032471105119
+session_13_player1,Goal-contrast signaling,0.6177375390078894
+session_13_player1,One-step deliberate signal,0.754107147208293
+session_13_player1,Opportunity-gated communicative action mixture,0.6476407381856508
+session_13_player1,Shared agency no signaling,0.790986635948216
+session_13_player2,Goal-contrast signaling,0.8298347787000151
+session_13_player2,One-step deliberate signal,0.8349790196421051
+session_13_player2,Opportunity-gated communicative action mixture,0.7238778419790182
+session_13_player2,Shared agency no signaling,0.8116368355915831
+session_14_player1,Goal-contrast signaling,0.7411857296881682
+session_14_player1,One-step deliberate signal,0.8801016618030542
+session_14_player1,Opportunity-gated communicative action mixture,0.7741046151114852
+session_14_player1,Shared agency no signaling,0.8677453377134765
+session_14_player2,Goal-contrast signaling,0.7607948513766094
+session_14_player2,One-step deliberate signal,0.6764018785404005
+session_14_player2,Opportunity-gated communicative action mixture,0.619320165821028
+session_14_player2,Shared agency no signaling,0.6215140022918741
+session_15_player1,Goal-contrast signaling,0.8107125000011692
+session_15_player1,One-step deliberate signal,0.670039968953653
+session_15_player1,Opportunity-gated communicative action mixture,0.6993596255321531
+session_15_player1,Shared agency no signaling,0.7075879065105174
+session_15_player2,Goal-contrast signaling,0.8504950848253633
+session_15_player2,One-step deliberate signal,0.78651475789193
+session_15_player2,Opportunity-gated communicative action mixture,0.8188894511253785
+session_15_player2,Shared agency no signaling,0.7153804078677877
+session_16_player1,Goal-contrast signaling,0.7417156703437655
+session_16_player1,One-step deliberate signal,0.7938503895528273
+session_16_player1,Opportunity-gated communicative action mixture,0.8162342766342655
+session_16_player1,Shared agency no signaling,0.7016097357400555
+session_16_player2,Goal-contrast signaling,0.8340636160507159
+session_16_player2,One-step deliberate signal,0.8406269154131747
+session_16_player2,Opportunity-gated communicative action mixture,0.7328065588649246
+session_16_player2,Shared agency no signaling,0.8333769389405563
+session_17_player1,Goal-contrast signaling,0.7225752442491067
+session_17_player1,One-step deliberate signal,0.7752162411579457
+session_17_player1,Opportunity-gated communicative action mixture,0.6892314415146046
+session_17_player1,Shared agency no signaling,0.7432639381164639
+session_17_player2,Goal-contrast signaling,0.7715149272924909
+session_17_player2,One-step deliberate signal,0.7434191394158943
+session_17_player2,Opportunity-gated communicative action mixture,0.7264429186929251
+session_17_player2,Shared agency no signaling,0.7427384901081888
+session_18_player1,Goal-contrast signaling,0.6430844252876968
+session_18_player1,One-step deliberate signal,0.7905255313338944
+session_18_player1,Opportunity-gated communicative action mixture,0.7489192897874212
+session_18_player1,Shared agency no signaling,0.7813192068794166
+session_18_player2,Goal-contrast signaling,0.6500205253181862
+session_18_player2,One-step deliberate signal,0.7516965365091471
+session_18_player2,Opportunity-gated communicative action mixture,0.7239957971362107
+session_18_player2,Shared agency no signaling,0.722580419332147
+session_19_player1,Goal-contrast signaling,0.817661664625131
+session_19_player1,One-step deliberate signal,0.8356008524485304
+session_19_player1,Opportunity-gated communicative action mixture,0.8179721301726866
+session_19_player1,Shared agency no signaling,0.8262697818744072
+session_19_player2,Goal-contrast signaling,0.7522538070249343
+session_19_player2,One-step deliberate signal,0.8259709655545222
+session_19_player2,Opportunity-gated communicative action mixture,0.8317240081364359
+session_19_player2,Shared agency no signaling,0.8259709655545222
+session_1_player1,Goal-contrast signaling,0.8352194966193622
+session_1_player1,One-step deliberate signal,0.7939339043157212
+session_1_player1,Opportunity-gated communicative action mixture,0.7862315468751128
+session_1_player1,Shared agency no signaling,0.696824927285728
+session_1_player2,Goal-contrast signaling,0.8618954747243426
+session_1_player2,One-step deliberate signal,0.7048930612696132
+session_1_player2,Opportunity-gated communicative action mixture,0.8165349828653636
+session_1_player2,Shared agency no signaling,0.8152758159724987
+session_20_player1,Goal-contrast signaling,0.7099368510630053
+session_20_player1,One-step deliberate signal,0.7222857348757651
+session_20_player1,Opportunity-gated communicative action mixture,0.6828105384809648
+session_20_player1,Shared agency no signaling,0.7082929700500975
+session_20_player2,Goal-contrast signaling,0.7318820394274884
+session_20_player2,One-step deliberate signal,0.7596840694118563
+session_20_player2,Opportunity-gated communicative action mixture,0.7477310771777941
+session_20_player2,Shared agency no signaling,0.7458726541472094
+session_21_player1,Goal-contrast signaling,0.7401079062981011
+session_21_player1,One-step deliberate signal,0.8104546514900435
+session_21_player1,Opportunity-gated communicative action mixture,0.7497496303679316
+session_21_player1,Shared agency no signaling,0.7952197171827878
+session_21_player2,Goal-contrast signaling,0.8189760923196834
+session_21_player2,One-step deliberate signal,0.7748025585479059
+session_21_player2,Opportunity-gated communicative action mixture,0.826054960286812
+session_21_player2,Shared agency no signaling,0.763198003318032
+session_22_player1,Goal-contrast signaling,0.6564131993256278
+session_22_player1,One-step deliberate signal,0.8426097076404547
+session_22_player1,Opportunity-gated communicative action mixture,0.6856151639670603
+session_22_player1,Shared agency no signaling,0.8426097076404547
+session_22_player2,Goal-contrast signaling,0.6561891081660775
+session_22_player2,One-step deliberate signal,0.7614560509339222
+session_22_player2,Opportunity-gated communicative action mixture,0.7330760551621934
+session_22_player2,Shared agency no signaling,0.7192574229126596
+session_23_player1,Goal-contrast signaling,0.8768042592707694
+session_23_player1,One-step deliberate signal,0.720668355862765
+session_23_player1,Opportunity-gated communicative action mixture,0.8170124995168094
+session_23_player1,Shared agency no signaling,0.720668355862765
+session_23_player2,Goal-contrast signaling,0.7375801725190406
+session_23_player2,One-step deliberate signal,0.7107529059566231
+session_23_player2,Opportunity-gated communicative action mixture,0.7356162279524235
+session_23_player2,Shared agency no signaling,0.7100788292695729
+session_24_player1,Goal-contrast signaling,0.7234912353686087
+session_24_player1,One-step deliberate signal,0.8053093829223549
+session_24_player1,Opportunity-gated communicative action mixture,0.7945955277356561
+session_24_player1,Shared agency no signaling,0.7913075796467557
+session_24_player2,Goal-contrast signaling,0.7432219470737842
+session_24_player2,One-step deliberate signal,0.8068332135895641
+session_24_player2,Opportunity-gated communicative action mixture,0.8108296049387168
+session_24_player2,Shared agency no signaling,0.8067864764989898
+session_25_player1,Goal-contrast signaling,0.7108311010531523
+session_25_player1,One-step deliberate signal,0.6704958879176792
+session_25_player1,Opportunity-gated communicative action mixture,0.7631804143385321
+session_25_player1,Shared agency no signaling,0.6251853021930853
+session_25_player2,Goal-contrast signaling,0.6817041320390747
+session_25_player2,One-step deliberate signal,0.7292537930180004
+session_25_player2,Opportunity-gated communicative action mixture,0.7753654603429366
+session_25_player2,Shared agency no signaling,0.7292537930180004
+session_26_player1,Goal-contrast signaling,0.782560703933931
+session_26_player1,One-step deliberate signal,0.8169816159718468
+session_26_player1,Opportunity-gated communicative action mixture,0.7386435987906149
+session_26_player1,Shared agency no signaling,0.7739909241505676
+session_26_player2,Goal-contrast signaling,0.7498512703586769
+session_26_player2,One-step deliberate signal,0.7860173791431586
+session_26_player2,Opportunity-gated communicative action mixture,0.6931600553689464
+session_26_player2,Shared agency no signaling,0.769044513021534
+session_27_player1,Goal-contrast signaling,0.7556157759073222
+session_27_player1,One-step deliberate signal,0.6921160521274659
+session_27_player1,Opportunity-gated communicative action mixture,0.793357609480477
+session_27_player1,Shared agency no signaling,0.6921160521274659
+session_27_player2,Goal-contrast signaling,0.675153275997541
+session_27_player2,One-step deliberate signal,0.6470814129905247
+session_27_player2,Opportunity-gated communicative action mixture,0.7559030517389455
+session_27_player2,Shared agency no signaling,0.6470814129905247
+session_28_player1,Goal-contrast signaling,0.6304729022633202
+session_28_player1,One-step deliberate signal,0.7062712486449021
+session_28_player1,Opportunity-gated communicative action mixture,0.6344108714561763
+session_28_player1,Shared agency no signaling,0.8126067341018834
+session_28_player2,Goal-contrast signaling,0.7343465484987761
+session_28_player2,One-step deliberate signal,0.7240561935114616
+session_28_player2,Opportunity-gated communicative action mixture,0.7745126395985242
+session_28_player2,Shared agency no signaling,0.7422932900916474
+session_29_player1,Goal-contrast signaling,0.6757897006255887
+session_29_player1,One-step deliberate signal,0.729260426908182
+session_29_player1,Opportunity-gated communicative action mixture,0.8274602566243274
+session_29_player1,Shared agency no signaling,0.7015509580877737
+session_29_player2,Goal-contrast signaling,0.6979486084201817
+session_29_player2,One-step deliberate signal,0.7203275838178794
+session_29_player2,Opportunity-gated communicative action mixture,0.7174272168920535
+session_29_player2,Shared agency no signaling,0.6222570768854552
+session_2_player1,Goal-contrast signaling,0.6999200510651948
+session_2_player1,One-step deliberate signal,0.6962376296393094
+session_2_player1,Opportunity-gated communicative action mixture,0.6747680659625421
+session_2_player1,Shared agency no signaling,0.659019968766732
+session_2_player2,Goal-contrast signaling,0.7664156985295674
+session_2_player2,One-step deliberate signal,0.7115365912623246
+session_2_player2,Opportunity-gated communicative action mixture,0.7054135884378836
+session_2_player2,Shared agency no signaling,0.7489646199866908
+session_3_player1,Goal-contrast signaling,0.8206655843762648
+session_3_player1,One-step deliberate signal,0.8041076156477993
+session_3_player1,Opportunity-gated communicative action mixture,0.7976167549352191
+session_3_player1,Shared agency no signaling,0.7802477683681224
+session_3_player2,Goal-contrast signaling,0.8466825932309044
+session_3_player2,One-step deliberate signal,0.8542360320983206
+session_3_player2,Opportunity-gated communicative action mixture,0.7606985520063887
+session_3_player2,Shared agency no signaling,0.8238011026497115
+session_4_player1,Goal-contrast signaling,0.6977596991532065
+session_4_player1,One-step deliberate signal,0.6920750294112005
+session_4_player1,Opportunity-gated communicative action mixture,0.6479190194568809
+session_4_player1,Shared agency no signaling,0.6828371688883286
+session_4_player2,Goal-contrast signaling,0.655193046408557
+session_4_player2,One-step deliberate signal,0.708968236831433
+session_4_player2,Opportunity-gated communicative action mixture,0.8094709339348799
+session_4_player2,Shared agency no signaling,0.7088438037779087
+session_5_player1,Goal-contrast signaling,0.7567986896009469
+session_5_player1,One-step deliberate signal,0.7116905635725161
+session_5_player1,Opportunity-gated communicative action mixture,0.7931063341397624
+session_5_player1,Shared agency no signaling,0.6696632211719559
+session_5_player2,Goal-contrast signaling,0.6915849530090044
+session_5_player2,One-step deliberate signal,0.657532048499219
+session_5_player2,Opportunity-gated communicative action mixture,0.663958089489133
+session_5_player2,Shared agency no signaling,0.7546635467378647
+session_6_player1,Goal-contrast signaling,0.8331396770268421
+session_6_player1,One-step deliberate signal,0.7676642924364139
+session_6_player1,Opportunity-gated communicative action mixture,0.7265391177818118
+session_6_player1,Shared agency no signaling,0.7585685316098644
+session_6_player2,Goal-contrast signaling,0.7295273526387644
+session_6_player2,One-step deliberate signal,0.7905109661727157
+session_6_player2,Opportunity-gated communicative action mixture,0.7249784688458325
+session_6_player2,Shared agency no signaling,0.7905109661727157
+session_7_player1,Goal-contrast signaling,0.7305771494678445
+session_7_player1,One-step deliberate signal,0.7375823823334309
+session_7_player1,Opportunity-gated communicative action mixture,0.7812222616013856
+session_7_player1,Shared agency no signaling,0.7237717878558334
+session_7_player2,Goal-contrast signaling,0.7586359840512649
+session_7_player2,One-step deliberate signal,0.6855750142117009
+session_7_player2,Opportunity-gated communicative action mixture,0.7459661191867707
+session_7_player2,Shared agency no signaling,0.6437630057740086
+session_8_player1,Goal-contrast signaling,0.7756532184751843
+session_8_player1,One-step deliberate signal,0.6973321004316428
+session_8_player1,Opportunity-gated communicative action mixture,0.6275882446336064
+session_8_player1,Shared agency no signaling,0.676578000959654
+session_8_player2,Goal-contrast signaling,0.8492466911316982
+session_8_player2,One-step deliberate signal,0.6869592039259692
+session_8_player2,Opportunity-gated communicative action mixture,0.7069611634857644
+session_8_player2,Shared agency no signaling,0.7194450360193514
+session_9_player1,Goal-contrast signaling,0.7350471361314879
+session_9_player1,One-step deliberate signal,0.7753854464005715
+session_9_player1,Opportunity-gated communicative action mixture,0.6774787663343604
+session_9_player1,Shared agency no signaling,0.7749357783377755
+session_9_player2,Goal-contrast signaling,0.7907802671201263
+session_9_player2,One-step deliberate signal,0.6577318229196465
+session_9_player2,Opportunity-gated communicative action mixture,0.6758826109115357
+session_9_player2,Shared agency no signaling,0.6753839816361834

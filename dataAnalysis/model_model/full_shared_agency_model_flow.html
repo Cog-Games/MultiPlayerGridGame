@@ -249,7 +249,7 @@ footer {
           <div class="math">\[\rho_t=\sigma(k(C_t-\tau))\]</div>
           <div class="math">\[W_\lambda(g)\propto \exp(3\widetilde V_g(s_t))P_t(g)^\lambda\]</div>
           <div class="math">\[\widetilde V_g(s_t)=\frac{V_g(s_t)-\min_{g'}V_{g'}(s_t)}{\max_{g'}V_{g'}(s_t)-\min_{g'}V_{g'}(s_t)+\epsilon}\]</div>
-          <div class="math">\[R_g(s,a,s')=30\,\mathbf 1[\mathrm{both\ reach\ }g]-1\,\mathbf 1[\mathrm{not\ done}],\quad \gamma=.9\]</div>
+          <div class="math">\[V_g(s)=30-\left(d_{\mathrm{self}}(g)+d_{\mathrm{other}}(g)\right),\quad R_g(s,a,s')=30\,\mathbf 1[\mathrm{both\ reach\ }g]-\mathbf 1[\mathrm{self\ active}]-\mathbf 1[\mathrm{other\ active}]\]</div>
           <div class="math">\[g_t\sim \mathrm{Categorical}(W_\lambda(g))\]</div>
           <div class="zero-note"><strong>If \(\lambda=0\):</strong> posterior belief no longer biases goal sampling, so \(W_\lambda(g)\propto \exp(3\widetilde V_g(s_t))\). The agent chooses among goals only by the unshaped JointRL value model.</div>
         </div>
@@ -348,7 +348,7 @@ footer {
           </tr>
           <tr>
             <td><strong>sampleJointGoalAndRSASignal_fromStart</strong><br><span class="badge">(shared-agency model)</span></td>
-            <td>Uses the same from-start posterior timing, but replaces distance-based goal utility and RSA action likelihoods with the same unshaped JointRL reward/value model. The fitted report model uses lambda = 0.65 and RSA alpha = 4.25 at trial level.</td>
+            <td>Uses the same from-start posterior timing, but replaces distance-based goal utility with the unshaped JointRL reward/value model and uses Communicative Action Mixture (Legibility Over Alternatives) signaling. The current fitted report model uses lambda = 0.2 and rho = 0.5 at trial level.</td>
           </tr>
           <tr>
             <td><strong>samplePosteriorOnlyGoalAndSignal_fromStart</strong></td>

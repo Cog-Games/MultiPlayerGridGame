@@ -14,7 +14,16 @@ const DEFAULT_TRIALS_PER_SESSION = 12;
 const DEFAULT_SEED = 42;
 const DEFAULT_OUTPUT_DIR = 'dataAnalysis/model_model/signal_agent/outputs/signal_agent_from_start_lambda_p_fit/simulations';
 const DEFAULT_RAW_OUTPUT_DIR = 'dataAnalysis/raw_data/model_model_simulations/signal_agent/from_start_lambda_p_fit';
-const VALID_SCORES = new Set(['margin', 'logposterior', 'mixture']);
+const VALID_SCORES = new Set([
+  'margin',
+  'logposterior',
+  'logodds',
+  'costly_mixture',
+  'mixture',
+  'opportunity_costly_mixture',
+  'goal_contrast',
+  'one_step_deliberate'
+]);
 
 function parseArgs(argv) {
   const out = {
@@ -234,6 +243,7 @@ function compactSignalHistory(history, enabled) {
     weights: sample?.weights,
     actionProbabilities: sample?.actionProbabilities,
     jointPolicyKind: sample?.jointPolicyKind,
+    signalingMixtureWeight: sample?.signalingMixtureWeight,
     alwaysSignal: sample?.alwaysSignal,
     everyStepResampling: sample?.everyStepResampling
   }));
@@ -430,7 +440,7 @@ function runSimulation({ sessions, trialsPerSession, seed, sessionOffset, alpha,
           horizon,
           unshapedJointRL,
           compactDiagnostics,
-          jointValueModel: unshapedJointRL ? 'unshapedJointRL(goalReward=30,stepCost=-1,gamma=0.9,softmaxBeta=3,proximityRewardWeight=0)' : 'defaultJointRL',
+          jointValueModel: unshapedJointRL ? 'unshapedJointRL(goalReward=30,stepCost=-1 per active player,goalValue=goalReward+stepCost*(d1+d2),softmaxBeta=3,proximityRewardWeight=0)' : 'defaultJointRL',
           agentType: 'alwaysSignalAgent',
           mapSelection: 'first_trials_per_session_sorted_maps_from_MapsFor2P3G'
         }),
@@ -456,7 +466,8 @@ function main() {
   fs.mkdirSync(outputDir, { recursive: true });
   fs.mkdirSync(rawOutputDir, { recursive: true });
 
-  const suffix = `beta_${formatNumberForPath(beta)}_lambda_${formatNumberForPath(lambda)}_alpha_${formatNumberForPath(alpha)}_sessions_${sessionOffset}_to_${sessionOffset + sessions - 1}`;
+  const scoreSuffix = score === 'logposterior' ? '' : `_score_${score}`;
+  const suffix = `beta_${formatNumberForPath(beta)}_lambda_${formatNumberForPath(lambda)}_alpha_${formatNumberForPath(alpha)}${scoreSuffix}_sessions_${sessionOffset}_to_${sessionOffset + sessions - 1}`;
   const summaryPath = path.join(outputDir, `always_signal_vs_always_signal_2p3g_summary_${suffix}.json`);
   const trialsPath = path.join(outputDir, `always_signal_vs_always_signal_2p3g_trials_${suffix}.json`);
   const rawTrialsPath = path.join(rawOutputDir, `always_signal_vs_always_signal_2p3g_raw_trials_${suffix}.json`);

@@ -38,12 +38,14 @@ PANELS = [
     ("Signaling Move (%)", "signaling"),
 ]
 
+CAM_NAME = "Communicative Action Mixture (Legibility Over Alternatives)"
+
 COMPACT_LABELS = {
     "sampleJointGoal_afterNewGoal": "sampleAfterNew",
     "sampleJointGoalAndSignal_afterNewGoal": "sample+signal",
     "sampleJointGoal_fromStart": "sampleFromStart",
     "sampleJointGoalAndSignal_fromStart": "sample+signalStart",
-    "sampleJointGoalAndRSASignal_fromStart": "sample+RSAStart\n(shared-agency)",
+    "sampleJointGoalAndRSASignal_fromStart": "shared agency\ncommunicative\naction mixture",
     "samplePosteriorOnlyGoalAndSignal_fromStart": "posteriorOnly+signal",
     "TwoStageSignalAgent_sigmoidThreshold": "sigmoidThreshold",
     "Human-Human": "Human",
@@ -105,13 +107,13 @@ MODELS = {
     "sampleJointGoalAndRSASignal_fromStart": {
         "short": "sample+RSAStart\n(shared-agency)",
         "impl": "AlwaysSignalAgent",
-        "param_label": "lambda/alpha",
-        "best_param": (0.0, 0.0),
-        "agent_label": "sampleJointGoalAndRSASignal_fromStart (shared-agency model)\n(lambda=?, alpha=?)",
-        "raw": MODEL_ROOT / "signal_agent" / "outputs" / "signal_agent_from_start_rsa_lambda_alpha_fit" / "missing_until_fit.json",
-        "sweep": MODEL_ROOT / "signal_agent" / "outputs" / "signal_agent_from_start_rsa_lambda_alpha_fit" / "always_signal_rsa_lambda_alpha_grid.csv",
-        "summary": MODEL_ROOT / "signal_agent" / "outputs" / "signal_agent_from_start_rsa_lambda_alpha_fit" / "always_signal_rsa_lambda_alpha_fit_summary.json",
-        "notebook": MODEL_ROOT / "signal_agent" / "notebooks" / "signal_agent_from_start_rsa_lambda_alpha_fit" / "AlwaysSignalAgent_from_start_rsa_lambda_alpha_results.ipynb",
+        "param_label": "rho",
+        "best_param": 0.5,
+        "agent_label": f"sampleJointGoalAndRSASignal_fromStart (shared-agency {CAM_NAME})\n(lambda=0.2, rho=0.5)",
+        "raw": ROOT / "dataAnalysis" / "raw_data" / "model_model_simulations" / "joint_rl" / "shared_agency_costly_mixture_rho_sweep" / "costly_mixture_rho_sweep" / "always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0p2_alpha_0p5_score_costly_mixture_sessions_0_to_29.json.zst",
+        "sweep": MODEL_ROOT / "shared_agency_costly_mixture_rho_sweep" / "shared_agency_costly_mixture_rho_sweep.csv",
+        "summary": MODEL_ROOT / "shared_agency_costly_mixture_rho_sweep" / "shared_agency_costly_mixture_rho_sweep_summary.json",
+        "notebook": MODEL_ROOT / "joint_rl" / "notebooks" / "shared_agency_costly_mixture_rho_sweep" / "shared_agency_costly_mixture_rho_sweep.ipynb",
     },
     "samplePosteriorOnlyGoalAndSignal_fromStart": {
         "short": "posteriorOnly+signal",
@@ -169,14 +171,24 @@ def apply_dynamic_model_config() -> None:
         if not summary_path or not Path(summary_path).exists():
             continue
         summary = load_json(Path(summary_path))
-        best = summary.get("best_by_binomial_nll", {})
+        best = summary.get("best_by_binomial_nll") or summary.get("best", {})
         best_lambda = float(best.get("lambda", 0.0))
-        second_key = "alpha" if cfg.get("param_label") == "lambda/alpha" else "p_signal"
+        if cfg.get("param_label") == "lambda/alpha":
+            second_key = "alpha"
+        elif cfg.get("param_label") == "rho":
+            second_key = "rho"
+        else:
+            second_key = "p_signal"
         best_second = float(best.get(second_key, best.get("alpha", 0.0)))
         raw_path = Path(summary.get("best_raw_trials") or best.get("raw_trials") or cfg["raw"])
-        cfg["best_param"] = (best_lambda, best_second)
-        second_label = "alpha" if cfg.get("param_label") == "lambda/alpha" else "p"
-        display_model = f"{model} (shared-agency model)" if model == "sampleJointGoalAndRSASignal_fromStart" else model
+        cfg["best_param"] = best_second if cfg.get("param_label") == "rho" else (best_lambda, best_second)
+        if cfg.get("param_label") == "lambda/alpha":
+            second_label = "alpha"
+        elif cfg.get("param_label") == "rho":
+            second_label = "rho"
+        else:
+            second_label = "p"
+        display_model = f"{model} (shared-agency {CAM_NAME})" if model == "sampleJointGoalAndRSASignal_fromStart" else model
         cfg["agent_label"] = f"{display_model}\n(lambda={best_lambda:g}, {second_label}={best_second:g})"
         cfg["raw"] = raw_path if raw_path.is_absolute() else ROOT / raw_path
 
@@ -566,7 +578,7 @@ def write_notebook(model: str, cfg: Dict[str, Any], sweep_png: Path, bar_png: Pa
     rel_sweep = os.path.relpath(sweep_png, nb_path.parent)
     rel_bar = os.path.relpath(bar_png, nb_path.parent)
     rel_csv = os.path.relpath(summary_csv, nb_path.parent)
-    display_model = f"{model} (shared-agency model)" if model == "sampleJointGoalAndRSASignal_fromStart" else model
+    display_model = f"{model} (shared-agency {CAM_NAME})" if model == "sampleJointGoalAndRSASignal_fromStart" else model
     cells = [
         {
             "cell_type": "markdown",
@@ -626,6 +638,10 @@ def main() -> None:
             best_lambda, best_p = cfg["best_param"]
             sweep_title = f"{model}: lambda x {'alpha' if cfg['param_label'] == 'lambda/alpha' else 'p'} sweep"
             plot_lambda_p_heatmaps(grid, float(best_lambda), float(best_p), sweep_png, sweep_title)
+        elif cfg["param_label"] == "rho":
+            sweep_df = read_sweep_wide(cfg["sweep"], "rho")
+            sweep_png = ASSET_DIR / f"{model}_standard_sweep_best.png"
+            plot_sweep_4measure(sweep_df, "rho", float(cfg["best_param"]), f"{model}: {CAM_NAME} rho sweep", sweep_png)
         else:
             param_col = "alpha" if cfg["param_label"] == "p" else "lambda"
             sweep_df = read_sweep_wide(cfg["sweep"], param_col)

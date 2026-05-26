@@ -54,7 +54,7 @@ GROUP_DISPLAY_LABELS = {
     "sampleJointGoalAndSignal_afterNewGoal": "sampleJointGoal+Signal\nafterNewGoal",
     "sampleJointGoal_fromStart": "sampleJointGoal\nfromStart",
     "sampleJointGoalAndSignal_fromStart": "sampleJointGoal+Signal\nfromStart",
-    "sampleJointGoalAndRSASignal_fromStart": "sampleJointGoal+RSA\n(shared-agency model)\nfromStart",
+    "sampleJointGoalAndRSASignal_fromStart": "shared-agency\ncommunicative\naction mixture\nfromStart",
     "samplePosteriorOnlyGoalAndSignal_fromStart": "samplePosteriorOnlyGoal+Signal\nfromStart",
     "TwoStageSignalAgent_sigmoidThreshold": "TwoStageSignal\nsigmoidThreshold",
     "Human-Human": "Human-Human",
@@ -107,8 +107,8 @@ def primary_posterior_only_signal_raw_path() -> Path:
 
 
 def primary_always_signal_rsa_raw_path() -> Path:
-    summary = load_json(ROOT / "model_model" / "signal_agent" / "outputs" / "signal_agent_from_start_rsa_lambda_alpha_fit" / "always_signal_rsa_lambda_alpha_fit_summary.json")
-    path = Path(summary.get("best_raw_trials") or summary.get("best_by_binomial_nll", {}).get("raw_trials"))
+    summary = load_json(ROOT / "model_model" / "shared_agency_costly_mixture_rho_sweep" / "shared_agency_costly_mixture_rho_sweep_summary.json")
+    path = Path(summary.get("best", {}).get("raw_trials"))
     return path if path.is_absolute() else ROOT.parent / path
 
 

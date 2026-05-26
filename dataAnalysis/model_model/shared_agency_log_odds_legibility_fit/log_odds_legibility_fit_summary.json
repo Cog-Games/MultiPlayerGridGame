@@ -1,0 +1,48 @@
+{
+  "html": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_log_odds_legibility_fit.html",
+  "fixed_lambda": 0.2,
+  "windows": {
+    "step0": {
+      "actions": 282,
+      "best": {
+        "eta": 0.0,
+        "negative_log_likelihood": 260.27267418654003,
+        "expected_signal_move": 0.7117353321659678,
+        "expected_btom_legibility": 0.769835861428342,
+        "expected_mean_log_odds": 3.1420840697191137,
+        "fit_stage": "coarse"
+      },
+      "best_heldout_model": "no signaling, lambda=.2"
+    },
+    "step1": {
+      "actions": 254,
+      "best": {
+        "eta": 0.0125,
+        "negative_log_likelihood": 172.9350408778733,
+        "expected_signal_move": 0.7407852400327166,
+        "expected_btom_legibility": 0.8361122057796934,
+        "expected_mean_log_odds": 8.914984045704943,
+        "fit_stage": "refine"
+      },
+      "best_heldout_model": "no signaling, lambda=.2"
+    },
+    "step1_3": {
+      "actions": 688,
+      "best": {
+        "eta": 0.03,
+        "negative_log_likelihood": 436.69425453812744,
+        "expected_signal_move": 0.7567376929883987,
+        "expected_btom_legibility": 0.8843225033847953,
+        "expected_mean_log_odds": 14.373051898939874,
+        "fit_stage": "refine"
+      },
+      "best_heldout_model": "no signaling, lambda=.2"
+    }
+  },
+  "outputs": {
+    "notebook": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/joint_rl/notebooks/shared_agency_log_odds_legibility_fit/shared_agency_log_odds_legibility_fit.ipynb",
+    "step0_summary": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_log_odds_legibility_fit/step0_model_summary.csv",
+    "step1_summary": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_log_odds_legibility_fit/step1_model_summary.csv",
+    "step1_3_summary": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_log_odds_legibility_fit/step1_3_model_summary.csv"
+  }
+}

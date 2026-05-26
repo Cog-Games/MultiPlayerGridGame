@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shared-Agency Communicative Action Mixture (Legibility Over Alternatives) Step-Level Fit</title>
+<style>
+body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#f6f8fb; color:#1f2933; }
+header { padding:34px 48px 24px; background:#ffffff; border-bottom:1px solid #d9e2ec; }
+main { max-width:1180px; margin:0 auto; padding:28px 24px 60px; }
+h1 { margin:0 0 8px; font-size:31px; }
+h2 { margin:30px 0 12px; font-size:21px; }
+p { line-height:1.55; }
+.note { color:#52606d; max-width:980px; }
+.panel { background:#fff; border:1px solid #d9e2ec; border-radius:8px; padding:18px; margin:18px 0; }
+.links a { display:inline-block; margin:0 12px 10px 0; color:#2458a6; text-decoration:none; }
+img { width:100%; height:auto; display:block; border:1px solid #d9e2ec; border-radius:6px; background:white; margin:12px 0; }
+table { width:100%; border-collapse:collapse; font-size:13px; background:white; }
+th,td { border:1px solid #d9e2ec; padding:8px 10px; text-align:left; vertical-align:top; }
+th { background:#eef3f8; }
+td.num { text-align:right; font-variant-numeric:tabular-nums; }
+code { background:#eef3f8; padding:2px 5px; border-radius:4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Shared-Agency Communicative Action Mixture (Legibility Over Alternatives) Step-Level Fit</h1>
+  <p class="note">Fixed lambda=0.2. Rho mixes the unshaped JointRL base policy with a communicative policy that increases goal legibility over alternatives. The likelihood target is human action choice in immediate new-goal windows.</p>
+  <div class="links">
+    <a href="shared_agency_costly_mixture_step_level_fit/step0_model_summary.csv">presentation-step summary CSV</a>
+    <a href="shared_agency_costly_mixture_step_level_fit/step1_model_summary.csv">step-1 summary CSV</a>
+    <a href="shared_agency_costly_mixture_step_level_fit/step1_3_model_summary.csv">step 1-3 summary CSV</a>
+    <a href="shared_agency_costly_mixture_step_level_fit/costly_mixture_step_level_summary.csv">posterior predictive summary CSV</a>
+    <a href="shared_agency_costly_mixture_step_level_fit/costly_mixture_step_level_raw_sources.csv">raw sources CSV</a>
+    <a href="joint_rl/notebooks/shared_agency_costly_mixture_step_level_fit/shared_agency_costly_mixture_step_level_fit.ipynb">notebook</a>
+    <a href="shared_agency_costly_mixture_rho_sweep.html">communicative action mixture trial-level sweep</a>
+    <a href="shared_agency_log_odds_eta_sweep.html">log-odds full eta sweep</a>
+    <a href="shared_agency_log_odds_legibility_fit.html">step-level log-odds likelihood report</a>
+    <a href="shared_agency_joint_lambda_alpha_baseline_comparison.html">trial-level baseline report</a>
+  </div>
+</header>
+<main>
+  <section class="panel">
+    <h2>Model</h2>
+    <p><code>pi(a|g) = (1-rho) pi_base(a|s,g) + rho pi_comm(a|s,g)</code></p>
+    <p><code>pi_comm(a|g) proportional to pi_base(a|s,g) exp(log P(g|a) - log sum_{g' != g} P(g'|a))</code></p>
+  </section>
+
+  <section class="panel">
+    <h2>New-goal presentation step</h2>
+    <p class="note">Actions=282. Fixed lambda=0.2; only rho is fitted. Goal weights are unchanged for every rho.</p>
+    <a href="shared_agency_costly_mixture_step_level_fit/assets/step0_rho_sweep.png"><img src="shared_agency_costly_mixture_step_level_fit/assets/step0_rho_sweep.png" alt="New-goal presentation step rho sweep"></a>
+    <a href="shared_agency_costly_mixture_step_level_fit/assets/step0_model_summary.png"><img src="shared_agency_costly_mixture_step_level_fit/assets/step0_model_summary.png" alt="New-goal presentation step model summary"></a>
+    <table><thead><tr><th>model</th><th>rho</th><th>lambda</th><th>n_params</th><th>actions</th><th>in_sample_nll</th><th>heldout_nll</th><th>heldout_nll_per_action</th><th>delta_heldout_nll</th><th>expected_signal_move</th><th>expected_btom_legibility</th><th>expected_mean_log_odds</th><th>aic</th><th>bic</th></tr></thead><tbody><tr><td class="">no signaling, lambda=.2</td><td class="num">0.00</td><td class="num">0.20</td><td class="">0</td><td class="">282</td><td class="num">260.273</td><td class="num">260.273</td><td class="num">0.923</td><td class="num">0.000</td><td class="num">0.71</td><td class="num">0.77</td><td class="num">3.14</td><td class="num">520.55</td><td class="num">520.55</td></tr><tr><td class="">communicative action mixture rho fit</td><td class="num">0.01</td><td class="num">0.20</td><td class="">1</td><td class="">282</td><td class="num">260.266</td><td class="num">260.969</td><td class="num">0.925</td><td class="num">0.697</td><td class="num">0.71</td><td class="num">0.77</td><td class="num">3.16</td><td class="num">522.53</td><td class="num">526.17</td></tr><tr><td class="">trial-level rho=0.5</td><td class="num">0.50</td><td class="num">0.20</td><td class="">0</td><td class="">282</td><td class="num">271.849</td><td class="num">271.849</td><td class="num">0.964</td><td class="num">11.576</td><td class="num">0.80</td><td class="num">0.82</td><td class="num">3.70</td><td class="num">543.70</td><td class="num">543.70</td></tr></tbody></table>
+  </section>
+
+  <section class="panel">
+    <h2>Step 1 after new goal</h2>
+    <p class="note">Actions=254. Fixed lambda=0.2; only rho is fitted. Goal weights are unchanged for every rho.</p>
+    <a href="shared_agency_costly_mixture_step_level_fit/assets/step1_rho_sweep.png"><img src="shared_agency_costly_mixture_step_level_fit/assets/step1_rho_sweep.png" alt="Step 1 after new goal rho sweep"></a>
+    <a href="shared_agency_costly_mixture_step_level_fit/assets/step1_model_summary.png"><img src="shared_agency_costly_mixture_step_level_fit/assets/step1_model_summary.png" alt="Step 1 after new goal model summary"></a>
+    <table><thead><tr><th>model</th><th>rho</th><th>lambda</th><th>n_params</th><th>actions</th><th>in_sample_nll</th><th>heldout_nll</th><th>heldout_nll_per_action</th><th>delta_heldout_nll</th><th>expected_signal_move</th><th>expected_btom_legibility</th><th>expected_mean_log_odds</th><th>aic</th><th>bic</th></tr></thead><tbody><tr><td class="">no signaling, lambda=.2</td><td class="num">0.00</td><td class="num">0.20</td><td class="">0</td><td class="">254</td><td class="num">172.995</td><td class="num">172.995</td><td class="num">0.681</td><td class="num">0.000</td><td class="num">0.73</td><td class="num">0.83</td><td class="num">8.87</td><td class="num">345.99</td><td class="num">345.99</td></tr><tr><td class="">communicative action mixture rho fit</td><td class="num">0.05</td><td class="num">0.20</td><td class="">1</td><td class="">254</td><td class="num">172.946</td><td class="num">173.267</td><td class="num">0.682</td><td class="num">0.271</td><td class="num">0.74</td><td class="num">0.84</td><td class="num">8.93</td><td class="num">347.89</td><td class="num">351.43</td></tr><tr><td class="">trial-level rho=0.5</td><td class="num">0.50</td><td class="num">0.20</td><td class="">0</td><td class="">254</td><td class="num">182.144</td><td class="num">182.144</td><td class="num">0.717</td><td class="num">9.148</td><td class="num">0.82</td><td class="num">0.85</td><td class="num">9.39</td><td class="num">364.29</td><td class="num">364.29</td></tr></tbody></table>
+  </section>
+
+  <section class="panel">
+    <h2>Steps 1-3 after new goal</h2>
+    <p class="note">Actions=688. Fixed lambda=0.2; only rho is fitted. Goal weights are unchanged for every rho.</p>
+    <a href="shared_agency_costly_mixture_step_level_fit/assets/step1_3_rho_sweep.png"><img src="shared_agency_costly_mixture_step_level_fit/assets/step1_3_rho_sweep.png" alt="Steps 1-3 after new goal rho sweep"></a>
+    <a href="shared_agency_costly_mixture_step_level_fit/assets/step1_3_model_summary.png"><img src="shared_agency_costly_mixture_step_level_fit/assets/step1_3_model_summary.png" alt="Steps 1-3 after new goal model summary"></a>
+    <table><thead><tr><th>model</th><th>rho</th><th>lambda</th><th>n_params</th><th>actions</th><th>in_sample_nll</th><th>heldout_nll</th><th>heldout_nll_per_action</th><th>delta_heldout_nll</th><th>expected_signal_move</th><th>expected_btom_legibility</th><th>expected_mean_log_odds</th><th>aic</th><th>bic</th></tr></thead><tbody><tr><td class="">no signaling, lambda=.2</td><td class="num">0.00</td><td class="num">0.20</td><td class="">0</td><td class="">688</td><td class="num">437.438</td><td class="num">437.438</td><td class="num">0.636</td><td class="num">0.000</td><td class="num">0.74</td><td class="num">0.88</td><td class="num">14.29</td><td class="num">874.88</td><td class="num">874.88</td></tr><tr><td class="">communicative action mixture rho fit</td><td class="num">0.10</td><td class="num">0.20</td><td class="">1</td><td class="">688</td><td class="num">436.449</td><td class="num">438.117</td><td class="num">0.637</td><td class="num">0.680</td><td class="num">0.76</td><td class="num">0.88</td><td class="num">14.38</td><td class="num">874.90</td><td class="num">879.43</td></tr><tr><td class="">trial-level rho=0.5</td><td class="num">0.50</td><td class="num">0.20</td><td class="">0</td><td class="">688</td><td class="num">453.990</td><td class="num">453.990</td><td class="num">0.660</td><td class="num">16.553</td><td class="num">0.82</td><td class="num">0.90</td><td class="num">14.74</td><td class="num">907.98</td><td class="num">907.98</td></tr></tbody></table>
+  </section>
+
+  <section class="panel">
+    <h2>Posterior Predictive: All Distance Conditions</h2>
+    <a href="shared_agency_costly_mixture_step_level_fit/assets/costly_mixture_step_level_average_6panel.png"><img src="shared_agency_costly_mixture_step_level_fit/assets/costly_mixture_step_level_average_6panel.png" alt="all distance posterior predictive"></a>
+  </section>
+  <section class="panel">
+    <h2>Posterior Predictive: Equal-to-Both</h2>
+    <a href="shared_agency_costly_mixture_step_level_fit/assets/costly_mixture_step_level_equal_to_both_6panel.png"><img src="shared_agency_costly_mixture_step_level_fit/assets/costly_mixture_step_level_equal_to_both_6panel.png" alt="equal-to-both posterior predictive"></a>
+  </section>
+  <section class="panel">
+    <h2>BToM Trajectory</h2>
+    <a href="shared_agency_costly_mixture_step_level_fit/assets/costly_mixture_step_level_btom_first5_trajectory.png"><img src="shared_agency_costly_mixture_step_level_fit/assets/costly_mixture_step_level_btom_first5_trajectory.png" alt="BToM trajectory"></a>
+  </section>
+  <section class="panel">
+    <h2>Posterior Predictive Summary</h2>
+    <table><thead><tr><th>condition_scope</th><th>group</th><th>Success Rate (%)</th><th>Coordination Efficiency (%)</th><th>Commitment (%)</th><th>Signaling Move (%)</th><th>BToM Step 1 (%)</th></tr></thead><tbody><tr><td class="">average</td><td class="">Shared agency no signaling</td><td class="num">91.39</td><td class="num">88.39</td><td class="num">78.69</td><td class="num">33.64</td><td class="num">65.49</td></tr><tr><td class="">average</td><td class="">Communicative action mixture step-1 fit</td><td class="num">91.67</td><td class="num">88.35</td><td class="num">78.53</td><td class="num">37.69</td><td class="num">67.45</td></tr><tr><td class="">average</td><td class="">Communicative action mixture step-1-3 fit</td><td class="num">93.06</td><td class="num">88.15</td><td class="num">78.23</td><td class="num">38.38</td><td class="num">67.45</td></tr><tr><td class="">average</td><td class="">Human-Human</td><td class="num">100.00</td><td class="num">81.58</td><td class="num">64.97</td><td class="num">52.53</td><td class="num">73.75</td></tr><tr><td class="">equal_to_both</td><td class="">Shared agency no signaling</td><td class="num">98.89</td><td class="num">98.38</td><td class="num">94.44</td><td class="num">43.89</td><td class="num">69.97</td></tr><tr><td class="">equal_to_both</td><td class="">Communicative action mixture step-1 fit</td><td class="num">100.00</td><td class="num">98.29</td><td class="num">97.78</td><td class="num">54.72</td><td class="num">75.07</td></tr><tr><td class="">equal_to_both</td><td class="">Communicative action mixture step-1-3 fit</td><td class="num">100.00</td><td class="num">98.16</td><td class="num">95.28</td><td class="num">56.67</td><td class="num">75.40</td></tr><tr><td class="">equal_to_both</td><td class="">Human-Human</td><td class="num">100.00</td><td class="num">96.64</td><td class="num">84.38</td><td class="num">59.38</td><td class="num">80.28</td></tr></tbody></table>
+  </section>
+  <section class="panel">
+    <h2>Raw Sources</h2>
+    <table><thead><tr><th>label</th><th>rho</th><th>rawTrialsPath</th><th>command</th></tr></thead><tbody><tr><td class="">Shared agency no signaling</td><td class="num">0.00</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_costly_mixture_step_level_fit/no_signaling/always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0p2_alpha_0_score_costly_mixture_sessions_0_to_29.json.zst</td><td class="">node /Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/scripts/simulate_always_signal_vs_always_signal_2p3g.js --sessions 30 --trials 12 --seed 42 --lambda 0.2 --alpha 0.0 --beta 3.0 --score costly_mixture --horizon 1 --unshaped-joint-rl --compact-diagnostics --output-dir /Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_costly_mixture_step_level_fit/simulations/no_signaling --raw-output-dir /Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_costly_mixture_step_level_fit/no_signaling</td></tr><tr><td class="">Communicative action mixture step-1 fit</td><td class="num">0.05</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_costly_mixture_step_level_fit/step1_fit/always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0p2_alpha_0p05_score_costly_mixture_sessions_0_to_29.json.zst</td><td class="">node /Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/scripts/simulate_always_signal_vs_always_signal_2p3g.js --sessions 30 --trials 12 --seed 42 --lambda 0.2 --alpha 0.05 --beta 3.0 --score costly_mixture --horizon 1 --unshaped-joint-rl --compact-diagnostics --output-dir /Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_costly_mixture_step_level_fit/simulations/step1_fit --raw-output-dir /Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_costly_mixture_step_level_fit/step1_fit</td></tr><tr><td class="">Communicative action mixture step-1-3 fit</td><td class="num">0.10</td><td class="">/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_costly_mixture_step_level_fit/step1_3_fit/always_signal_vs_always_signal_2p3g_raw_trials_beta_3_lambda_0p2_alpha_0p1_score_costly_mixture_sessions_0_to_29.json.zst</td><td class="">node /Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/scripts/simulate_always_signal_vs_always_signal_2p3g.js --sessions 30 --trials 12 --seed 42 --lambda 0.2 --alpha 0.1 --beta 3.0 --score costly_mixture --horizon 1 --unshaped-joint-rl --compact-diagnostics --output-dir /Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/model_model/shared_agency_costly_mixture_step_level_fit/simulations/step1_3_fit --raw-output-dir /Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/dataAnalysis/raw_data/model_model_simulations/joint_rl/shared_agency_costly_mixture_step_level_fit/step1_3_fit</td></tr></tbody></table>
+  </section>
+</main>
+</body>
+</html>

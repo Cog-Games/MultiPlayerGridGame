@@ -1,7 +1,16 @@
 import { CommittedAgent } from './CommittedAgent.js';
 
 const ACTIONS = [[0, -1], [0, 1], [-1, 0], [1, 0]];
-const SCORE_KINDS = new Set(['margin', 'logposterior', 'mixture']);
+const SCORE_KINDS = new Set([
+  'margin',
+  'logposterior',
+  'logodds',
+  'costly_mixture',
+  'mixture',
+  'opportunity_costly_mixture',
+  'goal_contrast',
+  'one_step_deliberate'
+]);
 
 export class SignalAgent extends CommittedAgent {
   constructor(options = {}) {
@@ -66,7 +75,7 @@ export class SignalAgent extends CommittedAgent {
 
     const actionPolicy = (this.horizon > 1)
       ? this._signalActionPolicyTrajectory(aiPos, humanPos, goals, targetGoalIdx)
-      : this._signalActionPolicy(aiPos, humanPos, goals, targetGoalIdx);
+      : this._signalActionPolicy(aiPos, humanPos, goals, targetGoalIdx, null, trialData);
     this._recordSignalSample(trialData, aiPlayerNumber, targetGoalIdx, goalWeights, actionPolicy);
     return this._sampleActionFromPolicy(actionPolicy.probs);
   }
@@ -221,16 +230,18 @@ export class SignalAgent extends CommittedAgent {
     return { base: baseAtStart, revealed: null, probs, scoreKind: 'trajectory_logposterior', horizon: H, jointPolicyKind: this._jointPolicyKind() };
   }
 
-  _signalActionPolicy(aiPos, humanPos, goals, targetGoalIdx) {
+  _signalActionPolicy(aiPos, humanPos, goals, targetGoalIdx, posteriorOverride = null, trialData = null) {
     const base = this._goalActionProbabilities(aiPos, humanPos, goals[targetGoalIdx]);
     const revealed = {};
     const unnormalized = {};
     const eps = (typeof this.eps === 'number' && this.eps > 0) ? this.eps : 1e-12;
+    let minScore = Infinity;
+    let maxScore = -Infinity;
 
     for (const action of ACTIONS) {
       const key = action.toString();
       const baseProb = this._safeProb(base[key]);
-      const posterior = this._revealedPosteriorForAction(aiPos, humanPos, goals, key);
+      const posterior = this._revealedPosteriorForAction(aiPos, humanPos, goals, key, posteriorOverride);
       const targetProb = posterior[targetGoalIdx] || 0;
       const bestAlternative = posterior.reduce((best, value, idx) => (
         idx === targetGoalIdx ? best : Math.max(best, value || 0)
@@ -240,10 +251,24 @@ export class SignalAgent extends CommittedAgent {
       if (this.scoreKind === 'margin') {
         // Max-margin: P(g* | a) - max_{g != g*} P(g | a)
         score = targetProb - bestAlternative;
+      } else if (
+        this.scoreKind === 'logodds' ||
+        this.scoreKind === 'costly_mixture' ||
+        this.scoreKind === 'opportunity_costly_mixture' ||
+        this.scoreKind === 'one_step_deliberate'
+      ) {
+        // Costly log-odds legibility: log P(g* | a) - log Σ_{g != g*} P(g | a).
+        score = Math.log(Math.max(eps, targetProb)) - Math.log(Math.max(eps, 1 - targetProb));
+      } else if (this.scoreKind === 'goal_contrast') {
+        const contrastIdx = this._contrastGoalIndex(targetGoalIdx, goals, posterior, trialData);
+        const contrastProb = contrastIdx === targetGoalIdx ? bestAlternative : (posterior[contrastIdx] || eps);
+        score = Math.log(Math.max(eps, targetProb)) - Math.log(Math.max(eps, contrastProb));
       } else {
         // Info-theoretic (RSA): log P(g* | a) = -KL(delta_{g*} || P(.|a))
         score = Math.log(Math.max(eps, targetProb));
       }
+      minScore = Math.min(minScore, score);
+      maxScore = Math.max(maxScore, score);
 
       revealed[key] = {
         posterior,
@@ -251,24 +276,119 @@ export class SignalAgent extends CommittedAgent {
         bestAlternativeProbability: bestAlternative,
         ambiguityMargin: targetProb - bestAlternative,
         logTargetPosterior: Math.log(Math.max(eps, targetProb)),
+        logTargetOdds: Math.log(Math.max(eps, targetProb)) - Math.log(Math.max(eps, 1 - targetProb)),
         score,
         scoreKind: this.scoreKind
       };
-      unnormalized[key] = baseProb * Math.exp(Math.max(-700, Math.min(700, this.alpha * score)));
+      const scoreWeight = this._usesMixtureWithUnitCommunicativePolicy() ? 1 : this.alpha;
+      unnormalized[key] = baseProb * Math.exp(Math.max(-700, Math.min(700, scoreWeight * score)));
     }
 
-    const probs = this._normalizeActionMap(unnormalized);
-    return { base, revealed, probs, scoreKind: this.scoreKind, jointPolicyKind: this._jointPolicyKind() };
+    const communicativeProbs = this._normalizeActionMap(unnormalized);
+    let probs = communicativeProbs;
+    const baseProbs = this._normalizeActionMap(Object.fromEntries(
+      ACTIONS.map(action => {
+        const key = action.toString();
+        return [key, this._safeProb(base[key])];
+      })
+    ));
+    let rho = null;
+    if (this.scoreKind === 'costly_mixture' || this.scoreKind === 'goal_contrast') {
+      rho = Math.max(0, Math.min(1, this.alpha));
+      probs = this._mixActionPolicies(baseProbs, communicativeProbs, rho);
+    } else if (this.scoreKind === 'opportunity_costly_mixture') {
+      const uncertainty = this._normalizedEntropy(posteriorOverride);
+      const opportunity = 1 - Math.exp(-Math.max(0, maxScore - minScore));
+      rho = Math.max(0, Math.min(1, this.alpha)) * uncertainty * opportunity;
+      probs = this._mixActionPolicies(baseProbs, communicativeProbs, rho);
+    } else if (this.scoreKind === 'one_step_deliberate') {
+      const relativeStep = this._relativeStepFromNewGoal(trialData);
+      rho = relativeStep === 1 ? Math.max(0, Math.min(1, this.alpha)) : 0;
+      probs = this._mixActionPolicies(baseProbs, communicativeProbs, rho);
+    }
+    return {
+      base,
+      revealed,
+      probs,
+      scoreKind: this.scoreKind,
+      jointPolicyKind: this._jointPolicyKind(),
+      signalingMixtureWeight: rho
+    };
   }
 
-  _revealedPosteriorForAction(aiPos, humanPos, goals, actionKey) {
+  _usesMixtureWithUnitCommunicativePolicy() {
+    return (
+      this.scoreKind === 'costly_mixture' ||
+      this.scoreKind === 'opportunity_costly_mixture' ||
+      this.scoreKind === 'goal_contrast' ||
+      this.scoreKind === 'one_step_deliberate'
+    );
+  }
+
+  _mixActionPolicies(baseProbs, communicativeProbs, rho) {
+    const clipped = Math.max(0, Math.min(1, rho));
+    const probs = {};
+    for (const action of ACTIONS) {
+      const key = action.toString();
+      probs[key] = (1 - clipped) * this._safeProb(baseProbs[key]) + clipped * this._safeProb(communicativeProbs[key]);
+    }
+    return this._normalizeActionMap(probs);
+  }
+
+  _normalizedEntropy(posteriorOverride = null) {
+    const posterior = (Array.isArray(posteriorOverride) && posteriorOverride.length)
+      ? posteriorOverride
+      : this._pIntent;
+    if (!Array.isArray(posterior) || posterior.length <= 1) return 0;
+    let total = 0;
+    for (const value of posterior) total += isFinite(value) ? Math.max(this.eps, value) : 0;
+    if (!isFinite(total) || total <= 0) return 1;
+    let entropy = 0;
+    for (const value of posterior) {
+      const p = Math.max(this.eps, value || 0) / total;
+      entropy -= p * Math.log(p);
+    }
+    return Math.max(0, Math.min(1, entropy / Math.log(posterior.length)));
+  }
+
+  _contrastGoalIndex(targetGoalIdx, goals, posterior, trialData) {
+    const shared = trialData?.firstDetectedSharedGoal;
+    const newGoalIdx = goals.length >= 3 ? goals.length - 1 : null;
+    if (Number.isInteger(shared) && shared >= 0 && shared < goals.length) {
+      if (targetGoalIdx !== shared) return shared;
+      if (newGoalIdx !== null && newGoalIdx !== shared) return newGoalIdx;
+    }
+    let bestIdx = targetGoalIdx;
+    let bestProb = -Infinity;
+    for (let idx = 0; idx < goals.length; idx++) {
+      if (idx === targetGoalIdx) continue;
+      const value = posterior?.[idx] || 0;
+      if (value > bestProb) {
+        bestProb = value;
+        bestIdx = idx;
+      }
+    }
+    return bestIdx;
+  }
+
+  _relativeStepFromNewGoal(trialData) {
+    const currentStep = this._inferCurrentStepIndex(trialData);
+    const newGoalStep = Number.isFinite(trialData?.newGoalPresentedTime) ? trialData.newGoalPresentedTime : null;
+    if (!Number.isFinite(currentStep) || !Number.isFinite(newGoalStep)) return null;
+    return currentStep - newGoalStep;
+  }
+
+  _revealedPosteriorForAction(aiPos, humanPos, goals, actionKey, posteriorOverride = null) {
+    const prior = (Array.isArray(posteriorOverride) && posteriorOverride.length === goals.length)
+      ? posteriorOverride
+      : this._pIntent;
     const out = new Array(goals.length).fill(0);
     let denom = 0;
     for (let g = 0; g < goals.length; g++) {
-      const prior = Math.max(this.eps, this._pIntent?.[g] ?? (1 / goals.length));
+      const priorProb = Math.max(this.eps, prior?.[g] ?? (1 / goals.length));
       const probs = this._goalActionProbabilities(aiPos, humanPos, goals[g]);
       const likelihood = this._safeProb(probs[actionKey]);
-      out[g] = prior * likelihood;
+      out[g] = priorProb * likelihood;
       denom += out[g];
     }
     if (!isFinite(denom) || denom <= 0) return new Array(goals.length).fill(1 / goals.length);
@@ -286,11 +406,13 @@ export class SignalAgent extends CommittedAgent {
     return this.useUnshapedJointRL ? 'unshapedJointRL' : 'defaultJointRL';
   }
 
-  _combinedWeights(goals, aiPos, humanPos) {
+  _combinedWeights(goals, aiPos, humanPos, posteriorOverride = null) {
     if (!this.useUnshapedJointRL || typeof this.rl?.getUnshapedJointSoftStateValue !== 'function') {
       return super._combinedWeights(goals, aiPos, humanPos);
     }
-    const posterior = this._pIntent || new Array(goals.length).fill(1 / Math.max(1, goals.length));
+    const posterior = (Array.isArray(posteriorOverride) && posteriorOverride.length === goals.length)
+      ? posteriorOverride
+      : (this._pIntent || new Array(goals.length).fill(1 / Math.max(1, goals.length)));
     const values = goals.map(goal => this.rl.getUnshapedJointSoftStateValue(aiPos, humanPos, [goal]));
     const finiteValues = values.filter(v => isFinite(v));
     const minValue = finiteValues.length ? Math.min(...finiteValues) : 0;
@@ -346,6 +468,9 @@ export class SignalAgent extends CommittedAgent {
         actionProbabilities: { ...actionPolicy.probs },
         jointPolicyKind: actionPolicy.jointPolicyKind || this._jointPolicyKind()
       };
+      if (typeof actionPolicy.signalingMixtureWeight === 'number') {
+        sample.signalingMixtureWeight = actionPolicy.signalingMixtureWeight;
+      }
       trialData.signalAgentSampledJointGoal = goalIdx;
       trialData.signalAgentSampledJointGoalPosterior = sample.posterior;
       trialData.signalAgentSampledJointGoalWeights = goalWeights.slice();
