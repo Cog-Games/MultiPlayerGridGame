@@ -172,7 +172,7 @@ export class ExperimentManager {
           } else if (fallbackType === 'alwaysCommittedAgent') {
             td.partnerAgentType = 'alwaysCommittedAgent';
           } else if (fallbackType === 'alwaysSignalAgent') {
-            td.partnerAgentType = CONFIG?.kids?.committedAgentLabel || 'sampleJointGoalAndRSASignal_fromStart';
+            td.partnerAgentType = CONFIG?.kids?.committedAgentLabel || 'Communicative Action Mixture (Legibility Over Alternatives)';
           } else if (fallbackType === 'twoStageSignalAgent') {
             td.partnerAgentType = 'twoStageSignalAgent';
           } else if (fallbackType === 'rl_individual_python') {
@@ -450,7 +450,7 @@ export class ExperimentManager {
       } else if (p2Type === 'alwaysSignalAgent') {
         const cfg = CONFIG?.game?.agent?.alwaysSignal || {};
         const policyKind = cfg.useUnshapedJointRL ? 'unshapedJointRL' : 'defaultJointRL';
-        console.log(`🤖 AI partner: AlwaysSignalAgent (${CONFIG?.kids?.committedAgentLabel || 'sampleJointGoalAndRSASignal_fromStart'}, lambda=${cfg.lambda}, alpha=${cfg.alpha}, score=${cfg.score || 'logposterior'}, policy=${policyKind})`);
+        console.log(`🤖 AI partner: AlwaysSignalAgent (${CONFIG?.kids?.committedAgentLabel || 'Communicative Action Mixture (Legibility Over Alternatives)'}, lambda=${cfg.lambda}, rho=${cfg.alpha}, score=${cfg.score || 'costly_mixture'}, policy=${policyKind})`);
       } else if (p2Type === 'signalAgent') {
         console.log('🤖 AI partner: SignalAgent');
       } else if (p2Type === 'twoStageSignalAgent') {

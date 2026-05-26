@@ -762,7 +762,7 @@ export class GameApplication {
             if (t === 'rl_joint') return 'joint-rl';
             if (t === 'rl_individual') return 'individual-rl';
             if (t === 'alwaysCommittedAgent') return 'alwaysCommittedAgent';
-            if (t === 'alwaysSignalAgent') return CONFIG?.kids?.committedAgentLabel || 'sampleJointGoalAndRSASignal_fromStart';
+            if (t === 'alwaysSignalAgent') return CONFIG?.kids?.committedAgentLabel || 'Communicative Action Mixture (Legibility Over Alternatives)';
             if (t === 'signalAgent') return 'signalAgent';
             if (t === 'twoStageSignalAgent') return 'twoStageSignalAgent';
             if (t === 'ai') return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl'; // legacy safety

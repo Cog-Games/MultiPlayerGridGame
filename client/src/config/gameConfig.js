@@ -28,14 +28,14 @@ const DEFAULT_LLM_AGENT_CONFIG = {
 };
 
 export const SHARED_AGENCY_BEST_FIT = {
-  label: 'sampleJointGoalAndRSASignal_fromStart (shared-agency model)',
+  label: 'Communicative Action Mixture (Legibility Over Alternatives) shared-agency model',
   type: 'alwaysSignalAgent',
-  fitSource: 'signal_agent_from_start_rsa_lambda_alpha_fit',
+  fitSource: 'shared_agency_costly_mixture_rho_sweep',
   parameters: {
-    score: 'logposterior',
+    score: 'costly_mixture',
     horizon: 1,
-    lambda: 0.65,
-    alpha: 4.25,
+    lambda: 0.2,
+    alpha: 0.5,
     beta: 3.0,
     gridSize: 15,
     useUnshapedJointRL: true
@@ -175,7 +175,7 @@ export const CONFIG = {
       gpt: DEFAULT_LLM_AGENT_CONFIG,
       // When an LLM/VLM step fails (network error / invalid response / no action), choose the fallback policy.
       // - 'committedAgent': CommittedAgent wrapper around RL (default)
-      // - 'alwaysSignalAgent': AlwaysSignalAgent shared-agency RSA model from trial start
+      // - 'alwaysSignalAgent': AlwaysSignalAgent shared-agency communicative-action model from trial start
       // - 'signalAgent': SignalAgent wrapper around committed goal selection
       // - 'twoStageSignalAgent': confidence-gated deferred-commitment signaling agent
       // - 'rl_joint': joint RL planner
@@ -205,8 +205,9 @@ export const CONFIG = {
         alpha: 0.0
       },
       alwaysSignal: {
-        // sampleJointGoalAndRSASignal_fromStart shared-agency model:
-        // always-on posterior timing with unshaped JointRL value/RSA likelihoods.
+        // Communicative Action Mixture shared-agency model:
+        // always-on posterior timing with unshaped JointRL value/base policy.
+        // alpha is rho, the mixture weight on communicative actions.
         score: SHARED_AGENCY_BEST_FIT.parameters.score,
         horizon: SHARED_AGENCY_BEST_FIT.parameters.horizon,
         lambda: SHARED_AGENCY_BEST_FIT.parameters.lambda,
@@ -423,6 +424,10 @@ export const GameConfigUtils = {
       samplejointgoalandrsasignal_fromstart: SHARED_AGENCY_BEST_FIT.type,
       samplejointgoalandrsasignalfromstart: SHARED_AGENCY_BEST_FIT.type,
       'sample-joint-goal-and-rsa-signal-from-start': SHARED_AGENCY_BEST_FIT.type,
+      communicativeactionmixture: SHARED_AGENCY_BEST_FIT.type,
+      'communicative-action-mixture': SHARED_AGENCY_BEST_FIT.type,
+      costlymixture: SHARED_AGENCY_BEST_FIT.type,
+      'costly-mixture': SHARED_AGENCY_BEST_FIT.type,
       rsa: SHARED_AGENCY_BEST_FIT.type,
       rsasignal: SHARED_AGENCY_BEST_FIT.type,
       legacy: 'committedAgent',

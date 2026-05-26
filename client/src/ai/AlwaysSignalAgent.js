@@ -2,8 +2,10 @@ import { SignalAgent } from './SignalAgent.js';
 
 const ACTIONS = [[0, -1], [0, 1], [-1, 0], [1, 0]];
 
-// Always-on shared-agency signal model:
-// sampleJointGoalAndRSASignal_fromStart when score='logposterior'.
+// Always-on signaling joint-goal choice.
+// - Maintain P_intent(joint goal) from trial start.
+// - Sample each step from W_lambda(g) using the AlwaysCommitted posterior resize.
+// - Apply SignalAgent's legibility policy around the sampled target.
 export class AlwaysSignalAgent extends SignalAgent {
   getAIAction(gameState, trialData, aiPlayerNumber = 2) {
     const goals = Array.isArray(gameState?.currentGoals) ? gameState.currentGoals : [];
@@ -33,7 +35,7 @@ export class AlwaysSignalAgent extends SignalAgent {
 
     const actionPolicy = this.horizon > 1
       ? this._signalActionPolicyTrajectory(aiPos, otherPos, goals, targetGoalIdx)
-      : this._signalActionPolicy(aiPos, otherPos, goals, targetGoalIdx);
+      : this._signalActionPolicy(aiPos, otherPos, goals, targetGoalIdx, null, trialData);
     this._recordSignalSample(trialData, aiPlayerNumber, targetGoalIdx, goalWeights, actionPolicy);
     return this._sampleActionFromPolicy(actionPolicy.probs);
   }
@@ -132,6 +134,9 @@ export class AlwaysSignalAgent extends SignalAgent {
         alwaysSignal: true,
         everyStepResampling: true
       };
+      if (typeof actionPolicy.signalingMixtureWeight === 'number') {
+        sample.signalingMixtureWeight = actionPolicy.signalingMixtureWeight;
+      }
       trialData.alwaysSignalAgentSampledJointGoal = goalIdx;
       trialData.alwaysSignalAgentSampledJointGoalPosterior = sample.posterior;
       trialData.alwaysSignalAgentSampledJointGoalWeights = goalWeights.slice();

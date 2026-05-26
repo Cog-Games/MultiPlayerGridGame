@@ -986,7 +986,7 @@ export class TimelineManager {
   recordKidMatchFallback(reason, fallbackAIType) {
     const now = Date.now();
     const fallbackLabel = fallbackAIType === 'alwaysSignalAgent'
-      ? (CONFIG?.kids?.committedAgentLabel || 'sampleJointGoalAndRSASignal_fromStart')
+      ? (CONFIG?.kids?.committedAgentLabel || 'Communicative Action Mixture (Legibility Over Alternatives)')
       : fallbackAIType;
     this.stopKidWaitMinigame();
     this.experimentData.kidMatchOutcome = 'committed_fallback';
