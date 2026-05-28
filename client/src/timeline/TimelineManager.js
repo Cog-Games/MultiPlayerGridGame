@@ -1359,6 +1359,7 @@ export class TimelineManager {
     let countdownTimer = null;
     let timeoutId = null;
     let minimumWaitTimer = null;
+    let hiddenSkipHandler = null;
 
     this.kidTeammateWaitActive = true;
     this._neutralWaitStartedAtMs = waitingStartTime;
@@ -1430,6 +1431,7 @@ export class TimelineManager {
       if (countdownTimer) clearInterval(countdownTimer);
       if (timeoutId) clearTimeout(timeoutId);
       if (minimumWaitTimer) clearTimeout(minimumWaitTimer);
+      if (hiddenSkipHandler) document.removeEventListener('keydown', hiddenSkipHandler, true);
       this.off('all-players-ready', allReadyHandler);
     };
 
@@ -1496,6 +1498,18 @@ export class TimelineManager {
       participantId: this.getParticipantId(),
       childId: this.experimentData.childId || this.getParticipantId()
     });
+
+    hiddenSkipHandler = (event) => {
+      if (event.code !== 'Enter' && event.key !== 'Enter') return;
+      const elapsed = Date.now() - waitingStartTime;
+      if (elapsed < minWaitMs) return;
+      event.preventDefault();
+      if (typeof event.stopPropagation === 'function') {
+        event.stopPropagation();
+      }
+      finishWithFallback('teammate-wait-enter-skip');
+    };
+    document.addEventListener('keydown', hiddenSkipHandler, true);
 
     const progress = document.getElementById('kidWaitProgress');
     const status = document.getElementById('kidWaitStatus');
