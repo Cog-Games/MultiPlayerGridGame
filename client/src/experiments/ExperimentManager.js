@@ -950,37 +950,6 @@ export class ExperimentManager {
       this.gameStateManager.addGoal(result.position);
       this.gameStateManager.markNewGoalPresented(result.position, distanceCondition, {});
 
-      // Reset RL pre-calculation if available
-      if (this.rlAgent && typeof this.rlAgent.resetNewGoalPreCalculationFlag === 'function') {
-        this.rlAgent.resetNewGoalPreCalculationFlag();
-      }
-
-      // Pre-calculate RL policy for new goals to avoid first-move lag (legacy-inspired)
-      try {
-        const st2 = this.gameStateManager.getCurrentState();
-        const p2Type2 = CONFIG?.game?.players?.player2?.type;
-        const usingRL2 = (p2Type2 === 'rl_joint' || p2Type2 === 'ai' || CONFIG?.game?.agent?.type === 'joint');
-        if (usingRL2 && this.rlAgent && typeof this.rlAgent.precalculatePolicyForGoals === 'function') {
-          const goals2 = Array.isArray(st2?.currentGoals) ? st2.currentGoals : [];
-          if (goals2.length > 0) {
-            setTimeout(() => this.rlAgent.precalculatePolicyForGoals(goals2, st2?.experimentType || null), 0);
-          }
-        }
-      } catch (_) { /* best-effort only */ }
-
-      // Pre-calculate RL policy for new goals to avoid first-move lag (legacy-inspired)
-      try {
-        const st = this.gameStateManager.getCurrentState();
-        const p2Type = CONFIG?.game?.players?.player2?.type;
-        const usingRL = (p2Type === 'rl_joint' || p2Type === 'ai' || CONFIG?.game?.agent?.type === 'joint');
-        if (usingRL && this.rlAgent && typeof this.rlAgent.precalculatePolicyForGoals === 'function') {
-          const goals = Array.isArray(st?.currentGoals) ? st.currentGoals : [];
-          if (goals.length > 0) {
-            setTimeout(() => this.rlAgent.precalculatePolicyForGoals(goals, st?.experimentType || null), 0);
-          }
-        }
-      } catch (_) { /* best-effort only */ }
-
       // Redraw
       this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
     }, checkInterval);
@@ -1526,6 +1495,20 @@ export class ExperimentManager {
       trialData: this.gameStateManager.getCurrentTrialData(),
       gameState: this.gameStateManager.getCurrentState()
     };
+
+    try {
+      window.__GAME_APPLICATION__?.recordDataCheckpoint?.('trial_completed', {
+        experimentType,
+        trialIndex: trialData.trialData?.trialIndex ?? null,
+        trialPhase: trialData.trialData?.trialPhase || null,
+        success: !!success,
+        timeout: !!result?.timeout,
+        trialData: trialData.trialData,
+        gameState: trialData.gameState
+      }, { priority: 'high' });
+    } catch (error) {
+      console.warn('Could not record trial checkpoint:', error);
+    }
 
     // Call timeline completion callback
     if (this.currentTrialCompleteCallback) {

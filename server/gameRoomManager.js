@@ -52,7 +52,8 @@ export class GameRoomManager {
       stationId: metadata.stationId || null,
       joinedAt: new Date(),
       isReady: false,
-      isMatchReady: false
+      isMatchReady: false,
+      kidStartReady: false
     };
     
     room.players.push(player);
@@ -139,6 +140,16 @@ export class GameRoomManager {
     }
   }
 
+  setPlayerKidStartReady(playerId, isReady = true) {
+    const room = this.getPlayerRoom(playerId);
+    if (room) {
+      const player = room.players.find(p => p.id === playerId);
+      if (player) {
+        player.kidStartReady = isReady;
+      }
+    }
+  }
+
   areAllPlayersReady(roomId) {
     const room = this.rooms.get(roomId);
     return room && room.players.length === room.maxPlayers && 
@@ -149,6 +160,12 @@ export class GameRoomManager {
     const room = this.rooms.get(roomId);
     return room && room.players.length === room.maxPlayers &&
            room.players.every(p => p.isMatchReady);
+  }
+
+  areAllPlayersKidStartReady(roomId) {
+    const room = this.rooms.get(roomId);
+    return room && room.players.length === room.maxPlayers &&
+           room.players.every(p => p.kidStartReady);
   }
 
   getRoomStats() {

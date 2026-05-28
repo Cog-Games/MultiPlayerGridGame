@@ -394,6 +394,16 @@ export class TimelineManager {
     const stage = this.stages[this.currentStageIndex];
     this.clearStageAdvanceControls();
     console.log(`🎬 Running stage ${this.currentStageIndex}: ${stage.type}`);
+    this.emit('data-checkpoint', {
+      eventType: 'stage_started',
+      payload: {
+        stageType: stage.type,
+        stageIndex: this.currentStageIndex,
+        experimentType: stage.experimentType || null,
+        experimentIndex: stage.experimentIndex ?? null,
+        trialIndex: stage.trialIndex ?? null
+      }
+    });
 
     try {
       stage.handler();
@@ -618,13 +628,15 @@ export class TimelineManager {
   }
 
   showDobStage() {
-    const currentYear = new Date().getFullYear();
     const initialParticipantId = getParticipantIdFromUrl() || '';
     const escapedParticipantId = String(initialParticipantId)
       .replace(/&/g, '&amp;')
       .replace(/"/g, '&quot;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
+    const dobYearOptions = Array.from({ length: 9 }, (_, i) => 2016 + i)
+      .map((year) => `<option value="${year}">${year}</option>`)
+      .join('');
     this.container.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8f9fa;padding:20px;">
         <div data-stage-focus="true" tabindex="-1" style="background:white;padding:36px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:640px;width:100%;text-align:center;">
@@ -654,7 +666,10 @@ export class TimelineManager {
               </label>
               <label style="font-weight:bold;color:#333;">
                 Year
-                <input id="dobYear" required type="text" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="YYYY" style="width:100%;box-sizing:border-box;margin-top:6px;padding:12px;border:1px solid #bbb;border-radius:6px;font-size:16px;">
+                <select id="dobYear" required style="width:100%;margin-top:6px;padding:12px;border:1px solid #bbb;border-radius:6px;font-size:16px;background:white;">
+                  <option value="">Year</option>
+                  ${dobYearOptions}
+                </select>
               </label>
             </div>
 
@@ -698,6 +713,14 @@ export class TimelineManager {
 
       Object.assign(this.experimentData, ageInfo);
       this.setParticipantId(participantId);
+      this.emit('data-checkpoint', {
+        eventType: 'dob_submitted',
+        payload: {
+          participantId,
+          ...ageInfo
+        },
+        options: { priority: 'high' }
+      });
       this.nextStage();
     });
 
@@ -1053,6 +1076,17 @@ export class TimelineManager {
     this.kidWaitMinigame = null;
     const stats = minigame.stop();
     this.updateKidWaitMinigameData(stats);
+    this.emit('data-checkpoint', {
+      eventType: 'wait_minigame_completed',
+      payload: {
+        waitMinigameEnabled: this.experimentData.waitMinigameEnabled,
+        waitMinigameStartTime: this.experimentData.waitMinigameStartTime,
+        waitMinigameEndTime: this.experimentData.waitMinigameEndTime,
+        waitMinigameDurationMs: this.experimentData.waitMinigameDurationMs,
+        waitMinigameJumpCount: this.experimentData.waitMinigameJumpCount,
+        waitMinigameCollisionCount: this.experimentData.waitMinigameCollisionCount
+      }
+    });
     return stats;
   }
 
@@ -1077,8 +1111,15 @@ export class TimelineManager {
     }
   }
 
-  showKidTeammateFoundReminder(onComplete) {
+  showKidTeammateFoundReminder(onComplete, options = {}) {
     const playerDisplay = getPlayerDisplayInfo(this.playerIndex, this.gameMode);
+    const inferredSharedStart = this.isKidMode() &&
+      this.shouldUseHumanMatching() &&
+      this.isHumanHumanMode() &&
+      CONFIG.game.players.player1.type === 'human' &&
+      CONFIG.game.players.player2.type === 'human';
+    const requiresSharedStart = options.requiresSharedStart === true ||
+      (options.requiresSharedStart !== false && inferredSharedStart);
 
     this.container.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8f9fa;">
@@ -1103,9 +1144,95 @@ export class TimelineManager {
             </div>
           </div>
           <p style="font-size:20px;color:#555;margin:0;">Press the space bar to start.</p>
+          ${requiresSharedStart ? '<p id="kidStartStatus" style="font-size:18px;color:#0b63ce;margin:12px 0 0;min-height:26px;font-weight:700;"></p>' : ''}
         </div>
       </div>
     `;
+
+    if (requiresSharedStart) {
+      this.clearStageAdvanceControls();
+      this.applyKidVisualTheme();
+
+      let readySubmitted = false;
+      let completed = false;
+
+      const statusElement = document.getElementById('kidStartStatus');
+
+      const completeSharedStart = async () => {
+        if (completed) return;
+        completed = true;
+        this.off('kid-start-ready-status', kidStartReadyHandler);
+        this.clearStageAdvanceControls();
+
+        if (typeof onComplete === 'function') {
+          await onComplete();
+        }
+      };
+
+      const showWaitingMessage = () => {
+        if (statusElement) {
+          statusElement.textContent = 'Waiting for your teammate to start...';
+        }
+      };
+
+      const kidStartReadyHandler = (data = {}) => {
+        const players = Array.isArray(data.players) ? data.players : [];
+        const allReady = data.allReady === true ||
+          (players.length >= 2 && players.every(p => p.kidStartReady === true));
+
+        if (allReady) {
+          this.emit('data-checkpoint', {
+            eventType: 'kid_start_all_ready',
+            payload: {
+              playersReady: players.length,
+              readySource: 'kid-start-ready-status'
+            },
+            options: { priority: 'high' }
+          });
+          completeSharedStart();
+        } else if (readySubmitted) {
+          showWaitingMessage();
+        }
+      };
+
+      const submitReady = (event) => {
+        if (event) {
+          event.preventDefault();
+          if (typeof event.stopPropagation === 'function') {
+            event.stopPropagation();
+          }
+        }
+        if (readySubmitted || completed) return;
+
+        readySubmitted = true;
+        showWaitingMessage();
+        this.emit('data-checkpoint', {
+          eventType: 'kid_start_ready_pressed',
+          payload: {
+            requiresSharedStart: true
+          },
+          options: { priority: 'high' }
+        });
+        this.emit('kid-start-ready');
+      };
+
+      this.stageAdvanceHandler = (event) => {
+        if (event.code === 'Space' || event.key === ' ' || event.key === 'Spacebar') {
+          submitReady(event);
+        }
+      };
+
+      window.addEventListener('keydown', this.stageAdvanceHandler, true);
+      document.addEventListener('keydown', this.stageAdvanceHandler, true);
+      this.on('kid-start-ready-status', kidStartReadyHandler);
+
+      const focusTarget = this.container.querySelector('[data-stage-focus="true"]');
+      if (focusTarget && typeof focusTarget.focus === 'function') {
+        setTimeout(() => focusTarget.focus(), 0);
+      }
+
+      return;
+    }
 
     this.setupStageAdvanceControls({
       onAdvance: async () => {
@@ -1281,7 +1408,7 @@ export class TimelineManager {
         try { this.emit('kid-matchmaking-cancelled', { reason }); } catch (_) { /* noop */ }
         try { this.emit('fallback-to-ai', { reason, stage: 'kid-teammate-wait', at: Date.now(), fallbackAIType: fallbackType }); } catch (_) { /* noop */ }
         this.emit('ai-fallback-activated', { fallbackType, aiPlayerNumber });
-        this.showKidTeammateFoundReminder(() => this.nextStage());
+        this.showKidTeammateFoundReminder(() => this.nextStage(), { requiresSharedStart: false });
       });
     };
 
@@ -1294,7 +1421,7 @@ export class TimelineManager {
         this.recordWaitingTime(waitingStartTime, waitingEndTime, waitingDuration, 'teammate_found', experimentType, experimentIndex);
         this.recordKidMatchSuccess();
         if (config?.gameMode) this.gameMode = config.gameMode;
-        this.showKidTeammateFoundReminder(() => this.nextStage());
+        this.showKidTeammateFoundReminder(() => this.nextStage(), { requiresSharedStart: true });
       });
     };
 
@@ -1725,6 +1852,7 @@ export class TimelineManager {
           </div>
           <div style="margin-top: 20px; font-size: 14px; color: #666;">
             <p>${playerDisplay.instructionText} <span style="display: inline-block; width: 18px; height: 18px; background-color: ${playerDisplay.selfColorValue}; border-radius: 50%; vertical-align: middle;"></span> Use arrow keys to move.</p>
+            <div id="game-status" style="min-height: 24px; font-size: 18px; margin-top: 8px;"></div>
           </div>
         </div>
       </div>
@@ -2317,6 +2445,13 @@ export class TimelineManager {
         } else {
           document.removeEventListener('keydown', handleKeys, true);
           this.experimentData.questionnaire = answers;
+          this.emit('data-checkpoint', {
+            eventType: 'questionnaire_submitted',
+            payload: {
+              questionnaire: answers
+            },
+            options: { priority: 'high' }
+          });
           this.nextStage();
         }
       }
@@ -2357,6 +2492,16 @@ export class TimelineManager {
     this.experimentData.completed = true;
     this.experimentData.completionCode = completionCode;
     this.experimentData.endTime = new Date().toISOString();
+    this.emit('data-checkpoint', {
+      eventType: 'experiment_completed',
+      payload: {
+        completed: true,
+        completionCode,
+        endTime: this.experimentData.endTime,
+        experimentOrder: this.experimentData.experimentOrder || []
+      },
+      options: { priority: 'high' }
+    });
 
     this.emit('save-data', this.experimentData);
     // If external saving is enabled, disable Continue until save succeeds
@@ -2422,15 +2567,55 @@ export class TimelineManager {
   }
 
   showKidLocalCompletionStage() {
+    const shouldSaveHere = !this.experimentData.completed;
+    if (shouldSaveHere) {
+      this.experimentData.completed = true;
+      this.experimentData.completionCode = this.experimentData.completionCode || this.generateCompletionCode();
+      this.experimentData.endTime = new Date().toISOString();
+      this.emit('data-checkpoint', {
+        eventType: 'experiment_completed',
+        payload: {
+          completed: true,
+          completionCode: this.experimentData.completionCode,
+          endTime: this.experimentData.endTime,
+          experimentOrder: this.experimentData.experimentOrder || []
+        },
+        options: { priority: 'high' }
+      });
+    }
+
     this.container.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8f9fa;">
         <div style="background:white;padding:40px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:600px;text-align:center;">
           <h2 style="color:#28a745;margin-bottom:20px;">Experiment Complete!</h2>
           <p style="font-size:18px;margin-bottom:12px;">Thank you for playing the game.</p>
-          <p style="font-size:16px;color:#666;margin-bottom:0;">You may close this page now.</p>
+          <p id="kid-local-save-status" style="font-size:16px;color:#666;margin-bottom:0;">${shouldSaveHere ? 'Saving your data...' : 'You may close this page now.'}</p>
         </div>
       </div>
     `;
+
+    if (!shouldSaveHere) return;
+
+    const handleSaved = () => {
+      const status = document.getElementById('kid-local-save-status');
+      if (status) {
+        status.textContent = 'Data saved. You may close this page now.';
+        status.style.color = '#28a745';
+      }
+      this.off('data-save-success', handleSaved);
+    };
+    this.on('data-save-success', handleSaved);
+
+    setTimeout(() => {
+      const status = document.getElementById('kid-local-save-status');
+      if (status && status.textContent === 'Saving your data...') {
+        status.textContent = 'Data saved locally. You may close this page now.';
+        status.style.color = '#666';
+      }
+      this.off('data-save-success', handleSaved);
+    }, 15000);
+
+    this.emit('save-data', this.experimentData);
   }
 
   showProlificRedirectStage() {
@@ -2834,6 +3019,21 @@ export class TimelineManager {
       reason: reason,
       startTime: new Date(startTime).toISOString(),
       endTime: new Date(endTime).toISOString()
+    });
+    this.emit('data-checkpoint', {
+      eventType: 'waiting_period_completed',
+      payload: {
+        experimentType,
+        experimentIndex,
+        durationSeconds: waitingDurationSeconds,
+        totalWaitingDuration: this.experimentData.waitingDuration,
+        reason,
+        startTime: new Date(startTime).toISOString(),
+        endTime: new Date(endTime).toISOString(),
+        kidMatchOutcome: this.experimentData.kidMatchOutcome || null,
+        fallbackReason: this.experimentData.fallbackReason || null
+      },
+      options: { priority: 'high' }
     });
 
     console.log('📊 [WAITING] Recorded waiting time:', waitingDurationSeconds + 's (total: ' + this.experimentData.waitingDuration + 's)');

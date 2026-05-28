@@ -13,6 +13,7 @@ import {
   getProlificPidFromUrl
 } from '../utils/ParticipantUtils.js';
 import { getPlayerDisplayInfo } from '../utils/DisplayPerspectiveUtils.js';
+import { DataSyncManager } from '../utils/DataSyncManager.js';
 
 export class GameApplication {
   constructor(container) {
@@ -22,6 +23,7 @@ export class GameApplication {
     this.uiManager = null;
     this.experimentManager = null;
     this.timelineManager = null;
+    this.dataSyncManager = null;
     this.isInitialized = false;
     this.playerIndex = 0; // 0 = red player, 1 = orange player
     this.gameConfig = null; // Store game configuration from server
@@ -30,7 +32,9 @@ export class GameApplication {
 
     // Synchronized human-human turn state
     this._hhSync = {
-      pendingMoves: { 0: null, 1: null }
+      pendingMoves: { 0: null, 1: null },
+      waitingMessageTimer: null,
+      waitingMessageDelayMs: 5000
     };
 
     // Real-time synchronization state
@@ -135,6 +139,18 @@ export class GameApplication {
       this.timelineManager
     );
 
+    this.dataSyncManager = new DataSyncManager({
+      scriptUrl: CONFIG?.server?.googleAppsScriptUrl || '',
+      uploadEnabled: CONFIG?.server?.enableGoogleDriveSave !== false,
+      participantIdProvider: () => (
+        this.timelineManager?.experimentData?.participantId ||
+        getParticipantIdFromUrl() ||
+        getChildIdFromUrl() ||
+        null
+      )
+    });
+    try { window.__DATA_SYNC_MANAGER__ = this.dataSyncManager; } catch (_) { /* noop */ }
+
     // Initialize network manager if needed
     const urlParams = new URLSearchParams(window.location.search);
     const skipNetwork = urlParams.get('skipNetwork') === 'true';
@@ -163,6 +179,15 @@ export class GameApplication {
 
     // Make GameApplication available globally for ExperimentManager communication
     try { window.__GAME_APPLICATION__ = this; } catch (_) { /* ignore */ }
+
+    this.recordDataCheckpoint('session_started', {
+      mode,
+      experimentType,
+      roomId,
+      url: window.location.href,
+      userAgent: navigator.userAgent,
+      online: navigator.onLine !== false
+    }, { priority: 'high' });
 
     // Proactively fetch and cache LLM/VLM model for accurate recording (e.g., partnerFallbackAIType)
     try { await this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
@@ -312,6 +337,15 @@ export class GameApplication {
       }
     });
 
+    this.timelineManager.on('kid-start-ready', () => {
+      console.log('🎮 Timeline kid start SPACE pressed - forwarding to network');
+      if (this.networkManager && this.networkManager.isConnected) {
+        this.networkManager.setKidStartReady();
+      } else {
+        console.warn('⚠️ Network manager not available for kid-start-ready');
+      }
+    });
+
     // Handle partner status check from timeline
     this.timelineManager.on('check-partner-status', async (data) => {
       console.log('🔍 Timeline checking partner status...');
@@ -455,7 +489,17 @@ export class GameApplication {
     // Handle timeline save-data event
     this.timelineManager.on('save-data', (experimentData) => {
       console.log('💾 Timeline requesting data save:', experimentData);
+      this.recordDataCheckpoint('final_export_requested', {
+        completed: experimentData?.completed,
+        completionCode: experimentData?.completionCode || '',
+        experimentOrder: experimentData?.experimentOrder || [],
+        questionnaire: experimentData?.questionnaire || null
+      }, { priority: 'high' });
       this.saveExperimentData(experimentData);
+    });
+
+    this.timelineManager.on('data-checkpoint', ({ eventType, payload, options } = {}) => {
+      this.recordDataCheckpoint(eventType || 'timeline_checkpoint', payload || {}, options || {});
     });
 
     // Handle trial feedback event
@@ -483,6 +527,12 @@ export class GameApplication {
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
         this.gameStateManager?.recordPartnerFallback?.({ reason, stage, at, fallbackAIType });
         this.timelineManager?.recordKidMatchFallback?.(reason, fallbackAIType);
+        this.recordDataCheckpoint('fallback_to_ai', {
+          reason,
+          stage,
+          at,
+          fallbackAIType
+        }, { priority: 'high' });
         // Proactively fetch and persist GPT model so fallback AI type can be exact (e.g., gpt-4o)
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
       } catch (_) { /* noop */ }
@@ -492,6 +542,56 @@ export class GameApplication {
     // communication from ExperimentManager (handleTrialStart/handleTrialEnd)
 
     console.log('📡 Timeline event handlers setup completed');
+  }
+
+  getDataCheckpointContext() {
+    const timelineData = this.timelineManager?.experimentData || {};
+    const currentState = this.gameStateManager?.getCurrentState?.() || {};
+    const currentMode = this.timelineManager?.gameMode ||
+      (CONFIG?.game?.players?.player2?.type === 'human' ? 'human-human' : 'human-ai');
+    const displayPerspective = getPlayerDisplayInfo(this.playerIndex, currentMode);
+
+    return {
+      participantId: timelineData.participantId || getParticipantIdFromUrl() || null,
+      childId: timelineData.childId || getChildIdFromUrl() || null,
+      participantDob: timelineData.participantDob || null,
+      participantAgeReferenceDate: timelineData.participantAgeReferenceDate || null,
+      participantAgeYears: timelineData.participantAgeYears ?? null,
+      participantAgeMonths: timelineData.participantAgeMonths ?? null,
+      participantAgeDays: timelineData.participantAgeDays ?? null,
+      participantAgeTotalDays: timelineData.participantAgeTotalDays ?? null,
+      eventId: timelineData.eventId || CONFIG?.kids?.eventId || getKidEventIdFromUrl() || null,
+      stationId: timelineData.stationId || CONFIG?.kids?.stationId || getKidStationIdFromUrl() || null,
+      roomId: this.currentRoomId || null,
+      gameMode: currentMode,
+      playerIndex: this.playerIndex,
+      currentStageIndex: this.timelineManager?.currentStageIndex ?? null,
+      currentExperimentType: currentState.experimentType || null,
+      currentTrialIndex: currentState.trialIndex ?? null,
+      trialPhase: currentState.trialPhase || null,
+      partnerFallbackAIType: timelineData.partnerFallbackAIType || null,
+      kidMatchOutcome: timelineData.kidMatchOutcome || null,
+      fallbackReason: timelineData.fallbackReason || null,
+      displayPerspectiveEnabled: displayPerspective.displayPerspectiveEnabled,
+      displaySelfColor: displayPerspective.displaySelfColor,
+      displayPartnerColor: displayPerspective.displayPartnerColor,
+      canonicalPlayerIndex: displayPerspective.canonicalPlayerIndex,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  recordDataCheckpoint(eventType, payload = {}, options = {}) {
+    if (!this.dataSyncManager || !eventType) return;
+    try {
+      const checkpointPayload = {
+        ...this.getDataCheckpointContext(),
+        ...payload
+      };
+      this.dataSyncManager.enqueue(eventType, checkpointPayload, options)
+        .catch(error => console.warn('Failed to queue data checkpoint:', eventType, error));
+    } catch (error) {
+      console.warn('Failed to record data checkpoint:', eventType, error);
+    }
   }
 
   downloadBase64File(base64Data, filename, mimeType) {
@@ -907,6 +1007,13 @@ export class GameApplication {
             console.warn('⚠️ Local Excel data file download was not available in this browser context.');
           }
 
+          this.recordDataCheckpoint('final_excel_created', {
+            filename: excelFilename,
+            localDownloadSucceeded,
+            trialCount: trials.length,
+            googleDriveUploadEnabled: !!(enableGDrive && scriptUrl)
+          }, { priority: 'high' });
+
           if (enableGDrive && scriptUrl) {
             const formData = new FormData();
             formData.append('filename', excelFilename);
@@ -916,6 +1023,10 @@ export class GameApplication {
             fetch(scriptUrl, { method: 'POST', mode: 'no-cors', body: formData })
               .then(() => {
                 console.log('✅ Google Drive save attempted via Apps Script:', excelFilename);
+                this.recordDataCheckpoint('final_google_drive_upload_attempted', {
+                  filename: excelFilename,
+                  uploadAttemptedAt: new Date().toISOString()
+                }, { priority: 'high' });
                 // Provide user feedback like legacy and notify timeline
                 try {
                   if (this.timelineManager) {
@@ -928,6 +1039,10 @@ export class GameApplication {
               })
               .catch(err => {
                 console.warn('⚠️ Google Drive save failed. Local Excel download was already attempted.', err);
+                this.recordDataCheckpoint('final_google_drive_upload_failed', {
+                  filename: excelFilename,
+                  error: err?.message || String(err)
+                }, { priority: 'high' });
                 if (localDownloadSucceeded) {
                   this.notifyDataSaveSuccess();
                 }
@@ -1030,6 +1145,16 @@ export class GameApplication {
         // Legacy flow
         this.uiManager.updateLobbyInfo(data);
       }
+
+      this.recordDataCheckpoint('room_joined', {
+        roomId: data?.roomId || null,
+        roomGameMode: data?.gameMode || null,
+        roomExperimentType: data?.experimentType || null,
+        roomEventId: data?.eventId || null,
+        isHost: data?.isHost ?? null,
+        playerCount: Array.isArray(data?.players) ? data.players.length : null,
+        players: data?.players || []
+      }, { priority: 'high' });
     });
 
     this.networkManager.on('player-joined', (data) => {
@@ -1062,6 +1187,15 @@ export class GameApplication {
       if (this.useTimelineFlow && this.timelineManager) {
         this.timelineManager.emit('partner-connected', data);
       }
+
+      this.recordDataCheckpoint('room_full', {
+        roomId: data?.roomId || null,
+        roomGameMode: data?.gameMode || null,
+        roomExperimentType: data?.experimentType || null,
+        roomEventId: data?.eventId || null,
+        connectedAt: data?.connectedAt || Date.now(),
+        players: data?.players || []
+      }, { priority: 'high' });
     });
 
     this.networkManager.on('player-disconnected', (data) => {
@@ -1170,6 +1304,13 @@ export class GameApplication {
       }
     });
 
+    this.networkManager.on('kid-start-ready-status', (data) => {
+      console.log('Kid start ready status update:', data);
+      if (this.useTimelineFlow && this.timelineManager) {
+        this.timelineManager.emit('kid-start-ready-status', data);
+      }
+    });
+
     // Game events
     this.networkManager.on('game-started', (config) => {
       console.log('Game started:', config);
@@ -1258,6 +1399,7 @@ export class GameApplication {
         if (isSyncTurns) {
           this._hhSync.pendingMoves[0] = null;
           this._hhSync.pendingMoves[1] = null;
+          this.clearKidWaitingForTeammateResponse();
         }
       }
     });
@@ -1438,6 +1580,41 @@ export class GameApplication {
 
   shouldApplyPartnerFallbackNow() {
     return this.isTwoPlayerExperimentState();
+  }
+
+  isKidKidSynchronizedTurnState() {
+    const state = this.gameStateManager?.getCurrentState?.();
+    const experimentType = String(state?.experimentType || '');
+    const isHumanHuman = CONFIG.game.players.player1.type === 'human' &&
+                         CONFIG.game.players.player2.type === 'human';
+    return !!(
+      CONFIG?.kids?.enabled &&
+      isHumanHuman &&
+      experimentType.includes('2P') &&
+      GameConfigUtils.isSynchronizedHumanTurnsEnabled(experimentType)
+    );
+  }
+
+  scheduleKidWaitingForTeammateResponse() {
+    this.clearKidWaitingForTeammateResponse();
+    if (this.isKidKidSynchronizedTurnState()) {
+      this._hhSync.waitingMessageTimer = setTimeout(() => {
+        this._hhSync.waitingMessageTimer = null;
+        if (this.isKidKidSynchronizedTurnState() && this._hhSync.pendingMoves?.[this.playerIndex]) {
+          this.uiManager.showGameStatus('Waiting for your teammate...', 'info');
+        }
+      }, this._hhSync.waitingMessageDelayMs);
+    }
+  }
+
+  clearKidWaitingForTeammateResponse() {
+    if (this._hhSync?.waitingMessageTimer) {
+      clearTimeout(this._hhSync.waitingMessageTimer);
+      this._hhSync.waitingMessageTimer = null;
+    }
+    if (CONFIG?.kids?.enabled) {
+      this.uiManager.showGameStatus('', 'info');
+    }
   }
 
   handleSinglePlayerLocalMove(direction) {
@@ -1644,6 +1821,7 @@ export class GameApplication {
 
     // Store my proposed move
     this._hhSync.pendingMoves[this.playerIndex] = direction;
+    this.scheduleKidWaitingForTeammateResponse();
 
     // Broadcast proposed move to partner
     if (this.networkManager && this.networkManager.isConnected) {
@@ -1680,6 +1858,7 @@ export class GameApplication {
     if (p1AtGoal && p2AtGoal) {
       this._hhSync.pendingMoves[0] = null;
       this._hhSync.pendingMoves[1] = null;
+      this.clearKidWaitingForTeammateResponse();
       return;
     }
 
@@ -1715,6 +1894,7 @@ export class GameApplication {
     // Clear pending moves
     this._hhSync.pendingMoves[0] = null;
     this._hhSync.pendingMoves[1] = null;
+    this.clearKidWaitingForTeammateResponse();
 
     if (result?.trialComplete) {
       this.handleTrialComplete(result);
@@ -1781,6 +1961,7 @@ export class GameApplication {
       if (this._hhSync && this._hhSync.pendingMoves) {
         this._hhSync.pendingMoves[0] = null;
         this._hhSync.pendingMoves[1] = null;
+        this.clearKidWaitingForTeammateResponse();
       }
 
       // Apply canonical end-of-trial state for consistency
@@ -2053,6 +2234,14 @@ export class GameApplication {
 
     // Reset trial completion guard at the start of each trial
     this._trialCompleteHandled = false;
+
+    this.recordDataCheckpoint('trial_started', {
+      experimentType,
+      experimentIndex,
+      trialIndex,
+      player1Type: CONFIG?.game?.players?.player1?.type || null,
+      player2Type: CONFIG?.game?.players?.player2?.type || null
+    });
   }
 
   handleTrialEnd() {

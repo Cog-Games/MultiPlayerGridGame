@@ -101,6 +101,29 @@ export class GameEventHandler {
       }
     });
 
+    socket.on('kid-start-ready', () => {
+      const room = this.roomManager.getPlayerRoom(socket.id);
+      if (room) {
+        this.roomManager.setPlayerKidStartReady(socket.id, true);
+        const allReady = this.roomManager.areAllPlayersKidStartReady(room.id);
+        const players = Array.isArray(room.players)
+          ? room.players.map(player => ({ ...player }))
+          : [];
+
+        io.to(room.id).emit('kid-start-ready-status', {
+          playerId: socket.id,
+          players,
+          allReady
+        });
+
+        if (allReady && Array.isArray(room.players)) {
+          room.players.forEach(p => {
+            p.kidStartReady = false;
+          });
+        }
+      }
+    });
+
     // Game actions
     socket.on('game-action', (data) => {
       const room = this.roomManager.getPlayerRoom(socket.id);
@@ -145,6 +168,7 @@ export class GameEventHandler {
             room.players.forEach(p => {
               p.isReady = false;
               p.isMatchReady = false;
+              p.kidStartReady = false;
             });
           }
         } catch (_) { /* noop */ }
@@ -224,6 +248,7 @@ export class GameEventHandler {
         room.players.forEach(p => {
           p.isReady = false;
           p.isMatchReady = false;
+          p.kidStartReady = false;
         });
       }
     } catch (_) { /* noop */ }
