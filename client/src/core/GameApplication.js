@@ -144,8 +144,10 @@ export class GameApplication {
     );
 
     this.dataSyncManager = new DataSyncManager({
-      scriptUrl: CONFIG?.server?.googleAppsScriptUrl || '',
-      uploadEnabled: CONFIG?.server?.enableGoogleDriveSave !== false,
+      // Checkpoints stay local in the browser. Google Drive receives only the
+      // upserted Excel workbook created after DOB/trials/final save.
+      scriptUrl: '',
+      uploadEnabled: false,
       participantIdProvider: () => (
         this.timelineManager?.experimentData?.participantId ||
         getParticipantIdFromUrl() ||

@@ -1163,6 +1163,20 @@ export class TimelineManager {
 
       const statusElement = document.getElementById('kidStartStatus');
       const startButton = document.getElementById('kidStartGameBtn');
+      const blockKeyboardStart = (event) => {
+        if (
+          event.code === 'Space' ||
+          event.key === ' ' ||
+          event.key === 'Spacebar' ||
+          event.code === 'Enter' ||
+          event.key === 'Enter'
+        ) {
+          event.preventDefault();
+          if (typeof event.stopPropagation === 'function') {
+            event.stopPropagation();
+          }
+        }
+      };
 
       const completeSharedStart = async () => {
         if (completed) return;
@@ -1233,6 +1247,9 @@ export class TimelineManager {
         this.stageAdvanceButtonHandler = submitReady;
         startButton.addEventListener('click', this.stageAdvanceButtonHandler);
       }
+      this.stageAdvanceHandler = blockKeyboardStart;
+      window.addEventListener('keydown', this.stageAdvanceHandler, true);
+      document.addEventListener('keydown', this.stageAdvanceHandler, true);
       this.on('kid-start-ready-status', kidStartReadyHandler);
 
       const focusTarget = this.container.querySelector('[data-stage-focus="true"]');
@@ -1247,6 +1264,23 @@ export class TimelineManager {
     this.applyKidVisualTheme();
     const startButton = document.getElementById('kidStartGameBtn');
     let advancing = false;
+    this.stageAdvanceHandler = (event) => {
+      if (
+        event.code === 'Space' ||
+        event.key === ' ' ||
+        event.key === 'Spacebar' ||
+        event.code === 'Enter' ||
+        event.key === 'Enter'
+      ) {
+        event.preventDefault();
+        if (typeof event.stopPropagation === 'function') {
+          event.stopPropagation();
+        }
+      }
+    };
+    window.addEventListener('keydown', this.stageAdvanceHandler, true);
+    document.addEventListener('keydown', this.stageAdvanceHandler, true);
+
     const advanceFromButton = async (event) => {
       if (event) {
         event.preventDefault();
@@ -1270,7 +1304,6 @@ export class TimelineManager {
       this.stageAdvanceButtonId = 'kidStartGameBtn';
       this.stageAdvanceButtonHandler = advanceFromButton;
       startButton.addEventListener('click', this.stageAdvanceButtonHandler);
-      startButton.focus({ preventScroll: true });
     }
   }
 
@@ -1326,7 +1359,6 @@ export class TimelineManager {
     let countdownTimer = null;
     let timeoutId = null;
     let minimumWaitTimer = null;
-    let hiddenSkipHandler = null;
 
     this.kidTeammateWaitActive = true;
     this._neutralWaitStartedAtMs = waitingStartTime;
@@ -1398,7 +1430,6 @@ export class TimelineManager {
       if (countdownTimer) clearInterval(countdownTimer);
       if (timeoutId) clearTimeout(timeoutId);
       if (minimumWaitTimer) clearTimeout(minimumWaitTimer);
-      if (hiddenSkipHandler) document.removeEventListener('keydown', hiddenSkipHandler);
       this.off('all-players-ready', allReadyHandler);
     };
 
@@ -1465,14 +1496,6 @@ export class TimelineManager {
       participantId: this.getParticipantId(),
       childId: this.experimentData.childId || this.getParticipantId()
     });
-
-    hiddenSkipHandler = (event) => {
-      if (event.code !== 'Enter' && event.key !== 'Enter') return;
-      event.preventDefault();
-      event.stopPropagation();
-      finishWithFallback('teammate-wait-enter-skip');
-    };
-    document.addEventListener('keydown', hiddenSkipHandler);
 
     const progress = document.getElementById('kidWaitProgress');
     const status = document.getElementById('kidWaitStatus');

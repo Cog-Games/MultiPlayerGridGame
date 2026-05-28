@@ -1,6 +1,8 @@
-# Google Drive Apps Script Upsert Endpoint
+# Google Drive Apps Script Excel-Only Upsert Endpoint
 
-The kids flow can upload the same Excel workbook name after DOB, after each trial, after questionnaire, and at final save. To avoid duplicate files, the Apps Script endpoint should replace the existing file when `upsert=true`.
+The kids flow uploads the same Excel workbook name after DOB, after each trial, after questionnaire, and at final save. To avoid duplicate files, the Apps Script endpoint replaces the existing file when `upsert=true`.
+
+This endpoint intentionally saves only Excel files. JSON checkpoint uploads are ignored so Google Drive contains one workbook per participant/session.
 
 ```js
 function doPost(e) {
@@ -54,50 +56,12 @@ function doPost(e) {
       });
     }
 
-    if (filetype === "json") {
-      const filename = e.parameter.filename || `checkpoint_${timestamp}.json`;
-      const filedata = e.parameter.filedata;
-
-      if (!filedata) {
-        throw new Error("No JSON checkpoint data received");
-      }
-
-      const jsonText = Utilities.newBlob(
-        Utilities.base64Decode(filedata)
-      ).getDataAsString("UTF-8");
-
-      const file = folder.createFile(
-        Utilities.newBlob(jsonText, "application/json", filename)
-      );
-
-      return jsonResponse({
-        status: "success",
-        message: "JSON checkpoint saved successfully",
-        fileId: file.getId(),
-        fileName: filename,
-        folderName,
-        checkpoint: e.parameter.checkpoint || "",
-        eventType: e.parameter.eventType || "",
-        sessionId: e.parameter.sessionId || "",
-        sequenceNumber: e.parameter.sequenceNumber || "",
-        participantId: e.parameter.participantId || ""
-      });
-    }
-
-    const csvContent = e.postData && e.postData.contents;
-    const fileName = `data_${timestamp}.csv`;
-
-    if (!csvContent) {
-      throw new Error("No CSV data received");
-    }
-
-    const file = folder.createFile(fileName, csvContent, MimeType.CSV);
-
+    // Do not create JSON or CSV files in Drive. The experiment should keep
+    // checkpoints browser-local and update only the Excel workbook.
     return jsonResponse({
-      status: "success",
-      message: "CSV file saved successfully",
-      fileId: file.getId(),
-      fileName,
+      status: "ignored",
+      message: "Only Excel uploads are saved by this endpoint",
+      filetype: filetype || "",
       folderName
     });
   } catch (error) {
