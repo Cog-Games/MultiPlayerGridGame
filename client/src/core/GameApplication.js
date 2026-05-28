@@ -29,6 +29,10 @@ export class GameApplication {
     this.gameConfig = null; // Store game configuration from server
     this.useTimelineFlow = true; // Enable timeline flow by default
     this.currentRoomId = null; // Track active multiplayer room ID for export
+    this.excelSnapshotFilename = null;
+    this.excelSnapshotTimer = null;
+    this.excelSnapshotInProgress = false;
+    this.excelSnapshotPendingReason = null;
 
     // Synchronized human-human turn state
     this._hhSync = {
@@ -589,9 +593,65 @@ export class GameApplication {
       };
       this.dataSyncManager.enqueue(eventType, checkpointPayload, options)
         .catch(error => console.warn('Failed to queue data checkpoint:', eventType, error));
+      if (this.shouldCreateExcelSnapshot(eventType)) {
+        this.scheduleExcelSnapshot(eventType);
+      }
     } catch (error) {
       console.warn('Failed to record data checkpoint:', eventType, error);
     }
+  }
+
+  shouldCreateExcelSnapshot(eventType) {
+    if (!CONFIG?.kids?.enabled) return false;
+    return eventType === 'dob_submitted' ||
+      eventType === 'trial_completed' ||
+      eventType === 'questionnaire_submitted';
+  }
+
+  scheduleExcelSnapshot(reason, delayMs = 500) {
+    if (!CONFIG?.server?.enableGoogleDriveSave || !CONFIG?.server?.googleAppsScriptUrl) return;
+    if (this.excelSnapshotTimer) clearTimeout(this.excelSnapshotTimer);
+    this.excelSnapshotTimer = setTimeout(() => {
+      this.excelSnapshotTimer = null;
+      this.saveExcelSnapshot(reason);
+    }, delayMs);
+  }
+
+  saveExcelSnapshot(reason) {
+    if (this.excelSnapshotInProgress) {
+      this.excelSnapshotPendingReason = reason || 'pending';
+      return;
+    }
+
+    this.excelSnapshotInProgress = true;
+    try {
+      const data = { ...(this.timelineManager?.experimentData || {}) };
+      this.saveExperimentData(data, {
+        snapshot: true,
+        snapshotReason: reason || 'snapshot',
+        localDownload: false,
+        showAlert: false,
+        notifyTimeline: false
+      });
+    } finally {
+      setTimeout(() => {
+        this.excelSnapshotInProgress = false;
+        if (this.excelSnapshotPendingReason) {
+          const pendingReason = this.excelSnapshotPendingReason;
+          this.excelSnapshotPendingReason = null;
+          this.scheduleExcelSnapshot(pendingReason, 1000);
+        }
+      }, 1000);
+    }
+  }
+
+  getStableExcelFilename(exportObj) {
+    if (this.excelSnapshotFilename) return this.excelSnapshotFilename;
+    const safeId = String(exportObj.participantId || 'participant').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const safeEvent = String(exportObj.eventId || CONFIG?.kids?.eventId || 'event').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const sessionId = String(this.dataSyncManager?.sessionId || Date.now()).replace(/[^a-zA-Z0-9_-]/g, '_');
+    this.excelSnapshotFilename = `experiment_data_${safeId}_${safeEvent}_${sessionId}.xlsx`;
+    return this.excelSnapshotFilename;
   }
 
   downloadBase64File(base64Data, filename, mimeType) {
@@ -637,9 +697,11 @@ export class GameApplication {
     }, 0);
   }
 
-  saveExperimentData(data) {
+  saveExperimentData(data, options = {}) {
     // Save/export experiment data in legacy-compatible shape
     try {
+      const isSnapshot = options.snapshot === true;
+      const snapshotReason = options.snapshotReason || '';
       // Pull comprehensive trial data from GameStateManager (legacy: allTrialsData)
       const gsData = this.gameStateManager?.getExperimentData?.() || { allTrialsData: [], successThreshold: {} };
 
@@ -703,6 +765,9 @@ export class GameApplication {
         waitMinigameCollisionCount: data.waitMinigameCollisionCount ?? 0,
         successThreshold: gsData.successThreshold || {},
         completionCode: data.completionCode || '',
+        excelSaveMode: isSnapshot ? 'snapshot' : 'final',
+        excelSnapshotReason: snapshotReason,
+        excelSnapshotSessionId: this.dataSyncManager?.sessionId || null,
         version: (CONFIG?.game?.version) || '2.0.0',
         experimentType: sessionGameMode === 'human-human' ? 'human-human' : 'human-AI',
         roomId,
@@ -929,6 +994,9 @@ export class GameApplication {
             ['collaborationTrialsTotal', collaborationTrials.length],
             ['collaborationSuccessCount', collaborationSuccessCount],
             ['collaborationSuccessRate', collaborationSuccessRate],
+            ['excelSaveMode', exportObj.excelSaveMode],
+            ['excelSnapshotReason', exportObj.excelSnapshotReason || ''],
+            ['excelSnapshotSessionId', exportObj.excelSnapshotSessionId || ''],
             ['version', exportObj.version],
             ['timestamp', exportObj.timestamp]
           ];
@@ -994,24 +1062,34 @@ export class GameApplication {
           const ts = new Date().toISOString().replace(/[:.]/g, '-');
           const safeId = String(exportObj.participantId).replace(/[^a-zA-Z0-9_-]/g, '_');
           const safeRoom = String(exportObj.roomId || 'no-room').replace(/[^a-zA-Z0-9_-]/g, '_');
-          const excelFilename = `experiment_data_${safeId}_room_${safeRoom}_${ts}.xlsx`;
+          const useStableKidExcelFile = CONFIG?.kids?.enabled && (isSnapshot || this.excelSnapshotFilename);
+          const excelFilename = useStableKidExcelFile
+            ? this.getStableExcelFilename(exportObj)
+            : `experiment_data_${safeId}_room_${safeRoom}_${ts}.xlsx`;
 
-          const localDownloadSucceeded = this.downloadBase64File(
-            base64,
-            excelFilename,
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-          );
-          if (localDownloadSucceeded) {
-            console.log('✅ Local Excel data file download triggered:', excelFilename);
+          let localDownloadSucceeded = false;
+          if (options.localDownload !== false) {
+            localDownloadSucceeded = this.downloadBase64File(
+              base64,
+              excelFilename,
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            );
+            if (localDownloadSucceeded) {
+              console.log('✅ Local Excel data file download triggered:', excelFilename);
+            } else {
+              console.warn('⚠️ Local Excel data file download was not available in this browser context.');
+            }
           } else {
-            console.warn('⚠️ Local Excel data file download was not available in this browser context.');
+            console.log('💾 Silent Excel snapshot prepared:', excelFilename);
           }
 
-          this.recordDataCheckpoint('final_excel_created', {
+          this.recordDataCheckpoint(isSnapshot ? 'excel_snapshot_created' : 'final_excel_created', {
             filename: excelFilename,
             localDownloadSucceeded,
             trialCount: trials.length,
-            googleDriveUploadEnabled: !!(enableGDrive && scriptUrl)
+            googleDriveUploadEnabled: !!(enableGDrive && scriptUrl),
+            snapshot: isSnapshot,
+            snapshotReason
           }, { priority: 'high' });
 
           if (enableGDrive && scriptUrl) {
@@ -1019,37 +1097,54 @@ export class GameApplication {
             formData.append('filename', excelFilename);
             formData.append('filedata', base64);
             formData.append('filetype', 'excel');
+            if (useStableKidExcelFile) {
+              formData.append('upsert', 'true');
+              formData.append('updateKey', excelFilename);
+            }
+            if (isSnapshot) {
+              formData.append('snapshot', 'true');
+              formData.append('snapshotReason', snapshotReason);
+              formData.append('sessionId', this.dataSyncManager?.sessionId || '');
+              formData.append('participantId', exportObj.participantId || '');
+            }
 
             fetch(scriptUrl, { method: 'POST', mode: 'no-cors', body: formData })
               .then(() => {
                 console.log('✅ Google Drive save attempted via Apps Script:', excelFilename);
-                this.recordDataCheckpoint('final_google_drive_upload_attempted', {
+                this.recordDataCheckpoint(isSnapshot ? 'excel_snapshot_google_drive_upload_attempted' : 'final_google_drive_upload_attempted', {
                   filename: excelFilename,
-                  uploadAttemptedAt: new Date().toISOString()
+                  uploadAttemptedAt: new Date().toISOString(),
+                  snapshot: isSnapshot,
+                  snapshotReason
                 }, { priority: 'high' });
+                if (isSnapshot) return;
                 // Provide user feedback like legacy and notify timeline
                 try {
-                  if (this.timelineManager) {
+                  if (options.notifyTimeline !== false && this.timelineManager) {
                     this.timelineManager.emit('data-save-success');
                   }
-                  alert('Data saved successfully!');
+                  if (options.showAlert !== false) {
+                    alert('Data saved successfully!');
+                  }
                 } catch (e) {
                   // Ignore UI feedback errors
                 }
               })
               .catch(err => {
                 console.warn('⚠️ Google Drive save failed. Local Excel download was already attempted.', err);
-                this.recordDataCheckpoint('final_google_drive_upload_failed', {
+                this.recordDataCheckpoint(isSnapshot ? 'excel_snapshot_google_drive_upload_failed' : 'final_google_drive_upload_failed', {
                   filename: excelFilename,
-                  error: err?.message || String(err)
+                  error: err?.message || String(err),
+                  snapshot: isSnapshot,
+                  snapshotReason
                 }, { priority: 'high' });
-                if (localDownloadSucceeded) {
+                if (!isSnapshot && localDownloadSucceeded) {
                   this.notifyDataSaveSuccess();
                 }
               });
           } else {
-            console.warn('⚠️ Google Drive save disabled or missing Apps Script URL. Local Excel download was attempted.');
-            if (localDownloadSucceeded) {
+            console.warn('⚠️ Google Drive save disabled or missing Apps Script URL. Local Excel download was attempted if enabled.');
+            if (!isSnapshot && localDownloadSucceeded) {
               this.notifyDataSaveSuccess();
             }
           }
