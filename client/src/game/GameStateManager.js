@@ -814,11 +814,18 @@ export class GameStateManager {
       // 2P experiments - both players must reach goals
       if (player1AtGoal && player2AtGoal) {
         // For 2P2G and 2P3G, collaboration success means both players reach the SAME goal
-        const p1Goal = this.trialData.player1FinalReachedGoal;
-        const p2Goal = this.trialData.player2FinalReachedGoal;
+        const p1Goal = GameHelpers.whichGoalReached(this.currentState.player1, this.currentState.currentGoals);
+        const p2Goal = GameHelpers.whichGoalReached(this.currentState.player2, this.currentState.currentGoals);
+
+        this.trialData.player1FinalReachedGoal = p1Goal;
+        this.trialData.player2FinalReachedGoal = p2Goal;
 
         // Collaboration succeeds when both players reach the same goal
-        this.trialData.collaborationSucceeded = (p1Goal !== null && p2Goal !== null && p1Goal === p2Goal);
+        this.trialData.collaborationSucceeded = (
+          Number.isInteger(p1Goal) && p1Goal >= 0 &&
+          Number.isInteger(p2Goal) && p2Goal >= 0 &&
+          p1Goal === p2Goal
+        );
 
         // For 2P experiments, trial is complete when both players reach goals
         // but the success depends on whether they reached the same goal
@@ -841,10 +848,15 @@ export class GameStateManager {
     try {
       const is2P = this.currentState && typeof this.currentState.experimentType === 'string' && this.currentState.experimentType.includes('2P');
       if (is2P) {
-        const p1 = this.trialData.player1FinalReachedGoal;
-        const p2 = this.trialData.player2FinalReachedGoal;
-        const bothValid = Number.isInteger(p1) && p1 >= 0 && Number.isInteger(p2) && p2 >= 0;
-        this.trialData.collaborationSucceeded = !!(bothValid && p1 === p2);
+        const p1Goal = GameHelpers.whichGoalReached(this.currentState.player1, this.currentState.currentGoals);
+        const p2Goal = GameHelpers.whichGoalReached(this.currentState.player2, this.currentState.currentGoals);
+        if (Number.isInteger(p1Goal) && p1Goal >= 0) {
+          this.trialData.player1FinalReachedGoal = p1Goal;
+        }
+        if (Number.isInteger(p2Goal) && p2Goal >= 0) {
+          this.trialData.player2FinalReachedGoal = p2Goal;
+        }
+        this.trialData.collaborationSucceeded = !!GameHelpers.didBothPlayersReachSameGoal(this.currentState);
       }
     } catch (_) { /* noop */ }
 

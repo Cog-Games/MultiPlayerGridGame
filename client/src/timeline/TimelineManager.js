@@ -1143,7 +1143,12 @@ export class TimelineManager {
               <div style="font-size:18px;color:#555;">Teammate</div>
             </div>
           </div>
-          <p style="font-size:20px;color:#555;margin:0;">Press the space bar to start.</p>
+          <p style="font-size:22px;line-height:1.45;color:#333;margin:0 auto 24px;max-width:560px;font-weight:700;">
+            To win the team game, you and your teammate need to go to the same restaurant.
+          </p>
+          <button id="kidStartGameBtn" type="button" style="background:#007bff;color:white;border:none;border-radius:8px;padding:14px 34px;font-size:22px;font-weight:700;cursor:pointer;box-shadow:0 4px 10px rgba(0,123,255,0.24);">
+            Click to start!
+          </button>
           ${requiresSharedStart ? '<p id="kidStartStatus" style="font-size:18px;color:#0b63ce;margin:12px 0 0;min-height:26px;font-weight:700;"></p>' : ''}
         </div>
       </div>
@@ -1157,6 +1162,7 @@ export class TimelineManager {
       let completed = false;
 
       const statusElement = document.getElementById('kidStartStatus');
+      const startButton = document.getElementById('kidStartGameBtn');
 
       const completeSharedStart = async () => {
         if (completed) return;
@@ -1205,6 +1211,12 @@ export class TimelineManager {
         if (readySubmitted || completed) return;
 
         readySubmitted = true;
+        if (startButton) {
+          startButton.disabled = true;
+          startButton.style.opacity = '0.65';
+          startButton.style.cursor = 'not-allowed';
+          startButton.textContent = 'Ready';
+        }
         showWaitingMessage();
         this.emit('data-checkpoint', {
           eventType: 'kid_start_ready_pressed',
@@ -1216,14 +1228,11 @@ export class TimelineManager {
         this.emit('kid-start-ready');
       };
 
-      this.stageAdvanceHandler = (event) => {
-        if (event.code === 'Space' || event.key === ' ' || event.key === 'Spacebar') {
-          submitReady(event);
-        }
-      };
-
-      window.addEventListener('keydown', this.stageAdvanceHandler, true);
-      document.addEventListener('keydown', this.stageAdvanceHandler, true);
+      if (startButton) {
+        this.stageAdvanceButtonId = 'kidStartGameBtn';
+        this.stageAdvanceButtonHandler = submitReady;
+        startButton.addEventListener('click', this.stageAdvanceButtonHandler);
+      }
       this.on('kid-start-ready-status', kidStartReadyHandler);
 
       const focusTarget = this.container.querySelector('[data-stage-focus="true"]');
@@ -1234,13 +1243,35 @@ export class TimelineManager {
       return;
     }
 
-    this.setupStageAdvanceControls({
-      onAdvance: async () => {
-        if (typeof onComplete === 'function') {
-          await onComplete();
+    this.clearStageAdvanceControls();
+    this.applyKidVisualTheme();
+    const startButton = document.getElementById('kidStartGameBtn');
+    let advancing = false;
+    const advanceFromButton = async (event) => {
+      if (event) {
+        event.preventDefault();
+        if (typeof event.stopPropagation === 'function') {
+          event.stopPropagation();
         }
       }
-    });
+      if (advancing) return;
+      advancing = true;
+      if (startButton) {
+        startButton.disabled = true;
+        startButton.style.opacity = '0.65';
+        startButton.style.cursor = 'not-allowed';
+      }
+      if (typeof onComplete === 'function') {
+        await onComplete();
+      }
+    };
+
+    if (startButton) {
+      this.stageAdvanceButtonId = 'kidStartGameBtn';
+      this.stageAdvanceButtonHandler = advanceFromButton;
+      startButton.addEventListener('click', this.stageAdvanceButtonHandler);
+      startButton.focus({ preventScroll: true });
+    }
   }
 
   showInstructionsStage(experimentType, experimentIndex) {

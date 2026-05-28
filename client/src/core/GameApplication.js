@@ -1449,6 +1449,10 @@ export class GameApplication {
         return;
       }
 
+      if (!this.isNetworkPayloadForCurrentTrial(gameState, 'game-state-update', { requireTrialSequenceId: true })) {
+        return;
+      }
+
       // Check if we're in human-human real-time mode
       const isHumanHuman = CONFIG.game.players.player1.type === 'human' &&
                            CONFIG.game.players.player2.type === 'human';
@@ -1667,6 +1671,70 @@ export class GameApplication {
     return experimentType.startsWith('1P');
   }
 
+  getCurrentTrialNetworkContext() {
+    const state = this.gameStateManager?.getCurrentState?.() || {};
+    return {
+      experimentType: state.experimentType || null,
+      experimentIndex: state.experimentIndex ?? null,
+      trialIndex: state.trialIndex ?? null,
+      trialSequenceId: state.trialSequenceId || null
+    };
+  }
+
+  isNetworkPayloadForCurrentTrial(payload = {}, label = 'network payload', options = {}) {
+    const current = this.gameStateManager?.getCurrentState?.();
+    if (!current || !payload) return true;
+
+    const remoteState = payload.gameState || payload.trialData || payload;
+    const currentSequenceId = current.trialSequenceId || null;
+    const remoteSequenceId = remoteState.trialSequenceId || payload.trialSequenceId || null;
+
+    if (options.requireTrialSequenceId && currentSequenceId && !remoteSequenceId) {
+      console.log(`Ignoring stale ${label}: missing current trial sequence id`);
+      return false;
+    }
+
+    const remoteExperimentType = remoteState.experimentType || payload.experimentType || null;
+    const currentExperimentType = current.experimentType || null;
+    if (remoteExperimentType && currentExperimentType && remoteExperimentType !== currentExperimentType) {
+      console.log(`Ignoring stale ${label}: experiment ${remoteExperimentType} does not match current ${currentExperimentType}`);
+      return false;
+    }
+
+    const remoteTrialIndex = remoteState.trialIndex ?? payload.trialIndex;
+    const currentTrialIndex = current.trialIndex;
+    if (
+      remoteTrialIndex !== undefined &&
+      remoteTrialIndex !== null &&
+      currentTrialIndex !== undefined &&
+      currentTrialIndex !== null &&
+      Number(remoteTrialIndex) !== Number(currentTrialIndex)
+    ) {
+      console.log(`Ignoring stale ${label}: trial ${remoteTrialIndex} does not match current ${currentTrialIndex}`);
+      return false;
+    }
+
+    const remoteExperimentIndex = remoteState.experimentIndex ?? payload.experimentIndex;
+    const currentExperimentIndex = current.experimentIndex;
+    if (
+      remoteExperimentIndex !== undefined &&
+      remoteExperimentIndex !== null &&
+      currentExperimentIndex !== undefined &&
+      currentExperimentIndex !== null &&
+      Number(remoteExperimentIndex) !== Number(currentExperimentIndex)
+    ) {
+      console.log(`Ignoring stale ${label}: game ${remoteExperimentIndex} does not match current ${currentExperimentIndex}`);
+      return false;
+    }
+
+    if (remoteSequenceId && currentSequenceId && remoteSequenceId !== currentSequenceId) {
+      console.log(`Ignoring stale ${label}: sequence ${remoteSequenceId} does not match current ${currentSequenceId}`);
+      return false;
+    }
+
+    return true;
+  }
+
   isTwoPlayerExperimentState(gameState = null) {
     const state = gameState || this.gameStateManager?.getCurrentState?.();
     const experimentType = String(state?.experimentType || '');
@@ -1783,7 +1851,8 @@ export class GameApplication {
           direction: direction,
           playerIndex: this.playerIndex,
           timestamp: timestamp,
-          moveId: moveResult.moveId
+          moveId: moveResult.moveId,
+          ...this.getCurrentTrialNetworkContext()
         });
 
         // Sync full state periodically to ensure consistency
@@ -1810,7 +1879,8 @@ export class GameApplication {
         type: 'move',
         direction,
         playerIndex: this.playerIndex,
-        timestamp: timestamp
+        timestamp: timestamp,
+        ...this.getCurrentTrialNetworkContext()
       });
     }
 
@@ -1832,6 +1902,10 @@ export class GameApplication {
     }
 
     if (action.type === 'move') {
+      if (!this.isNetworkPayloadForCurrentTrial(action, 'player move', { requireTrialSequenceId: true })) {
+        return;
+      }
+
       // Determine which player this action is from (opposite of local player)
       const remotePlayerNumber = action.playerIndex + 1; // Convert 0,1 to 1,2
 
@@ -1881,6 +1955,9 @@ export class GameApplication {
     if (action.type === 'proposed-move') {
       const hhSyncEnabled = GameConfigUtils.isSynchronizedHumanTurnsEnabled(this.gameStateManager?.getCurrentState?.()?.experimentType);
       if (!hhSyncEnabled) return;
+      if (!this.isNetworkPayloadForCurrentTrial(action, 'proposed move', { requireTrialSequenceId: true })) {
+        return;
+      }
       const isHost = !!(typeof window !== 'undefined' && window.__IS_HOST__);
       const fromIdx = action.playerIndex;
       if (fromIdx === this.playerIndex) return;
@@ -1924,7 +2001,8 @@ export class GameApplication {
         type: 'proposed-move',
         direction,
         playerIndex: this.playerIndex,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        ...this.getCurrentTrialNetworkContext()
       });
     }
 
@@ -2044,6 +2122,10 @@ export class GameApplication {
       this.isSinglePlayerExperimentState(payload?.gameState)
     ) {
       console.log('Ignoring remote trial completion during local single-player warmup');
+      return;
+    }
+
+    if (!this.isNetworkPayloadForCurrentTrial(payload, 'trial completion', { requireTrialSequenceId: true })) {
       return;
     }
 

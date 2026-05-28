@@ -1373,6 +1373,15 @@ export class ExperimentManager {
           this.gameStateManager.currentState.trialPhase = trialPhase;
         }
       }
+      if (this.gameStateManager.currentState) {
+        const trialSequenceId = `${experimentIndex}:${experimentType}:${trialIndex}`;
+        this.gameStateManager.currentState.experimentIndex = experimentIndex;
+        this.gameStateManager.currentState.trialSequenceId = trialSequenceId;
+        if (this.gameStateManager.trialData) {
+          this.gameStateManager.trialData.experimentIndex = experimentIndex;
+          this.gameStateManager.trialData.trialSequenceId = trialSequenceId;
+        }
+      }
 
       // Update UI - use timeline's game container
       this.uiManager.updateGameInfo(experimentIndex, trialIndex, experimentType);
@@ -1400,6 +1409,15 @@ export class ExperimentManager {
         this.gameStateManager.trialData.trialPhase = trialPhase;
         if (this.gameStateManager.currentState) {
           this.gameStateManager.currentState.trialPhase = trialPhase;
+        }
+      }
+      if (this.gameStateManager.currentState) {
+        const trialSequenceId = `${experimentIndex}:${experimentType}:${trialIndex}`;
+        this.gameStateManager.currentState.experimentIndex = experimentIndex;
+        this.gameStateManager.currentState.trialSequenceId = trialSequenceId;
+        if (this.gameStateManager.trialData) {
+          this.gameStateManager.trialData.experimentIndex = experimentIndex;
+          this.gameStateManager.trialData.trialSequenceId = trialSequenceId;
         }
       }
       this.uiManager.updateGameInfo(experimentIndex, trialIndex, experimentType);
@@ -1437,9 +1455,44 @@ export class ExperimentManager {
   setupTimelineGameTimeout() {
     const durationMs = this.getWallClockTrialTimeoutMs();
     if (durationMs > 0) {
+      const expectedTrialContext = {
+        experimentType: this.gameStateManager?.currentState?.experimentType || null,
+        experimentIndex: this.gameStateManager?.currentState?.experimentIndex ?? null,
+        trialIndex: this.gameStateManager?.currentState?.trialIndex ?? null,
+        trialSequenceId: this.gameStateManager?.currentState?.trialSequenceId || null
+      };
       const timeout = setTimeout(() => {
+        const currentState = this.gameStateManager?.getCurrentState?.() || {};
+        if (
+          expectedTrialContext.trialSequenceId &&
+          currentState.trialSequenceId &&
+          currentState.trialSequenceId !== expectedTrialContext.trialSequenceId
+        ) {
+          console.log('Ignoring stale trial timeout for previous trial:', expectedTrialContext);
+          return;
+        }
+        if (
+          expectedTrialContext.experimentType &&
+          currentState.experimentType &&
+          currentState.experimentType !== expectedTrialContext.experimentType
+        ) {
+          console.log('Ignoring stale trial timeout for previous experiment:', expectedTrialContext);
+          return;
+        }
+        if (
+          expectedTrialContext.trialIndex !== null &&
+          currentState.trialIndex !== null &&
+          Number(currentState.trialIndex) !== Number(expectedTrialContext.trialIndex)
+        ) {
+          console.log('Ignoring stale trial timeout for previous round:', expectedTrialContext);
+          return;
+        }
         console.log('Game timeout reached');
-        this.handleTimelineTrialComplete({ success: false, timeout: true });
+        this.handleTimelineTrialComplete({
+          success: false,
+          timeout: true,
+          ...expectedTrialContext
+        });
       }, durationMs);
       this.gameTimeoutId = timeout;
     } else {
@@ -1478,8 +1531,9 @@ export class ExperimentManager {
     } else {
       // 2P experiments - deterministically recompute success from final positions
       const recomputed = !!GameHelpers.didBothPlayersReachSameGoal(currentState);
-      // If authoritative success disagrees, override with recomputed
-      success = hasAuthoritative ? !!result.success && recomputed : recomputed;
+      // Final board state is authoritative for 2P scoring. This avoids stale
+      // timeout/remote flags marking same-goal endings as failures.
+      success = recomputed;
       // Force trial data flag to align with recomputed success for consistency
       currentTrialData.collaborationSucceeded = !!success;
       this.gameStateManager.trialData = { ...this.gameStateManager.trialData, collaborationSucceeded: !!success };
