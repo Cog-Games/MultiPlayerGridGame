@@ -33,25 +33,33 @@ if (CONFIG.kids.enabled) {
   if (Number.isFinite(kidWaitMs) && kidWaitMs > 0) {
     CONFIG.kids.teammateWaitMaxDuration = kidWaitMs;
   }
+  const requestedTrialCount = Number(
+    urlParams.get('kidTestTrials') ||
+    urlParams.get('kidTrials') ||
+    urlParams.get('kidTrialsPerGame') ||
+    urlParams.get('numTrials')
+  );
+  const hasTrialCountOverride = Number.isFinite(requestedTrialCount) && requestedTrialCount > 0;
+  const trialCountOverride = hasTrialCountOverride
+    ? Math.max(1, Math.floor(requestedTrialCount))
+    : null;
   if (kidGameTestMode) {
     const testExperiment = urlParams.get('kidTestExperiment');
     const mainExperimentOrder = testExperiment
       ? [testExperiment]
       : GameConfigUtils.getKidMainExperimentOrder();
-    const requestedTrialCount = Number(
-      urlParams.get('kidTestTrials') ||
-      urlParams.get('kidTrials') ||
-      urlParams.get('numTrials')
-    );
-    const testTrialCount = Number.isFinite(requestedTrialCount) && requestedTrialCount > 0
-      ? Math.max(1, Math.floor(requestedTrialCount))
-      : 1;
+    const testTrialCount = trialCountOverride || 1;
     CONFIG.kids.kidMainExperimentOrder = mainExperimentOrder;
     CONFIG.kids.mainExperimentType = mainExperimentOrder[mainExperimentOrder.length - 1] || '2P3G';
     CONFIG.kids.warmupExperimentOrder = [];
     CONFIG.game.experiments.order = mainExperimentOrder;
     Object.keys(CONFIG.game.experiments.numTrials).forEach((key) => {
       CONFIG.game.experiments.numTrials[key] = testTrialCount;
+    });
+    CONFIG.game.successThreshold.enabled = false;
+  } else if (hasTrialCountOverride) {
+    Object.keys(CONFIG.game.experiments.numTrials).forEach((key) => {
+      CONFIG.game.experiments.numTrials[key] = trialCountOverride;
     });
     CONFIG.game.successThreshold.enabled = false;
   }
