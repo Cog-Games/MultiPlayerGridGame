@@ -72,6 +72,7 @@ export class TimelineManager {
     this.stageAdvanceHandler = null;
     this.stageAdvanceButtonHandler = null;
     this.stageAdvanceButtonId = null;
+    this.stageAdvanceCleanupHandler = null;
 
     // Player information for multiplayer games
     this.playerIndex = 0; // Default to player 0 (red)
@@ -435,6 +436,11 @@ export class TimelineManager {
    */
 
   clearStageAdvanceControls() {
+    if (this.stageAdvanceCleanupHandler) {
+      this.stageAdvanceCleanupHandler();
+      this.stageAdvanceCleanupHandler = null;
+    }
+
     if (this.stageAdvanceHandler) {
       window.removeEventListener('keydown', this.stageAdvanceHandler, true);
       document.removeEventListener('keydown', this.stageAdvanceHandler, true);
@@ -1251,6 +1257,9 @@ export class TimelineManager {
       window.addEventListener('keydown', this.stageAdvanceHandler, true);
       document.addEventListener('keydown', this.stageAdvanceHandler, true);
       this.on('kid-start-ready-status', kidStartReadyHandler);
+      this.stageAdvanceCleanupHandler = () => {
+        this.off('kid-start-ready-status', kidStartReadyHandler);
+      };
 
       const focusTarget = this.container.querySelector('[data-stage-focus="true"]');
       if (focusTarget && typeof focusTarget.focus === 'function') {
@@ -1329,6 +1338,25 @@ export class TimelineManager {
       }
     }
 
+    if (this.shouldUseKidSharedInstructionGate(experimentType)) {
+      if (instructionCard) {
+        instructionCard.insertAdjacentHTML(
+          'beforeend',
+          '<p id="kidInstructionReadyStatus" style="font-size:18px;color:#0b63ce;margin:14px 0 0;min-height:26px;font-weight:700;"></p>'
+        );
+      }
+
+      this.setupKidSharedInstructionAdvanceControls({
+        experimentType,
+        experimentIndex,
+        onAdvance: async () => {
+          console.log(`📋 Shared kid instructions completed for ${experimentType}`);
+          this.nextStage();
+        }
+      });
+      return;
+    }
+
     this.setupStageAdvanceControls({
       buttonId: this.isKidMode() ? null : 'instruction-continue-btn',
       onAdvance: async () => {
@@ -1336,6 +1364,110 @@ export class TimelineManager {
         this.nextStage();
       }
     });
+  }
+
+  shouldUseKidSharedInstructionGate(experimentType) {
+    return this.isKidMode() &&
+      this.shouldUseHumanMatching() &&
+      String(experimentType) === '2P3G' &&
+      this.isHumanHumanMode() &&
+      CONFIG.game.players.player1.type === 'human' &&
+      CONFIG.game.players.player2.type === 'human';
+  }
+
+  setupKidSharedInstructionAdvanceControls({ experimentType, experimentIndex, onAdvance }) {
+    this.clearStageAdvanceControls();
+    this.applyKidVisualTheme();
+
+    let readySubmitted = false;
+    let completed = false;
+    const statusElement = document.getElementById('kidInstructionReadyStatus');
+
+    const setStatus = (message) => {
+      if (statusElement) {
+        statusElement.textContent = message;
+      }
+    };
+
+    const completeSharedInstructionGate = async () => {
+      if (completed) return;
+      completed = true;
+      this.off('kid-start-ready-status', kidInstructionReadyHandler);
+      this.clearStageAdvanceControls();
+
+      try {
+        if (typeof onAdvance === 'function') {
+          await onAdvance();
+        }
+      } catch (error) {
+        console.error('❌ Error advancing shared kid instruction gate:', error);
+        completed = false;
+      }
+    };
+
+    const kidInstructionReadyHandler = (data = {}) => {
+      const players = Array.isArray(data.players) ? data.players : [];
+      const allReady = data.allReady === true ||
+        (players.length >= 2 && players.every(p => p.kidStartReady === true));
+
+      if (allReady) {
+        this.emit('data-checkpoint', {
+          eventType: 'kid_instruction_all_ready',
+          payload: {
+            experimentType,
+            experimentIndex,
+            playersReady: players.length,
+            readySource: 'kid-start-ready-status'
+          },
+          options: { priority: 'high' }
+        });
+        completeSharedInstructionGate();
+      } else if (readySubmitted) {
+        setStatus('Waiting for your teammate to get ready...');
+      }
+    };
+
+    const submitReady = (event) => {
+      if (event) {
+        event.preventDefault();
+        if (typeof event.stopPropagation === 'function') {
+          event.stopPropagation();
+        }
+      }
+
+      if (readySubmitted || completed) return;
+
+      readySubmitted = true;
+      setStatus('Waiting for your teammate to get ready...');
+      this.emit('data-checkpoint', {
+        eventType: 'kid_instruction_ready_pressed',
+        payload: {
+          experimentType,
+          experimentIndex,
+          requiresSharedStart: true
+        },
+        options: { priority: 'high' }
+      });
+      this.emit('kid-start-ready');
+    };
+
+    this.stageAdvanceHandler = (event) => {
+      if (event.code === 'Space' || event.key === ' ' || event.key === 'Spacebar') {
+        submitReady(event);
+      }
+    };
+
+    window.addEventListener('keydown', this.stageAdvanceHandler, true);
+    document.addEventListener('keydown', this.stageAdvanceHandler, true);
+    this.on('kid-start-ready-status', kidInstructionReadyHandler);
+    this.stageAdvanceCleanupHandler = () => {
+      this.off('kid-start-ready-status', kidInstructionReadyHandler);
+    };
+
+    const focusTarget = this.container.querySelector('[data-stage-focus="true"]');
+    if (focusTarget && typeof focusTarget.focus === 'function') {
+      setTimeout(() => focusTarget.focus(), 0);
+    }
   }
 
   showKidTeammateWaitingStage(experimentType, experimentIndex) {
