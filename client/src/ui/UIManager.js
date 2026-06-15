@@ -1,6 +1,9 @@
 import { CONFIG, GAME_OBJECTS, GameConfigUtils } from '../config/gameConfig.js';
 import { GameRenderer } from './GameRenderer.js';
-import { getPlayerDisplayInfo } from '../utils/DisplayPerspectiveUtils.js';
+import {
+  getPlayerDisplayInfo,
+  getPlayerDisplayLegendHtml
+} from '../utils/DisplayPerspectiveUtils.js';
 
 export class UIManager {
   constructor(container) {
@@ -213,7 +216,7 @@ export class UIManager {
           <h3 id="game-title" style="margin-bottom: 20px;">Game: Round 1</h3>
           <h4 id="trial-info" style="display:none;"></h4>
           <div id="gameCanvas" style="margin-bottom: 20px;"></div>
-          <p style="font-size: 20px;">${playerDisplay.instructionText} <span style="display: inline-block; width: 18px; height: 18px; background-color: ${playerDisplay.selfColorValue}; border-radius: 50%; vertical-align: middle;"></span> Press ↑ ↓ ← → to move.</p>
+          <p style="font-size: 20px;">${getPlayerDisplayLegendHtml(playerDisplay, { movementText: 'Press ↑ ↓ ← → to move.' })}</p>
         </div>
       </div>
     `;

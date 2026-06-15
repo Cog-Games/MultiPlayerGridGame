@@ -5,7 +5,10 @@ import {
   getKidStationIdFromUrl,
   getParticipantIdFromUrl
 } from '../utils/ParticipantUtils.js';
-import { getPlayerDisplayInfo } from '../utils/DisplayPerspectiveUtils.js';
+import {
+  getPlayerDisplayInfo,
+  getPlayerDisplayLegendHtml
+} from '../utils/DisplayPerspectiveUtils.js';
 import { KidWaitMinigame } from './KidWaitMinigame.js';
 
 /**
@@ -1015,7 +1018,7 @@ export class TimelineManager {
   recordKidMatchFallback(reason, fallbackAIType) {
     const now = Date.now();
     const fallbackLabel = fallbackAIType === 'alwaysSignalAgent'
-      ? (CONFIG?.kids?.committedAgentLabel || 'Communicative Action Mixture (Legibility Over Alternatives)')
+      ? (CONFIG?.kids?.committedAgentLabel || 'SA-model')
       : fallbackAIType;
     this.stopKidWaitMinigame();
     this.experimentData.kidMatchOutcome = 'committed_fallback';
@@ -1919,8 +1922,7 @@ export class TimelineManager {
           <div style="font-size: 20px; color: #333; margin-bottom: 20px;">
             ${partnerMsgHtml}
             <p style="margin-top: 10px; font-size: 20px;">
-              ${playerDisplay.instructionText}
-              <span style="display:inline-block; width: 14px; height: 14px; background-color: ${playerDisplay.selfColorValue}; border-radius: 50%; vertical-align: middle; margin-left: 6px;"></span>
+              ${getPlayerDisplayLegendHtml(playerDisplay, { dotSize: 14 })}
             </p>
             <p>Press SPACE to start the game!</p>
             <p style="font-size: 14px;">${this.isHumanHumanMode() ? 'Both players must press SPACE to begin.' : ''}</p>
@@ -2051,7 +2053,7 @@ export class TimelineManager {
             <!-- Game canvas will be inserted here by ExperimentManager -->
           </div>
           <div style="margin-top: 20px; font-size: 14px; color: #666;">
-            <p>${playerDisplay.instructionText} <span style="display: inline-block; width: 18px; height: 18px; background-color: ${playerDisplay.selfColorValue}; border-radius: 50%; vertical-align: middle;"></span> Use arrow keys to move.</p>
+            <p>${getPlayerDisplayLegendHtml(playerDisplay, { movementText: 'Use arrow keys to move.' })}</p>
             <div id="game-status" style="min-height: 24px; font-size: 18px; margin-top: 8px;"></div>
           </div>
         </div>

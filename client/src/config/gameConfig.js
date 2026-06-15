@@ -28,7 +28,7 @@ const DEFAULT_LLM_AGENT_CONFIG = {
 };
 
 export const SHARED_AGENCY_BEST_FIT = {
-  label: 'Communicative Action Mixture (Legibility Over Alternatives) shared-agency model',
+  label: 'SA-model',
   type: 'alwaysSignalAgent',
   fitSource: 'shared_agency_costly_mixture_rho_sweep',
   parameters: {
@@ -430,6 +430,8 @@ export const GameConfigUtils = {
       'costly-mixture': SHARED_AGENCY_BEST_FIT.type,
       rsa: SHARED_AGENCY_BEST_FIT.type,
       rsasignal: SHARED_AGENCY_BEST_FIT.type,
+      samodel: SHARED_AGENCY_BEST_FIT.type,
+      'sa-model': SHARED_AGENCY_BEST_FIT.type,
       legacy: 'committedAgent',
       committed: 'committedAgent',
       committedagent: 'committedAgent',

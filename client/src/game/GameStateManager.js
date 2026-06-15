@@ -305,7 +305,7 @@ export class GameStateManager {
           } else if (t === 'ai') {
             aiTypeDesc = (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl';
           } else if (t === 'alwaysSignalAgent') {
-            aiTypeDesc = CONFIG?.kids?.committedAgentLabel || 'Communicative Action Mixture (Legibility Over Alternatives)';
+            aiTypeDesc = CONFIG?.kids?.committedAgentLabel || 'SA-model';
           } else if (t && t !== 'human') {
             aiTypeDesc = String(t);
           } else {
@@ -371,7 +371,7 @@ export class GameStateManager {
           } else if (fb === 'alwaysCommittedAgent') {
             this.trialData.partnerAgentType = 'alwaysCommittedAgent';
           } else if (fb === 'alwaysSignalAgent') {
-            this.trialData.partnerAgentType = CONFIG?.kids?.committedAgentLabel || 'Communicative Action Mixture (Legibility Over Alternatives)';
+            this.trialData.partnerAgentType = CONFIG?.kids?.committedAgentLabel || 'SA-model';
           } else if (fb === 'signalAgent') {
             this.trialData.partnerAgentType = 'signalAgent';
           } else if (fb === 'twoStageSignalAgent') {
@@ -877,7 +877,7 @@ export class GameStateManager {
           } else if (fb === 'alwaysCommittedAgent') {
             this.trialData.partnerAgentType = 'alwaysCommittedAgent';
           } else if (fb === 'alwaysSignalAgent') {
-            this.trialData.partnerAgentType = CONFIG?.kids?.committedAgentLabel || 'Communicative Action Mixture (Legibility Over Alternatives)';
+            this.trialData.partnerAgentType = CONFIG?.kids?.committedAgentLabel || 'SA-model';
           } else if (fb === 'signalAgent') {
             this.trialData.partnerAgentType = 'signalAgent';
           } else if (fb === 'twoStageSignalAgent') {
@@ -983,7 +983,7 @@ export class GameStateManager {
       case 'alwayscommittedagent':
         return 'alwaysCommittedAgent';
       case 'alwayssignalagent':
-        return CONFIG?.kids?.committedAgentLabel || 'Communicative Action Mixture (Legibility Over Alternatives)';
+        return CONFIG?.kids?.committedAgentLabel || 'SA-model';
       case 'ai':
         // Default AI type based on config
         return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl';
@@ -994,7 +994,7 @@ export class GameStateManager {
         // Avoid infinite recursion by handling the default directly
         if (defaultFallback === 'rl_joint') return 'joint-rl';
         if (defaultFallback === 'rl_individual') return 'individual-rl';
-        if (defaultFallback === 'alwaysSignalAgent') return CONFIG?.kids?.committedAgentLabel || 'Communicative Action Mixture (Legibility Over Alternatives)';
+        if (defaultFallback === 'alwaysSignalAgent') return CONFIG?.kids?.committedAgentLabel || 'SA-model';
         if (defaultFallback === 'llm' || defaultFallback === 'llm-tom' || defaultFallback === 'gpt') {
           const model = CONFIG?.game?.agent?.llm?.model || CONFIG?.game?.agent?.gpt?.model;
           return (model && String(model).trim()) ? String(model) : 'gpt-4o';
@@ -1063,7 +1063,7 @@ export class GameStateManager {
       if (t === 'rl_joint') return 'joint-rl';
       if (t === 'rl_individual') return 'individual-rl';
       if (t === 'alwaysCommittedAgent') return 'alwaysCommittedAgent';
-      if (t === 'alwaysSignalAgent') return CONFIG?.kids?.committedAgentLabel || 'Communicative Action Mixture (Legibility Over Alternatives)';
+      if (t === 'alwaysSignalAgent') return CONFIG?.kids?.committedAgentLabel || 'SA-model';
       if (t === 'signalAgent') return 'signalAgent';
       if (t === 'twoStageSignalAgent') return 'twoStageSignalAgent';
       if (t === 'ai') return (CONFIG?.game?.agent?.type === 'individual') ? 'individual-rl' : 'joint-rl'; // legacy safety

@@ -50,3 +50,20 @@ export function getPlayerDisplayInfo(playerIndex = 0, gameMode = 'human-ai') {
     instructionText: `You are ${isPlayerTwo ? 'Player 2 (Orange)' : 'Player 1 (Red)'}.`
   };
 }
+
+function getDisplayDotHtml(colorValue, size = 18) {
+  return `<span style="display:inline-block;width:${size}px;height:${size}px;background-color:${colorValue};border-radius:50%;vertical-align:-3px;margin:0 4px;"></span>`;
+}
+
+export function getPlayerDisplayLegendHtml(playerDisplay, options = {}) {
+  const dotSize = Number.isFinite(options.dotSize) ? options.dotSize : 18;
+  const movementText = options.movementText || '';
+  const selfDot = getDisplayDotHtml(playerDisplay.selfColorValue, dotSize);
+  const movementHtml = movementText ? ` ${movementText}` : '';
+
+  if (playerDisplay.displayPerspectiveEnabled) {
+    return `You are the ${playerDisplay.displaySelfColor} dot ${selfDot}.${movementHtml}`;
+  }
+
+  return `${playerDisplay.instructionText} ${selfDot}${movementHtml}`;
+}
