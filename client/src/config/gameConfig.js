@@ -300,7 +300,7 @@ export const CONFIG = {
       NO_NEW_GOAL: 'no_new_goal'
     },
     distanceConstraint: {
-      closerThreshold: 2,
+      closerThreshold: 1,
       allowEqualDistance: false,
       maxDistanceIncrease: 5
     },

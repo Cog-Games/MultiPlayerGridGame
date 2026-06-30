@@ -862,7 +862,7 @@ export class GameStateManager {
 
     this.trialData.completed = !!success;
     this.trialData.endTime = Date.now();
-    this.trialData.totalSteps = this.stepCount;
+    this.trialData.totalSteps = this.getDerivedTotalSteps();
 
     // Normalize partnerAgentType just before saving to ensure it reflects current AI model/mode
     try {
@@ -1271,6 +1271,31 @@ export class GameStateManager {
     }
 
     this.currentState = mergedState;
+  }
+
+  getDerivedTotalSteps() {
+    const candidates = [this.stepCount];
+    const addLength = (value) => {
+      if (Array.isArray(value)) candidates.push(value.length);
+    };
+    const addStep = (value) => {
+      if (Number.isFinite(value) && value >= 0) candidates.push(value);
+    };
+
+    addLength(this.trialData?.player1Actions);
+    addLength(this.trialData?.player2Actions);
+    addLength(this.trialData?.player1Trajectory);
+    addLength(this.trialData?.player2Trajectory);
+    addLength(this.trialData?.player1CurrentGoal);
+    addLength(this.trialData?.player2CurrentGoal);
+    addLength(this.trialData?.player1RT);
+    addLength(this.trialData?.player2RT);
+    addStep(this.trialData?.totalSteps);
+    addStep(this.trialData?.player1GoalReachedStep);
+    addStep(this.trialData?.player2GoalReachedStep);
+    addStep(this.trialData?.newGoalPresentedTime);
+
+    return Math.max(0, ...candidates.filter(Number.isFinite));
   }
 
   getCurrentState() {
