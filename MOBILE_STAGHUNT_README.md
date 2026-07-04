@@ -9,7 +9,7 @@ This phone entry uses the existing Dynamic Stag Hunt rules from the browser game
 - obstacles
 - Player 1, Player 2, then stag turn order
 - optional signaling condition
-- 10 rounds, 30 actions per round
+- 10 rounds, up to 20 moves per player per round
 
 ## Run
 

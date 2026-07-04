@@ -4,7 +4,7 @@ import { GameHelpers } from './utils/GameHelpers.js';
 
 const GRID_SIZE = CONFIG.game.matrixSize;
 const TOTAL_ROUNDS = CONFIG.game.numRounds;
-const MAX_STEPS = CONFIG.game.maxGameLength;
+const MAX_PLAYER_STEPS = 20;
 
 const ACTIONS = {
   up: [-1, 0],
@@ -156,6 +156,14 @@ function clearTimers() {
   timers = [];
 }
 
+function getPlayerStepCounts() {
+  const events = game.manager.roundData?.events || [];
+  return events.reduce((counts, event) => {
+    if (event.agent === 'player1' || event.agent === 'player2') counts[event.agent] += 1;
+    return counts;
+  }, { player1: 0, player2: 0 });
+}
+
 function isRunInProgress() {
   return Boolean(game.startedAt && !game.completedAt);
 }
@@ -261,7 +269,7 @@ function applyPlayerAction(player, action, automated) {
 }
 
 function continueAfterPlayer(player) {
-  if (finishRoundIfNeeded()) return;
+  if (finishRoundIfNeeded(player)) return;
 
   if (player === 'player1') {
     beginPlayerTurn('player2');
@@ -281,19 +289,27 @@ function beginStagTurn() {
     if (!game.active || game.currentActor !== 'stag') return;
     game.manager.moveStag();
     render();
-    if (!finishRoundIfNeeded()) beginPlayerTurn('player1');
+    if (!finishRoundIfNeeded('stag')) beginPlayerTurn('player1');
   }, CONFIG.game.timing.stagTurnDelay);
 }
 
-function finishRoundIfNeeded() {
+function finishRoundIfNeeded(lastActor = null) {
   const outcome = game.manager.checkOutcome();
   if (outcome) {
     completeRound(outcome);
     return true;
   }
 
-  if (game.manager.stepCount >= MAX_STEPS) {
-    completeRound({ type: 'timeout', reward: 0 });
+  const playerSteps = getPlayerStepCounts();
+  const eachPlayerReachedLimit = playerSteps.player1 >= MAX_PLAYER_STEPS && playerSteps.player2 >= MAX_PLAYER_STEPS;
+  const player2JustReachedLimit = lastActor === 'player2' && playerSteps.player2 >= MAX_PLAYER_STEPS;
+  if (eachPlayerReachedLimit || player2JustReachedLimit) {
+    completeRound({
+      type: 'timeout',
+      reward: 0,
+      playerSteps,
+      maxPlayerSteps: MAX_PLAYER_STEPS,
+    });
     return true;
   }
 
@@ -314,6 +330,8 @@ function completeRound(outcome) {
     mode: game.mode,
     outcome,
     totalSteps: game.manager.stepCount,
+    playerSteps: getPlayerStepCounts(),
+    maxPlayerSteps: MAX_PLAYER_STEPS,
     scores: game.manager.getScores(),
     completedAt: new Date().toISOString(),
   };
@@ -425,7 +443,7 @@ async function saveGame() {
       gameType: 'DynamicStagHunt',
       gridSize: GRID_SIZE,
       totalRounds: TOTAL_ROUNDS,
-      maxSteps: MAX_STEPS,
+      maxPlayerSteps: MAX_PLAYER_STEPS,
       startedAt: game.startedAt,
       completedAt: game.completedAt,
       rounds: game.rounds,
@@ -468,9 +486,10 @@ function updateLabels() {
   const roundNumber = game.active || game.rounds.length < TOTAL_ROUNDS
     ? Math.min(game.currentRoundIndex + 1, TOTAL_ROUNDS)
     : TOTAL_ROUNDS;
+  const playerSteps = getPlayerStepCounts();
 
   els.roundLabel.textContent = `Round ${roundNumber} / ${TOTAL_ROUNDS}`;
-  els.stepLabel.textContent = `Steps ${game.manager.stepCount || 0} / ${MAX_STEPS}`;
+  els.stepLabel.textContent = `Moves ${playerSteps.player1}-${playerSteps.player2} / ${MAX_PLAYER_STEPS}`;
   els.p1Score.textContent = `P1 ${formatScore(scores.player1)}`;
   els.p2Score.textContent = `P2 ${formatScore(scores.player2)}`;
 
