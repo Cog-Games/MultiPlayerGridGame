@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Mobile Stag Hunt</title>
+  <style>
+    :root {
+      color: #172033;
+      background: #f4f7fb;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      overscroll-behavior: none;
+      touch-action: manipulation;
+    }
+
+    body {
+      min-height: 100dvh;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.86), rgba(244,247,251,0.9)),
+        #f4f7fb;
+    }
+
+    body.is-playing {
+      overflow: hidden;
+    }
+
+    button {
+      border: 0;
+      color: inherit;
+      font: inherit;
+      touch-action: manipulation;
+    }
+
+    #mobile-stag-hunt {
+      width: min(100%, 480px);
+      min-height: 100dvh;
+      margin: 0 auto;
+      padding: max(10px, env(safe-area-inset-top)) 10px max(14px, env(safe-area-inset-bottom));
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      gap: 10px;
+    }
+
+    #mobile-stag-hunt.is-playing {
+      height: 100dvh;
+      min-height: 0;
+      overflow: hidden;
+      padding: max(6px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 6px;
+    }
+
+    .topbar,
+    .board-panel,
+    .controls-panel,
+    .setup-panel,
+    .result-panel {
+      background: rgba(255,255,255,0.95);
+      border: 1px solid #dbe3ee;
+      border-radius: 8px;
+      box-shadow: 0 10px 28px rgba(23,32,51,0.08);
+    }
+
+    .topbar {
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .is-playing .topbar {
+      padding: 7px;
+      gap: 5px;
+    }
+
+    .title-row,
+    .score-row,
+    .setup-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.1rem;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .is-playing h1 {
+      display: none;
+    }
+
+    .is-playing .title-row {
+      justify-content: flex-end;
+    }
+
+    .chip {
+      min-width: 0;
+      border: 1px solid #d4deea;
+      border-radius: 8px;
+      padding: 5px 8px;
+      background: #f8fafc;
+      color: #3b4658;
+      font-size: 0.78rem;
+      font-weight: 760;
+      line-height: 1.15;
+    }
+
+    .status {
+      min-height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: #172033;
+      color: #ffffff;
+      font-size: 0.96rem;
+      font-weight: 820;
+      text-align: center;
+      padding: 8px 10px;
+    }
+
+    .is-playing .status {
+      min-height: 30px;
+      padding: 5px 8px;
+      font-size: 0.9rem;
+    }
+
+    .board-panel {
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+      align-self: stretch;
+    }
+
+    .is-playing .board-panel {
+      min-height: 0;
+      padding: 6px;
+      gap: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    canvas {
+      width: 100%;
+      max-width: min(100%, 460px);
+      max-height: 100%;
+      aspect-ratio: 1 / 1;
+      display: block;
+      margin: 0 auto;
+      border-radius: 8px;
+      border: 1px solid #aeb9c8;
+      background: #ffffff;
+      touch-action: none;
+    }
+
+    .legend {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px 10px;
+      color: #4d5b70;
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+
+    .is-playing .legend {
+      display: none;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .mark {
+      width: 11px;
+      height: 11px;
+      display: inline-block;
+      flex: 0 0 auto;
+    }
+
+    .p1 { border-radius: 999px; background: #03a9c9; }
+    .p2 { border-radius: 999px; background: #f58220; }
+    .stag {
+      width: 0;
+      height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-bottom: 12px solid #2ea95f;
+    }
+    .rabbit { border-radius: 2px; background: #5a42c9; }
+    .wall { border-radius: 2px; background: #233041; }
+
+    .setup-panel {
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .segmented {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 1fr;
+      gap: 4px;
+      padding: 4px;
+      border-radius: 8px;
+      background: #e9eff7;
+      min-width: min(100%, 210px);
+    }
+
+    .segmented button {
+      min-height: 38px;
+      border-radius: 6px;
+      background: transparent;
+      color: #506076;
+      font-size: 0.82rem;
+      font-weight: 820;
+    }
+
+    .segmented button[aria-pressed="true"] {
+      background: #ffffff;
+      color: #172033;
+      box-shadow: 0 3px 10px rgba(23,32,51,0.1);
+    }
+
+    .primary-btn,
+    .secondary-btn {
+      min-height: 44px;
+      border-radius: 8px;
+      padding: 0 14px;
+      font-weight: 860;
+    }
+
+    .primary-btn {
+      background: #1264d8;
+      color: #ffffff;
+    }
+
+    .secondary-btn {
+      background: #e9eff7;
+      color: #233041;
+    }
+
+    .primary-btn:disabled,
+    .secondary-btn:disabled,
+    .pad button:disabled {
+      opacity: 0.48;
+    }
+
+    .controls-panel {
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .is-playing .controls-panel {
+      padding: 6px;
+      gap: 0;
+    }
+
+    .pad {
+      display: grid;
+      grid-template-columns: repeat(3, var(--key-size, clamp(58px, 18vw, 78px)));
+      grid-template-rows: repeat(3, var(--key-size, clamp(54px, 16vw, 72px)));
+      justify-content: center;
+      gap: var(--key-gap, 8px);
+    }
+
+    .pad button {
+      border-radius: 8px;
+      background: #ffffff;
+      border: 1px solid #c8d3e1;
+      box-shadow: 0 5px 14px rgba(23,32,51,0.13);
+      color: #172033;
+      font-size: 1.45rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .pad button[data-action="signal"] {
+      background: #2ea95f;
+      color: #ffffff;
+      font-size: 0.84rem;
+      line-height: 1.05;
+      padding: 0 6px;
+    }
+
+    .up { grid-column: 2; grid-row: 1; }
+    .left { grid-column: 1; grid-row: 2; }
+    .signal { grid-column: 2; grid-row: 2; }
+    .right { grid-column: 3; grid-row: 2; }
+    .down { grid-column: 2; grid-row: 3; }
+
+    .is-playing .setup-panel {
+      display: none;
+    }
+
+    .result-panel {
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+      color: #293548;
+    }
+
+    .result-panel strong {
+      color: #172033;
+    }
+
+    .save-status {
+      margin: 0;
+      color: #506076;
+      font-size: 0.82rem;
+      line-height: 1.25;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    @media (max-height: 700px) {
+      #mobile-stag-hunt {
+        gap: 8px;
+        padding-top: 8px;
+      }
+
+      .topbar,
+      .board-panel,
+      .controls-panel,
+      .setup-panel,
+      .result-panel {
+        padding: 8px;
+      }
+
+      .legend {
+        font-size: 0.7rem;
+      }
+
+      .status {
+        min-height: 31px;
+        padding: 6px 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main id="mobile-stag-hunt">
+    <section class="topbar" aria-label="Game status">
+      <div class="title-row">
+        <h1>Mini Stag Hunt</h1>
+        <span class="chip" id="round-label">Round 1 / 10</span>
+      </div>
+      <div class="score-row">
+        <span class="chip" id="step-label">Steps 0 / 30</span>
+        <span class="chip" id="p1-score">P1 10</span>
+        <span class="chip" id="p2-score">P2 10</span>
+      </div>
+      <div class="status" id="status">Ready</div>
+    </section>
+
+    <section class="board-panel" aria-label="Game board">
+      <canvas id="game-canvas" aria-label="7 by 7 Stag Hunt board"></canvas>
+      <div class="legend" aria-label="Board legend">
+        <span class="legend-item"><span class="mark p1"></span>P1</span>
+        <span class="legend-item"><span class="mark p2"></span>P2</span>
+        <span class="legend-item"><span class="mark stag"></span>Stag</span>
+        <span class="legend-item"><span class="mark rabbit"></span>Rabbit</span>
+        <span class="legend-item"><span class="mark wall"></span>Wall</span>
+      </div>
+    </section>
+
+    <section class="setup-panel" id="setup-panel" aria-label="Game setup">
+      <div class="setup-row">
+        <div class="segmented" aria-label="Player mode">
+          <button type="button" data-mode="solo" aria-pressed="true">Solo</button>
+          <button type="button" data-mode="hotseat" aria-pressed="false">2P</button>
+        </div>
+        <div class="segmented" aria-label="Condition">
+          <button type="button" data-condition="baseline" aria-pressed="true">Base</button>
+          <button type="button" data-condition="signaling" aria-pressed="false">Signal</button>
+        </div>
+      </div>
+      <button class="primary-btn" type="button" id="start-btn">Start</button>
+    </section>
+
+    <section class="controls-panel" aria-label="Touch controls">
+      <div class="pad" id="touch-controls">
+        <button class="up" type="button" data-action="up" aria-label="Move up">↑</button>
+        <button class="left" type="button" data-action="left" aria-label="Move left">←</button>
+        <button class="signal" type="button" data-action="signal" aria-label="Signal stag intent">Signal</button>
+        <button class="right" type="button" data-action="right" aria-label="Move right">→</button>
+        <button class="down" type="button" data-action="down" aria-label="Move down">↓</button>
+      </div>
+    </section>
+
+    <section class="result-panel" id="result-panel" hidden aria-label="Game results">
+      <div id="result-summary"></div>
+      <p class="save-status" id="save-status"></p>
+      <button class="secondary-btn" type="button" id="restart-btn">Restart</button>
+    </section>
+  </main>
+
+  <script type="module" src="/src/mobileStagHunt.js"></script>
+</body>
+</html>

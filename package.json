@@ -1,0 +1,25 @@
+{
+  "name": "dynamic-stag-hunt",
+  "version": "1.0.0",
+  "description": "Dynamic Stag Hunt: a local cooperative grid-world game",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "dev:client": "vite --host 0.0.0.0",
+    "server:dev": "node server/index.js",
+    "build": "vite build",
+    "test": "npm run test:game-dynamics && npm run test:stag-policy && npm run test:group-phase && npm run test:llm-retry",
+    "test:game-dynamics": "node tests/gameDynamics.test.js",
+    "test:stag-policy": "node tests/stagPolicy.test.js",
+    "test:group-phase": "node tests/groupPhase.test.js",
+    "test:llm-retry": "node tests/llmRetry.test.js",
+    "preview": "vite preview",
+    "start": "node server/index.js",
+    "dev:mobile": "vite --host 0.0.0.0 --open /mobile-staghunt.html"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "vite": "^4.4.9"
+  },
+  "type": "module"
+}

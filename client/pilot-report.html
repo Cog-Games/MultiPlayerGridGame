@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM-LLM Phase 1 Pilot Report</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1f2933;
+      --muted: #667085;
+      --line: #d7dee8;
+      --soft: #f4f7fb;
+      --panel: #ffffff;
+      --baseline: #2563eb;
+      --signal: #0f9f6e;
+      --warning: #b45309;
+      --bad: #c2410c;
+      --good: #047857;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      background: #eef3f8;
+      color: var(--ink);
+    }
+
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 48px;
+    }
+
+    header {
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0 0 10px;
+      line-height: 1.55;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      max-width: 860px;
+      font-size: 16px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    section,
+    .panel,
+    .metric {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 12px 28px rgba(31, 41, 51, 0.06);
+    }
+
+    section {
+      padding: 20px;
+      margin-top: 16px;
+    }
+
+    .panel {
+      padding: 16px;
+    }
+
+    .metric {
+      padding: 16px;
+      min-height: 112px;
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .metric .value {
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .metric .note {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .warning {
+      border-left: 4px solid var(--warning);
+      background: #fff8ed;
+      padding: 14px 16px;
+      margin-top: 14px;
+      border-radius: 6px;
+      color: #713f12;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      padding: 9px 10px;
+      vertical-align: top;
+    }
+
+    th {
+      color: #344054;
+      background: var(--soft);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    td.num,
+    th.num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .chart {
+      width: 100%;
+      height: 360px;
+      display: block;
+    }
+
+    .small-chart {
+      height: 280px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    .finding {
+      font-size: 18px;
+      line-height: 1.55;
+    }
+
+    .finding strong {
+      color: var(--bad);
+    }
+
+    code {
+      background: #eef2f7;
+      border-radius: 4px;
+      padding: 2px 5px;
+      font-size: 0.92em;
+    }
+
+    ul {
+      margin: 8px 0 0;
+      padding-left: 20px;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 820px) {
+      .grid.two,
+      .grid.three {
+        grid-template-columns: 1fr;
+      }
+
+      main {
+        width: min(100% - 20px, 1120px);
+        padding-top: 20px;
+      }
+
+      section {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>LLM-LLM Phase 1 Pilot Report</h1>
+      <p class="subtitle">
+        One Claude Haiku 4.5 pair was tested in the two-player grid game.
+        The baseline and signaling conditions each completed 10 Phase 1 rounds.
+      </p>
+    </header>
+
+    <section>
+      <h2>Design</h2>
+      <div class="grid two">
+        <div class="panel">
+          <h3>Experimental Manipulation</h3>
+          <p>
+            The manipulation was whether the agents had access to a communication action.
+          </p>
+          <ul>
+            <li><strong>Baseline:</strong> each player could choose only four movement actions: <code>up</code>, <code>down</code>, <code>left</code>, <code>right</code>.</li>
+            <li><strong>Signaling:</strong> each player could also choose <code>signal</code>, meaning “I intend to capture the large moving target.” Signal costs -0.1 points and consumes the acting player’s turn.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Measures</h3>
+          <ul>
+            <li>Final score for each player and pair-total score.</li>
+            <li>Round outcome: large target capture, small target capture, or timeout.</li>
+            <li>Steps per round and player actions per round.</li>
+            <li>Signal use in the signaling condition.</li>
+          </ul>
+          <p class="warning">
+            Data-saving code now writes each experiment checkpoint to <code>gameCode/data/experiments/</code>, so interrupted runs keep the latest round data.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Headline Result</h2>
+      <div class="grid three">
+        <div class="metric">
+          <div class="label">Baseline final pair score, 10 rounds</div>
+          <div class="value" id="baseline-total">-16.5</div>
+          <div class="note">P1 -11.5, P2 -5.0</div>
+        </div>
+        <div class="metric">
+          <div class="label">Signaling final pair score, 10 rounds</div>
+          <div class="value" id="signaling-total">-53.9</div>
+          <div class="note">P1 -27.2, P2 -26.7</div>
+        </div>
+        <div class="metric">
+          <div class="label">Signaling minus baseline</div>
+          <div class="value" id="condition-gap">-37.4</div>
+          <div class="note">Lower pair score in signaling</div>
+        </div>
+      </div>
+      <p class="finding" style="margin-top:16px;">
+        In this pilot, there is <strong>no evidence that signaling improved performance</strong>.
+        Baseline finished at -16.5 pair points, while signaling finished at -53.9 pair points.
+      </p>
+    </section>
+
+    <section>
+      <h2>Cumulative Pair Score</h2>
+      <svg id="score-chart" class="chart" role="img" aria-label="Cumulative pair score by round"></svg>
+      <div class="legend">
+        <span><i class="swatch" style="background:var(--baseline);"></i>Baseline completed run</span>
+        <span><i class="swatch" style="background:var(--signal);"></i>Signaling completed run</span>
+      </div>
+    </section>
+
+    <section>
+      <div class="grid two">
+        <div>
+          <h2>Baseline Outcomes</h2>
+          <svg id="outcome-chart" class="chart small-chart" role="img" aria-label="Baseline outcome counts"></svg>
+        </div>
+        <div>
+          <h2>Signaling Outcomes</h2>
+          <svg id="signaling-outcome-chart" class="chart small-chart" role="img" aria-label="Signaling outcome counts"></svg>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Final Pair Score</h2>
+      <svg id="matched-chart" class="chart small-chart" role="img" aria-label="Final pair score by condition"></svg>
+    </section>
+
+    <section>
+      <div class="grid two">
+        <div>
+          <h2>Baseline Round Details</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Round</th>
+                <th>Outcome</th>
+                <th class="num">Steps</th>
+                <th class="num">P1 Actions</th>
+                <th class="num">P2 Actions</th>
+                <th class="num">Signals</th>
+                <th class="num">Pair Score</th>
+              </tr>
+            </thead>
+            <tbody id="round-table"></tbody>
+          </table>
+        </div>
+        <div>
+          <h2>Signaling Round Details</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Round</th>
+                <th>Outcome</th>
+                <th class="num">Steps</th>
+                <th class="num">P1 Actions</th>
+                <th class="num">P2 Actions</th>
+                <th class="num">Signals</th>
+                <th class="num">Pair Score</th>
+              </tr>
+            </thead>
+            <tbody id="signaling-round-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="grid three">
+        <div class="metric">
+          <div class="label">Baseline outcomes</div>
+          <div class="value">2 / 2 / 6</div>
+          <div class="note">large / small / timeout</div>
+        </div>
+        <div class="metric">
+          <div class="label">Signaling outcomes</div>
+          <div class="value">1 / 0 / 9</div>
+          <div class="note">large / small / timeout</div>
+        </div>
+        <div class="metric">
+          <div class="label">Signal actions</div>
+          <div class="value">4</div>
+          <div class="note">P1 used 2, P2 used 2</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Interpretation</h2>
+      <p>
+        Baseline performance was already weak: 6 of 10 rounds reached the action limit, and the pair finished below zero despite two large-target captures.
+        Signaling did not rescue coordination. The agents used <code>signal</code> four times, but the signaling run had fewer large-target captures, no small-target captures, more timeouts, and a lower final pair score.
+      </p>
+      <p>
+        The strongest conclusion is methodological: the current setup is good enough to run LLM-LLM pilots, but this prompt/policy combination produces poor spatial planning.
+        A full experiment should use the new saved-data path and rerun matched baseline and signaling conditions across more seeds or pairs.
+      </p>
+    </section>
+  </main>
+
+  <script>
+    const baselineRounds = [
+      { round: 1, outcome: 'Large target', steps: 17, p1Actions: 6, p2Actions: 6, signals: 0, p1: 17, p2: 17 },
+      { round: 2, outcome: 'Timeout', steps: 30, p1Actions: 10, p2Actions: 10, signals: 0, p1: 12, p2: 12 },
+      { round: 3, outcome: 'Timeout', steps: 30, p1Actions: 10, p2Actions: 10, signals: 0, p1: 7, p2: 7 },
+      { round: 4, outcome: 'Timeout', steps: 30, p1Actions: 10, p2Actions: 10, signals: 0, p1: 2, p2: 2 },
+      { round: 5, outcome: 'Timeout', steps: 30, p1Actions: 10, p2Actions: 10, signals: 0, p1: -3, p2: -3 },
+      { round: 6, outcome: 'Large target', steps: 10, p1Actions: 4, p2Actions: 3, signals: 0, p1: 5, p2: 5.5 },
+      { round: 7, outcome: 'Timeout', steps: 30, p1Actions: 10, p2Actions: 10, signals: 0, p1: 0, p2: 0.5 },
+      { round: 8, outcome: 'Timeout', steps: 30, p1Actions: 10, p2Actions: 10, signals: 0, p1: -5, p2: -4.5 },
+      { round: 9, outcome: 'Small target P2', steps: 23, p1Actions: 8, p2Actions: 8, signals: 0, p1: -9, p2: -5.5 },
+      { round: 10, outcome: 'Small target P2', steps: 14, p1Actions: 5, p2Actions: 5, signals: 0, p1: -11.5, p2: -5 },
+    ];
+
+    const signalingRounds = [
+      { round: 1, outcome: 'Timeout', steps: 30, p1Actions: 10, p2Actions: 10, signals: 0, p1: 5, p2: 5 },
+      { round: 2, outcome: 'Timeout', steps: 30, p1Actions: 10, p2Actions: 10, signals: 3, p1: 0.8, p2: 0.4 },
+      { round: 3, outcome: 'Timeout', steps: 30, p1Actions: 10, p2Actions: 10, signals: 0, p1: -4.2, p2: -4.6 },
+      { round: 4, outcome: 'Timeout', steps: 30, p1Actions: 10, p2Actions: 10, signals: 0, p1: -9.2, p2: -9.6 },
+      { round: 5, outcome: 'Timeout', steps: 30, p1Actions: 10, p2Actions: 10, signals: 0, p1: -14.2, p2: -14.6 },
+      { round: 6, outcome: 'Timeout', steps: 30, p1Actions: 10, p2Actions: 10, signals: 0, p1: -19.2, p2: -19.6 },
+      { round: 7, outcome: 'Timeout', steps: 30, p1Actions: 10, p2Actions: 10, signals: 0, p1: -24.2, p2: -24.6 },
+      { round: 8, outcome: 'Timeout', steps: 30, p1Actions: 10, p2Actions: 10, signals: 1, p1: -29.2, p2: -29.2 },
+      { round: 9, outcome: 'Large target', steps: 16, p1Actions: 6, p2Actions: 5, signals: 0, p1: -22.2, p2: -21.7 },
+      { round: 10, outcome: 'Timeout', steps: 30, p1Actions: 10, p2Actions: 10, signals: 0, p1: -27.2, p2: -26.7 },
+    ];
+
+    const baselinePair = baselineRounds.map(row => ({
+      x: row.round,
+      y: Number((row.p1 + row.p2).toFixed(1)),
+    }));
+
+    const signalingPair = signalingRounds.map(row => ({
+      x: row.round,
+      y: Number((row.p1 + row.p2).toFixed(1)),
+    }));
+
+    const baselineOutcomes = [
+      { label: 'Large target', value: 2 },
+      { label: 'Small target', value: 2 },
+      { label: 'Timeout', value: 6 },
+    ];
+
+    const signalingOutcomes = [
+      { label: 'Large target', value: 1 },
+      { label: 'Small target', value: 0 },
+      { label: 'Timeout', value: 9 },
+    ];
+
+    function makeSvg(tag, attrs = {}, children = []) {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value);
+      for (const child of children) el.appendChild(child);
+      return el;
+    }
+
+    function textNode(x, y, text, attrs = {}) {
+      const el = makeSvg('text', { x, y, ...attrs });
+      el.textContent = text;
+      return el;
+    }
+
+    function drawLineChart() {
+      const svg = document.getElementById('score-chart');
+      const width = svg.clientWidth || 900;
+      const height = svg.clientHeight || 360;
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      svg.replaceChildren();
+
+      const margin = { top: 22, right: 24, bottom: 48, left: 58 };
+      const plotW = width - margin.left - margin.right;
+      const plotH = height - margin.top - margin.bottom;
+      const allPoints = [...baselinePair, ...signalingPair];
+      const minY = Math.min(-60, ...allPoints.map(p => p.y));
+      const maxY = Math.max(35, ...allPoints.map(p => p.y));
+      const x = value => margin.left + ((value - 1) / 9) * plotW;
+      const y = value => margin.top + ((maxY - value) / (maxY - minY)) * plotH;
+
+      for (let tick = -60; tick <= 30; tick += 10) {
+        svg.appendChild(makeSvg('line', {
+          x1: margin.left,
+          x2: width - margin.right,
+          y1: y(tick),
+          y2: y(tick),
+          stroke: '#d7dee8',
+          'stroke-width': 1,
+        }));
+        svg.appendChild(textNode(12, y(tick) + 4, String(tick), {
+          fill: '#667085',
+          'font-size': 12,
+        }));
+      }
+
+      for (let tick = 1; tick <= 10; tick += 1) {
+        svg.appendChild(textNode(x(tick), height - 18, String(tick), {
+          fill: '#667085',
+          'font-size': 12,
+          'text-anchor': 'middle',
+        }));
+      }
+
+      svg.appendChild(makeSvg('line', {
+        x1: margin.left,
+        x2: width - margin.right,
+        y1: y(0),
+        y2: y(0),
+        stroke: '#98a2b3',
+        'stroke-width': 1.5,
+      }));
+
+      const line = points => points.map((p, index) => `${index ? 'L' : 'M'}${x(p.x)},${y(p.y)}`).join(' ');
+      svg.appendChild(makeSvg('path', {
+        d: line(baselinePair),
+        fill: 'none',
+        stroke: '#2563eb',
+        'stroke-width': 3,
+      }));
+      svg.appendChild(makeSvg('path', {
+        d: line(signalingPair),
+        fill: 'none',
+        stroke: '#0f9f6e',
+        'stroke-width': 3,
+      }));
+
+      for (const point of baselinePair) {
+        svg.appendChild(makeSvg('circle', {
+          cx: x(point.x),
+          cy: y(point.y),
+          r: 4,
+          fill: '#2563eb',
+        }));
+      }
+      for (const point of signalingPair) {
+        svg.appendChild(makeSvg('circle', {
+          cx: x(point.x),
+          cy: y(point.y),
+          r: 5,
+          fill: '#0f9f6e',
+          stroke: '#ffffff',
+          'stroke-width': 2,
+        }));
+      }
+
+      svg.appendChild(textNode(width / 2, height - 2, 'Completed round', {
+        fill: '#475467',
+        'font-size': 13,
+        'text-anchor': 'middle',
+      }));
+      svg.appendChild(textNode(12, 16, 'Pair score', {
+        fill: '#475467',
+        'font-size': 13,
+      }));
+    }
+
+    function drawBarChart(svgId, data, color, maxValue = null) {
+      const svg = document.getElementById(svgId);
+      const width = svg.clientWidth || 460;
+      const height = svg.clientHeight || 280;
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      svg.replaceChildren();
+      const margin = { top: 20, right: 18, bottom: 54, left: 46 };
+      const plotW = width - margin.left - margin.right;
+      const plotH = height - margin.top - margin.bottom;
+      const maxY = maxValue ?? Math.max(...data.map(d => d.value), 1);
+      const barW = plotW / data.length * 0.58;
+
+      for (let tick = 0; tick <= maxY; tick += Math.max(1, Math.ceil(maxY / 4))) {
+        const y = margin.top + ((maxY - tick) / maxY) * plotH;
+        svg.appendChild(makeSvg('line', {
+          x1: margin.left,
+          x2: width - margin.right,
+          y1: y,
+          y2: y,
+          stroke: '#d7dee8',
+        }));
+        svg.appendChild(textNode(12, y + 4, String(tick), {
+          fill: '#667085',
+          'font-size': 12,
+        }));
+      }
+
+      data.forEach((item, index) => {
+        const cx = margin.left + (index + 0.5) * (plotW / data.length);
+        const barH = Math.abs(item.value / maxY) * plotH;
+        const zeroY = margin.top + plotH;
+        const topY = item.value >= 0 ? zeroY - barH : zeroY;
+        svg.appendChild(makeSvg('rect', {
+          x: cx - barW / 2,
+          y: topY,
+          width: barW,
+          height: barH,
+          rx: 4,
+          fill: item.color || color,
+        }));
+        svg.appendChild(textNode(cx, topY - 7, String(item.value), {
+          fill: '#1f2933',
+          'font-size': 13,
+          'font-weight': 700,
+          'text-anchor': 'middle',
+        }));
+        svg.appendChild(textNode(cx, height - 26, item.label, {
+          fill: '#475467',
+          'font-size': 12,
+          'text-anchor': 'middle',
+        }));
+      });
+    }
+
+    function drawSignedBarChart() {
+      const svg = document.getElementById('matched-chart');
+      const data = [
+        { label: 'Baseline', value: -16.5, color: '#2563eb' },
+        { label: 'Signaling', value: -53.9, color: '#0f9f6e' },
+      ];
+      const width = svg.clientWidth || 460;
+      const height = svg.clientHeight || 280;
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      svg.replaceChildren();
+      const margin = { top: 20, right: 18, bottom: 54, left: 54 };
+      const plotW = width - margin.left - margin.right;
+      const plotH = height - margin.top - margin.bottom;
+      const minY = -60;
+      const maxY = 5;
+      const y = value => margin.top + ((maxY - value) / (maxY - minY)) * plotH;
+      const zeroY = y(0);
+
+      for (let tick = -60; tick <= 0; tick += 10) {
+        svg.appendChild(makeSvg('line', {
+          x1: margin.left,
+          x2: width - margin.right,
+          y1: y(tick),
+          y2: y(tick),
+          stroke: '#d7dee8',
+        }));
+        svg.appendChild(textNode(12, y(tick) + 4, String(tick), {
+          fill: '#667085',
+          'font-size': 12,
+        }));
+      }
+      svg.appendChild(makeSvg('line', {
+        x1: margin.left,
+        x2: width - margin.right,
+        y1: zeroY,
+        y2: zeroY,
+        stroke: '#98a2b3',
+        'stroke-width': 1.5,
+      }));
+
+      const barW = plotW / data.length * 0.45;
+      data.forEach((item, index) => {
+        const cx = margin.left + (index + 0.5) * (plotW / data.length);
+        const valueY = y(item.value);
+        const topY = Math.min(valueY, zeroY);
+        const heightBar = Math.abs(zeroY - valueY);
+        svg.appendChild(makeSvg('rect', {
+          x: cx - barW / 2,
+          y: topY,
+          width: barW,
+          height: Math.max(heightBar, 2),
+          rx: 4,
+          fill: item.color,
+        }));
+        svg.appendChild(textNode(cx, item.value >= 0 ? valueY - 8 : valueY + 18, String(item.value), {
+          fill: '#1f2933',
+          'font-size': 13,
+          'font-weight': 700,
+          'text-anchor': 'middle',
+        }));
+        svg.appendChild(textNode(cx, height - 26, item.label, {
+          fill: '#475467',
+          'font-size': 12,
+          'text-anchor': 'middle',
+        }));
+      });
+    }
+
+    function fillRoundTable(tableId, rows) {
+      const tbody = document.getElementById(tableId);
+      tbody.replaceChildren(...rows.map(row => {
+        const tr = document.createElement('tr');
+        const pair = Number((row.p1 + row.p2).toFixed(1));
+        const cells = [
+          row.round,
+          row.outcome,
+          row.steps,
+          row.p1Actions,
+          row.p2Actions,
+          row.signals,
+          pair,
+        ];
+        cells.forEach((cell, index) => {
+          const td = document.createElement('td');
+          td.textContent = cell;
+          if (index >= 2) td.className = 'num';
+          tr.appendChild(td);
+        });
+        return tr;
+      }));
+    }
+
+    function renderAll() {
+      drawLineChart();
+      drawBarChart('outcome-chart', baselineOutcomes, '#2563eb', 6);
+      drawBarChart('signaling-outcome-chart', signalingOutcomes, '#0f9f6e', 9);
+      drawSignedBarChart();
+      fillRoundTable('round-table', baselineRounds);
+      fillRoundTable('signaling-round-table', signalingRounds);
+    }
+
+    window.addEventListener('resize', renderAll);
+    renderAll();
+  </script>
+</body>
+</html>

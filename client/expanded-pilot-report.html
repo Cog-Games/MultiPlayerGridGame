@@ -1,0 +1,974 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Five-Pair LLM-LLM Capture Rate Analysis</title>
+    <style>
+      :root {
+        --ink: #182230;
+        --muted: #5d6b7c;
+        --line: #d9e1ec;
+        --panel: #ffffff;
+        --page: #f5f7fb;
+        --baseline: #2563eb;
+        --signaling: #159947;
+        --diff: #d97817;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: var(--page);
+        color: var(--ink);
+      }
+
+      main {
+        max-width: 1160px;
+        margin: 0 auto;
+        padding: 32px 24px 48px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 34px;
+      }
+
+      h2 {
+        margin: 0 0 14px;
+        font-size: 22px;
+      }
+
+      h3 {
+        margin: 0 0 10px;
+        font-size: 17px;
+      }
+
+      p {
+        margin: 0 0 12px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      section,
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 18px;
+      }
+
+      section {
+        margin-top: 18px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin: 20px 0;
+      }
+
+      .metric-label {
+        display: block;
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+
+      .metric-value {
+        display: block;
+        font-size: 26px;
+        font-weight: 700;
+      }
+
+      .metric-note {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 6px;
+      }
+
+      .charts {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+
+      .pair-plots {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .chart-wrap {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px;
+      }
+
+      svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+        font-size: 14px;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--line);
+        padding: 9px 8px;
+        text-align: right;
+      }
+
+      th:first-child,
+      td:first-child,
+      th:nth-child(2),
+      td:nth-child(2),
+      th:nth-child(3),
+      td:nth-child(3) {
+        text-align: left;
+      }
+
+      th {
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .takeaway {
+        border-left: 4px solid var(--baseline);
+      }
+
+      .figure-finding {
+        margin: 12px 0 0;
+        padding-top: 10px;
+        border-top: 1px solid var(--line);
+        color: var(--ink);
+        font-size: 14px;
+      }
+
+      .small {
+        font-size: 13px;
+      }
+
+      @media (max-width: 860px) {
+        .grid,
+        .charts {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Five-Pair LLM-LLM Capture Rate Analysis</h1>
+      <p>
+        This report combines the original pilot pair with the four expanded pilot
+        pairs. Each pair played 10 baseline rounds and 10 signaling rounds in
+        Phase 1. The primary dependent variables are per-pair stag capture rate
+        and rabbit capture rate, defined as captures divided by 10 rounds. Error
+        bars are +/- SEM across the 5 pairs.
+      </p>
+
+      <div class="grid">
+        <div class="card">
+          <span class="metric-label">Pairs</span>
+          <span class="metric-value">5</span>
+          <span class="metric-note">100 total rounds</span>
+        </div>
+        <div class="card">
+          <span class="metric-label">Stag Capture Rate</span>
+          <span class="metric-value">0.16 vs 0.06</span>
+          <span class="metric-note">baseline vs signaling</span>
+        </div>
+        <div class="card">
+          <span class="metric-label">Rabbit Capture Rate</span>
+          <span class="metric-value">0.54 vs 0.00</span>
+          <span class="metric-note">baseline vs signaling</span>
+        </div>
+        <div class="card">
+          <span class="metric-label">Capture Counts</span>
+          <span class="metric-value">35 vs 3</span>
+          <span class="metric-note">baseline vs signaling, stag+rabbit</span>
+        </div>
+      </div>
+
+      <section class="takeaway">
+        <h2>Analysis Roadmap</h2>
+        <p>
+          The report first compares baseline and signaling outcomes, then uses
+          baseline first actions to examine why rabbit hunting may occur when no
+          explicit signal is available.
+        </p>
+      </section>
+
+      <section>
+        <h2>Primary Capture-Rate Comparison</h2>
+        <div class="charts">
+          <div class="chart-wrap">
+            <h3>Capture Rates</h3>
+            <div id="capture-chart"></div>
+            <p class="figure-finding">
+              <strong>Finding.</strong> In baseline, LLM pairs captured rabbits
+              in 27/50 rounds; in signaling, they captured rabbits in 0/50
+              rounds. This suggests that signaling can reduce the temptation to
+              defect toward rabbits and may promote cooperation, even though
+              cooperative stag capture remains difficult in this short-horizon
+              grid, where each player has at most 10 moves before timeout.
+            </p>
+          </div>
+          <div class="chart-wrap">
+            <h3>Timeout Rate</h3>
+            <div id="timeout-chart"></div>
+            <p class="figure-finding">
+              <strong>Finding.</strong> Signaling reduced rabbit hunting but did
+              not solve coordination. The signaling condition timed out in 47/50
+              rounds, compared with 15/50 rounds in baseline.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Baseline First-Action Analysis</h2>
+        <p>
+          To understand why baseline encourages rabbit hunting, we focus on
+          baseline first actions. The key question is whether the players
+          implicitly signal cooperative intent by choosing a temptation-free
+          path. From Player 2's start, moving left is an implicit cooperative cue:
+          it moves closer to the large target and farther from the nearest
+          rabbit. Moving down is ambiguous because it moves closer to both the
+          large target and the right-side rabbit.
+        </p>
+        <div class="chart-wrap" style="margin-bottom:18px;">
+          <h3>Typical Baseline First Actions From The Initial Map</h3>
+          <p>
+            The initial map makes the asymmetry clear. Player 1 often outputs
+            up, but the cell above Player 1 is blocked, so the action consumes a
+            turn without moving. The log cannot tell whether this is deliberate
+            waiting or an invalid-move tendency. Player 2 usually makes the
+            first effective action, but most of those baseline first actions are
+            ambiguous down moves rather than clear cooperative left moves.
+          </p>
+          <p class="small">
+            Event-level first-action coding is available for the four expanded
+            baseline pairs, 40 rounds. The original pilot baseline raw action
+            history was not saved, so this explanatory first-action analysis uses
+            40 baseline rounds even though the capture-rate comparison above uses
+            50 baseline rounds.
+          </p>
+          <div id="typical-first-action-map"></div>
+          <div id="baseline-first-action-summary-chart"></div>
+          <p class="figure-finding">
+            <strong>Finding.</strong> In baseline, Player 1 usually did not move
+            on the first action: 35/40 first actions were blocked no-moves.
+            Player 2 usually made the first effective action, but most of these
+            actions were ambiguous down moves: 27/35, compared with only 8/35
+            left moves that clearly signaled a temptation-free cooperative path.
+          </p>
+        </div>
+        <div class="chart-wrap">
+          <h3>Baseline First-Action Coding By Pair</h3>
+          <table id="baseline-first-action-table">
+            <thead>
+              <tr>
+                <th>Pair</th>
+                <th>Rounds</th>
+                <th>P1 No-Move</th>
+                <th>P1 Moved</th>
+                <th>P2 First Effective</th>
+                <th>P2 Left Cue</th>
+                <th>P2 Ambiguous Down</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2>Rabbit Captures By Player</h2>
+        <p>
+          As supporting detail for the baseline rabbit-hunting effect, rabbit
+          captures were highly asymmetric: Player 1 captured 4 rabbits and
+          Player 2 captured 23 rabbits across 50 baseline rounds. In signaling,
+          neither player captured any rabbits across 50 rounds. The plots below
+          show each pair separately; the x-axis is block number, with 2 trials
+          per block. Lines show Player 1 and Player 2 rabbit capture counts
+          within each block.
+        </p>
+        <div class="pair-plots" id="rabbit-pair-plots"></div>
+        <p class="figure-finding">
+          <strong>Finding.</strong> Baseline rabbit captures were concentrated in
+          Player 2: 23 of the 27 baseline rabbit captures were by Player 2,
+          consistent with Player 2's ambiguous first-action path toward the
+          right-side rabbit.
+        </p>
+        <div class="chart-wrap" style="margin-top:14px;">
+          <h3>Rabbit Capture Counts By Pair And Block</h3>
+          <table id="rabbit-block-table">
+            <thead>
+              <tr>
+                <th>Pair</th>
+                <th>Block</th>
+                <th>Trials</th>
+                <th>Player 1</th>
+                <th>Player 2</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2>Secondary Context</h2>
+        <div class="chart-wrap">
+          <h3>Signal Action Rate</h3>
+          <div id="signal-chart"></div>
+          <p class="figure-finding">
+            <strong>Finding.</strong> Explicit signal actions were relatively
+            rare even in the signaling condition. The behavioral difference is
+            therefore not just frequent signaling; it also reflects how the
+            available signal changes early action choices and discourages rabbit
+            capture.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Run-Level Capture Rates</h2>
+        <table id="run-table">
+          <thead>
+            <tr>
+              <th>Pair</th>
+              <th>Run Source</th>
+              <th>Condition</th>
+              <th>Stag Rate</th>
+              <th>Rabbit Rate</th>
+              <th>Timeout Rate</th>
+              <th>Signal Rate</th>
+              <th>Pair Score</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Aggregate Counts</h2>
+        <table id="count-table">
+          <thead>
+            <tr>
+              <th>Condition</th>
+              <th>Rounds</th>
+              <th>Stag Captures</th>
+              <th>Rabbit Captures</th>
+              <th>Timeouts</th>
+              <th>Signals</th>
+              <th>Player Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </main>
+
+    <script>
+      const runs = [
+        { pair: 0, source: 'original pilot', condition: 'baseline', stagRate: 0.2, rabbitRate: 0.2, timeoutRate: 0.6, signalRate: 0, score: -16.5, stag: 2, rabbit: 2, timeout: 6, signals: 0, playerActions: 165 },
+        { pair: 0, source: 'original pilot', condition: 'signaling', stagRate: 0.1, rabbitRate: 0, timeoutRate: 0.9, signalRate: 0.0209, score: -53.9, stag: 1, rabbit: 0, timeout: 9, signals: 4, playerActions: 191 },
+        { pair: 1, source: 'expanded pilot', condition: 'baseline', stagRate: 0.3, rabbitRate: 0.5, timeoutRate: 0.2, signalRate: 0, score: 26.0, stag: 3, rabbit: 5, timeout: 2, signals: 0, playerActions: 138 },
+        { pair: 1, source: 'expanded pilot', condition: 'signaling', stagRate: 0, rabbitRate: 0, timeoutRate: 1.0, signalRate: 0.0650, score: -74.8, stag: 0, rabbit: 0, timeout: 10, signals: 13, playerActions: 200 },
+        { pair: 2, source: 'expanded pilot', condition: 'baseline', stagRate: 0, rabbitRate: 0.6, timeoutRate: 0.4, signalRate: 0, score: -36.0, stag: 0, rabbit: 6, timeout: 4, signals: 0, playerActions: 148 },
+        { pair: 2, source: 'expanded pilot', condition: 'signaling', stagRate: 0.1, rabbitRate: 0, timeoutRate: 0.9, signalRate: 0.0457, score: -54.9, stag: 1, rabbit: 0, timeout: 9, signals: 9, playerActions: 197 },
+        { pair: 3, source: 'expanded pilot', condition: 'baseline', stagRate: 0.1, rabbitRate: 0.7, timeoutRate: 0.2, signalRate: 0, score: -7.0, stag: 1, rabbit: 7, timeout: 2, signals: 0, playerActions: 136 },
+        { pair: 3, source: 'expanded pilot', condition: 'signaling', stagRate: 0, rabbitRate: 0, timeoutRate: 1.0, signalRate: 0.0900, score: -72.8, stag: 0, rabbit: 0, timeout: 10, signals: 18, playerActions: 200 },
+        { pair: 4, source: 'expanded pilot', condition: 'baseline', stagRate: 0.2, rabbitRate: 0.7, timeoutRate: 0.1, signalRate: 0, score: 30.0, stag: 2, rabbit: 7, timeout: 1, signals: 0, playerActions: 102 },
+        { pair: 4, source: 'expanded pilot', condition: 'signaling', stagRate: 0.1, rabbitRate: 0, timeoutRate: 0.9, signalRate: 0.0714, score: -52.4, stag: 1, rabbit: 0, timeout: 9, signals: 14, playerActions: 196 },
+      ];
+
+      const colors = {
+        baseline: '#2563eb',
+        signaling: '#159947',
+        diff: '#d97817',
+        player1: '#00bcd4',
+        player2: '#ff9800',
+        signal: '#159947',
+        move: '#64748b',
+      };
+
+      const rabbitByPairBlock = [
+        { pair: 0, label: 'Pilot pair', block: 1, trials: '1-2', player1: 0, player2: 0 },
+        { pair: 0, label: 'Pilot pair', block: 2, trials: '3-4', player1: 0, player2: 0 },
+        { pair: 0, label: 'Pilot pair', block: 3, trials: '5-6', player1: 0, player2: 0 },
+        { pair: 0, label: 'Pilot pair', block: 4, trials: '7-8', player1: 0, player2: 0 },
+        { pair: 0, label: 'Pilot pair', block: 5, trials: '9-10', player1: 0, player2: 2 },
+        { pair: 1, label: 'Pair 1', block: 1, trials: '1-2', player1: 0, player2: 0 },
+        { pair: 1, label: 'Pair 1', block: 2, trials: '3-4', player1: 0, player2: 2 },
+        { pair: 1, label: 'Pair 1', block: 3, trials: '5-6', player1: 0, player2: 1 },
+        { pair: 1, label: 'Pair 1', block: 4, trials: '7-8', player1: 1, player2: 0 },
+        { pair: 1, label: 'Pair 1', block: 5, trials: '9-10', player1: 0, player2: 1 },
+        { pair: 2, label: 'Pair 2', block: 1, trials: '1-2', player1: 0, player2: 2 },
+        { pair: 2, label: 'Pair 2', block: 2, trials: '3-4', player1: 0, player2: 1 },
+        { pair: 2, label: 'Pair 2', block: 3, trials: '5-6', player1: 0, player2: 2 },
+        { pair: 2, label: 'Pair 2', block: 4, trials: '7-8', player1: 0, player2: 0 },
+        { pair: 2, label: 'Pair 2', block: 5, trials: '9-10', player1: 0, player2: 1 },
+        { pair: 3, label: 'Pair 3', block: 1, trials: '1-2', player1: 1, player2: 0 },
+        { pair: 3, label: 'Pair 3', block: 2, trials: '3-4', player1: 0, player2: 0 },
+        { pair: 3, label: 'Pair 3', block: 3, trials: '5-6', player1: 0, player2: 2 },
+        { pair: 3, label: 'Pair 3', block: 4, trials: '7-8', player1: 1, player2: 1 },
+        { pair: 3, label: 'Pair 3', block: 5, trials: '9-10', player1: 1, player2: 1 },
+        { pair: 4, label: 'Pair 4', block: 1, trials: '1-2', player1: 0, player2: 1 },
+        { pair: 4, label: 'Pair 4', block: 2, trials: '3-4', player1: 0, player2: 1 },
+        { pair: 4, label: 'Pair 4', block: 3, trials: '5-6', player1: 0, player2: 2 },
+        { pair: 4, label: 'Pair 4', block: 4, trials: '7-8', player1: 0, player2: 1 },
+        { pair: 4, label: 'Pair 4', block: 5, trials: '9-10', player1: 0, player2: 2 },
+      ];
+
+      const baselineFirstActionByPair = [
+        { pair: 1, label: 'Pair 1', rounds: 10, player1NoMove: 9, player1Moved: 1, player2FirstEffective: 9, player2LeftCue: 3, player2AmbiguousDown: 6 },
+        { pair: 2, label: 'Pair 2', rounds: 10, player1NoMove: 10, player1Moved: 0, player2FirstEffective: 10, player2LeftCue: 1, player2AmbiguousDown: 9 },
+        { pair: 3, label: 'Pair 3', rounds: 10, player1NoMove: 8, player1Moved: 2, player2FirstEffective: 8, player2LeftCue: 1, player2AmbiguousDown: 7 },
+        { pair: 4, label: 'Pair 4', rounds: 10, player1NoMove: 8, player1Moved: 2, player2FirstEffective: 8, player2LeftCue: 3, player2AmbiguousDown: 5 },
+      ];
+
+      const baselineFirstActionSummary = {
+        rounds: 40,
+        player1NoMove: 35,
+        player1Moved: 5,
+        player2FirstEffective: 35,
+        player2LeftCue: 8,
+        player2AmbiguousDown: 27,
+      };
+
+      function mean(values) {
+        return values.reduce((sum, value) => sum + value, 0) / values.length;
+      }
+
+      function sd(values) {
+        const m = mean(values);
+        return Math.sqrt(values.reduce((sum, value) => sum + (value - m) ** 2, 0) / (values.length - 1));
+      }
+
+      function sem(values) {
+        return sd(values) / Math.sqrt(values.length);
+      }
+
+      function conditionValues(condition, key) {
+        return runs.filter(run => run.condition === condition).map(run => run[key]);
+      }
+
+      function summary(condition, key) {
+        const values = conditionValues(condition, key);
+        return { mean: mean(values), sem: sem(values) };
+      }
+
+      function conditionTotals(condition) {
+        return runs.filter(run => run.condition === condition).reduce((totals, run) => {
+          totals.rounds += 10;
+          totals.stag += run.stag;
+          totals.rabbit += run.rabbit;
+          totals.timeout += run.timeout;
+          totals.signals += run.signals;
+          totals.playerActions += run.playerActions;
+          return totals;
+        }, { condition, rounds: 0, stag: 0, rabbit: 0, timeout: 0, signals: 0, playerActions: 0 });
+      }
+
+      function fmt(value) {
+        return value.toFixed(2);
+      }
+
+      function renderGroupedChart(targetId, specs, maxY = 1) {
+        const width = 520;
+        const height = 320;
+        const margin = { top: 24, right: 24, bottom: 54, left: 48 };
+        const plotWidth = width - margin.left - margin.right;
+        const plotHeight = height - margin.top - margin.bottom;
+        const groupWidth = plotWidth / specs.length;
+        const barWidth = Math.min(48, groupWidth / 4);
+        const y = value => margin.top + plotHeight - (value / maxY) * plotHeight;
+
+        let svg = `<svg viewBox="0 0 ${width} ${height}">`;
+        svg += `<rect x="0" y="0" width="${width}" height="${height}" fill="#fff"></rect>`;
+        for (const tick of [0, 0.25, 0.5, 0.75, 1].filter(tick => tick <= maxY)) {
+          const yy = y(tick);
+          svg += `<line x1="${margin.left}" y1="${yy}" x2="${width - margin.right}" y2="${yy}" stroke="#d9e1ec"></line>`;
+          svg += `<text x="${margin.left - 10}" y="${yy + 4}" text-anchor="end" font-size="12" fill="#5d6b7c">${tick.toFixed(2)}</text>`;
+        }
+
+        specs.forEach((spec, index) => {
+          const center = margin.left + groupWidth * index + groupWidth / 2;
+          ['baseline', 'signaling'].forEach((condition, offsetIndex) => {
+            const stat = summary(condition, spec.key);
+            const x = center + (offsetIndex === 0 ? -barWidth * 0.65 : barWidth * 0.65) - barWidth / 2;
+            const top = y(stat.mean);
+            const errTop = y(Math.min(maxY, stat.mean + stat.sem));
+            const errBottom = y(Math.max(0, stat.mean - stat.sem));
+            svg += `<rect x="${x}" y="${top}" width="${barWidth}" height="${margin.top + plotHeight - top}" rx="3" fill="${colors[condition]}"></rect>`;
+            svg += `<line x1="${x + barWidth / 2}" y1="${errTop}" x2="${x + barWidth / 2}" y2="${errBottom}" stroke="#182230" stroke-width="1.5"></line>`;
+            svg += `<line x1="${x + barWidth / 2 - 6}" y1="${errTop}" x2="${x + barWidth / 2 + 6}" y2="${errTop}" stroke="#182230" stroke-width="1.5"></line>`;
+            svg += `<line x1="${x + barWidth / 2 - 6}" y1="${errBottom}" x2="${x + barWidth / 2 + 6}" y2="${errBottom}" stroke="#182230" stroke-width="1.5"></line>`;
+            svg += `<text x="${x + barWidth / 2}" y="${top - 8}" text-anchor="middle" font-size="12" font-weight="700" fill="#182230">${fmt(stat.mean)}</text>`;
+          });
+          svg += `<text x="${center}" y="${height - 22}" text-anchor="middle" font-size="13" fill="#182230">${spec.label}</text>`;
+        });
+
+        svg += `<rect x="${width - 164}" y="14" width="12" height="12" fill="${colors.baseline}"></rect>`;
+        svg += `<text x="${width - 146}" y="24" font-size="12" fill="#182230">Baseline</text>`;
+        svg += `<rect x="${width - 84}" y="14" width="12" height="12" fill="${colors.signaling}"></rect>`;
+        svg += `<text x="${width - 66}" y="24" font-size="12" fill="#182230">Signaling</text>`;
+        svg += '</svg>';
+        document.getElementById(targetId).innerHTML = svg;
+      }
+
+      function renderRabbitPlayerChart() {
+        const data = [
+          { condition: 'baseline', player1: 4, player2: 23 },
+          { condition: 'signaling', player1: 0, player2: 0 },
+        ];
+        const width = 520;
+        const height = 320;
+        const margin = { top: 28, right: 24, bottom: 56, left: 48 };
+        const plotWidth = width - margin.left - margin.right;
+        const plotHeight = height - margin.top - margin.bottom;
+        const groupWidth = plotWidth / data.length;
+        const barWidth = 54;
+        const maxY = 25;
+        const y = value => margin.top + plotHeight - (value / maxY) * plotHeight;
+
+        let svg = `<svg viewBox="0 0 ${width} ${height}">`;
+        svg += `<rect x="0" y="0" width="${width}" height="${height}" fill="#fff"></rect>`;
+        for (const tick of [0, 5, 10, 15, 20, 25]) {
+          const yy = y(tick);
+          svg += `<line x1="${margin.left}" y1="${yy}" x2="${width - margin.right}" y2="${yy}" stroke="#d9e1ec"></line>`;
+          svg += `<text x="${margin.left - 10}" y="${yy + 4}" text-anchor="end" font-size="12" fill="#5d6b7c">${tick}</text>`;
+        }
+
+        data.forEach((row, index) => {
+          const center = margin.left + groupWidth * index + groupWidth / 2;
+          [
+            { key: 'player1', label: 'P1', color: colors.player1, offset: -0.62 },
+            { key: 'player2', label: 'P2', color: colors.player2, offset: 0.62 },
+          ].forEach(player => {
+            const value = row[player.key];
+            const x = center + player.offset * barWidth - barWidth / 2;
+            const top = y(value);
+            svg += `<rect x="${x}" y="${top}" width="${barWidth}" height="${margin.top + plotHeight - top}" rx="3" fill="${player.color}"></rect>`;
+            svg += `<text x="${x + barWidth / 2}" y="${top - 8}" text-anchor="middle" font-size="12" font-weight="700" fill="#182230">${value}</text>`;
+          });
+          svg += `<text x="${center}" y="${height - 24}" text-anchor="middle" font-size="13" fill="#182230">${row.condition}</text>`;
+        });
+
+        svg += `<rect x="${width - 128}" y="14" width="12" height="12" fill="${colors.player1}"></rect>`;
+        svg += `<text x="${width - 110}" y="24" font-size="12" fill="#182230">Player 1</text>`;
+        svg += `<rect x="${width - 60}" y="14" width="12" height="12" fill="${colors.player2}"></rect>`;
+        svg += `<text x="${width - 42}" y="24" font-size="12" fill="#182230">Player 2</text>`;
+        svg += '</svg>';
+        document.getElementById('rabbit-player-chart').innerHTML = svg;
+      }
+
+      function renderCountBarChart(targetId, rows, maxY, options = {}) {
+        const width = 520;
+        const height = 300;
+        const margin = { top: 26, right: 24, bottom: 60, left: 48 };
+        const plotWidth = width - margin.left - margin.right;
+        const plotHeight = height - margin.top - margin.bottom;
+        const groupWidth = plotWidth / rows.length;
+        const barWidth = Math.min(88, groupWidth * 0.52);
+        const ticks = options.ticks || [0, 10, 20, 30, 40, 50];
+        const y = value => margin.top + plotHeight - (value / maxY) * plotHeight;
+
+        let svg = `<svg viewBox="0 0 ${width} ${height}">`;
+        svg += `<rect x="0" y="0" width="${width}" height="${height}" fill="#fff"></rect>`;
+        for (const tick of ticks.filter(tick => tick <= maxY)) {
+          const yy = y(tick);
+          svg += `<line x1="${margin.left}" y1="${yy}" x2="${width - margin.right}" y2="${yy}" stroke="#d9e1ec"></line>`;
+          svg += `<text x="${margin.left - 10}" y="${yy + 4}" text-anchor="end" font-size="12" fill="#5d6b7c">${tick}</text>`;
+        }
+
+        rows.forEach((row, index) => {
+          const center = margin.left + groupWidth * index + groupWidth / 2;
+          const top = y(row.value);
+          const x = center - barWidth / 2;
+          svg += `<rect x="${x}" y="${top}" width="${barWidth}" height="${margin.top + plotHeight - top}" rx="4" fill="${row.color}"></rect>`;
+          svg += `<text x="${center}" y="${top - 8}" text-anchor="middle" font-size="13" font-weight="700" fill="#182230">${row.value}</text>`;
+          svg += `<text x="${center}" y="${height - 34}" text-anchor="middle" font-size="13" fill="#182230">${row.label}</text>`;
+          if (row.note) {
+            svg += `<text x="${center}" y="${height - 16}" text-anchor="middle" font-size="11" fill="#5d6b7c">${row.note}</text>`;
+          }
+        });
+
+        if (options.caption) {
+          svg += `<text x="${width / 2}" y="18" text-anchor="middle" font-size="12" fill="#5d6b7c">${options.caption}</text>`;
+        }
+        svg += '</svg>';
+        document.getElementById(targetId).innerHTML = svg;
+      }
+
+      function renderStackedCountChart(targetId, rows, maxY) {
+        const width = 520;
+        const height = 300;
+        const margin = { top: 26, right: 24, bottom: 60, left: 48 };
+        const plotWidth = width - margin.left - margin.right;
+        const plotHeight = height - margin.top - margin.bottom;
+        const groupWidth = plotWidth / rows.length;
+        const barWidth = Math.min(90, groupWidth * 0.52);
+        const y = value => margin.top + plotHeight - (value / maxY) * plotHeight;
+
+        let svg = `<svg viewBox="0 0 ${width} ${height}">`;
+        svg += `<rect x="0" y="0" width="${width}" height="${height}" fill="#fff"></rect>`;
+        for (const tick of [0, 10, 20, 30, 40, 50]) {
+          const yy = y(tick);
+          svg += `<line x1="${margin.left}" y1="${yy}" x2="${width - margin.right}" y2="${yy}" stroke="#d9e1ec"></line>`;
+          svg += `<text x="${margin.left - 10}" y="${yy + 4}" text-anchor="end" font-size="12" fill="#5d6b7c">${tick}</text>`;
+        }
+
+        rows.forEach((row, index) => {
+          const center = margin.left + groupWidth * index + groupWidth / 2;
+          const x = center - barWidth / 2;
+          let running = 0;
+          for (const part of row.parts) {
+            const top = y(running + part.value);
+            const bottom = y(running);
+            svg += `<rect x="${x}" y="${top}" width="${barWidth}" height="${bottom - top}" fill="${part.color}"></rect>`;
+            if (part.value > 0) {
+              svg += `<text x="${center}" y="${top + (bottom - top) / 2 + 4}" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">${part.value}</text>`;
+            }
+            running += part.value;
+          }
+          svg += `<text x="${center}" y="${y(running) - 8}" text-anchor="middle" font-size="13" font-weight="700" fill="#182230">${running}</text>`;
+          svg += `<text x="${center}" y="${height - 30}" text-anchor="middle" font-size="13" fill="#182230">${row.label}</text>`;
+        });
+
+        svg += `<rect x="${width - 156}" y="12" width="12" height="12" fill="${colors.signal}"></rect>`;
+        svg += `<text x="${width - 138}" y="22" font-size="12" fill="#182230">Signal</text>`;
+        svg += `<rect x="${width - 86}" y="12" width="12" height="12" fill="${colors.move}"></rect>`;
+        svg += `<text x="${width - 68}" y="22" font-size="12" fill="#182230">Move</text>`;
+        svg += '</svg>';
+        document.getElementById(targetId).innerHTML = svg;
+      }
+
+      function renderFirstActionCharts() {
+        renderTypicalFirstActionMap();
+        renderBaselineFirstActionSummaryChart();
+      }
+
+      function renderTypicalFirstActionMap() {
+        const cell = 48;
+        const gridSize = 7;
+        const gridLeft = 24;
+        const gridTop = 40;
+        const width = 860;
+        const height = 460;
+        const obstacles = new Set([
+          '0,0', '0,1', '0,2', '0,3', '0,4', '0,5', '0,6',
+          '1,0', '1,6',
+          '2,0', '2,3', '2,6',
+          '4,0', '4,2', '4,4', '4,6',
+          '5,0', '5,6',
+          '6,0', '6,1', '6,2', '6,3', '6,4', '6,5', '6,6',
+        ]);
+        const rabbits = new Set(['3,0', '3,6']);
+        const center = ([row, col]) => [
+          gridLeft + col * cell + cell / 2,
+          gridTop + row * cell + cell / 2,
+        ];
+        const rect = ([row, col]) => [
+          gridLeft + col * cell,
+          gridTop + row * cell,
+        ];
+        const p1 = [5, 2];
+        const p2 = [1, 5];
+        const stag = [3, 3];
+        const p1Blocked = [4, 2];
+        const p2Left = [1, 4];
+        const p2Down = [2, 5];
+
+        let svg = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="initial map first action illustration">`;
+        svg += `<defs>
+          <marker id="arrow-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#d14343"></path></marker>
+          <marker id="arrow-orange" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="${colors.player2}"></path></marker>
+        </defs>`;
+        svg += `<rect x="0" y="0" width="${width}" height="${height}" fill="#fff"></rect>`;
+        svg += `<text x="${gridLeft}" y="22" font-size="15" font-weight="700" fill="#182230">Initial map and typical first actions</text>`;
+
+        for (let row = 0; row < gridSize; row++) {
+          for (let col = 0; col < gridSize; col++) {
+            const key = `${row},${col}`;
+            const [x, y] = rect([row, col]);
+            const fill = obstacles.has(key) ? '#111827' : '#ffffff';
+            svg += `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" fill="${fill}" stroke="#d9e1ec"></rect>`;
+            if (obstacles.has(key)) {
+              svg += `<text x="${x + cell / 2}" y="${y + cell / 2 + 5}" text-anchor="middle" font-size="15" fill="#fff">#</text>`;
+            }
+            if (rabbits.has(key)) {
+              svg += `<rect x="${x + 16}" y="${y + 16}" width="16" height="16" fill="${colors.signal}" rx="2"></rect>`;
+            }
+          }
+        }
+
+        const [sx, sy] = center(stag);
+        svg += `<circle cx="${sx}" cy="${sy}" r="16" fill="${colors.signal}" stroke="#1e8449" stroke-width="3"></circle>`;
+        svg += `<text x="${sx}" y="${sy + 5}" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">S</text>`;
+
+        const [p1x, p1y] = center(p1);
+        const [p2x, p2y] = center(p2);
+        svg += `<circle cx="${p1x}" cy="${p1y}" r="16" fill="${colors.player1}" stroke="#0e7490" stroke-width="2"></circle>`;
+        svg += `<text x="${p1x}" y="${p1y + 5}" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">P1</text>`;
+        svg += `<circle cx="${p2x}" cy="${p2y}" r="16" fill="${colors.player2}" stroke="#c2410c" stroke-width="2"></circle>`;
+        svg += `<text x="${p2x}" y="${p2y + 5}" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">P2</text>`;
+
+        const [blockX, blockY] = center(p1Blocked);
+        svg += `<line x1="${p1x}" y1="${p1y - 18}" x2="${blockX}" y2="${blockY + 18}" stroke="#d14343" stroke-width="4" marker-end="url(#arrow-red)"></line>`;
+        svg += `<line x1="${blockX - 12}" y1="${blockY - 12}" x2="${blockX + 12}" y2="${blockY + 12}" stroke="#d14343" stroke-width="4"></line>`;
+        svg += `<line x1="${blockX + 12}" y1="${blockY - 12}" x2="${blockX - 12}" y2="${blockY + 12}" stroke="#d14343" stroke-width="4"></line>`;
+
+        const [leftX, leftY] = center(p2Left);
+        const [downX, downY] = center(p2Down);
+        svg += `<line x1="${p2x - 18}" y1="${p2y}" x2="${leftX + 18}" y2="${leftY}" stroke="${colors.player2}" stroke-width="4" marker-end="url(#arrow-orange)"></line>`;
+        svg += `<line x1="${p2x}" y1="${p2y + 18}" x2="${downX}" y2="${downY - 18}" stroke="${colors.player2}" stroke-width="4" stroke-dasharray="7 5" marker-end="url(#arrow-orange)"></line>`;
+
+        const panelX = 400;
+        svg += `<text x="${panelX}" y="54" font-size="15" font-weight="700" fill="#182230">Observed first-action pattern</text>`;
+        svg += `<rect x="${panelX}" y="74" width="424" height="86" fill="#fff8f2" stroke="#f2bf8c" rx="8"></rect>`;
+        svg += `<circle cx="${panelX + 22}" cy="101" r="11" fill="${colors.player1}"></circle>`;
+        svg += `<text x="${panelX + 44}" y="96" font-size="13" font-weight="700" fill="#182230">Player 1: blocked up</text>`;
+        svg += `<text x="${panelX + 44}" y="118" font-size="13" fill="#5d6b7c">P1 often outputs up into a blocked cell.</text>`;
+        svg += `<text x="${panelX + 44}" y="139" font-size="13" fill="#5d6b7c">No-move: baseline 35/40; signaling 49/50 first P1 actions.</text>`;
+
+        svg += `<rect x="${panelX}" y="178" width="424" height="104" fill="#fffaf0" stroke="#f0c36d" rx="8"></rect>`;
+        svg += `<circle cx="${panelX + 22}" cy="205" r="11" fill="${colors.player2}"></circle>`;
+        svg += `<text x="${panelX + 44}" y="200" font-size="13" font-weight="700" fill="#182230">Player 2: usually first effective actor</text>`;
+        svg += `<text x="${panelX + 44}" y="222" font-size="13" fill="#5d6b7c">Baseline: P2 first in 35/40 saved rounds.</text>`;
+        svg += `<text x="${panelX + 44}" y="244" font-size="13" fill="#5d6b7c">8/35 left: implicit stag cue; 27/35 down: ambiguous.</text>`;
+        svg += `<text x="${panelX + 44}" y="266" font-size="13" fill="#5d6b7c">Most P2 first actions do not clearly signal cooperation.</text>`;
+
+        svg += `<rect x="${panelX}" y="306" width="424" height="76" fill="#f8fafc" stroke="#d9e1ec" rx="8"></rect>`;
+        svg += `<text x="${panelX + 18}" y="332" font-size="13" font-weight="700" fill="#182230">Interpretation</text>`;
+        svg += `<text x="${panelX + 18}" y="354" font-size="13" fill="#5d6b7c">Baseline coordination starts with weak implicit signaling.</text>`;
+        svg += `<text x="${panelX + 18}" y="374" font-size="13" fill="#5d6b7c">This makes cooperation risky and rabbit hunting tempting.</text>`;
+
+        svg += `<rect x="${gridLeft}" y="${gridTop + gridSize * cell + 20}" width="12" height="12" fill="#111827"></rect>`;
+        svg += `<text x="${gridLeft + 18}" y="${gridTop + gridSize * cell + 31}" font-size="12" fill="#5d6b7c">obstacle</text>`;
+        svg += `<rect x="${gridLeft + 92}" y="${gridTop + gridSize * cell + 18}" width="16" height="16" fill="${colors.signal}" rx="2"></rect>`;
+        svg += `<text x="${gridLeft + 114}" y="${gridTop + gridSize * cell + 31}" font-size="12" fill="#5d6b7c">small target</text>`;
+        svg += `<circle cx="${gridLeft + 214}" cy="${gridTop + gridSize * cell + 26}" r="8" fill="${colors.signal}"></circle>`;
+        svg += `<text x="${gridLeft + 228}" y="${gridTop + gridSize * cell + 31}" font-size="12" fill="#5d6b7c">large target</text>`;
+        svg += '</svg>';
+
+        document.getElementById('typical-first-action-map').innerHTML = svg;
+      }
+
+      function renderBaselineFirstActionSummaryChart() {
+        const width = 860;
+        const height = 210;
+        const margin = { top: 44, right: 26, bottom: 54, left: 150 };
+        const plotWidth = width - margin.left - margin.right;
+        const barHeight = 26;
+        const rowGap = 54;
+        const maxTotal = baselineFirstActionSummary.rounds;
+        const rows = [
+          {
+            label: 'Player 1 first action',
+            totalLabel: `${baselineFirstActionSummary.rounds} rounds`,
+            parts: [
+              { label: 'No-move', value: baselineFirstActionSummary.player1NoMove, color: colors.move },
+              { label: 'Moved', value: baselineFirstActionSummary.player1Moved, color: colors.player1 },
+            ],
+            note: `${baselineFirstActionSummary.player1NoMove}/${baselineFirstActionSummary.rounds} no-move first actions`,
+          },
+          {
+            label: 'Player 2 first effective',
+            totalLabel: `${baselineFirstActionSummary.player2FirstEffective} actions`,
+            parts: [
+              { label: 'Left cue', value: baselineFirstActionSummary.player2LeftCue, color: colors.signal },
+              { label: 'Ambiguous down', value: baselineFirstActionSummary.player2AmbiguousDown, color: colors.diff },
+            ],
+            note: `${baselineFirstActionSummary.player2LeftCue}/${baselineFirstActionSummary.player2FirstEffective} clear cooperative cues`,
+          },
+        ];
+
+        let svg = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="baseline first action coding">`;
+        svg += `<rect x="0" y="0" width="${width}" height="${height}" fill="#fff"></rect>`;
+        svg += `<text x="0" y="18" font-size="14" font-weight="700" fill="#182230">Baseline first-action coding</text>`;
+        svg += `<text x="0" y="36" font-size="12" fill="#5d6b7c">P1 no-move means its first action did not change position. P2 left is a temptation-free cooperative cue; down is ambiguous.</text>`;
+
+        rows.forEach((row, index) => {
+          const y = margin.top + index * rowGap;
+          let runningX = margin.left;
+          svg += `<text x="0" y="${y + 18}" font-size="13" font-weight="700" fill="#182230">${row.label}</text>`;
+          svg += `<rect x="${margin.left}" y="${y}" width="${plotWidth}" height="${barHeight}" fill="#eef2f7" rx="4"></rect>`;
+          row.parts.forEach(part => {
+            const partWidth = (part.value / maxTotal) * plotWidth;
+            if (partWidth > 0) {
+              svg += `<rect x="${runningX}" y="${y}" width="${partWidth}" height="${barHeight}" fill="${part.color}"></rect>`;
+              if (partWidth > 28) {
+                svg += `<text x="${runningX + partWidth / 2}" y="${y + 18}" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">${part.value}</text>`;
+              }
+            }
+            runningX += partWidth;
+          });
+          svg += `<text x="${margin.left + plotWidth + 8}" y="${y + 18}" font-size="12" font-weight="700" fill="#182230">${row.totalLabel}</text>`;
+          svg += `<text x="${margin.left}" y="${y + 42}" font-size="11" fill="#5d6b7c">${row.note}</text>`;
+        });
+
+        const legendY = height - 26;
+        [
+          { label: 'P1 no-move', color: colors.move, x: margin.left },
+          { label: 'P1 moved', color: colors.player1, x: margin.left + 112 },
+          { label: 'P2 left cue', color: colors.signal, x: margin.left + 218 },
+          { label: 'P2 ambiguous down', color: colors.diff, x: margin.left + 336 },
+        ].forEach(item => {
+          svg += `<rect x="${item.x}" y="${legendY}" width="12" height="12" fill="${item.color}"></rect>`;
+          svg += `<text x="${item.x + 18}" y="${legendY + 10}" font-size="12" fill="#5d6b7c">${item.label}</text>`;
+        });
+        svg += '</svg>';
+        document.getElementById('baseline-first-action-summary-chart').innerHTML = svg;
+      }
+
+      function renderRabbitPairPlots() {
+        const pairIds = [...new Set(rabbitByPairBlock.map(row => row.pair))];
+        document.getElementById('rabbit-pair-plots').innerHTML = pairIds.map(pair => {
+          const rows = rabbitByPairBlock.filter(row => row.pair === pair);
+          const title = rows[0].label;
+          return `<div class="chart-wrap"><h3>${title}</h3>${renderRabbitPairSvg(rows)}</div>`;
+        }).join('');
+      }
+
+      function renderRabbitPairSvg(rows) {
+        const width = 420;
+        const height = 260;
+        const margin = { top: 28, right: 20, bottom: 54, left: 44 };
+        const plotWidth = width - margin.left - margin.right;
+        const plotHeight = height - margin.top - margin.bottom;
+        const groupWidth = plotWidth / rows.length;
+        const maxY = 2;
+        const x = block => margin.left + groupWidth * (block - 1) + groupWidth / 2;
+        const y = value => margin.top + plotHeight - (value / maxY) * plotHeight;
+
+        let svg = `<svg viewBox="0 0 ${width} ${height}">`;
+        svg += `<rect x="0" y="0" width="${width}" height="${height}" fill="#fff"></rect>`;
+        for (const tick of [0, 1, 2]) {
+          const yy = y(tick);
+          svg += `<line x1="${margin.left}" y1="${yy}" x2="${width - margin.right}" y2="${yy}" stroke="#d9e1ec"></line>`;
+          svg += `<text x="${margin.left - 10}" y="${yy + 4}" text-anchor="end" font-size="12" fill="#5d6b7c">${tick}</text>`;
+        }
+
+        rows.forEach(row => {
+          const xx = x(row.block);
+          svg += `<line x1="${xx}" y1="${margin.top}" x2="${xx}" y2="${margin.top + plotHeight}" stroke="#eef2f7"></line>`;
+          svg += `<text x="${xx}" y="${height - 28}" text-anchor="middle" font-size="11" fill="#182230">${row.block}</text>`;
+        });
+
+        [
+          { key: 'player1', color: colors.player1, label: 'Player 1' },
+          { key: 'player2', color: colors.player2, label: 'Player 2' },
+        ].forEach(player => {
+          const points = rows.map(row => ({
+            x: x(row.block),
+            y: y(row[player.key]),
+            value: row[player.key],
+          }));
+          const path = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
+          svg += `<path d="${path}" fill="none" stroke="${player.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></path>`;
+          points.forEach(point => {
+            svg += `<circle cx="${point.x}" cy="${point.y}" r="4" fill="#fff" stroke="${player.color}" stroke-width="2"></circle>`;
+            if (point.value > 0) {
+              svg += `<text x="${point.x}" y="${point.y - 9}" text-anchor="middle" font-size="11" font-weight="700" fill="#182230">${point.value}</text>`;
+            }
+          });
+        });
+
+        svg += `<text x="${width / 2}" y="${height - 10}" text-anchor="middle" font-size="12" fill="#5d6b7c">Block number, 2 trials per block</text>`;
+        svg += `<rect x="${width - 142}" y="12" width="11" height="11" fill="${colors.player1}"></rect>`;
+        svg += `<text x="${width - 126}" y="22" font-size="11" fill="#182230">Player 1</text>`;
+        svg += `<rect x="${width - 72}" y="12" width="11" height="11" fill="${colors.player2}"></rect>`;
+        svg += `<text x="${width - 56}" y="22" font-size="11" fill="#182230">Player 2</text>`;
+        svg += '</svg>';
+        return svg;
+      }
+
+      function renderTables() {
+        document.querySelector('#run-table tbody').innerHTML = runs.map(run => `
+          <tr>
+            <td>${run.pair === 0 ? 'pilot' : run.pair}</td>
+            <td>${run.source}</td>
+            <td>${run.condition}</td>
+            <td>${fmt(run.stagRate)}</td>
+            <td>${fmt(run.rabbitRate)}</td>
+            <td>${fmt(run.timeoutRate)}</td>
+            <td>${fmt(run.signalRate)}</td>
+            <td>${run.score.toFixed(1)}</td>
+          </tr>
+        `).join('');
+
+        const totals = ['baseline', 'signaling'].map(conditionTotals);
+        document.querySelector('#count-table tbody').innerHTML = totals.map(row => `
+          <tr>
+            <td>${row.condition}</td>
+            <td>${row.rounds}</td>
+            <td>${row.stag}</td>
+            <td>${row.rabbit}</td>
+            <td>${row.timeout}</td>
+            <td>${row.signals}</td>
+            <td>${row.playerActions}</td>
+          </tr>
+        `).join('');
+
+        document.querySelector('#rabbit-block-table tbody').innerHTML = rabbitByPairBlock.map(row => {
+          const total = row.player1 + row.player2;
+          return `
+            <tr>
+              <td>${row.label}</td>
+              <td>${row.block}</td>
+              <td>${row.trials}</td>
+              <td>${row.player1}</td>
+              <td>${row.player2}</td>
+              <td>${total}</td>
+            </tr>
+          `;
+        }).join('');
+
+        document.querySelector('#baseline-first-action-table tbody').innerHTML = baselineFirstActionByPair.map(row => `
+          <tr>
+            <td>${row.label}</td>
+            <td>${row.rounds}</td>
+            <td>${row.player1NoMove}</td>
+            <td>${row.player1Moved}</td>
+            <td>${row.player2FirstEffective}</td>
+            <td>${row.player2LeftCue}</td>
+            <td>${row.player2AmbiguousDown}</td>
+          </tr>
+        `).join('');
+      }
+
+      renderGroupedChart('capture-chart', [
+        { key: 'stagRate', label: 'Stag capture' },
+        { key: 'rabbitRate', label: 'Rabbit capture' },
+      ]);
+      renderGroupedChart('timeout-chart', [
+        { key: 'timeoutRate', label: 'Timeout' },
+      ]);
+      renderGroupedChart('signal-chart', [
+        { key: 'signalRate', label: 'Signal action' },
+      ], 0.12);
+      renderRabbitPairPlots();
+      renderFirstActionCharts();
+      renderTables();
+    </script>
+  </body>
+</html>

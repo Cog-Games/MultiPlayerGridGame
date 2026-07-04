@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Mobile 2P3G Grid World</title>
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #e5e7eb;
+      background: #111827;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; overscroll-behavior: none; touch-action: manipulation; }
+    body { display: flex; justify-content: center; padding: 10px; }
+    button, input, textarea { font: inherit; }
+    #mobile-app { width: min(100%, 520px); min-height: 100vh; }
+    .card {
+      background: #1f2937;
+      border: 1px solid #374151;
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.22);
+    }
+    h1, h2, h3 { margin: 0 0 10px; line-height: 1.15; }
+    p { margin: 8px 0; line-height: 1.45; color: #d1d5db; }
+    .center { text-align: center; }
+    .muted { color: #9ca3af; font-size: 14px; }
+    .row { display: flex; gap: 8px; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+    .pill { border: 1px solid #4b5563; border-radius: 999px; padding: 5px 9px; font-size: 13px; color: #d1d5db; }
+    .primary-btn {
+      width: 100%; border: 0; border-radius: 14px; padding: 14px 18px;
+      background: #2563eb; color: white; font-weight: 800; min-height: 50px;
+    }
+    .primary-btn:disabled { background: #6b7280; }
+    canvas {
+      display: block; width: 100%; max-width: 440px; aspect-ratio: 1 / 1;
+      margin: 0 auto; background: #f9fafb; border-radius: 16px; border: 2px solid #4b5563;
+      touch-action: none;
+    }
+    #status { min-height: 24px; font-weight: 750; text-align: center; color: #f9fafb; }
+    #feedback { min-height: 24px; font-weight: 800; text-align: center; }
+    #feedback.good { color: #86efac; }
+    #feedback.warn { color: #fbbf24; }
+    #feedback.info { color: #93c5fd; }
+    .legend { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; font-size: 13px; color: #d1d5db; }
+    .dot { display:inline-block; width:11px; height:11px; border-radius:999px; margin-right:4px; vertical-align:-1px; }
+    .you { background:#06b6d4; } .partner { background:#f97316; } .goal { background:#2563eb; } .newgoal { background:#22c55e; }
+    .controls {
+      display: grid; grid-template-columns: 80px 80px 80px; grid-template-rows: 68px 68px 68px;
+      justify-content: center; gap: 10px; touch-action: none;
+    }
+    .controls button {
+      border: 0; border-radius: 18px; width: 80px; height: 68px;
+      background: #f3f4f6; color: #111827; font-size: 30px; font-weight: 900;
+      box-shadow: 0 6px 16px rgba(0,0,0,.25);
+    }
+    .controls button:disabled { background: #4b5563; color: #9ca3af; box-shadow: none; }
+    .up { grid-column:2; grid-row:1; } .left { grid-column:1; grid-row:2; } .right { grid-column:3; grid-row:2; } .down { grid-column:2; grid-row:3; }
+    fieldset { border: 0; padding: 0; margin: 16px 0; }
+    legend { font-weight: 800; margin-bottom: 8px; }
+    .scale { display: flex; justify-content: space-between; gap: 4px; }
+    .scale label { width: 40px; min-height: 42px; display: grid; place-items: center; border-radius: 12px; background: #374151; color: #f9fafb; font-weight: 800; }
+    .scale input { margin: 0 0 2px; }
+    textarea { width: 100%; min-height: 96px; border: 1px solid #4b5563; background: #111827; color: #f9fafb; border-radius: 12px; padding: 10px; resize: vertical; user-select: text; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main id="mobile-app">
+    <section class="card" id="intro-screen">
+      <h1 class="center">Mobile 2P3G Grid World</h1>
+      <p>This phone version uses a smaller 9×9 map. You control the cyan player with touch arrows. The orange partner moves automatically.</p>
+      <p>There are two initial blue goals. A third green goal can appear after you and your partner start moving toward the same initial goal.</p>
+      <button id="start-btn" class="primary-btn">Start 4 rounds</button>
+    </section>
+
+    <section class="card" id="game-screen" hidden>
+      <div class="row">
+        <span class="pill" id="round-label">Round 1 / 4</span>
+        <span class="pill" id="step-label">Steps: 0</span>
+        <span class="pill" id="score-label">Success: 0</span>
+      </div>
+      <p id="status">Use the arrows to move.</p>
+      <canvas id="game-canvas" aria-label="9 by 9 grid world"></canvas>
+      <p id="feedback"></p>
+      <div class="legend">
+        <span><span class="dot you"></span>You</span>
+        <span><span class="dot partner"></span>Partner</span>
+        <span><span class="dot goal"></span>Initial goals</span>
+        <span><span class="dot newgoal"></span>New goal</span>
+      </div>
+    </section>
+
+    <section class="card controls" id="touch-controls" hidden>
+      <button class="up" data-action="up" aria-label="Move up">↑</button>
+      <button class="left" data-action="left" aria-label="Move left">←</button>
+      <button class="right" data-action="right" aria-label="Move right">→</button>
+      <button class="down" data-action="down" aria-label="Move down">↓</button>
+    </section>
+
+    <section class="card" id="survey-screen" hidden>
+      <h2>Post-game questions</h2>
+      <form id="survey-form">
+        <fieldset>
+          <legend>1. How much did you feel you and your partner were working toward the same goal?</legend>
+          <div class="scale" data-scale="sharedGoal"></div>
+        </fieldset>
+        <fieldset>
+          <legend>2. How confident were you that your partner understood your intended goal?</legend>
+          <div class="scale" data-scale="partnerUnderstanding"></div>
+        </fieldset>
+        <fieldset>
+          <legend>3. What strategy did you use to coordinate?</legend>
+          <textarea name="strategy" required placeholder="Type your answer here..."></textarea>
+        </fieldset>
+        <button class="primary-btn" type="submit">Submit answers</button>
+      </form>
+    </section>
+
+    <section class="card center" id="done-screen" hidden>
+      <h2>Thank you!</h2>
+      <p id="save-status">Your answers were recorded.</p>
+    </section>
+  </main>
+  <script type="module" src="/src/mobile2p3g.js"></script>
+</body>
+</html>

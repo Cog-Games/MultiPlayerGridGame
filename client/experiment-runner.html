@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LLM Experiment Runner</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f5f7fb;
+        color: #182230;
+      }
+
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 28px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+      }
+
+      .panel {
+        background: #fff;
+        border: 1px solid #d8dee9;
+        border-radius: 8px;
+        padding: 18px;
+        margin: 16px 0;
+      }
+
+      .status {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .metric {
+        border: 1px solid #e1e7f0;
+        border-radius: 6px;
+        padding: 12px;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 13px;
+        color: #526070;
+        margin-bottom: 6px;
+      }
+
+      .metric span {
+        font-size: 22px;
+        font-weight: 700;
+      }
+
+      pre {
+        max-height: 360px;
+        overflow: auto;
+        white-space: pre-wrap;
+        background: #111827;
+        color: #d1d5db;
+        border-radius: 6px;
+        padding: 14px;
+      }
+
+      canvas {
+        position: absolute;
+        left: -9999px;
+        top: -9999px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>LLM Experiment Runner</h1>
+      <p>Phase 1 LLM-LLM runner for baseline and signaling conditions.</p>
+
+      <section class="panel status">
+        <div class="metric">
+          <strong>Status</strong>
+          <span id="status">Idle</span>
+        </div>
+        <div class="metric">
+          <strong>Run</strong>
+          <span id="run-count">0 / 0</span>
+        </div>
+        <div class="metric">
+          <strong>Round</strong>
+          <span id="round-count">0 / 0</span>
+        </div>
+        <div class="metric">
+          <strong>LLM Calls</strong>
+          <span id="call-count">0</span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <button id="start-btn">Start Runs</button>
+        <button id="stop-btn">Stop After Current Action</button>
+      </section>
+
+      <section class="panel">
+        <h2>Log</h2>
+        <pre id="log"></pre>
+      </section>
+
+      <div id="canvas-host"></div>
+    </main>
+    <script type="module" src="/src/experimentRunner.js"></script>
+  </body>
+</html>
