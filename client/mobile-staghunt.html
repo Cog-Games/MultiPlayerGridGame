@@ -36,6 +36,10 @@
       overflow: hidden;
     }
 
+    body.is-lobby {
+      overflow: hidden;
+    }
+
     button {
       border: 0;
       color: inherit;
@@ -62,10 +66,19 @@
       gap: 6px;
     }
 
+    #mobile-stag-hunt.is-lobby {
+      height: 100dvh;
+      min-height: 0;
+      overflow: hidden;
+      grid-template-rows: minmax(0, 1fr);
+      padding: max(10px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
+    }
+
     .topbar,
     .board-panel,
     .controls-panel,
     .setup-panel,
+    .matching-card,
     .result-panel {
       background: rgba(255,255,255,0.95);
       border: 1px solid #dbe3ee;
@@ -82,6 +95,108 @@
     .is-playing .topbar {
       padding: 7px;
       gap: 5px;
+    }
+
+    .is-lobby .topbar,
+    .is-lobby .board-panel,
+    .is-lobby .controls-panel,
+    .is-lobby .setup-panel,
+    .is-lobby .result-panel {
+      display: none;
+    }
+
+    .matching-panel {
+      display: none;
+      min-height: 0;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .is-lobby .matching-panel {
+      display: flex;
+    }
+
+    .matching-card {
+      width: min(100%, 390px);
+      max-height: calc(100dvh - 32px);
+      overflow: hidden;
+      padding: clamp(14px, 3vh, 24px) 16px;
+      display: grid;
+      gap: clamp(9px, 2vh, 14px);
+      text-align: center;
+    }
+
+    .matching-condition {
+      color: #1264d8;
+      font-size: 1rem;
+      font-weight: 860;
+      line-height: 1.2;
+    }
+
+    .match-lobby-btn {
+      width: 100%;
+      min-height: 44px;
+      border-radius: 8px;
+      padding: 0 14px;
+      font-size: 0.96rem;
+      font-weight: 860;
+      line-height: 1.15;
+      text-align: center;
+    }
+
+    .matching-status {
+      background: #e9eff7;
+      color: #3b4658;
+      border: 1px solid #d4deea;
+    }
+
+    .matching-status:disabled {
+      opacity: 1;
+    }
+
+    .matching-demo {
+      display: grid;
+      justify-items: center;
+      gap: 9px;
+    }
+
+    .matching-legend {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px 9px;
+      color: #4d5b70;
+      font-size: 0.72rem;
+      font-weight: 760;
+      line-height: 1;
+    }
+
+    .matching-demo canvas {
+      width: min(100%, 245px, 38vh);
+      max-width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 8px;
+      border: 1px solid #aeb9c8;
+      background: #ffffff;
+    }
+
+    .matching-rules {
+      display: grid;
+      gap: 5px;
+      width: min(100%, 320px);
+      color: #3b4658;
+      font-size: 0.82rem;
+      font-weight: 720;
+      line-height: 1.22;
+      text-align: left;
+    }
+
+    .matching-rules div {
+      border: 1px solid #dbe3ee;
+      border-radius: 8px;
+      padding: 7px 9px;
+      background: #f8fafc;
     }
 
     .title-row,
@@ -359,11 +474,53 @@
         min-height: 31px;
         padding: 6px 8px;
       }
+
+      .matching-demo canvas {
+        width: min(100%, 210px, 34vh);
+      }
+
+      .matching-legend {
+        font-size: 0.68rem;
+        gap: 5px 7px;
+      }
+
+      .matching-rules {
+        font-size: 0.76rem;
+        gap: 4px;
+      }
+
+      .matching-rules div {
+        padding: 6px 8px;
+      }
     }
   </style>
 </head>
 <body>
   <main id="mobile-stag-hunt">
+    <section class="matching-panel" id="matching-panel" hidden aria-label="Partner matching">
+      <div class="matching-card">
+        <div class="matching-condition" id="matching-condition" hidden></div>
+        <button class="match-lobby-btn matching-status" type="button" id="matching-status" disabled>Matching your partner...</button>
+        <div class="matching-demo" id="matching-demo">
+          <canvas id="matching-demo-canvas" aria-label="Demo Stag Hunt map"></canvas>
+          <div class="matching-legend" aria-label="Demo map legend">
+            <span class="legend-item"><span class="mark p1"></span>P1</span>
+            <span class="legend-item"><span class="mark p2"></span>P2</span>
+            <span class="legend-item"><span class="mark stag"></span>Stag</span>
+            <span class="legend-item"><span class="mark rabbit"></span>Rabbit</span>
+            <span class="legend-item"><span class="mark wall"></span>Wall</span>
+          </div>
+          <div class="matching-rules" aria-label="Basic rules">
+            <div>Move one square each turn.</div>
+            <div>You get 3 points if you catch a static rabbit.</div>
+            <div>You both get 10 points if you catch the running stag together.</div>
+            <div>Each player has 20 moves per round.</div>
+          </div>
+        </div>
+        <button class="primary-btn match-lobby-btn" type="button" id="match-start-btn" hidden>Ready to start</button>
+      </div>
+    </section>
+
     <section class="topbar" aria-label="Game status">
       <div class="title-row">
         <h1>Mini Stag Hunt</h1>

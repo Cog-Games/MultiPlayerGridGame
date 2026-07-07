@@ -13,11 +13,20 @@ This phone entry uses the existing Dynamic Stag Hunt rules from the browser game
 
 ## Online matching
 
-The default phone flow is Online + Base. When a player starts, the server sends
-roughly half of joiners into a human-matching queue and half directly to the
-scripted bot condition. Human-queue players are paired with each other when
-possible. If no other human player is found within 5 seconds, that player
-continues with the bot condition.
+The default phone flow is Online + Base. Matching starts as soon as the phone
+page opens. The server always tries to match a human partner first. Players are
+paired with each other when possible. If no other human player is found within
+10 seconds, that player continues with the bot condition.
+
+The phone UI keeps players in a neutral partner-matching stage for at least 10
+seconds before the first round starts, even when the assignment is available
+sooner. After the matching stage, players see `Partner found! Let's play.` and
+press Start. Human-human sessions start only after both matched players press
+Start.
+
+Participant-facing labels do not say human or bot. The phone UI shows
+`Condition A` for human-human sessions and `Condition B` for human-bot sessions.
+Saved data still includes the explicit `matchType` field for analysis.
 
 Online clients connect to the same server over `/ws`, so Render only needs one
 Web Service for the static app, save API, and matchmaking relay.

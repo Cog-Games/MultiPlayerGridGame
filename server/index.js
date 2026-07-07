@@ -22,11 +22,9 @@ const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5-2025100
 const ANTHROPIC_VERSION = '2023-06-01';
 const PLAYER_ACTIONS = ['up', 'down', 'left', 'right', 'signal'];
 const DEFAULT_PLAYER_ACTIONS = ['up', 'down', 'left', 'right'];
-const MOBILE_MATCH_TIMEOUT_MS = 5000;
-const MOBILE_ASSIGNMENT_GROUP_SIZE = 4;
+const MOBILE_MATCH_TIMEOUT_MS = 10000;
 
 const mobileMatchmaker = {
-  assignmentIndex: 0,
   waiting: null,
   rooms: new Map(),
   clients: new Map(),
@@ -580,6 +578,7 @@ function createMobileClient(ws) {
     roomId: null,
     role: null,
     matchType: null,
+    ready: false,
     waitingTimer: null,
   };
   mobileMatchmaker.clients.set(ws, client);
@@ -588,12 +587,6 @@ function createMobileClient(ws) {
 
 function getMobileClient(ws) {
   return mobileMatchmaker.clients.get(ws) || createMobileClient(ws);
-}
-
-function shouldTryHumanMobileMatch() {
-  const slot = mobileMatchmaker.assignmentIndex % MOBILE_ASSIGNMENT_GROUP_SIZE;
-  mobileMatchmaker.assignmentIndex += 1;
-  return slot < 2;
 }
 
 function clearWaitingTimer(client) {
@@ -614,12 +607,13 @@ function takeWaitingMobileClient() {
   return waiting;
 }
 
-function sendMobileBotMatch(client, reason = 'assigned-bot') {
+function sendMobileBotMatch(client, reason = 'human-timeout') {
   clearWaitingTimer(client);
   if (mobileMatchmaker.waiting === client) mobileMatchmaker.waiting = null;
   client.matchType = 'bot';
   client.roomId = null;
   client.role = 'player1';
+  client.ready = false;
 
   sendSocketJson(client.ws, {
     type: 'bot-match',
@@ -640,7 +634,14 @@ function pairMobileClients(left, right) {
   right.role = 'player2';
   left.matchType = 'human';
   right.matchType = 'human';
-  mobileMatchmaker.rooms.set(roomId, { id: roomId, clients: [left, right] });
+  left.ready = false;
+  right.ready = false;
+  mobileMatchmaker.rooms.set(roomId, {
+    id: roomId,
+    clients: [left, right],
+    ready: new Set(),
+    started: false,
+  });
 
   sendSocketJson(left.ws, {
     type: 'human-match',
@@ -668,6 +669,7 @@ function queueMobileHumanCandidate(client) {
   mobileMatchmaker.waiting = client;
   client.matchType = 'waiting-human';
   client.role = null;
+  client.ready = false;
   sendSocketJson(client.ws, {
     type: 'waiting-for-human',
     timeoutMs: MOBILE_MATCH_TIMEOUT_MS,
@@ -682,12 +684,7 @@ function queueMobileHumanCandidate(client) {
 function handleMobileJoin(ws) {
   const client = getMobileClient(ws);
   cleanupMobileClient(ws, { keepSocket: true, notifyPeer: false });
-
-  if (shouldTryHumanMobileMatch()) {
-    queueMobileHumanCandidate(client);
-  } else {
-    sendMobileBotMatch(client, 'assigned-bot');
-  }
+  queueMobileHumanCandidate(client);
 }
 
 function relayMobileAction(ws, message) {
@@ -708,6 +705,40 @@ function relayMobileAction(ws, message) {
   });
 }
 
+function handleMobileReady(ws, message) {
+  const client = mobileMatchmaker.clients.get(ws);
+  if (!client?.roomId || client.matchType !== 'human') return;
+  if (message.roomId !== client.roomId) return;
+
+  const room = mobileMatchmaker.rooms.get(client.roomId);
+  if (!room || room.started) return;
+
+  client.ready = true;
+  room.ready.add(client.id);
+
+  for (const participant of room.clients) {
+    const other = room.clients.find(candidate => candidate !== participant);
+    sendSocketJson(participant.ws, {
+      type: 'ready-status',
+      roomId: room.id,
+      localReady: participant.ready,
+      remoteReady: Boolean(other?.ready),
+      readyCount: room.ready.size,
+      totalPlayers: room.clients.length,
+    });
+  }
+
+  if (room.ready.size < room.clients.length) return;
+
+  room.started = true;
+  for (const participant of room.clients) {
+    sendSocketJson(participant.ws, {
+      type: 'start-game',
+      roomId: room.id,
+    });
+  }
+}
+
 function handleMobileSocketMessage(ws, raw) {
   let message;
   try {
@@ -724,6 +755,11 @@ function handleMobileSocketMessage(ws, raw) {
 
   if (message.type === 'mobile-action') {
     relayMobileAction(ws, message);
+    return;
+  }
+
+  if (message.type === 'mobile-ready') {
+    handleMobileReady(ws, message);
   }
 }
 
@@ -750,6 +786,7 @@ function cleanupMobileClient(ws, options = {}) {
         other.roomId = null;
         other.matchType = 'bot';
         other.role = other.role || 'player1';
+        other.ready = false;
       }
       mobileMatchmaker.rooms.delete(client.roomId);
     }
@@ -758,6 +795,7 @@ function cleanupMobileClient(ws, options = {}) {
   client.roomId = null;
   client.matchType = null;
   client.role = null;
+  client.ready = false;
 
   if (!keepSocket) {
     mobileMatchmaker.clients.delete(ws);
