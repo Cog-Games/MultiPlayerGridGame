@@ -222,7 +222,7 @@
     .matching-rules {
       display: grid;
       gap: 5px;
-      width: min(100%, 320px);
+      width: 100%;
       color: #3b4658;
       font-size: 0.82rem;
       font-weight: 720;
@@ -235,6 +235,16 @@
       border-radius: 8px;
       padding: 7px 9px;
       background: #f8fafc;
+    }
+
+    .matching-rules .one-line {
+      padding-left: 6px;
+      padding-right: 6px;
+      white-space: nowrap;
+    }
+
+    .matching-rules .keep-together {
+      white-space: nowrap;
     }
 
     .matching-rules .mark {
@@ -667,9 +677,9 @@
             <span class="legend-item"><span class="mark wall"></span>Wall</span>
           </div>
           <div class="matching-rules" aria-label="Basic rules">
-            <div>You are one of the players (<span class="mark p1"></span>/<span class="mark p2"></span>). You can move one square each turn.</div>
-            <div>You get 3 points if you catch a static rabbit (<span class="mark rabbit"></span>).</div>
-            <div>You both get 10 points if you catch the running stag (<span class="mark stag"></span>) together.</div>
+            <div>You will control one of the players <span class="mark p1"></span>/<span class="mark p2"></span>. You can move one square each turn.</div>
+            <div class="one-line">You get 3 points if you catch a static rabbit <span class="mark rabbit"></span>.</div>
+            <div>You both get 10 points if you catch the running <span class="keep-together">stag <span class="mark stag"></span></span> together.</div>
             <div>Each player has 20 moves per round.</div>
             <div>Try to get more points!</div>
           </div>
