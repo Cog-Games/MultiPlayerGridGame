@@ -100,7 +100,7 @@ function createSession() {
   return {
     runId: `mobile-staghunt-${new Date().toISOString().replace(/[^0-9A-Za-z]+/g, '-').replace(/-$/, '')}-${Math.random().toString(36).slice(2, 7)}`,
     manager: new GameStateManager(),
-    mode: 'solo',
+    mode: 'online',
     condition: CONFIG.game.defaultCondition,
     active: false,
     locked: true,
@@ -111,6 +111,15 @@ function createSession() {
     rounds: [],
     lastOutcome: null,
     saveResult: null,
+    online: {
+      socket: null,
+      type: null,
+      roomId: null,
+      localPlayer: 'player1',
+      remotePlayer: 'player2',
+      waiting: false,
+      pendingActions: [],
+    },
   };
 }
 
@@ -156,6 +165,19 @@ function clearTimers() {
   timers = [];
 }
 
+function closeOnlineSocket() {
+  const socket = game.online?.socket;
+  if (!socket) return;
+
+  socket.onopen = null;
+  socket.onmessage = null;
+  socket.onerror = null;
+  socket.onclose = null;
+  if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+    socket.close();
+  }
+}
+
 function getPlayerStepCounts() {
   const events = game.manager.roundData?.events || [];
   return events.reduce((counts, event) => {
@@ -177,6 +199,7 @@ function syncLayoutMode() {
 
 function startGame() {
   clearTimers();
+  closeOnlineSocket();
   const mode = game.mode;
   const condition = game.condition;
   game = createSession();
@@ -190,6 +213,16 @@ function startGame() {
   els.resultPanel.hidden = true;
   els.saveStatus.textContent = '';
   window.scrollTo(0, 0);
+
+  if (game.mode === 'online') {
+    game.active = false;
+    game.locked = true;
+    setStatus('Finding online player...');
+    render();
+    connectOnlineMatch();
+    return;
+  }
+
   startRound(0);
 }
 
@@ -205,6 +238,140 @@ function startRound(roundIndex) {
   beginPlayerTurn('player1');
 }
 
+function getOnlineSocketUrl() {
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${protocol}//${window.location.host}/ws`;
+}
+
+function connectOnlineMatch() {
+  let socket;
+  try {
+    socket = new WebSocket(getOnlineSocketUrl());
+  } catch {
+    fallbackOnlineToBot('connection-error');
+    return;
+  }
+
+  game.online.socket = socket;
+  game.online.waiting = true;
+
+  socket.onopen = () => {
+    sendSocketMessage({
+      type: 'join-mobile-stag-hunt',
+      runId: game.runId,
+    });
+  };
+
+  socket.onmessage = event => {
+    let message;
+    try {
+      message = JSON.parse(event.data);
+    } catch {
+      return;
+    }
+    handleOnlineMessage(message);
+  };
+
+  socket.onerror = () => {
+    if (!game.manager.state) fallbackOnlineToBot('connection-error');
+  };
+
+  socket.onclose = () => {
+    if (game.completedAt) return;
+    if (game.online.type === 'human') {
+      fallbackOnlineToBot('opponent-left');
+    } else if (!game.manager.state) {
+      fallbackOnlineToBot('connection-closed');
+    }
+  };
+}
+
+function handleOnlineMessage(message) {
+  if (message.type === 'waiting-for-human') {
+    game.online.waiting = true;
+    setStatus('Finding online player...');
+    render();
+    return;
+  }
+
+  if (message.type === 'human-match') {
+    game.mode = 'online';
+    game.condition = message.condition || 'baseline';
+    game.online.type = 'human';
+    game.online.roomId = message.roomId;
+    game.online.localPlayer = message.localPlayer;
+    game.online.remotePlayer = message.remotePlayer;
+    game.online.waiting = false;
+    setStatus(`Matched online as ${getPlayerName(game.online.localPlayer)}`);
+    setTimer(() => startRound(0), 350);
+    return;
+  }
+
+  if (message.type === 'bot-match') {
+    fallbackOnlineToBot(message.reason || 'assigned-bot');
+    return;
+  }
+
+  if (message.type === 'opponent-action') {
+    if (message.roomId !== game.online.roomId) return;
+    if (!game.manager.state || message.player !== game.currentActor) {
+      game.online.pendingActions.push(message);
+      return;
+    }
+    applyPlayerAction(message.player, message.action, false, { remote: true });
+    return;
+  }
+
+  if (message.type === 'opponent-left') {
+    fallbackOnlineToBot('opponent-left');
+  }
+}
+
+function fallbackOnlineToBot(reason) {
+  const needsRoundStart = !game.manager.state;
+  game.mode = 'solo';
+  game.condition = 'baseline';
+  game.online.type = 'bot';
+  game.online.roomId = null;
+  game.online.localPlayer = 'player1';
+  game.online.remotePlayer = 'player2';
+  game.online.waiting = false;
+
+  const status = reason === 'human-timeout'
+    ? 'No player found; bot partner'
+    : reason === 'assigned-bot'
+      ? 'Bot partner'
+      : 'Online unavailable; bot partner';
+  setStatus(status);
+
+  if (needsRoundStart) {
+    setTimer(() => startRound(0), 500);
+    return;
+  }
+
+  render();
+  if (game.active && game.currentActor === 'player2') {
+    setTimer(runPartnerBotTurn, CONFIG.game.timing.llmActionDelay);
+  }
+}
+
+function sendSocketMessage(message) {
+  const socket = game.online?.socket;
+  if (!socket || socket.readyState !== WebSocket.OPEN) return false;
+  socket.send(JSON.stringify(message));
+  return true;
+}
+
+function sendOnlineAction(player, action) {
+  if (game.online.type !== 'human') return;
+  sendSocketMessage({
+    type: 'mobile-action',
+    roomId: game.online.roomId,
+    player,
+    action,
+  });
+}
+
 function beginPlayerTurn(player) {
   if (!game.active) return;
   game.currentActor = player;
@@ -217,9 +384,29 @@ function beginPlayerTurn(player) {
     return;
   }
 
+  if (game.mode === 'online' && game.online.localPlayer !== player) {
+    game.locked = true;
+    setStatus(`Waiting for ${player === 'player1' ? 'Player 1' : 'Player 2'}`);
+    render();
+    drainPendingOnlineActions();
+    return;
+  }
+
   game.locked = false;
-  setStatus(player === 'player1' ? 'Player 1 turn' : 'Player 2 turn');
+  setStatus(game.mode === 'online' ? `Your turn (${getPlayerName(player)})` : `${getPlayerName(player)} turn`);
   render();
+}
+
+function drainPendingOnlineActions() {
+  if (game.mode !== 'online' || !game.online.pendingActions.length) return;
+
+  const actionIndex = game.online.pendingActions.findIndex(message => (
+    message.roomId === game.online.roomId && message.player === game.currentActor
+  ));
+  if (actionIndex < 0) return;
+
+  const [message] = game.online.pendingActions.splice(actionIndex, 1);
+  applyPlayerAction(message.player, message.action, false, { remote: true });
 }
 
 function runPartnerBotTurn() {
@@ -231,24 +418,28 @@ function runPartnerBotTurn() {
 function submitAction(actionName) {
   if (!game.active || game.locked) return;
   if (game.currentActor !== 'player1' && game.currentActor !== 'player2') return;
-  if (game.mode === 'solo' && game.currentActor === 'player2') return;
+  if (!isHumanControlledActor(game.currentActor)) return;
 
   if (actionName === 'signal') {
     if (!CONFIG.game.conditions[game.condition]?.signalEnabled) return;
-    applyPlayerAction(game.currentActor, { type: 'signal' }, false);
+    applyPlayerAction(game.currentActor, { type: 'signal' }, false, { broadcast: game.mode === 'online' });
     return;
   }
 
   const movement = ACTIONS[actionName];
   if (!movement) return;
-  applyPlayerAction(game.currentActor, movement, false);
+  applyPlayerAction(game.currentActor, movement, false, { broadcast: game.mode === 'online' });
 }
 
-function applyPlayerAction(player, action, automated) {
+function applyPlayerAction(player, action, automated, options = {}) {
   if (!game.active || game.currentActor !== player) return;
 
   const didAct = game.manager.movePlayer(player, action);
   if (!didAct) return;
+
+  if (options.broadcast) {
+    sendOnlineAction(player, action);
+  }
 
   game.locked = true;
   const label = action?.type === 'signal' ? ACTION_LABELS.signal : getMovementLabel(action);
@@ -328,6 +519,9 @@ function completeRound(outcome) {
     mapId: MAPS[game.currentRoundIndex % MAPS.length].name,
     condition: game.condition,
     mode: game.mode,
+    matchType: game.online.type,
+    localPlayer: game.online.localPlayer,
+    roomId: game.online.roomId,
     outcome,
     totalSteps: game.manager.stepCount,
     playerSteps: getPlayerStepCounts(),
@@ -357,6 +551,7 @@ async function finishGame() {
   game.active = false;
   game.locked = true;
   game.currentActor = null;
+  closeOnlineSocket();
 
   const scores = game.manager.getScores();
   const stagCaptures = game.rounds.filter(round => round.outcome.type === 'stag_captured').length;
@@ -437,7 +632,7 @@ async function saveGame() {
     phase: 'mobile-stag-hunt',
     condition: game.condition,
     conditionLabel: CONFIG.game.conditions[game.condition]?.label || game.condition,
-    playerMode: game.mode === 'solo' ? 'human-scripted-partner' : 'local-hotseat',
+    playerMode: getPlayerModeLabel(),
     exportedAt: new Date().toISOString(),
     gameData: {
       gameType: 'DynamicStagHunt',
@@ -447,6 +642,11 @@ async function saveGame() {
       startedAt: game.startedAt,
       completedAt: game.completedAt,
       rounds: game.rounds,
+      onlineMatch: {
+        type: game.online.type,
+        roomId: game.online.roomId,
+        localPlayer: game.online.localPlayer,
+      },
       exportData: game.manager.exportData(),
     },
   };
@@ -507,7 +707,7 @@ function updateLabels() {
 function updateControls() {
   const humanTurn = game.active
     && !game.locked
-    && (game.currentActor === 'player1' || (game.currentActor === 'player2' && game.mode === 'hotseat'));
+    && isHumanControlledActor(game.currentActor);
   const signalEnabled = CONFIG.game.conditions[game.condition]?.signalEnabled;
 
   els.controls.querySelectorAll('[data-action]').forEach(button => {
@@ -520,6 +720,22 @@ function updateControls() {
   });
 
   els.startBtn.textContent = game.rounds.length || game.active ? 'Restart' : 'Start';
+}
+
+function isHumanControlledActor(player) {
+  if (player !== 'player1' && player !== 'player2') return false;
+  if (game.mode === 'hotseat') return true;
+  if (game.mode === 'solo') return player === 'player1';
+  if (game.mode === 'online') return game.online.type === 'human' && game.online.localPlayer === player;
+  return false;
+}
+
+function getPlayerModeLabel() {
+  if (game.online.type === 'human') return `online-human-${game.online.localPlayer}`;
+  if (game.online.type === 'bot') return 'online-assigned-bot';
+  if (game.mode === 'solo') return 'human-scripted-partner';
+  if (game.mode === 'hotseat') return 'local-hotseat';
+  return game.mode;
 }
 
 function getViewportSize() {

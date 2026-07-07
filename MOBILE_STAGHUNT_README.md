@@ -11,6 +11,17 @@ This phone entry uses the existing Dynamic Stag Hunt rules from the browser game
 - optional signaling condition
 - 10 rounds, up to 20 moves per player per round
 
+## Online matching
+
+The default phone flow is Online + Base. When a player starts, the server sends
+roughly half of joiners into a human-matching queue and half directly to the
+scripted bot condition. Human-queue players are paired with each other when
+possible. If no other human player is found within 5 seconds, that player
+continues with the bot condition.
+
+Online clients connect to the same server over `/ws`, so Render only needs one
+Web Service for the static app, save API, and matchmaking relay.
+
 ## Run
 
 ```bash

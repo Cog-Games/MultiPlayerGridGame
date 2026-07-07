@@ -17,7 +17,9 @@
     "start": "node server/index.js",
     "dev:mobile": "vite --host 0.0.0.0 --open /mobile-staghunt.html"
   },
-  "dependencies": {},
+  "dependencies": {
+    "ws": "^8.21.0"
+  },
   "devDependencies": {
     "vite": "^4.4.9"
   },

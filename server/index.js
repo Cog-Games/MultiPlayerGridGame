@@ -1,8 +1,10 @@
 import http from 'node:http';
 import fsSync from 'node:fs';
 import fs from 'node:fs/promises';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { WebSocket, WebSocketServer } from 'ws';
 import { fetchWithRetry } from './llmRetry.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -20,6 +22,15 @@ const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5-2025100
 const ANTHROPIC_VERSION = '2023-06-01';
 const PLAYER_ACTIONS = ['up', 'down', 'left', 'right', 'signal'];
 const DEFAULT_PLAYER_ACTIONS = ['up', 'down', 'left', 'right'];
+const MOBILE_MATCH_TIMEOUT_MS = 5000;
+const MOBILE_ASSIGNMENT_GROUP_SIZE = 4;
+
+const mobileMatchmaker = {
+  assignmentIndex: 0,
+  waiting: null,
+  rooms: new Map(),
+  clients: new Map(),
+};
 
 const ACTION_SCHEMA = {
   type: 'object',
@@ -556,6 +567,203 @@ async function serveStatic(req, res) {
   }
 }
 
+function sendSocketJson(ws, payload) {
+  if (ws.readyState !== WebSocket.OPEN) return false;
+  ws.send(JSON.stringify(payload));
+  return true;
+}
+
+function createMobileClient(ws) {
+  const client = {
+    id: crypto.randomUUID(),
+    ws,
+    roomId: null,
+    role: null,
+    matchType: null,
+    waitingTimer: null,
+  };
+  mobileMatchmaker.clients.set(ws, client);
+  return client;
+}
+
+function getMobileClient(ws) {
+  return mobileMatchmaker.clients.get(ws) || createMobileClient(ws);
+}
+
+function shouldTryHumanMobileMatch() {
+  const slot = mobileMatchmaker.assignmentIndex % MOBILE_ASSIGNMENT_GROUP_SIZE;
+  mobileMatchmaker.assignmentIndex += 1;
+  return slot < 2;
+}
+
+function clearWaitingTimer(client) {
+  if (client?.waitingTimer) {
+    clearTimeout(client.waitingTimer);
+    client.waitingTimer = null;
+  }
+}
+
+function takeWaitingMobileClient() {
+  const waiting = mobileMatchmaker.waiting;
+  if (!waiting) return null;
+
+  mobileMatchmaker.waiting = null;
+  clearWaitingTimer(waiting);
+
+  if (waiting.ws.readyState !== WebSocket.OPEN) return null;
+  return waiting;
+}
+
+function sendMobileBotMatch(client, reason = 'assigned-bot') {
+  clearWaitingTimer(client);
+  if (mobileMatchmaker.waiting === client) mobileMatchmaker.waiting = null;
+  client.matchType = 'bot';
+  client.roomId = null;
+  client.role = 'player1';
+
+  sendSocketJson(client.ws, {
+    type: 'bot-match',
+    reason,
+    localPlayer: 'player1',
+    condition: 'baseline',
+  });
+}
+
+function pairMobileClients(left, right) {
+  clearWaitingTimer(left);
+  clearWaitingTimer(right);
+
+  const roomId = `mobile-${crypto.randomUUID()}`;
+  left.roomId = roomId;
+  right.roomId = roomId;
+  left.role = 'player1';
+  right.role = 'player2';
+  left.matchType = 'human';
+  right.matchType = 'human';
+  mobileMatchmaker.rooms.set(roomId, { id: roomId, clients: [left, right] });
+
+  sendSocketJson(left.ws, {
+    type: 'human-match',
+    roomId,
+    localPlayer: 'player1',
+    remotePlayer: 'player2',
+    condition: 'baseline',
+  });
+  sendSocketJson(right.ws, {
+    type: 'human-match',
+    roomId,
+    localPlayer: 'player2',
+    remotePlayer: 'player1',
+    condition: 'baseline',
+  });
+}
+
+function queueMobileHumanCandidate(client) {
+  const waiting = takeWaitingMobileClient();
+  if (waiting && waiting !== client) {
+    pairMobileClients(waiting, client);
+    return;
+  }
+
+  mobileMatchmaker.waiting = client;
+  client.matchType = 'waiting-human';
+  client.role = null;
+  sendSocketJson(client.ws, {
+    type: 'waiting-for-human',
+    timeoutMs: MOBILE_MATCH_TIMEOUT_MS,
+  });
+
+  client.waitingTimer = setTimeout(() => {
+    if (mobileMatchmaker.waiting !== client) return;
+    sendMobileBotMatch(client, 'human-timeout');
+  }, MOBILE_MATCH_TIMEOUT_MS);
+}
+
+function handleMobileJoin(ws) {
+  const client = getMobileClient(ws);
+  cleanupMobileClient(ws, { keepSocket: true, notifyPeer: false });
+
+  if (shouldTryHumanMobileMatch()) {
+    queueMobileHumanCandidate(client);
+  } else {
+    sendMobileBotMatch(client, 'assigned-bot');
+  }
+}
+
+function relayMobileAction(ws, message) {
+  const client = mobileMatchmaker.clients.get(ws);
+  if (!client?.roomId) return;
+
+  const room = mobileMatchmaker.rooms.get(client.roomId);
+  if (!room) return;
+
+  const other = room.clients.find(candidate => candidate.ws !== ws);
+  if (!other) return;
+
+  sendSocketJson(other.ws, {
+    type: 'opponent-action',
+    roomId: client.roomId,
+    player: message.player,
+    action: message.action,
+  });
+}
+
+function handleMobileSocketMessage(ws, raw) {
+  let message;
+  try {
+    message = JSON.parse(String(raw));
+  } catch {
+    sendSocketJson(ws, { type: 'error', error: 'Invalid JSON message.' });
+    return;
+  }
+
+  if (message.type === 'join-mobile-stag-hunt') {
+    handleMobileJoin(ws);
+    return;
+  }
+
+  if (message.type === 'mobile-action') {
+    relayMobileAction(ws, message);
+  }
+}
+
+function cleanupMobileClient(ws, options = {}) {
+  const { keepSocket = false, notifyPeer = true } = options;
+  const client = mobileMatchmaker.clients.get(ws);
+  if (!client) return;
+
+  clearWaitingTimer(client);
+
+  if (mobileMatchmaker.waiting === client) {
+    mobileMatchmaker.waiting = null;
+  }
+
+  if (client.roomId) {
+    const room = mobileMatchmaker.rooms.get(client.roomId);
+    if (room) {
+      const other = room.clients.find(candidate => candidate.ws !== ws);
+      if (notifyPeer && other) {
+        sendSocketJson(other.ws, {
+          type: 'opponent-left',
+          roomId: client.roomId,
+        });
+        other.roomId = null;
+        other.matchType = 'bot';
+        other.role = other.role || 'player1';
+      }
+      mobileMatchmaker.rooms.delete(client.roomId);
+    }
+  }
+
+  client.roomId = null;
+  client.matchType = null;
+  client.role = null;
+
+  if (!keepSocket) {
+    mobileMatchmaker.clients.delete(ws);
+  }
+}
+
 const server = http.createServer(async (req, res) => {
   if (req.method === 'GET' && req.url === '/health') {
     sendJson(res, 200, {
@@ -563,6 +771,10 @@ const server = http.createServer(async (req, res) => {
       provider: LLM_PROVIDER,
       providerLabel: getProviderLabel(),
       model: getActiveModel(),
+      mobileMatchmaking: {
+        waiting: Boolean(mobileMatchmaker.waiting),
+        activeHumanRooms: mobileMatchmaker.rooms.size,
+      },
     });
     return;
   }
@@ -584,6 +796,14 @@ const server = http.createServer(async (req, res) => {
   }
 
   await serveStatic(req, res);
+});
+
+const wss = new WebSocketServer({ server, path: '/ws' });
+wss.on('connection', ws => {
+  createMobileClient(ws);
+  ws.on('message', message => handleMobileSocketMessage(ws, message));
+  ws.on('close', () => cleanupMobileClient(ws));
+  ws.on('error', () => cleanupMobileClient(ws));
 });
 
 server.listen(PORT, () => {
