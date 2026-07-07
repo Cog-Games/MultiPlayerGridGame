@@ -143,6 +143,8 @@ function createSession() {
       roomId: null,
       localPlayer: 'player1',
       remotePlayer: 'player2',
+      localParticipantLabel: null,
+      remoteParticipantLabel: null,
       waiting: false,
       pendingActions: [],
     },
@@ -382,6 +384,8 @@ function handleOnlineMessage(message) {
     game.online.roomId = message.roomId;
     game.online.localPlayer = message.localPlayer;
     game.online.remotePlayer = message.remotePlayer;
+    game.online.localParticipantLabel = message.localParticipantLabel || null;
+    game.online.remoteParticipantLabel = message.remoteParticipantLabel || null;
     game.online.waiting = false;
     finishOnlineMatching(PARTICIPANT_CONDITIONS.human);
     return;
@@ -429,6 +433,8 @@ function fallbackOnlineToBot(reason) {
   game.online.roomId = null;
   game.online.localPlayer = 'player1';
   game.online.remotePlayer = 'player2';
+  game.online.localParticipantLabel = null;
+  game.online.remoteParticipantLabel = null;
   game.online.waiting = false;
 
   if (needsRoundStart) {
@@ -472,6 +478,7 @@ function assignParticipantCondition(conditionCode) {
 
 function setMatchingMessage(text) {
   els.matchingStatus.textContent = text;
+  els.matchStartBtn.textContent = text;
   const conditionCode = game.online.conditionCode;
   els.matchingCondition.textContent = getConditionBadgeText(conditionCode);
   els.matchingCondition.hidden = !conditionCode;
@@ -678,6 +685,8 @@ function completeRound(outcome) {
     matchType: game.online.type,
     matchSessionId: game.online.matchSessionId,
     localPlayer: game.online.localPlayer,
+    localParticipantLabel: game.online.localParticipantLabel,
+    remoteParticipantLabel: game.online.remoteParticipantLabel,
     roomId: game.online.roomId,
     outcome,
     events: rawRoundData.events || [],
@@ -718,13 +727,13 @@ async function finishGame() {
   const scores = game.manager.getScores();
   const localPlayer = getLocalPlayer();
   const partnerPlayer = localPlayer === 'player1' ? 'player2' : 'player1';
-  const partnerType = getFinalPartnerType();
+  const partnerLine = getFinalPartnerLine();
 
   els.resultSummary.innerHTML = `
     <strong>Game complete.</strong>
     You earned ${formatScore(scores[localPlayer])} points.
     Your partner earned ${formatScore(scores[partnerPlayer])} points.
-    Your partner was ${partnerType}.
+    ${partnerLine}
   `;
   els.resultPanel.hidden = false;
   setStatus('Game complete');
@@ -740,9 +749,18 @@ function getLocalPlayer() {
   return 'player1';
 }
 
-function getFinalPartnerType() {
-  if (game.online.type === 'human' || game.mode === 'hotseat') return 'a human';
-  return 'an AI';
+function getFinalPartnerLine() {
+  if (game.online.type === 'human') {
+    const localLabel = game.online.localParticipantLabel || 'player';
+    const remoteLabel = game.online.remoteParticipantLabel || 'player';
+    return `You are ${localLabel}. Your partner is a human ${remoteLabel}!`;
+  }
+
+  if (game.mode === 'hotseat') {
+    return 'Your partner was a human.';
+  }
+
+  return 'Your partner was an AI.';
 }
 
 function getOutcomeText(outcome) {
@@ -875,6 +893,8 @@ function createMobileRoundPayload(roundRecord) {
     participantCondition: game.online.conditionCode,
     playerMode: getPlayerModeLabel(),
     matchSessionId: game.online.matchSessionId,
+    localParticipantLabel: game.online.localParticipantLabel,
+    remoteParticipantLabel: game.online.remoteParticipantLabel,
     localPlayer,
     roomId: game.online.roomId,
     matchType: game.online.type,
@@ -895,6 +915,8 @@ function createMobileRoundPayload(roundRecord) {
         participantCondition: game.online.conditionCode,
         roomId: game.online.roomId,
         localPlayer,
+        localParticipantLabel: game.online.localParticipantLabel,
+        remoteParticipantLabel: game.online.remoteParticipantLabel,
       },
     },
   };
@@ -961,6 +983,8 @@ async function saveGame() {
     participantCondition: game.online.conditionCode,
     playerMode: getPlayerModeLabel(),
     matchSessionId: game.online.matchSessionId,
+    localParticipantLabel: game.online.localParticipantLabel,
+    remoteParticipantLabel: game.online.remoteParticipantLabel,
     exportedAt: new Date().toISOString(),
     gameData: {
       gameType: 'DynamicStagHunt',
@@ -976,6 +1000,8 @@ async function saveGame() {
         participantCondition: game.online.conditionCode,
         roomId: game.online.roomId,
         localPlayer: game.online.localPlayer,
+        localParticipantLabel: game.online.localParticipantLabel,
+        remoteParticipantLabel: game.online.remoteParticipantLabel,
       },
       exportData: game.manager.exportData(),
     },
@@ -1061,10 +1087,19 @@ function updateControls() {
   });
 
   const canStartMatchedSession = game.online.matchingStage === 'ready';
-  els.matchStartBtn.hidden = !canStartMatchedSession;
+  const lobbyActive = isOnlineLobbyActive();
+  els.matchStartBtn.hidden = !lobbyActive;
   els.matchStartBtn.disabled = !canStartMatchedSession;
-  els.matchStartBtn.textContent = MATCH_READY_ACTION_TEXT;
+  els.matchStartBtn.classList.toggle('is-status', !canStartMatchedSession);
+  els.matchStartBtn.textContent = getMatchStartButtonText();
   els.startBtn.textContent = game.rounds.length || game.active ? 'Restart' : 'Start';
+}
+
+function getMatchStartButtonText() {
+  if (game.online.matchingStage === 'ready') return MATCH_READY_ACTION_TEXT;
+  if (game.online.matchingStage === 'waiting') return MATCH_WAITING_TEXT;
+  if (game.online.matchingStage === 'matching') return MATCHING_TEXT;
+  return MATCHING_TEXT;
 }
 
 function isHumanControlledActor(player) {

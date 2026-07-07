@@ -507,6 +507,16 @@
       opacity: 0.48;
     }
 
+    .match-lobby-btn.is-status {
+      border: 1px solid #d4deea;
+      background: #e9eff7;
+      color: #3b4658;
+    }
+
+    .match-lobby-btn.is-status:disabled {
+      opacity: 1;
+    }
+
     .controls-panel {
       padding: 10px;
       display: grid;
@@ -646,7 +656,7 @@
 
     <section class="matching-panel" id="matching-panel" hidden aria-label="Partner matching">
       <div class="matching-card">
-        <button class="match-lobby-btn matching-status" type="button" id="matching-status" disabled>Matching your partner...</button>
+        <button class="match-lobby-btn matching-status" type="button" id="matching-status" hidden disabled>Matching your partner...</button>
         <div class="matching-demo" id="matching-demo">
           <canvas id="matching-demo-canvas" aria-label="Demo Stag Hunt map"></canvas>
           <div class="matching-legend" aria-label="Demo map legend">
@@ -664,7 +674,7 @@
             <div>Try to get more points!</div>
           </div>
         </div>
-        <button class="primary-btn match-lobby-btn" type="button" id="match-start-btn" hidden>Ready to start</button>
+        <button class="primary-btn match-lobby-btn is-status" type="button" id="match-start-btn" disabled>Matching your partner...</button>
       </div>
     </section>
 

@@ -973,6 +973,7 @@ function sendSocketJson(ws, payload) {
 function createMobileClient(ws) {
   const client = {
     id: crypto.randomUUID(),
+    participantLabel: null,
     ws,
     sessionId: MOBILE_DEFAULT_SESSION_ID,
     roomId: null,
@@ -984,6 +985,14 @@ function createMobileClient(ws) {
   };
   mobileMatchmaker.clients.set(ws, client);
   return client;
+}
+
+function createMobileParticipantLabel(session) {
+  const participantNumber = session.nextParticipantNumber;
+  session.nextParticipantNumber = session.nextParticipantNumber >= 99
+    ? 1
+    : session.nextParticipantNumber + 1;
+  return `player ${String(participantNumber).padStart(2, '0')}`;
 }
 
 function getMobileClient(ws) {
@@ -1018,6 +1027,7 @@ function getMobileSession(sessionId = MOBILE_DEFAULT_SESSION_ID) {
       botAssigned: 0,
       humanRoomsCreated: 0,
       botMatchesCreated: 0,
+      nextParticipantNumber: 1,
       createdAt: new Date().toISOString(),
     };
     mobileMatchmaker.sessions.set(id, session);
@@ -1094,6 +1104,8 @@ function pairMobileClients(left, right, session = getMobileClientSession(left)) 
   right.matchType = 'human';
   left.assignmentType = 'human';
   right.assignmentType = 'human';
+  left.participantLabel = createMobileParticipantLabel(session);
+  right.participantLabel = createMobileParticipantLabel(session);
   left.ready = false;
   right.ready = false;
   session.humanAssigned += 2;
@@ -1111,6 +1123,8 @@ function pairMobileClients(left, right, session = getMobileClientSession(left)) 
     roomId,
     localPlayer: 'player1',
     remotePlayer: 'player2',
+    localParticipantLabel: left.participantLabel,
+    remoteParticipantLabel: right.participantLabel,
     condition: 'baseline',
     sessionId: session.id,
   });
@@ -1119,6 +1133,8 @@ function pairMobileClients(left, right, session = getMobileClientSession(left)) 
     roomId,
     localPlayer: 'player2',
     remotePlayer: 'player1',
+    localParticipantLabel: right.participantLabel,
+    remoteParticipantLabel: left.participantLabel,
     condition: 'baseline',
     sessionId: session.id,
   });
@@ -1159,6 +1175,7 @@ function handleMobileJoin(ws, message = {}) {
   const client = getMobileClient(ws);
   cleanupMobileClient(ws, { keepSocket: true, notifyPeer: false });
   client.sessionId = getSafeMobileSessionId(message.sessionId);
+  client.participantLabel = null;
   client.assignmentType = null;
   queueMobileHumanCandidate(client);
 }
