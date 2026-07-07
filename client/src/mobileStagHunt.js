@@ -3,7 +3,7 @@ import { GameStateManager } from './game/GameStateManager.js';
 import { GameHelpers } from './utils/GameHelpers.js';
 
 const GRID_SIZE = CONFIG.game.matrixSize;
-const TOTAL_ROUNDS = CONFIG.game.numRounds;
+const TOTAL_ROUNDS = 3;
 const MAX_PLAYER_STEPS = 20;
 const ONLINE_MATCHING_STAGE_MS = 10000;
 const MATCHING_TEXT = 'Matching your partner...';
@@ -81,6 +81,10 @@ const els = {
   matchingCondition: document.getElementById('matching-condition'),
   matchingDemoCanvas: document.getElementById('matching-demo-canvas'),
   matchStartBtn: document.getElementById('match-start-btn'),
+  roundFeedback: document.getElementById('round-feedback'),
+  roundFeedbackLabel: document.getElementById('round-feedback-label'),
+  roundFeedbackTitle: document.getElementById('round-feedback-title'),
+  roundFeedbackMessage: document.getElementById('round-feedback-message'),
   topbar: document.querySelector('.topbar'),
   boardPanel: document.querySelector('.board-panel'),
   controlsPanel: document.querySelector('.controls-panel'),
@@ -129,6 +133,7 @@ function createSession() {
     online: {
       socket: null,
       type: null,
+      matchSessionId: getMatchSessionId(),
       conditionCode: null,
       matchingStartedAt: null,
       matchingSequence: 0,
@@ -144,6 +149,18 @@ function createSession() {
   };
 }
 
+function getMatchSessionId() {
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get('session') || params.get('class') || 'default';
+  const safe = String(sessionId)
+    .trim()
+    .replace(/[^a-zA-Z0-9_-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 80);
+  return safe || 'default';
+}
+
 function cloneMap(map) {
   return {
     name: map.name,
@@ -153,6 +170,10 @@ function cloneMap(map) {
     rabbits: map.rabbits.map(pos => [...pos]),
     obstacles: map.obstacles.map(pos => [...pos]),
   };
+}
+
+function clonePlainData(value) {
+  return JSON.parse(JSON.stringify(value));
 }
 
 function getPreviewState() {
@@ -220,17 +241,21 @@ function isOnlineLobbyActive() {
 function syncLayoutMode() {
   const playing = isRunInProgress();
   const lobby = isOnlineLobbyActive();
+  const complete = Boolean(game.completedAt);
   els.app.classList.toggle('is-playing', playing);
   els.app.classList.toggle('is-lobby', lobby);
+  els.app.classList.toggle('is-complete', complete);
   document.body.classList.toggle('is-playing', playing);
   document.body.classList.toggle('is-lobby', lobby);
-  els.setupPanel.hidden = playing || lobby;
+  document.body.classList.toggle('is-complete', complete);
+  els.setupPanel.hidden = playing || lobby || complete;
   els.matchingPanel.hidden = !lobby;
 }
 
 function beginOnlineMatching() {
   clearTimers();
   closeOnlineSocket();
+  hideRoundFeedback();
   game = createSession();
   game.mode = 'online';
   game.condition = CONFIG.game.defaultCondition;
@@ -278,6 +303,7 @@ function startPreparedGame() {
 }
 
 function startRound(roundIndex) {
+  hideRoundFeedback();
   const map = cloneMap(MAPS[roundIndex % MAPS.length]);
   game.currentRoundIndex = roundIndex;
   game.active = true;
@@ -310,6 +336,7 @@ function connectOnlineMatch() {
     sendSocketMessage({
       type: 'join-mobile-stag-hunt',
       runId: game.runId,
+      sessionId: game.online.matchSessionId,
     });
   };
 
@@ -339,6 +366,7 @@ function connectOnlineMatch() {
 
 function handleOnlineMessage(message) {
   if (message.type === 'waiting-for-human') {
+    game.online.matchSessionId = message.sessionId || game.online.matchSessionId;
     game.online.waiting = true;
     setMatchingMessage(MATCHING_TEXT);
     setStatus(MATCHING_TEXT);
@@ -350,6 +378,7 @@ function handleOnlineMessage(message) {
     game.mode = 'online';
     game.condition = message.condition || 'baseline';
     game.online.type = 'human';
+    game.online.matchSessionId = message.sessionId || game.online.matchSessionId;
     game.online.roomId = message.roomId;
     game.online.localPlayer = message.localPlayer;
     game.online.remotePlayer = message.remotePlayer;
@@ -359,6 +388,7 @@ function handleOnlineMessage(message) {
   }
 
   if (message.type === 'bot-match') {
+    game.online.matchSessionId = message.sessionId || game.online.matchSessionId;
     fallbackOnlineToBot(message.reason || 'assigned-bot');
     return;
   }
@@ -395,6 +425,7 @@ function fallbackOnlineToBot(reason) {
   game.mode = 'solo';
   game.condition = 'baseline';
   game.online.type = 'bot';
+  game.online.matchSessionId = game.online.matchSessionId || getMatchSessionId();
   game.online.roomId = null;
   game.online.localPlayer = 'player1';
   game.online.remotePlayer = 'player2';
@@ -442,7 +473,7 @@ function assignParticipantCondition(conditionCode) {
 function setMatchingMessage(text) {
   els.matchingStatus.textContent = text;
   const conditionCode = game.online.conditionCode;
-  els.matchingCondition.textContent = conditionCode || '';
+  els.matchingCondition.textContent = getConditionBadgeText(conditionCode);
   els.matchingCondition.hidden = !conditionCode;
 }
 
@@ -629,28 +660,42 @@ function completeRound(outcome) {
   game.locked = true;
   clearTimers();
 
+  const completedAt = new Date().toISOString();
+  const map = MAPS[game.currentRoundIndex % MAPS.length];
+  game.manager.roundData.outcome = outcome;
+  game.manager.roundData.completedAt = completedAt;
+  game.manager.roundData.totalSteps = game.manager.stepCount;
+  const rawRoundData = clonePlainData(game.manager.roundData);
+  const movementData = createMovementData(rawRoundData);
   const roundRecord = {
     roundIndex: game.currentRoundIndex,
-    mapId: MAPS[game.currentRoundIndex % MAPS.length].name,
+    roundNumber: game.currentRoundIndex + 1,
+    mapId: map.name,
+    map: clonePlainData(map),
     condition: game.condition,
     participantCondition: game.online.conditionCode,
     mode: game.mode,
     matchType: game.online.type,
+    matchSessionId: game.online.matchSessionId,
     localPlayer: game.online.localPlayer,
     roomId: game.online.roomId,
     outcome,
+    events: rawRoundData.events || [],
+    movementData,
+    roundData: rawRoundData,
     totalSteps: game.manager.stepCount,
     playerSteps: getPlayerStepCounts(),
     maxPlayerSteps: MAX_PLAYER_STEPS,
     scores: game.manager.getScores(),
-    completedAt: new Date().toISOString(),
+    completedAt,
   };
 
-  game.manager.roundData.outcome = outcome;
   game.rounds.push(roundRecord);
   game.manager.finalizeRound();
+  void saveRoundData(roundRecord);
   game.lastOutcome = outcome;
   setStatus(getOutcomeText(outcome));
+  showRoundFeedback(outcome);
   render();
 
   setTimer(() => {
@@ -667,16 +712,19 @@ async function finishGame() {
   game.active = false;
   game.locked = true;
   game.currentActor = null;
+  hideRoundFeedback();
   closeOnlineSocket();
 
   const scores = game.manager.getScores();
-  const stagCaptures = game.rounds.filter(round => round.outcome.type === 'stag_captured').length;
-  const rabbitCaptures = game.rounds.filter(round => round.outcome.type.startsWith('rabbit_captured')).length;
+  const localPlayer = getLocalPlayer();
+  const partnerPlayer = localPlayer === 'player1' ? 'player2' : 'player1';
+  const partnerType = getFinalPartnerType();
 
   els.resultSummary.innerHTML = `
-    <strong>Finished ${TOTAL_ROUNDS} rounds.</strong>
-    Stag captures: ${stagCaptures}. Rabbit captures: ${rabbitCaptures}.
-    Final score: P1 ${formatScore(scores.player1)}, P2 ${formatScore(scores.player2)}.
+    <strong>Game complete.</strong>
+    You earned ${formatScore(scores[localPlayer])} points.
+    Your partner earned ${formatScore(scores[partnerPlayer])} points.
+    Your partner was ${partnerType}.
   `;
   els.resultPanel.hidden = false;
   setStatus('Game complete');
@@ -684,16 +732,77 @@ async function finishGame() {
 
   const saveResult = await saveGame();
   game.saveResult = saveResult;
-  els.saveStatus.textContent = saveResult.ok
-    ? 'Saved on this device and server.'
-    : `Saved on this device. Server save unavailable: ${saveResult.error}`;
+  els.saveStatus.textContent = '';
+}
+
+function getLocalPlayer() {
+  if (game.mode === 'online' && game.online.localPlayer === 'player2') return 'player2';
+  return 'player1';
+}
+
+function getFinalPartnerType() {
+  if (game.online.type === 'human' || game.mode === 'hotseat') return 'a human';
+  return 'an AI';
 }
 
 function getOutcomeText(outcome) {
-  if (outcome.type === 'stag_captured') return `Stag captured: both players +${CONFIG.game.rewards.stagCapture}`;
-  if (outcome.type === 'rabbit_captured_p1') return `Player 1 captured a rabbit: +${CONFIG.game.rewards.rabbitCapture}`;
-  if (outcome.type === 'rabbit_captured_p2') return `Player 2 captured a rabbit: +${CONFIG.game.rewards.rabbitCapture}`;
-  return 'Round timed out';
+  const feedback = getRoundFeedback(outcome);
+  return `${feedback.title} ${feedback.message}`;
+}
+
+function showRoundFeedback(outcome) {
+  const feedback = getRoundFeedback(outcome);
+  els.roundFeedbackLabel.textContent = `Round ${game.currentRoundIndex + 1} result`;
+  els.roundFeedbackTitle.textContent = feedback.title;
+  els.roundFeedbackMessage.textContent = feedback.message;
+  els.roundFeedback.hidden = false;
+}
+
+function hideRoundFeedback() {
+  if (!els.roundFeedback) return;
+  els.roundFeedback.hidden = true;
+}
+
+function getRoundFeedback(outcome) {
+  if (outcome.type === 'stag_captured') {
+    return {
+      title: 'Stag captured!',
+      message: `You both got ${CONFIG.game.rewards.stagCapture} points.`,
+    };
+  }
+
+  if (outcome.type === 'rabbit_captured_p1') {
+    return getRabbitFeedback('player1');
+  }
+
+  if (outcome.type === 'rabbit_captured_p2') {
+    return getRabbitFeedback('player2');
+  }
+
+  return {
+    title: 'Round timed out.',
+    message: 'No points this round.',
+  };
+}
+
+function getRabbitFeedback(player) {
+  let message;
+  if (game.mode === 'online' && game.online.localPlayer === player) {
+    message = `You got ${CONFIG.game.rewards.rabbitCapture} points.`;
+  } else if (game.mode === 'online') {
+    message = `Your partner got ${CONFIG.game.rewards.rabbitCapture} points.`;
+  } else if (game.mode === 'solo' && player === 'player1') {
+    message = `You got ${CONFIG.game.rewards.rabbitCapture} points.`;
+  } else if (game.mode === 'solo') {
+    message = `Your partner got ${CONFIG.game.rewards.rabbitCapture} points.`;
+  } else {
+    message = `${getPlayerName(player)} got ${CONFIG.game.rewards.rabbitCapture} points.`;
+  }
+
+  return {
+    title: 'Rabbit captured!',
+    message,
+  };
 }
 
 function getMovementLabel(action) {
@@ -740,6 +849,107 @@ function choosePartnerAction() {
     .sort((left, right) => right.score - left.score)[0].action;
 }
 
+function createMobileRoundPayload(roundRecord) {
+  const roundNumber = roundRecord.roundNumber || roundRecord.roundIndex + 1;
+  const exportedAt = new Date().toISOString();
+  const localPlayer = game.online.localPlayer || 'player';
+  const fileName = [
+    'cellPhoneStagHunt',
+    sanitizeFilePart(game.runId),
+    `round-${String(roundNumber).padStart(2, '0')}`,
+    sanitizeFilePart(localPlayer),
+    exportedAt.replace(/[^0-9A-Za-z]+/g, '-').replace(/-$/, ''),
+  ].join('-') + '.json';
+
+  return {
+    fileName,
+    runId: game.runId,
+    stage: 'round-end',
+    completed: false,
+    phase: 'mobile-stag-hunt',
+    exportedAt,
+    roundIndex: roundRecord.roundIndex,
+    roundNumber,
+    condition: game.condition,
+    conditionLabel: CONFIG.game.conditions[game.condition]?.label || game.condition,
+    participantCondition: game.online.conditionCode,
+    playerMode: getPlayerModeLabel(),
+    matchSessionId: game.online.matchSessionId,
+    localPlayer,
+    roomId: game.online.roomId,
+    matchType: game.online.type,
+    movementData: clonePlainData(roundRecord.movementData || []),
+    round: clonePlainData(roundRecord),
+    gameData: {
+      gameType: 'DynamicStagHunt',
+      gridSize: GRID_SIZE,
+      totalRounds: TOTAL_ROUNDS,
+      maxPlayerSteps: MAX_PLAYER_STEPS,
+      startedAt: game.startedAt,
+      completedAt: game.completedAt,
+      roundsCompleted: game.rounds.length,
+      rounds: clonePlainData(game.rounds),
+      onlineMatch: {
+        type: game.online.type,
+        sessionId: game.online.matchSessionId,
+        participantCondition: game.online.conditionCode,
+        roomId: game.online.roomId,
+        localPlayer,
+      },
+    },
+  };
+}
+
+async function saveRoundData(roundRecord) {
+  const payload = createMobileRoundPayload(roundRecord);
+  localStorage.setItem(
+    `cellPhoneStagHunt-${payload.runId}-round-${String(payload.roundNumber).padStart(2, '0')}-${payload.localPlayer}`,
+    JSON.stringify(payload),
+  );
+
+  try {
+    const response = await fetch('/api/save-mobile-round', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.error || `HTTP ${response.status}`);
+    }
+    return { ok: true };
+  } catch (error) {
+    console.error('[mobile-stag-hunt] round save failed', error);
+    return { ok: false, error: error.message };
+  }
+}
+
+function sanitizeFilePart(value) {
+  return String(value || 'unknown')
+    .trim()
+    .replace(/[^a-zA-Z0-9_.-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 80) || 'unknown';
+}
+
+function createMovementData(roundData = {}) {
+  const startTime = Number(roundData.startTime) || null;
+  return (roundData.events || []).map((event, index) => ({
+    stepIndex: index + 1,
+    agent: event.agent,
+    action: event.action,
+    actionLabel: event.actionLabel,
+    time: event.time,
+    elapsedMs: startTime && event.time ? event.time - startTime : null,
+    player1Position: event.positions?.player1 || null,
+    player2Position: event.positions?.player2 || null,
+    stagPosition: event.positions?.stag || null,
+    player1Signal: Boolean(event.positions?.signals?.player1),
+    player2Signal: Boolean(event.positions?.signals?.player2),
+  }));
+}
+
 async function saveGame() {
   const payload = {
     runId: game.runId,
@@ -750,6 +960,7 @@ async function saveGame() {
     conditionLabel: CONFIG.game.conditions[game.condition]?.label || game.condition,
     participantCondition: game.online.conditionCode,
     playerMode: getPlayerModeLabel(),
+    matchSessionId: game.online.matchSessionId,
     exportedAt: new Date().toISOString(),
     gameData: {
       gameType: 'DynamicStagHunt',
@@ -761,6 +972,7 @@ async function saveGame() {
       rounds: game.rounds,
       onlineMatch: {
         type: game.online.type,
+        sessionId: game.online.matchSessionId,
         participantCondition: game.online.conditionCode,
         roomId: game.online.roomId,
         localPlayer: game.online.localPlayer,
@@ -788,8 +1000,16 @@ async function saveGame() {
 }
 
 function setStatus(text) {
-  const prefix = game.online?.conditionCode;
-  els.status.textContent = prefix ? `${prefix} - ${text}` : text;
+  els.status.textContent = text;
+  const conditionCode = game.online?.conditionCode;
+  els.matchingCondition.textContent = getConditionBadgeText(conditionCode);
+  els.matchingCondition.hidden = !conditionCode || Boolean(game.completedAt);
+}
+
+function getConditionBadgeText(conditionCode) {
+  if (conditionCode === PARTICIPANT_CONDITIONS.human) return 'A';
+  if (conditionCode === PARTICIPANT_CONDITIONS.bot) return 'B';
+  return '';
 }
 
 function render() {
@@ -810,8 +1030,8 @@ function updateLabels() {
 
   els.roundLabel.textContent = `Round ${roundNumber} / ${TOTAL_ROUNDS}`;
   els.stepLabel.textContent = `Moves ${playerSteps.player1}-${playerSteps.player2} / ${MAX_PLAYER_STEPS}`;
-  els.p1Score.textContent = `P1 ${formatScore(scores.player1)}`;
-  els.p2Score.textContent = `P2 ${formatScore(scores.player2)}`;
+  els.p1Score.textContent = `P1 score: ${formatScore(scores.player1)}`;
+  els.p2Score.textContent = `P2 score: ${formatScore(scores.player2)}`;
 
   const lockedForLobby = isOnlineLobbyActive();
   document.querySelectorAll('[data-mode]').forEach(button => {

@@ -24,12 +24,34 @@ sooner. After the matching stage, players see `Partner found! Let's play.` and
 press Start. Human-human sessions start only after both matched players press
 Start.
 
-Participant-facing labels do not say human or bot. The phone UI shows
-`Condition A` for human-human sessions and `Condition B` for human-bot sessions.
+Participant-facing labels do not say human or bot. The phone UI shows `A` for
+human-human sessions and `B` for human-bot sessions.
 Saved data still includes the explicit `matchType` field for analysis.
 
 Online clients connect to the same server over `/ws`, so Render only needs one
 Web Service for the static app, save API, and matchmaking relay.
+
+## Classroom matching
+
+Use a unique session query parameter for each classroom run, for example
+`/mobile-staghunt.html?session=class-2026-07-07`. Matching is balanced
+dynamically within that session: the server alternates toward a 50/50 split of
+human-human players and human-bot players without needing to know the class size
+up front. If a human-pool player waits 10 seconds without a partner, they are
+assigned to the bot condition so the game can continue.
+
+## Data saving
+
+After every round, the phone posts a full movement snapshot to
+`/api/save-mobile-round`. The server writes a local JSON backup in
+`data/experiments/` and uploads a spreadsheet copy to Google Drive through the
+configured Apps Script endpoint. Local JSON and Drive spreadsheet filenames both
+start with `cellPhoneStagHunt`.
+
+For Render, set `GOOGLE_DRIVE_APPS_SCRIPT_URL` to the deployed Apps Script web
+app URL if you do not want to use the legacy grid-game endpoint. The `/health`
+endpoint reports whether Drive upload is configured and whether the legacy
+endpoint is being used.
 
 ## Run
 

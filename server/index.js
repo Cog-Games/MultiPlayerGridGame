@@ -12,9 +12,13 @@ const __dirname = path.dirname(__filename);
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const DIST_DIR = path.join(PROJECT_ROOT, 'dist');
 const EXPERIMENT_DIR = path.join(PROJECT_ROOT, 'data', 'experiments');
+const CELL_PHONE_STAG_HUNT_PREFIX = 'cellPhoneStagHunt';
+const LEGACY_GOOGLE_DRIVE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyfQ-XKsoFbmQZGM7c741rEXh2ZUpVK-uUIu9ycooXKnaxM5-hRSzIUhQ-uWZ668Qql/exec';
 
 loadLocalEnv(path.join(PROJECT_ROOT, '.env'));
 
+const GOOGLE_DRIVE_APPS_SCRIPT_URL = process.env.GOOGLE_DRIVE_APPS_SCRIPT_URL
+  || LEGACY_GOOGLE_DRIVE_APPS_SCRIPT_URL;
 const PORT = Number(process.env.API_PORT || process.env.PORT || 3001);
 const LLM_PROVIDER = normalizeProvider(process.env.LLM_PROVIDER || (process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY ? 'anthropic' : 'openai'));
 const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
@@ -23,9 +27,10 @@ const ANTHROPIC_VERSION = '2023-06-01';
 const PLAYER_ACTIONS = ['up', 'down', 'left', 'right', 'signal'];
 const DEFAULT_PLAYER_ACTIONS = ['up', 'down', 'left', 'right'];
 const MOBILE_MATCH_TIMEOUT_MS = 10000;
+const MOBILE_DEFAULT_SESSION_ID = 'default';
 
 const mobileMatchmaker = {
-  waiting: null,
+  sessions: new Map(),
   rooms: new Map(),
   clients: new Map(),
 };
@@ -251,6 +256,332 @@ function getSafeExperimentRunId(runId) {
   return safe || `experiment-${Date.now()}`;
 }
 
+function getSafeFileName(fileName, fallback = `experiment-${Date.now()}.json`) {
+  const safe = String(fileName || '')
+    .trim()
+    .replace(/[^a-zA-Z0-9_.-]/g, '-')
+    .replace(/-+/g, '-')
+    .slice(0, 180);
+
+  return safe || fallback;
+}
+
+function getCellPhoneStagHuntFileName(payload) {
+  const roundNumber = Number(payload.roundNumber ?? payload.roundIndex + 1);
+  const roundLabel = Number.isFinite(roundNumber)
+    ? `round-${String(roundNumber).padStart(2, '0')}`
+    : 'round-unknown';
+  const localPlayer = getSafeFileName(payload.localPlayer || payload.gameData?.onlineMatch?.localPlayer || 'player', 'player');
+  const runId = getSafeExperimentRunId(payload.runId);
+  const timestamp = new Date().toISOString().replace(/[^0-9A-Za-z]+/g, '-').replace(/-$/, '');
+  const requested = getSafeFileName(payload.fileName, '');
+
+  if (requested.startsWith(CELL_PHONE_STAG_HUNT_PREFIX)) {
+    return requested.endsWith('.json') ? requested : `${requested}.json`;
+  }
+
+  return `${CELL_PHONE_STAG_HUNT_PREFIX}-${runId}-${roundLabel}-${localPlayer}-${timestamp}.json`;
+}
+
+function getCellPhoneStagHuntDriveFileName(fileName) {
+  const safeFileName = getSafeFileName(fileName, `${CELL_PHONE_STAG_HUNT_PREFIX}-${Date.now()}.json`);
+  const spreadsheetName = safeFileName.replace(/\.json$/i, '.xlsx');
+  return spreadsheetName.endsWith('.xlsx') ? spreadsheetName : `${spreadsheetName}.xlsx`;
+}
+
+function stringifyCell(value) {
+  if (value === null || value === undefined) return '';
+  if (Array.isArray(value) || typeof value === 'object') return JSON.stringify(value);
+  return String(value);
+}
+
+function getPositionPart(position, index) {
+  return Array.isArray(position) && position.length > index ? position[index] : '';
+}
+
+function createMobileRoundWorkbook(payload) {
+  const round = payload.round || {};
+  const outcome = round.outcome || payload.outcome || {};
+  const scores = round.scores || {};
+  const playerSteps = round.playerSteps || {};
+  const movementRows = Array.isArray(payload.movementData)
+    ? payload.movementData
+    : Array.isArray(round.movementData)
+      ? round.movementData
+      : [];
+
+  const summaryRows = [
+    ['field', 'value'],
+    ['runId', payload.runId],
+    ['jsonFileName', payload.fileName],
+    ['roundNumber', payload.roundNumber],
+    ['condition', payload.condition],
+    ['conditionLabel', payload.conditionLabel],
+    ['participantCondition', payload.participantCondition],
+    ['playerMode', payload.playerMode],
+    ['localPlayer', payload.localPlayer],
+    ['roomId', payload.roomId],
+    ['matchType', payload.matchType],
+    ['outcomeType', outcome.type],
+    ['outcomeReward', outcome.reward],
+    ['totalSteps', round.totalSteps],
+    ['player1Steps', playerSteps.player1],
+    ['player2Steps', playerSteps.player2],
+    ['maxPlayerSteps', round.maxPlayerSteps || payload.gameData?.maxPlayerSteps],
+    ['player1Score', scores.player1],
+    ['player2Score', scores.player2],
+    ['roundCompletedAt', round.completedAt],
+    ['savedAt', payload.savedAt],
+    ['exportedAt', payload.exportedAt],
+  ];
+
+  const movementHeader = [
+    'stepIndex',
+    'agent',
+    'actionLabel',
+    'action',
+    'time',
+    'elapsedMs',
+    'player1Row',
+    'player1Col',
+    'player2Row',
+    'player2Col',
+    'stagRow',
+    'stagCol',
+    'player1Signal',
+    'player2Signal',
+  ];
+
+  const movementSheetRows = [
+    movementHeader,
+    ...movementRows.map(row => [
+      row.stepIndex,
+      row.agent,
+      row.actionLabel,
+      row.action,
+      row.time,
+      row.elapsedMs,
+      getPositionPart(row.player1Position, 0),
+      getPositionPart(row.player1Position, 1),
+      getPositionPart(row.player2Position, 0),
+      getPositionPart(row.player2Position, 1),
+      getPositionPart(row.stagPosition, 0),
+      getPositionPart(row.stagPosition, 1),
+      row.player1Signal,
+      row.player2Signal,
+    ]),
+  ];
+
+  return createXlsxWorkbook([
+    { name: 'Round Summary', rows: summaryRows },
+    { name: 'Movement Data', rows: movementSheetRows },
+  ]);
+}
+
+function createXlsxWorkbook(sheets) {
+  const files = [
+    { name: '[Content_Types].xml', data: createContentTypesXml(sheets.length) },
+    { name: '_rels/.rels', data: createRootRelsXml() },
+    { name: 'xl/workbook.xml', data: createWorkbookXml(sheets) },
+    { name: 'xl/_rels/workbook.xml.rels', data: createWorkbookRelsXml(sheets.length) },
+    { name: 'xl/styles.xml', data: createStylesXml() },
+    ...sheets.map((sheet, index) => ({
+      name: `xl/worksheets/sheet${index + 1}.xml`,
+      data: createSheetXml(sheet.rows),
+    })),
+  ];
+
+  return createZip(files.map(file => ({
+    name: file.name,
+    data: Buffer.from(file.data, 'utf8'),
+  })));
+}
+
+function createContentTypesXml(sheetCount) {
+  const sheetOverrides = Array.from({ length: sheetCount }, (_, index) => (
+    `<Override PartName="/xl/worksheets/sheet${index + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`
+  )).join('');
+
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheetOverrides}</Types>`;
+}
+
+function createRootRelsXml() {
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
+}
+
+function createWorkbookXml(sheets) {
+  const sheetXml = sheets.map((sheet, index) => (
+    `<sheet name="${escapeXml(sheet.name)}" sheetId="${index + 1}" r:id="rId${index + 1}"/>`
+  )).join('');
+
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheetXml}</sheets></workbook>`;
+}
+
+function createWorkbookRelsXml(sheetCount) {
+  const sheetRels = Array.from({ length: sheetCount }, (_, index) => (
+    `<Relationship Id="rId${index + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${index + 1}.xml"/>`
+  )).join('');
+  const stylesRelId = sheetCount + 1;
+
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheetRels}<Relationship Id="rId${stylesRelId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
+}
+
+function createStylesXml() {
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="1"><font><sz val="11"/><color theme="1"/><name val="Calibri"/><family val="2"/></font></fonts><fills count="1"><fill><patternFill patternType="none"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/></cellXfs></styleSheet>`;
+}
+
+function createSheetXml(rows) {
+  const sheetRows = rows.map((row, rowIndex) => {
+    const rowNumber = rowIndex + 1;
+    const cells = row.map((value, columnIndex) => {
+      const cellRef = `${getColumnName(columnIndex + 1)}${rowNumber}`;
+      return `<c r="${cellRef}" t="inlineStr"><is><t>${escapeXml(stringifyCell(value))}</t></is></c>`;
+    }).join('');
+    return `<row r="${rowNumber}">${cells}</row>`;
+  }).join('');
+
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${sheetRows}</sheetData></worksheet>`;
+}
+
+function getColumnName(index) {
+  let value = index;
+  let name = '';
+  while (value > 0) {
+    const remainder = (value - 1) % 26;
+    name = String.fromCharCode(65 + remainder) + name;
+    value = Math.floor((value - 1) / 26);
+  }
+  return name;
+}
+
+function escapeXml(value) {
+  return String(value)
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+function createZip(files) {
+  const localParts = [];
+  const centralParts = [];
+  let offset = 0;
+
+  for (const file of files) {
+    const nameBuffer = Buffer.from(file.name, 'utf8');
+    const crc = getCrc32(file.data);
+    const localHeader = Buffer.alloc(30);
+    localHeader.writeUInt32LE(0x04034b50, 0);
+    localHeader.writeUInt16LE(20, 4);
+    localHeader.writeUInt16LE(0, 6);
+    localHeader.writeUInt16LE(0, 8);
+    localHeader.writeUInt16LE(0, 10);
+    localHeader.writeUInt16LE(0, 12);
+    localHeader.writeUInt32LE(crc, 14);
+    localHeader.writeUInt32LE(file.data.length, 18);
+    localHeader.writeUInt32LE(file.data.length, 22);
+    localHeader.writeUInt16LE(nameBuffer.length, 26);
+    localHeader.writeUInt16LE(0, 28);
+    localParts.push(localHeader, nameBuffer, file.data);
+
+    const centralHeader = Buffer.alloc(46);
+    centralHeader.writeUInt32LE(0x02014b50, 0);
+    centralHeader.writeUInt16LE(20, 4);
+    centralHeader.writeUInt16LE(20, 6);
+    centralHeader.writeUInt16LE(0, 8);
+    centralHeader.writeUInt16LE(0, 10);
+    centralHeader.writeUInt16LE(0, 12);
+    centralHeader.writeUInt16LE(0, 14);
+    centralHeader.writeUInt32LE(crc, 16);
+    centralHeader.writeUInt32LE(file.data.length, 20);
+    centralHeader.writeUInt32LE(file.data.length, 24);
+    centralHeader.writeUInt16LE(nameBuffer.length, 28);
+    centralHeader.writeUInt16LE(0, 30);
+    centralHeader.writeUInt16LE(0, 32);
+    centralHeader.writeUInt16LE(0, 34);
+    centralHeader.writeUInt16LE(0, 36);
+    centralHeader.writeUInt32LE(0, 38);
+    centralHeader.writeUInt32LE(offset, 42);
+    centralParts.push(centralHeader, nameBuffer);
+
+    offset += localHeader.length + nameBuffer.length + file.data.length;
+  }
+
+  const centralDirectory = Buffer.concat(centralParts);
+  const endRecord = Buffer.alloc(22);
+  endRecord.writeUInt32LE(0x06054b50, 0);
+  endRecord.writeUInt16LE(0, 4);
+  endRecord.writeUInt16LE(0, 6);
+  endRecord.writeUInt16LE(files.length, 8);
+  endRecord.writeUInt16LE(files.length, 10);
+  endRecord.writeUInt32LE(centralDirectory.length, 12);
+  endRecord.writeUInt32LE(offset, 16);
+  endRecord.writeUInt16LE(0, 20);
+
+  return Buffer.concat([...localParts, centralDirectory, endRecord]);
+}
+
+const CRC32_TABLE = new Uint32Array(256).map((_, index) => {
+  let value = index;
+  for (let bit = 0; bit < 8; bit += 1) {
+    value = value & 1 ? 0xedb88320 ^ (value >>> 1) : value >>> 1;
+  }
+  return value >>> 0;
+});
+
+function getCrc32(buffer) {
+  let crc = 0xffffffff;
+  for (const byte of buffer) {
+    crc = CRC32_TABLE[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+async function uploadMobileRoundToGoogleDrive(fileName, body) {
+  if (!GOOGLE_DRIVE_APPS_SCRIPT_URL) {
+    return { ok: false, skipped: true, error: 'GOOGLE_DRIVE_APPS_SCRIPT_URL is not configured.' };
+  }
+
+  const driveFileName = getCellPhoneStagHuntDriveFileName(fileName);
+  const workbook = createMobileRoundWorkbook(body);
+  const formData = new FormData();
+  formData.append('filename', driveFileName);
+  formData.append('filedata', workbook.toString('base64'));
+  formData.append('filetype', 'excel');
+  formData.append('mimetype', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  formData.append('mimeType', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  formData.append('contentType', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+  const response = await fetch(GOOGLE_DRIVE_APPS_SCRIPT_URL, {
+    method: 'POST',
+    body: formData,
+    redirect: 'manual',
+  });
+
+  const responseText = await response.text().catch(() => '');
+  const accepted = response.ok || (response.status >= 300 && response.status < 400);
+  if (!accepted) {
+    throw new Error(`Google Drive upload failed: HTTP ${response.status} ${responseText}`.trim());
+  }
+
+  return {
+    ok: true,
+    fileName: driveFileName,
+    status: response.status,
+    redirected: response.status >= 300 && response.status < 400,
+    location: response.headers.get('location') || null,
+    responseText: responseText.slice(0, 500),
+  };
+}
+
 async function handleSaveExperiment(req, res) {
   let payload;
   try {
@@ -297,6 +628,74 @@ async function handleSaveExperiment(req, res) {
     runId,
     filePath,
     savedAt,
+  });
+}
+
+async function handleSaveMobileRound(req, res) {
+  let payload;
+  try {
+    payload = await readJsonBody(req);
+  } catch (error) {
+    sendJson(res, 400, { error: error.message });
+    return;
+  }
+
+  const runId = getSafeExperimentRunId(payload.runId);
+  const fileName = getCellPhoneStagHuntFileName({ ...payload, runId });
+  const filePath = path.join(EXPERIMENT_DIR, fileName);
+  const savedAt = new Date().toISOString();
+  const body = {
+    ...payload,
+    runId,
+    fileName,
+    savedAt,
+    provider: LLM_PROVIDER,
+    model: getActiveModel(),
+  };
+
+  try {
+    await fs.mkdir(EXPERIMENT_DIR, { recursive: true });
+    await fs.writeFile(filePath, `${JSON.stringify(body, null, 2)}\n`, 'utf8');
+  } catch (error) {
+    console.error('[mobile-round] failed to save local data', {
+      runId,
+      fileName,
+      filePath,
+      error: error.message,
+    });
+    sendJson(res, 500, { error: `Failed to save mobile round locally: ${error.message}` });
+    return;
+  }
+
+  let driveResult;
+  try {
+    driveResult = await uploadMobileRoundToGoogleDrive(fileName, body);
+  } catch (error) {
+    driveResult = { ok: false, error: error.message };
+    console.error('[mobile-round] Google Drive upload failed', {
+      runId,
+      fileName,
+      error: error.message,
+    });
+  }
+
+  console.log('[mobile-round] saved data', {
+    runId,
+    fileName,
+    roundNumber: payload.roundNumber,
+    localPlayer: payload.localPlayer,
+    eventCount: payload.round?.events?.length,
+    filePath,
+    googleDrive: driveResult.ok,
+  });
+
+  sendJson(res, 200, {
+    ok: true,
+    runId,
+    fileName,
+    filePath,
+    savedAt,
+    googleDrive: driveResult,
   });
 }
 
@@ -575,9 +974,11 @@ function createMobileClient(ws) {
   const client = {
     id: crypto.randomUUID(),
     ws,
+    sessionId: MOBILE_DEFAULT_SESSION_ID,
     roomId: null,
     role: null,
     matchType: null,
+    assignmentType: null,
     ready: false,
     waitingTimer: null,
   };
@@ -596,20 +997,74 @@ function clearWaitingTimer(client) {
   }
 }
 
-function takeWaitingMobileClient() {
-  const waiting = mobileMatchmaker.waiting;
+function getSafeMobileSessionId(sessionId) {
+  const safe = String(sessionId || MOBILE_DEFAULT_SESSION_ID)
+    .trim()
+    .replace(/[^a-zA-Z0-9_-]/g, '-')
+    .replace(/-+/g, '-')
+    .slice(0, 80);
+
+  return safe || MOBILE_DEFAULT_SESSION_ID;
+}
+
+function getMobileSession(sessionId = MOBILE_DEFAULT_SESSION_ID) {
+  const id = getSafeMobileSessionId(sessionId);
+  let session = mobileMatchmaker.sessions.get(id);
+  if (!session) {
+    session = {
+      id,
+      waiting: null,
+      humanAssigned: 0,
+      botAssigned: 0,
+      humanRoomsCreated: 0,
+      botMatchesCreated: 0,
+      createdAt: new Date().toISOString(),
+    };
+    mobileMatchmaker.sessions.set(id, session);
+  }
+  return session;
+}
+
+function getMobileClientSession(client) {
+  return getMobileSession(client?.sessionId || MOBILE_DEFAULT_SESSION_ID);
+}
+
+function shouldAssignMobileJoinToBot(session) {
+  return session.botAssigned < session.humanAssigned;
+}
+
+function getWaitingMobileClient(session) {
+  const waiting = session.waiting;
   if (!waiting) return null;
 
-  mobileMatchmaker.waiting = null;
+  if (waiting.ws.readyState !== WebSocket.OPEN) {
+    session.waiting = null;
+    clearWaitingTimer(waiting);
+    return null;
+  }
+
+  return waiting;
+}
+
+function takeWaitingMobileClient(session) {
+  const waiting = getWaitingMobileClient(session);
+  if (!waiting) return null;
+
+  session.waiting = null;
   clearWaitingTimer(waiting);
 
-  if (waiting.ws.readyState !== WebSocket.OPEN) return null;
   return waiting;
 }
 
 function sendMobileBotMatch(client, reason = 'human-timeout') {
+  const session = getMobileClientSession(client);
   clearWaitingTimer(client);
-  if (mobileMatchmaker.waiting === client) mobileMatchmaker.waiting = null;
+  if (session.waiting === client) session.waiting = null;
+  if (client.assignmentType !== 'bot') {
+    session.botAssigned += 1;
+    session.botMatchesCreated += 1;
+    client.assignmentType = 'bot';
+  }
   client.matchType = 'bot';
   client.roomId = null;
   client.role = 'player1';
@@ -620,24 +1075,32 @@ function sendMobileBotMatch(client, reason = 'human-timeout') {
     reason,
     localPlayer: 'player1',
     condition: 'baseline',
+    sessionId: session.id,
   });
 }
 
-function pairMobileClients(left, right) {
+function pairMobileClients(left, right, session = getMobileClientSession(left)) {
   clearWaitingTimer(left);
   clearWaitingTimer(right);
 
   const roomId = `mobile-${crypto.randomUUID()}`;
+  left.sessionId = session.id;
+  right.sessionId = session.id;
   left.roomId = roomId;
   right.roomId = roomId;
   left.role = 'player1';
   right.role = 'player2';
   left.matchType = 'human';
   right.matchType = 'human';
+  left.assignmentType = 'human';
+  right.assignmentType = 'human';
   left.ready = false;
   right.ready = false;
+  session.humanAssigned += 2;
+  session.humanRoomsCreated += 1;
   mobileMatchmaker.rooms.set(roomId, {
     id: roomId,
+    sessionId: session.id,
     clients: [left, right],
     ready: new Set(),
     started: false,
@@ -649,6 +1112,7 @@ function pairMobileClients(left, right) {
     localPlayer: 'player1',
     remotePlayer: 'player2',
     condition: 'baseline',
+    sessionId: session.id,
   });
   sendSocketJson(right.ws, {
     type: 'human-match',
@@ -656,34 +1120,46 @@ function pairMobileClients(left, right) {
     localPlayer: 'player2',
     remotePlayer: 'player1',
     condition: 'baseline',
+    sessionId: session.id,
   });
 }
 
 function queueMobileHumanCandidate(client) {
-  const waiting = takeWaitingMobileClient();
-  if (waiting && waiting !== client) {
-    pairMobileClients(waiting, client);
+  const session = getMobileClientSession(client);
+  const waiting = getWaitingMobileClient(session);
+
+  if (waiting && waiting !== client && !shouldAssignMobileJoinToBot(session)) {
+    pairMobileClients(takeWaitingMobileClient(session), client, session);
     return;
   }
 
-  mobileMatchmaker.waiting = client;
+  if (shouldAssignMobileJoinToBot(session)) {
+    sendMobileBotMatch(client, 'dynamic-balance');
+    return;
+  }
+
+  session.waiting = client;
   client.matchType = 'waiting-human';
   client.role = null;
+  client.assignmentType = null;
   client.ready = false;
   sendSocketJson(client.ws, {
     type: 'waiting-for-human',
     timeoutMs: MOBILE_MATCH_TIMEOUT_MS,
+    sessionId: session.id,
   });
 
   client.waitingTimer = setTimeout(() => {
-    if (mobileMatchmaker.waiting !== client) return;
+    if (session.waiting !== client) return;
     sendMobileBotMatch(client, 'human-timeout');
   }, MOBILE_MATCH_TIMEOUT_MS);
 }
 
-function handleMobileJoin(ws) {
+function handleMobileJoin(ws, message = {}) {
   const client = getMobileClient(ws);
   cleanupMobileClient(ws, { keepSocket: true, notifyPeer: false });
+  client.sessionId = getSafeMobileSessionId(message.sessionId);
+  client.assignmentType = null;
   queueMobileHumanCandidate(client);
 }
 
@@ -749,7 +1225,7 @@ function handleMobileSocketMessage(ws, raw) {
   }
 
   if (message.type === 'join-mobile-stag-hunt') {
-    handleMobileJoin(ws);
+    handleMobileJoin(ws, message);
     return;
   }
 
@@ -770,8 +1246,9 @@ function cleanupMobileClient(ws, options = {}) {
 
   clearWaitingTimer(client);
 
-  if (mobileMatchmaker.waiting === client) {
-    mobileMatchmaker.waiting = null;
+  const session = getMobileClientSession(client);
+  if (session.waiting === client) {
+    session.waiting = null;
   }
 
   if (client.roomId) {
@@ -802,16 +1279,45 @@ function cleanupMobileClient(ws, options = {}) {
   }
 }
 
+function getMobileMatchmakingSummary() {
+  const sessions = [...mobileMatchmaker.sessions.values()].map(session => {
+    const activeHumanRooms = [...mobileMatchmaker.rooms.values()]
+      .filter(room => room.sessionId === session.id).length;
+    const totalAssigned = session.humanAssigned + session.botAssigned;
+
+    return {
+      id: session.id,
+      waiting: Boolean(session.waiting),
+      activeHumanRooms,
+      humanAssigned: session.humanAssigned,
+      botAssigned: session.botAssigned,
+      totalAssigned,
+      humanRoomsCreated: session.humanRoomsCreated,
+      botMatchesCreated: session.botMatchesCreated,
+    };
+  });
+
+  return {
+    waiting: sessions.some(session => session.waiting),
+    waitingCount: sessions.filter(session => session.waiting).length,
+    activeHumanRooms: mobileMatchmaker.rooms.size,
+    connectedClients: mobileMatchmaker.clients.size,
+    sessions,
+  };
+}
+
 const server = http.createServer(async (req, res) => {
   if (req.method === 'GET' && req.url === '/health') {
+    const matchmaking = getMobileMatchmakingSummary();
     sendJson(res, 200, {
       status: 'ok',
       provider: LLM_PROVIDER,
       providerLabel: getProviderLabel(),
       model: getActiveModel(),
-      mobileMatchmaking: {
-        waiting: Boolean(mobileMatchmaker.waiting),
-        activeHumanRooms: mobileMatchmaker.rooms.size,
+      mobileMatchmaking: matchmaking,
+      googleDrive: {
+        configured: Boolean(GOOGLE_DRIVE_APPS_SCRIPT_URL),
+        usingLegacyEndpoint: GOOGLE_DRIVE_APPS_SCRIPT_URL === LEGACY_GOOGLE_DRIVE_APPS_SCRIPT_URL,
       },
     });
     return;
@@ -824,6 +1330,11 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === 'POST' && req.url === '/api/save-experiment') {
     await handleSaveExperiment(req, res);
+    return;
+  }
+
+  if (req.method === 'POST' && req.url === '/api/save-mobile-round') {
+    await handleSaveMobileRound(req, res);
     return;
   }
 
