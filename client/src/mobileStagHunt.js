@@ -1216,7 +1216,6 @@ function drawDemoRabbits(state, cell) {
     demoCtx.fillStyle = COLORS.rabbit;
     roundRectOn(demoCtx, x, y, size, size, Math.max(2, size * 0.12));
     demoCtx.fill();
-    drawCenteredTextOn(demoCtx, 'R', col * cell + cell / 2, row * cell + cell / 2, cell * 0.24, '#ffffff');
   }
 }
 
@@ -1290,7 +1289,6 @@ function drawRabbits(state, cell) {
     ctx.fillStyle = COLORS.rabbit;
     roundRect(x, y, size, size, Math.max(2, size * 0.12));
     ctx.fill();
-    drawCenteredText('R', col * cell + cell / 2, row * cell + cell / 2, cell * 0.24, '#ffffff');
   }
 }
 
