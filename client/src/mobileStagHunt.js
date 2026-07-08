@@ -230,6 +230,10 @@ function getPlayerStepCounts() {
   }, { player1: 0, player2: 0 });
 }
 
+function areAllRoundsResolved() {
+  return game.rounds.length >= TOTAL_ROUNDS;
+}
+
 function isRunInProgress() {
   return Boolean(game.startedAt && !game.completedAt);
 }
@@ -357,7 +361,7 @@ function connectOnlineMatch() {
   };
 
   socket.onclose = () => {
-    if (game.completedAt) return;
+    if (game.completedAt || areAllRoundsResolved()) return;
     if (game.online.type === 'human') {
       fallbackOnlineToBot('opponent-left');
     } else if (!game.manager.state) {
@@ -408,6 +412,10 @@ function handleOnlineMessage(message) {
   }
 
   if (message.type === 'opponent-left') {
+    if (areAllRoundsResolved()) {
+      closeOnlineSocket();
+      return;
+    }
     fallbackOnlineToBot('opponent-left');
     return;
   }
@@ -698,6 +706,7 @@ function completeRound(outcome) {
     scores: game.manager.getScores(),
     completedAt,
   };
+  roundRecord.dyadicTrialData = createDyadicTrialData(roundRecord);
 
   game.rounds.push(roundRecord);
   game.manager.finalizeRound();
@@ -871,6 +880,7 @@ function createMobileRoundPayload(roundRecord) {
   const roundNumber = roundRecord.roundNumber || roundRecord.roundIndex + 1;
   const exportedAt = new Date().toISOString();
   const localPlayer = game.online.localPlayer || 'player';
+  const dyadicTrialData = roundRecord.dyadicTrialData || createDyadicTrialData(roundRecord);
   const fileName = [
     'cellPhoneStagHunt',
     sanitizeFilePart(game.runId),
@@ -898,6 +908,7 @@ function createMobileRoundPayload(roundRecord) {
     localPlayer,
     roomId: game.online.roomId,
     matchType: game.online.type,
+    dyadicTrialData,
     movementData: clonePlainData(roundRecord.movementData || []),
     round: clonePlainData(roundRecord),
     gameData: {
@@ -909,6 +920,7 @@ function createMobileRoundPayload(roundRecord) {
       completedAt: game.completedAt,
       roundsCompleted: game.rounds.length,
       rounds: clonePlainData(game.rounds),
+      dyadicTrialData: clonePlainData(game.rounds.map(round => round.dyadicTrialData || createDyadicTrialData(round))),
       onlineMatch: {
         type: game.online.type,
         sessionId: game.online.matchSessionId,
@@ -972,6 +984,64 @@ function createMovementData(roundData = {}) {
   }));
 }
 
+function createDyadicTrialData(roundRecord) {
+  const movementData = Array.isArray(roundRecord.movementData) ? roundRecord.movementData : [];
+  const outcome = roundRecord.outcome || {};
+  const playerSteps = roundRecord.playerSteps || {};
+  const scores = roundRecord.scores || {};
+  const map = roundRecord.map || {};
+  const actionHistory = movementData.map(row => ({
+    step: row.stepIndex,
+    agent: row.agent,
+    action: row.actionLabel || row.action,
+    actionVector: row.action,
+    elapsedMs: row.elapsedMs,
+  }));
+
+  return {
+    runId: game.runId,
+    trialIndex: roundRecord.roundIndex,
+    trialNumber: roundRecord.roundNumber,
+    roundNumber: roundRecord.roundNumber,
+    mapId: roundRecord.mapId,
+    condition: roundRecord.condition,
+    conditionLabel: CONFIG.game.conditions[roundRecord.condition]?.label || roundRecord.condition,
+    participantCondition: roundRecord.participantCondition,
+    matchType: roundRecord.matchType,
+    playerMode: getPlayerModeLabel(),
+    dyadId: roundRecord.roomId || roundRecord.matchSessionId || game.runId,
+    roomId: roundRecord.roomId,
+    matchSessionId: roundRecord.matchSessionId,
+    localPlayer: roundRecord.localPlayer,
+    localParticipantLabel: roundRecord.localParticipantLabel,
+    remoteParticipantLabel: roundRecord.remoteParticipantLabel,
+    player1StartPosition: map.player1Start || null,
+    player2StartPosition: map.player2Start || null,
+    stagStartPosition: map.stagStart || null,
+    rabbitPositions: map.rabbits || [],
+    wallPositions: map.obstacles || [],
+    outcomeType: outcome.type || null,
+    outcomeReward: outcome.reward ?? 0,
+    rabbitIndex: outcome.rabbitIndex ?? null,
+    totalSteps: roundRecord.totalSteps,
+    player1Steps: playerSteps.player1 ?? null,
+    player2Steps: playerSteps.player2 ?? null,
+    maxPlayerSteps: roundRecord.maxPlayerSteps,
+    player1Score: scores.player1 ?? null,
+    player2Score: scores.player2 ?? null,
+    completedAt: roundRecord.completedAt,
+    actionHistory,
+    player1Actions: movementData.filter(row => row.agent === 'player1').map(row => row.actionLabel || row.action),
+    player2Actions: movementData.filter(row => row.agent === 'player2').map(row => row.actionLabel || row.action),
+    stagActions: movementData.filter(row => row.agent === 'stag').map(row => row.actionLabel || row.action),
+    player1Trajectory: movementData.map(row => row.player1Position),
+    player2Trajectory: movementData.map(row => row.player2Position),
+    stagTrajectory: movementData.map(row => row.stagPosition),
+    player1Signals: movementData.map(row => row.player1Signal),
+    player2Signals: movementData.map(row => row.player2Signal),
+  };
+}
+
 async function saveGame() {
   const payload = {
     runId: game.runId,
@@ -994,6 +1064,7 @@ async function saveGame() {
       startedAt: game.startedAt,
       completedAt: game.completedAt,
       rounds: game.rounds,
+      dyadicTrialData: clonePlainData(game.rounds.map(round => round.dyadicTrialData || createDyadicTrialData(round))),
       onlineMatch: {
         type: game.online.type,
         sessionId: game.online.matchSessionId,

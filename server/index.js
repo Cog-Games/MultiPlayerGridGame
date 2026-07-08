@@ -299,16 +299,154 @@ function getPositionPart(position, index) {
   return Array.isArray(position) && position.length > index ? position[index] : '';
 }
 
+const DYADIC_TRIAL_HEADERS = [
+  'runId',
+  'trialIndex',
+  'trialNumber',
+  'roundNumber',
+  'mapId',
+  'condition',
+  'conditionLabel',
+  'participantCondition',
+  'matchType',
+  'playerMode',
+  'dyadId',
+  'roomId',
+  'matchSessionId',
+  'localPlayer',
+  'localParticipantLabel',
+  'remoteParticipantLabel',
+  'player1StartPosition',
+  'player2StartPosition',
+  'stagStartPosition',
+  'rabbitPositions',
+  'wallPositions',
+  'outcomeType',
+  'outcomeReward',
+  'rabbitIndex',
+  'totalSteps',
+  'player1Steps',
+  'player2Steps',
+  'maxPlayerSteps',
+  'player1Score',
+  'player2Score',
+  'completedAt',
+  'savedAt',
+  'exportedAt',
+  'actionHistory',
+  'player1Actions',
+  'player2Actions',
+  'stagActions',
+  'player1Trajectory',
+  'player2Trajectory',
+  'stagTrajectory',
+  'player1Signals',
+  'player2Signals',
+];
+
+function getMobileMovementRows(payload, round = payload.round || {}) {
+  if (Array.isArray(payload.movementData)) return payload.movementData;
+  if (Array.isArray(round.movementData)) return round.movementData;
+  return [];
+}
+
+function createActionHistory(movementRows) {
+  return movementRows.map(row => ({
+    step: row.stepIndex,
+    agent: row.agent,
+    action: row.actionLabel || row.action,
+    actionVector: row.action,
+    elapsedMs: row.elapsedMs,
+  }));
+}
+
+function createFallbackDyadicTrialRow(payload) {
+  const round = payload.round || {};
+  const outcome = round.outcome || payload.outcome || {};
+  const scores = round.scores || {};
+  const playerSteps = round.playerSteps || {};
+  const map = round.map || {};
+  const movementRows = getMobileMovementRows(payload, round);
+
+  return {
+    runId: payload.runId,
+    trialIndex: round.roundIndex ?? payload.roundIndex,
+    trialNumber: round.roundNumber ?? payload.roundNumber,
+    roundNumber: round.roundNumber ?? payload.roundNumber,
+    mapId: round.mapId,
+    condition: round.condition || payload.condition,
+    conditionLabel: payload.conditionLabel,
+    participantCondition: round.participantCondition || payload.participantCondition,
+    matchType: round.matchType || payload.matchType,
+    playerMode: payload.playerMode,
+    dyadId: round.roomId || payload.roomId || round.matchSessionId || payload.matchSessionId || payload.runId,
+    roomId: round.roomId || payload.roomId,
+    matchSessionId: round.matchSessionId || payload.matchSessionId,
+    localPlayer: round.localPlayer || payload.localPlayer,
+    localParticipantLabel: round.localParticipantLabel || payload.localParticipantLabel,
+    remoteParticipantLabel: round.remoteParticipantLabel || payload.remoteParticipantLabel,
+    player1StartPosition: map.player1Start || null,
+    player2StartPosition: map.player2Start || null,
+    stagStartPosition: map.stagStart || null,
+    rabbitPositions: map.rabbits || [],
+    wallPositions: map.obstacles || [],
+    outcomeType: outcome.type,
+    outcomeReward: outcome.reward,
+    rabbitIndex: outcome.rabbitIndex ?? null,
+    totalSteps: round.totalSteps,
+    player1Steps: playerSteps.player1,
+    player2Steps: playerSteps.player2,
+    maxPlayerSteps: round.maxPlayerSteps || payload.gameData?.maxPlayerSteps,
+    player1Score: scores.player1,
+    player2Score: scores.player2,
+    completedAt: round.completedAt,
+    savedAt: payload.savedAt,
+    exportedAt: payload.exportedAt,
+    actionHistory: createActionHistory(movementRows),
+    player1Actions: movementRows.filter(row => row.agent === 'player1').map(row => row.actionLabel || row.action),
+    player2Actions: movementRows.filter(row => row.agent === 'player2').map(row => row.actionLabel || row.action),
+    stagActions: movementRows.filter(row => row.agent === 'stag').map(row => row.actionLabel || row.action),
+    player1Trajectory: movementRows.map(row => row.player1Position),
+    player2Trajectory: movementRows.map(row => row.player2Position),
+    stagTrajectory: movementRows.map(row => row.stagPosition),
+    player1Signals: movementRows.map(row => row.player1Signal),
+    player2Signals: movementRows.map(row => row.player2Signal),
+  };
+}
+
+function getMobileDyadicTrialRows(payload) {
+  const rows = Array.isArray(payload.dyadicTrialData)
+    ? payload.dyadicTrialData
+    : payload.dyadicTrialData
+      ? [payload.dyadicTrialData]
+      : [createFallbackDyadicTrialRow(payload)];
+
+  return rows.map(row => ({
+    ...row,
+    runId: row.runId || payload.runId,
+    conditionLabel: row.conditionLabel || payload.conditionLabel,
+    savedAt: row.savedAt || payload.savedAt,
+    exportedAt: row.exportedAt || payload.exportedAt,
+  }));
+}
+
+function createDyadicTrialSheetRows(payload) {
+  const rows = getMobileDyadicTrialRows(payload);
+  return [
+    DYADIC_TRIAL_HEADERS,
+    ...rows.map(row => DYADIC_TRIAL_HEADERS.map(header => (
+      Object.prototype.hasOwnProperty.call(row, header) ? row[header] : ''
+    ))),
+  ];
+}
+
 function createMobileRoundWorkbook(payload) {
   const round = payload.round || {};
   const outcome = round.outcome || payload.outcome || {};
   const scores = round.scores || {};
   const playerSteps = round.playerSteps || {};
-  const movementRows = Array.isArray(payload.movementData)
-    ? payload.movementData
-    : Array.isArray(round.movementData)
-      ? round.movementData
-      : [];
+  const movementRows = getMobileMovementRows(payload, round);
+  const dyadicTrialRows = getMobileDyadicTrialRows(payload);
 
   const summaryRows = [
     ['field', 'value'],
@@ -330,6 +468,7 @@ function createMobileRoundWorkbook(payload) {
     ['maxPlayerSteps', round.maxPlayerSteps || payload.gameData?.maxPlayerSteps],
     ['player1Score', scores.player1],
     ['player2Score', scores.player2],
+    ['dyadicTrialRows', dyadicTrialRows.length],
     ['roundCompletedAt', round.completedAt],
     ['savedAt', payload.savedAt],
     ['exportedAt', payload.exportedAt],
@@ -374,6 +513,7 @@ function createMobileRoundWorkbook(payload) {
 
   return createXlsxWorkbook([
     { name: 'Round Summary', rows: summaryRows },
+    { name: 'Dyadic Trials', rows: createDyadicTrialSheetRows(payload) },
     { name: 'Movement Data', rows: movementSheetRows },
   ]);
 }
