@@ -880,13 +880,12 @@ function createMobileRoundPayload(roundRecord) {
   const roundNumber = roundRecord.roundNumber || roundRecord.roundIndex + 1;
   const exportedAt = new Date().toISOString();
   const localPlayer = game.online.localPlayer || 'player';
-  const dyadicTrialData = roundRecord.dyadicTrialData || createDyadicTrialData(roundRecord);
+  const dyadicTrialData = game.rounds.map(round => round.dyadicTrialData || createDyadicTrialData(round));
+  const currentDyadicTrialData = roundRecord.dyadicTrialData || createDyadicTrialData(roundRecord);
   const fileName = [
     'cellPhoneStagHunt',
     sanitizeFilePart(game.runId),
-    `round-${String(roundNumber).padStart(2, '0')}`,
     sanitizeFilePart(localPlayer),
-    exportedAt.replace(/[^0-9A-Za-z]+/g, '-').replace(/-$/, ''),
   ].join('-') + '.json';
 
   return {
@@ -909,6 +908,7 @@ function createMobileRoundPayload(roundRecord) {
     roomId: game.online.roomId,
     matchType: game.online.type,
     dyadicTrialData,
+    currentDyadicTrialData,
     movementData: clonePlainData(roundRecord.movementData || []),
     round: clonePlainData(roundRecord),
     gameData: {
@@ -920,7 +920,7 @@ function createMobileRoundPayload(roundRecord) {
       completedAt: game.completedAt,
       roundsCompleted: game.rounds.length,
       rounds: clonePlainData(game.rounds),
-      dyadicTrialData: clonePlainData(game.rounds.map(round => round.dyadicTrialData || createDyadicTrialData(round))),
+      dyadicTrialData: clonePlainData(dyadicTrialData),
       onlineMatch: {
         type: game.online.type,
         sessionId: game.online.matchSessionId,
@@ -937,7 +937,7 @@ function createMobileRoundPayload(roundRecord) {
 async function saveRoundData(roundRecord) {
   const payload = createMobileRoundPayload(roundRecord);
   localStorage.setItem(
-    `cellPhoneStagHunt-${payload.runId}-round-${String(payload.roundNumber).padStart(2, '0')}-${payload.localPlayer}`,
+    `cellPhoneStagHunt-${payload.runId}-${payload.localPlayer}`,
     JSON.stringify(payload),
   );
 

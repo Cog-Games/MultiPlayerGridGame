@@ -267,20 +267,15 @@ function getSafeFileName(fileName, fallback = `experiment-${Date.now()}.json`) {
 }
 
 function getCellPhoneStagHuntFileName(payload) {
-  const roundNumber = Number(payload.roundNumber ?? payload.roundIndex + 1);
-  const roundLabel = Number.isFinite(roundNumber)
-    ? `round-${String(roundNumber).padStart(2, '0')}`
-    : 'round-unknown';
   const localPlayer = getSafeFileName(payload.localPlayer || payload.gameData?.onlineMatch?.localPlayer || 'player', 'player');
   const runId = getSafeExperimentRunId(payload.runId);
-  const timestamp = new Date().toISOString().replace(/[^0-9A-Za-z]+/g, '-').replace(/-$/, '');
   const requested = getSafeFileName(payload.fileName, '');
 
   if (requested.startsWith(CELL_PHONE_STAG_HUNT_PREFIX)) {
     return requested.endsWith('.json') ? requested : `${requested}.json`;
   }
 
-  return `${CELL_PHONE_STAG_HUNT_PREFIX}-${runId}-${roundLabel}-${localPlayer}-${timestamp}.json`;
+  return `${CELL_PHONE_STAG_HUNT_PREFIX}-${runId}-${localPlayer}.json`;
 }
 
 function getCellPhoneStagHuntDriveFileName(fileName) {
@@ -699,6 +694,8 @@ async function uploadMobileRoundToGoogleDrive(fileName, body) {
   formData.append('mimetype', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   formData.append('mimeType', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   formData.append('contentType', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  formData.append('upsert', 'true');
+  formData.append('updateKey', driveFileName);
 
   const response = await fetch(GOOGLE_DRIVE_APPS_SCRIPT_URL, {
     method: 'POST',
