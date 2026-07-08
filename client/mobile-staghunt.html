@@ -465,15 +465,38 @@
 
     .p1 { border-radius: 999px; background: #03a9c9; }
     .p2 { border-radius: 999px; background: #f58220; }
-    .stag {
+    .mark.stag {
       width: 0;
       height: 0;
       border-left: 7px solid transparent;
       border-right: 7px solid transparent;
       border-bottom: 12px solid #2ea95f;
     }
-    .rabbit { border-radius: 2px; background: #5a42c9; }
+    .mark.rabbit { border-radius: 2px; background: #5a42c9; }
     .wall { border-radius: 2px; background: #233041; }
+
+    #mobile-stag-hunt.emoji-animals .mark.stag,
+    #mobile-stag-hunt.emoji-animals .mark.rabbit {
+      width: 1.15em;
+      height: 1.15em;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.08em;
+      line-height: 1;
+      vertical-align: -0.08em;
+    }
+
+    #mobile-stag-hunt.emoji-animals .mark.stag::before {
+      content: "🦌";
+    }
+
+    #mobile-stag-hunt.emoji-animals .mark.rabbit::before {
+      content: "🐇";
+    }
 
     .setup-panel {
       padding: 10px;
@@ -529,6 +552,36 @@
     .secondary-btn:disabled,
     .pad button:disabled {
       opacity: 0.48;
+    }
+
+    .partner-guess {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    #result-summary span {
+      display: block;
+    }
+
+    .partner-guess-prompt,
+    .partner-guess-feedback {
+      margin: 0;
+      color: #3b4658;
+      font-size: 0.95rem;
+      font-weight: 760;
+      line-height: 1.25;
+      text-align: center;
+    }
+
+    .partner-guess-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .partner-guess-buttons button[aria-pressed="true"] {
+      border: 2px solid #0f57bd;
     }
 
     .match-lobby-btn.is-status {
@@ -761,6 +814,14 @@
 
     <section class="result-panel" id="result-panel" hidden aria-label="Game results">
       <div id="result-summary"></div>
+      <div class="partner-guess" id="partner-guess">
+        <p class="partner-guess-prompt">Who do you think your partner was?</p>
+        <div class="partner-guess-buttons" aria-label="Partner type guess">
+          <button class="secondary-btn" type="button" data-partner-guess="human">Human</button>
+          <button class="secondary-btn" type="button" data-partner-guess="ai">AI</button>
+        </div>
+        <p class="partner-guess-feedback" id="partner-guess-feedback" hidden></p>
+      </div>
       <p class="save-status" id="save-status" hidden></p>
       <button class="secondary-btn" type="button" id="restart-btn" hidden>Restart</button>
     </section>

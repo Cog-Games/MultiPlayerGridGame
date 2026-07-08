@@ -14,6 +14,11 @@ const PARTICIPANT_CONDITIONS = {
   human: 'Condition A',
   bot: 'Condition B',
 };
+const ANIMAL_EMOJIS = {
+  stag: '🦌',
+  rabbit: '🐇',
+};
+const EMOJI_FONT_FAMILY = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
 
 const ACTIONS = {
   up: [-1, 0],
@@ -93,6 +98,8 @@ const els = {
   restartBtn: document.getElementById('restart-btn'),
   resultPanel: document.getElementById('result-panel'),
   resultSummary: document.getElementById('result-summary'),
+  partnerGuess: document.getElementById('partner-guess'),
+  partnerGuessFeedback: document.getElementById('partner-guess-feedback'),
   saveStatus: document.getElementById('save-status'),
   controls: document.getElementById('touch-controls'),
   canvas: document.getElementById('game-canvas'),
@@ -100,6 +107,10 @@ const els = {
 
 const ctx = els.canvas.getContext('2d');
 const demoCtx = els.matchingDemoCanvas.getContext('2d');
+const animalSymbols = {
+  useEmoji: supportsColoredEmoji(ANIMAL_EMOJIS.stag) && supportsColoredEmoji(ANIMAL_EMOJIS.rabbit),
+};
+applyAnimalSymbolMode();
 
 let game = createSession();
 let timers = [];
@@ -113,6 +124,46 @@ function transformMap(map, name, transform) {
     rabbits: map.rabbits.map(transform),
     obstacles: map.obstacles.map(transform),
   };
+}
+
+function supportsColoredEmoji(emoji) {
+  try {
+    const testCanvas = document.createElement('canvas');
+    const testCtx = testCanvas.getContext('2d', { willReadFrequently: true });
+    if (!testCtx) return false;
+
+    const size = 36;
+    testCanvas.width = size;
+    testCanvas.height = size;
+    testCtx.font = `30px ${EMOJI_FONT_FAMILY}`;
+    testCtx.textAlign = 'center';
+    testCtx.textBaseline = 'middle';
+    testCtx.clearRect(0, 0, size, size);
+    testCtx.fillText(emoji, size / 2, size / 2);
+
+    const pixels = testCtx.getImageData(0, 0, size, size).data;
+    let visiblePixels = 0;
+    let coloredPixels = 0;
+    for (let index = 0; index < pixels.length; index += 4) {
+      const alpha = pixels[index + 3];
+      if (alpha < 24) continue;
+      visiblePixels += 1;
+      const red = pixels[index];
+      const green = pixels[index + 1];
+      const blue = pixels[index + 2];
+      const spread = Math.max(red, green, blue) - Math.min(red, green, blue);
+      if (spread > 28) coloredPixels += 1;
+    }
+
+    return visiblePixels > 20 && coloredPixels > 4;
+  } catch (error) {
+    return false;
+  }
+}
+
+function applyAnimalSymbolMode() {
+  els.app.classList.toggle('emoji-animals', animalSymbols.useEmoji);
+  els.app.classList.toggle('shape-animals', !animalSymbols.useEmoji);
 }
 
 function createSession() {
@@ -130,6 +181,7 @@ function createSession() {
     rounds: [],
     lastOutcome: null,
     saveResult: null,
+    partnerGuess: null,
     online: {
       socket: null,
       type: null,
@@ -725,32 +777,28 @@ function completeRound(outcome) {
   }, CONFIG.game.timing.roundFeedbackDelay);
 }
 
-async function finishGame() {
+function finishGame() {
   game.completedAt = new Date().toISOString();
   game.active = false;
   game.locked = true;
   game.currentActor = null;
+  game.partnerGuess = null;
   hideRoundFeedback();
   closeOnlineSocket();
 
   const scores = game.manager.getScores();
   const localPlayer = getLocalPlayer();
   const partnerPlayer = localPlayer === 'player1' ? 'player2' : 'player1';
-  const partnerLine = getFinalPartnerLine();
 
   els.resultSummary.innerHTML = `
     <strong>Game complete.</strong>
-    You earned ${formatScore(scores[localPlayer])} points.
-    Your partner earned ${formatScore(scores[partnerPlayer])} points.
-    ${partnerLine}
+    <span>You earned ${formatScore(scores[localPlayer])} points.</span>
+    <span>Your partner earned ${formatScore(scores[partnerPlayer])} points.</span>
   `;
+  resetPartnerGuessControls();
   els.resultPanel.hidden = false;
   setStatus('Game complete');
   render();
-
-  const saveResult = await saveGame();
-  game.saveResult = saveResult;
-  els.saveStatus.textContent = '';
 }
 
 function getLocalPlayer() {
@@ -758,18 +806,60 @@ function getLocalPlayer() {
   return 'player1';
 }
 
-function getFinalPartnerLine() {
-  if (game.online.type === 'human') {
+function getActualPartnerType() {
+  if (game.online.type === 'human' || game.mode === 'hotseat') return 'human';
+  return 'ai';
+}
+
+function resetPartnerGuessControls() {
+  if (els.partnerGuess) els.partnerGuess.hidden = false;
+  if (els.partnerGuessFeedback) {
+    els.partnerGuessFeedback.hidden = true;
+    els.partnerGuessFeedback.textContent = '';
+  }
+
+  document.querySelectorAll('[data-partner-guess]').forEach(button => {
+    button.disabled = false;
+    button.setAttribute('aria-pressed', 'false');
+  });
+}
+
+async function handlePartnerGuess(guess) {
+  if (game.partnerGuess || !game.completedAt) return;
+  if (guess !== 'human' && guess !== 'ai') return;
+
+  const actual = getActualPartnerType();
+  const correct = guess === actual;
+  game.partnerGuess = {
+    guess,
+    actual,
+    correct,
+    answeredAt: new Date().toISOString(),
+  };
+
+  document.querySelectorAll('[data-partner-guess]').forEach(button => {
+    const selected = button.dataset.partnerGuess === guess;
+    button.disabled = true;
+    button.setAttribute('aria-pressed', String(selected));
+  });
+
+  els.partnerGuessFeedback.textContent = getPartnerGuessFeedback(correct);
+  els.partnerGuessFeedback.hidden = false;
+
+  const saveResult = await saveGame();
+  game.saveResult = saveResult;
+  els.saveStatus.textContent = '';
+}
+
+function getPartnerGuessFeedback(correct) {
+  const prefix = correct ? 'Correct.' : 'Not quite.';
+  if (getActualPartnerType() === 'human') {
     const localLabel = game.online.localParticipantLabel || 'player';
     const remoteLabel = game.online.remoteParticipantLabel || 'player';
-    return `You are ${localLabel}. Your partner is a human ${remoteLabel}!`;
+    return `${prefix} Your player index is ${localLabel}. Your partner is a human ${remoteLabel}.`;
   }
 
-  if (game.mode === 'hotseat') {
-    return 'Your partner was a human.';
-  }
-
-  return 'Your partner was an AI.';
+  return `${prefix} Your partner was an AI.`;
 }
 
 function getOutcomeText(outcome) {
@@ -1055,6 +1145,7 @@ async function saveGame() {
     matchSessionId: game.online.matchSessionId,
     localParticipantLabel: game.online.localParticipantLabel,
     remoteParticipantLabel: game.online.remoteParticipantLabel,
+    partnerGuess: clonePlainData(game.partnerGuess),
     exportedAt: new Date().toISOString(),
     gameData: {
       gameType: 'DynamicStagHunt',
@@ -1063,6 +1154,7 @@ async function saveGame() {
       maxPlayerSteps: MAX_PLAYER_STEPS,
       startedAt: game.startedAt,
       completedAt: game.completedAt,
+      partnerGuess: clonePlainData(game.partnerGuess),
       rounds: game.rounds,
       dyadicTrialData: clonePlainData(game.rounds.map(round => round.dyadicTrialData || createDyadicTrialData(round))),
       onlineMatch: {
@@ -1312,37 +1404,74 @@ function drawDemoObstacles(state, cell) {
   }
 }
 
-function drawDemoRabbits(state, cell) {
-  for (const rabbit of state.rabbits || []) {
-    if (!rabbit) continue;
-    const [row, col] = rabbit;
-    const size = cell * 0.44;
-    const x = col * cell + (cell - size) / 2;
-    const y = row * cell + (cell - size) / 2;
-    demoCtx.fillStyle = COLORS.rabbit;
-    roundRectOn(demoCtx, x, y, size, size, Math.max(2, size * 0.12));
-    demoCtx.fill();
+function drawAnimalEmojiOn(context, kind, row, col, cell) {
+  if (!animalSymbols.useEmoji || !context?.fillText) return false;
+
+  const emoji = ANIMAL_EMOJIS[kind];
+  if (!emoji) return false;
+
+  const cx = col * cell + cell / 2;
+  const cy = row * cell + cell / 2;
+  const fontSize = Math.max(16, cell * (kind === 'stag' ? 0.68 : 0.7));
+  context.save();
+  try {
+    context.font = `${fontSize}px ${EMOJI_FONT_FAMILY}`;
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    if (!Number.isFinite(context.measureText(emoji).width)) return false;
+    context.fillText(emoji, cx, cy + cell * 0.02);
+    return true;
+  } catch (error) {
+    return false;
+  } finally {
+    context.restore();
   }
 }
 
-function drawDemoStag(stag, cell) {
-  const [row, col] = stag;
+function drawRabbitShapeOn(context, row, col, cell) {
+  const size = cell * 0.44;
+  const x = col * cell + (cell - size) / 2;
+  const y = row * cell + (cell - size) / 2;
+  context.fillStyle = COLORS.rabbit;
+  roundRectOn(context, x, y, size, size, Math.max(2, size * 0.12));
+  context.fill();
+}
+
+function drawStagShapeOn(context, row, col, cell) {
   const cx = col * cell + cell / 2;
   const cy = row * cell + cell / 2;
   const size = cell * 0.31;
 
-  demoCtx.save();
-  demoCtx.fillStyle = COLORS.stag;
-  demoCtx.strokeStyle = COLORS.stagStroke;
-  demoCtx.lineWidth = Math.max(2, cell * 0.035);
-  demoCtx.beginPath();
-  demoCtx.moveTo(cx, cy - size);
-  demoCtx.lineTo(cx - size * 0.9, cy + size * 0.78);
-  demoCtx.lineTo(cx + size * 0.9, cy + size * 0.78);
-  demoCtx.closePath();
-  demoCtx.fill();
-  demoCtx.stroke();
-  demoCtx.restore();
+  context.save();
+  context.fillStyle = COLORS.stag;
+  context.strokeStyle = COLORS.stagStroke;
+  context.lineWidth = Math.max(2, cell * 0.035);
+  context.beginPath();
+  context.moveTo(cx, cy - size);
+  context.lineTo(cx - size * 0.9, cy + size * 0.78);
+  context.lineTo(cx + size * 0.9, cy + size * 0.78);
+  context.closePath();
+  context.fill();
+  context.stroke();
+  context.restore();
+}
+
+function drawDemoRabbits(state, cell) {
+  for (const rabbit of state.rabbits || []) {
+    if (!rabbit) continue;
+    const [row, col] = rabbit;
+    if (!drawAnimalEmojiOn(demoCtx, 'rabbit', row, col, cell)) {
+      drawRabbitShapeOn(demoCtx, row, col, cell);
+    }
+  }
+}
+
+function drawDemoStag(stag, cell) {
+  if (!stag) return;
+  const [row, col] = stag;
+  if (!drawAnimalEmojiOn(demoCtx, 'stag', row, col, cell)) {
+    drawStagShapeOn(demoCtx, row, col, cell);
+  }
 }
 
 function drawDemoPlayer(pos, color, label, cell) {
@@ -1389,34 +1518,18 @@ function drawRabbits(state, cell) {
   for (const rabbit of state.rabbits || []) {
     if (!rabbit) continue;
     const [row, col] = rabbit;
-    const size = cell * 0.44;
-    const x = col * cell + (cell - size) / 2;
-    const y = row * cell + (cell - size) / 2;
-    ctx.fillStyle = COLORS.rabbit;
-    roundRect(x, y, size, size, Math.max(2, size * 0.12));
-    ctx.fill();
+    if (!drawAnimalEmojiOn(ctx, 'rabbit', row, col, cell)) {
+      drawRabbitShapeOn(ctx, row, col, cell);
+    }
   }
 }
 
 function drawStag(stag, cell) {
   if (!stag) return;
   const [row, col] = stag;
-  const cx = col * cell + cell / 2;
-  const cy = row * cell + cell / 2;
-  const size = cell * 0.31;
-
-  ctx.save();
-  ctx.fillStyle = COLORS.stag;
-  ctx.strokeStyle = COLORS.stagStroke;
-  ctx.lineWidth = Math.max(2, cell * 0.035);
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - size);
-  ctx.lineTo(cx - size * 0.9, cy + size * 0.78);
-  ctx.lineTo(cx + size * 0.9, cy + size * 0.78);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-  ctx.restore();
+  if (!drawAnimalEmojiOn(ctx, 'stag', row, col, cell)) {
+    drawStagShapeOn(ctx, row, col, cell);
+  }
 }
 
 function drawPlayers(state, cell) {
@@ -1517,6 +1630,12 @@ function roundRectOn(context, x, y, width, height, radius) {
 els.startBtn.addEventListener('click', startGame);
 els.matchStartBtn.addEventListener('click', requestMatchedStart);
 els.restartBtn.addEventListener('click', beginOnlineMatching);
+
+document.querySelectorAll('[data-partner-guess]').forEach(button => {
+  button.addEventListener('click', () => {
+    handlePartnerGuess(button.dataset.partnerGuess);
+  });
+});
 
 document.querySelectorAll('[data-mode]').forEach(button => {
   button.addEventListener('click', () => {
