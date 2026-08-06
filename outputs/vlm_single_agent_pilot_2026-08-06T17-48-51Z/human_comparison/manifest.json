@@ -1,0 +1,12 @@
+{
+  "human_source": "/Users/chengshaozhe/Documents/DukeECClab/code/collabAIdata/combined-filtered.csv",
+  "llm_source": "/Users/chengshaozhe/Documents/DukeECClab/code/multiplePlayerGridGame_socketIO/outputs/vlm_single_agent_pilot_2026-08-06T17-48-51Z/pilot_results.json",
+  "primary_human_group": "human (locked-action)",
+  "primary_human_subjects": 30,
+  "primary_human_trials": 360,
+  "pooled_human_subjects": 150,
+  "pooled_human_trials": 1792,
+  "llm_sessions": 5,
+  "llm_trials": 60,
+  "llm_model": "gpt-4.1-mini-2025-04-14"
+}

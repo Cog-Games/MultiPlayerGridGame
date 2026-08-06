@@ -1,0 +1,1096 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VLM controls and VLM–VLM pilot plan</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #5f6b7a;
+      --line: #dfe5ec;
+      --paper: #ffffff;
+      --canvas: #f4f7fa;
+      --blue: #2563eb;
+      --blue-soft: #e8f0ff;
+      --orange: #f97316;
+      --orange-soft: #fff0e6;
+      --figure-blue: #3598ed;
+      --figure-orange: #fb8535;
+      --green: #0f766e;
+      --green-soft: #e5f6f3;
+      --violet: #6d28d9;
+      --violet-soft: #f0e9ff;
+      --shadow: 0 12px 32px rgba(23, 32, 51, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 0%, rgba(37, 99, 235, 0.10), transparent 28rem),
+        radial-gradient(circle at 92% 8%, rgba(249, 115, 22, 0.09), transparent 25rem),
+        var(--canvas);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+
+    a { color: #1d4ed8; }
+    a:hover { color: #1e40af; }
+
+    .page {
+      width: min(1160px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 44px 0 72px;
+    }
+
+    .hero {
+      overflow: hidden;
+      position: relative;
+      padding: 42px;
+      border: 1px solid rgba(255,255,255,0.85);
+      border-radius: 26px;
+      color: white;
+      background: linear-gradient(132deg, #16213b 0%, #1d3f79 56%, #2159a6 100%);
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 360px;
+      height: 360px;
+      right: -120px;
+      top: -170px;
+      border-radius: 50%;
+      border: 56px solid rgba(255,255,255,0.06);
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: #a9c9ff;
+    }
+
+    h1 {
+      max-width: 820px;
+      margin: 0;
+      font-size: clamp(2.1rem, 4.5vw, 4rem);
+      line-height: 1.03;
+      letter-spacing: -0.045em;
+    }
+
+    .hero p {
+      max-width: 780px;
+      margin: 20px 0 0;
+      color: #dce9ff;
+      font-size: 1.08rem;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 26px;
+    }
+
+    .pill {
+      padding: 7px 11px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      color: #f4f8ff;
+      font-size: 0.86rem;
+      font-weight: 650;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin: 20px 0 0;
+    }
+
+    nav a {
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      color: #324158;
+      background: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: 0.87rem;
+      font-weight: 700;
+    }
+
+    section { margin-top: 42px; }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(1.55rem, 2.8vw, 2.25rem);
+      line-height: 1.12;
+      letter-spacing: -0.028em;
+    }
+
+    h3 {
+      margin: 0 0 9px;
+      font-size: 1.08rem;
+      line-height: 1.25;
+    }
+
+    .section-head p, .subtle {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card, .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.94);
+      box-shadow: 0 7px 22px rgba(23, 32, 51, 0.05);
+    }
+
+    .card { padding: 20px; }
+    .panel { padding: 24px; }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 750;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      margin-top: 6px;
+      font-size: clamp(1.65rem, 3vw, 2.35rem);
+      font-weight: 850;
+      line-height: 1;
+      letter-spacing: -0.035em;
+    }
+
+    .metric-note {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .grid-2 > *, .allocation > *, .cost-banner > * { min-width: 0; }
+
+    .callout {
+      padding: 17px 19px;
+      border-left: 5px solid var(--green);
+      border-radius: 12px;
+      background: var(--green-soft);
+      color: #174942;
+    }
+
+    .callout strong { color: #0a4f47; }
+
+    .warning {
+      border-left-color: var(--orange);
+      background: var(--orange-soft);
+      color: #713b15;
+    }
+
+    .chart-wrap {
+      margin-top: 12px;
+      overflow-x: auto;
+    }
+
+    .chart-wrap svg {
+      display: block;
+      width: 100%;
+      min-width: 720px;
+      height: auto;
+      overflow: visible;
+    }
+
+    .figure-stack {
+      display: grid;
+      gap: 22px;
+      margin-top: 16px;
+    }
+
+    .academic-figure {
+      margin: 0;
+      padding: 28px 30px 20px;
+      border-radius: 10px;
+      box-shadow: none;
+    }
+
+    .academic-figure h3 {
+      margin-bottom: 3px;
+      font-size: clamp(1.22rem, 2vw, 1.52rem);
+      letter-spacing: -0.015em;
+    }
+
+    .academic-figure .legend {
+      justify-content: flex-start;
+      margin: 12px 0 0;
+      font-size: 0.92rem;
+    }
+
+    .figure-caption {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+      text-align: center;
+    }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 0.87rem;
+      font-weight: 650;
+    }
+
+    .legend span::before {
+      content: "";
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      margin-right: 7px;
+      border-radius: 3px;
+      vertical-align: -1px;
+      background: var(--swatch);
+    }
+
+    .table-shell {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: white;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.91rem;
+    }
+
+    th, td {
+      padding: 12px 13px;
+      border-bottom: 1px solid #e8edf2;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    th:first-child, td:first-child,
+    th:nth-child(2), td:nth-child(2) { text-align: left; }
+
+    thead th {
+      color: #435168;
+      background: #f6f8fb;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.025em;
+      text-transform: uppercase;
+    }
+
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:hover td { background: #fbfcfe; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      background: var(--blue-soft);
+      color: #1c4da4;
+    }
+
+    .tag.orange { background: var(--orange-soft); color: #9a4c14; }
+    .tag.green { background: var(--green-soft); color: #0f665e; }
+    .tag.violet { background: var(--violet-soft); color: #5b21b6; }
+
+    .allocation {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      align-items: stretch;
+      gap: 11px;
+      margin-top: 17px;
+    }
+
+    .allocation .block {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: white;
+    }
+
+    .allocation .arrow {
+      align-self: center;
+      color: #8a96a8;
+      font-size: 1.5rem;
+      font-weight: 900;
+    }
+
+    .big-number {
+      display: block;
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .checklist, .steps {
+      margin: 12px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .checklist li, .steps li {
+      position: relative;
+      padding: 9px 0 9px 28px;
+      border-bottom: 1px solid #edf1f5;
+    }
+
+    .checklist li:last-child, .steps li:last-child { border-bottom: 0; }
+
+    .checklist li::before {
+      content: "✓";
+      position: absolute;
+      left: 2px;
+      top: 9px;
+      color: var(--green);
+      font-weight: 900;
+    }
+
+    .steps { counter-reset: item; }
+
+    .steps li::before {
+      counter-increment: item;
+      content: counter(item);
+      position: absolute;
+      left: 0;
+      top: 9px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      color: white;
+      background: var(--violet);
+      text-align: center;
+      font-size: 0.73rem;
+      font-weight: 850;
+      line-height: 20px;
+    }
+
+    code {
+      padding: 2px 5px;
+      border-radius: 5px;
+      background: #eef2f6;
+      color: #27364d;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.88em;
+    }
+
+    .formula {
+      margin: 10px 0 0;
+      padding: 13px 15px;
+      border-radius: 11px;
+      color: #253652;
+      background: #f2f5f9;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.86rem;
+      overflow-x: auto;
+    }
+
+    .cost-banner {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr 1fr;
+      gap: 1px;
+      overflow: hidden;
+      margin-top: 16px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: var(--line);
+    }
+
+    .cost-banner > div {
+      padding: 20px;
+      background: white;
+    }
+
+    .cost-banner .highlight { background: #ecf3ff; }
+
+    .source-list {
+      margin: 10px 0 0;
+      padding-left: 20px;
+      color: var(--muted);
+      font-size: 0.89rem;
+    }
+
+    .source-list code {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    footer {
+      margin-top: 46px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    @media (max-width: 880px) {
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid-2 { grid-template-columns: 1fr; }
+      .allocation { grid-template-columns: 1fr; }
+      .allocation .arrow { transform: rotate(90deg); justify-self: center; }
+      .cost-banner { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 560px) {
+      .page { width: min(100% - 20px, 1160px); padding-top: 18px; }
+      .hero { padding: 28px 22px; border-radius: 20px; }
+      .cards { grid-template-columns: 1fr; }
+      .panel { padding: 18px; }
+      .academic-figure { padding: 20px 18px 16px; }
+      .section-head { align-items: start; flex-direction: column; }
+      th, td { padding: 10px; }
+    }
+
+    @media print {
+      body { background: white; }
+      .page { width: 100%; padding: 0; }
+      nav { display: none; }
+      .hero, .card, .panel { box-shadow: none; }
+      section { break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="eyebrow">Agency Gap · control experiments</p>
+      <h1>VLM controls and VLM–VLM pilot plan</h1>
+      <p>
+        A single report combining the validated Human vs GPT‑4.1 mini 1P2G control results
+        with a human-matched 2P2G/2P3G dyadic pilot, including analysis, runtime, and cost.
+      </p>
+      <div class="hero-meta">
+        <span class="pill">Prepared 6 Aug 2026</span>
+        <span class="pill">Base VLM, not VLM‑ToM</span>
+        <span class="pill">100 planned joint trials</span>
+        <span class="pill">5 independent pairs</span>
+      </div>
+    </header>
+
+    <nav aria-label="Report sections">
+      <a href="#control-results">1P2G results</a>
+      <a href="#pilot-design">VLM–VLM design</a>
+      <a href="#analysis-plan">Analysis plan</a>
+      <a href="#time-cost">Time &amp; cost</a>
+      <a href="#recording">Data recording</a>
+    </nav>
+
+    <section id="control-results">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" style="color:#3566ad">Completed control</p>
+          <h2>GPT‑4.1 mini navigates efficiently—and remains committed</h2>
+        </div>
+        <p>5 sessions × 12 trials = 60 1P2G trials</p>
+      </div>
+
+      <div class="cards">
+        <article class="card">
+          <div class="metric-label">Task success</div>
+          <div class="metric-value">100%</div>
+          <div class="metric-note">60 of 60 trials reached a restaurant</div>
+        </article>
+        <article class="card">
+          <div class="metric-label">Chosen-goal efficiency</div>
+          <div class="metric-value">99.1%</div>
+          <div class="metric-note">100% means the selected route was optimal</div>
+        </article>
+        <article class="card">
+          <div class="metric-label">Opportunity efficiency</div>
+          <div class="metric-value">95.2%</div>
+          <div class="metric-note">Uses the best goal available at each trial</div>
+        </article>
+        <article class="card">
+          <div class="metric-label">Commitment</div>
+          <div class="metric-value">82.2%</div>
+          <div class="metric-note">37 of 45 new-goal trials</div>
+        </article>
+      </div>
+
+      <div class="callout" style="margin-top:16px">
+        <strong>Interpretation.</strong> The no-new-goal baseline was perfectly efficient (100%),
+        so the model can solve the navigation task. Yet it stayed with its original inferred goal
+        in 13/15 trials even when the newly presented goal was two steps closer.
+      </div>
+
+      <div class="figure-stack">
+        <figure class="panel academic-figure">
+          <h3>A. Commitment to the original goal</h3>
+          <p class="subtle">No-new-goal trials are excluded from this outcome.</p>
+          <div class="legend" aria-label="Figure legend">
+            <span style="--swatch:var(--figure-blue)">Human</span>
+            <span style="--swatch:var(--figure-orange)">GPT‑4.1 mini</span>
+          </div>
+          <div id="commit-chart" class="chart-wrap" role="img" aria-label="Grouped bar chart comparing human and GPT-4.1 mini commitment rates overall and by equal, closer, and farther conditions"></div>
+          <figcaption class="figure-caption">Bars show actor-level means; error bars show 95% bootstrap intervals across 30 human participants and five model sessions.</figcaption>
+        </figure>
+
+        <figure class="panel academic-figure">
+          <h3>B. Opportunity-adjusted efficiency</h3>
+          <p class="subtle">100% means optimal relative to the best goal available.</p>
+          <div class="legend" aria-label="Figure legend">
+            <span style="--swatch:var(--figure-blue)">Human</span>
+            <span style="--swatch:var(--figure-orange)">GPT‑4.1 mini</span>
+          </div>
+          <div id="efficiency-chart" class="chart-wrap" role="img" aria-label="Grouped bar chart comparing human and GPT-4.1 mini opportunity-adjusted path efficiency by closer, equal, farther, and no-new-goal conditions"></div>
+          <figcaption class="figure-caption">Bars show actor-level means; error bars show 95% bootstrap intervals across 30 human participants and five model sessions.</figcaption>
+        </figure>
+      </div>
+
+      <div class="panel" style="margin-top:16px">
+        <h3>Full condition summary</h3>
+        <p class="subtle" style="margin-bottom:14px">
+          Human benchmark: 30 locked-action participants, 360 trials. Model benchmark: five independent
+          GPT‑4.1 mini sessions, 60 trials. Efficiency entries are means.
+        </p>
+        <div class="table-shell">
+          <table>
+            <thead>
+              <tr>
+                <th>Condition</th>
+                <th>Group</th>
+                <th>N</th>
+                <th>Success</th>
+                <th>Chosen efficiency</th>
+                <th>Opportunity efficiency</th>
+                <th>Post-change efficiency</th>
+                <th>Commitment</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Overall</td><td><span class="tag">Human</span></td><td>360</td><td>100%</td><td>96.7%</td><td>93.7%</td><td>86.6%</td><td>187/270 (69.3%)</td></tr>
+              <tr><td>Overall</td><td><span class="tag orange">GPT‑4.1 mini</span></td><td>60</td><td>100%</td><td>99.1%</td><td>95.2%</td><td>89.8%</td><td>37/45 (82.2%)</td></tr>
+              <tr><td>Closer</td><td><span class="tag">Human</span></td><td>90</td><td>100%</td><td>91.4%</td><td>85.3%</td><td>71.8%</td><td>38/90 (42.2%)</td></tr>
+              <tr><td>Closer</td><td><span class="tag orange">GPT‑4.1 mini</span></td><td>15</td><td>100%</td><td>98.5%</td><td>85.3%</td><td>74.7%</td><td>13/15 (86.7%)</td></tr>
+              <tr><td>Equal</td><td><span class="tag">Human</span></td><td>90</td><td>100%</td><td>97.8%</td><td>94.1%</td><td>91.9%</td><td>68/90 (75.6%)</td></tr>
+              <tr><td>Equal</td><td><span class="tag orange">GPT‑4.1 mini</span></td><td>15</td><td>100%</td><td>97.7%</td><td>97.7%</td><td>96.9%</td><td>11/15 (73.3%)</td></tr>
+              <tr><td>Farther</td><td><span class="tag">Human</span></td><td>90</td><td>100%</td><td>98.7%</td><td>96.8%</td><td>96.1%</td><td>81/90 (90.0%)</td></tr>
+              <tr><td>Farther</td><td><span class="tag orange">GPT‑4.1 mini</span></td><td>15</td><td>100%</td><td>100.0%</td><td>98.0%</td><td>97.9%</td><td>13/15 (86.7%)</td></tr>
+              <tr><td>No new goal</td><td><span class="tag">Human</span></td><td>90</td><td>100%</td><td>98.8%</td><td>98.8%</td><td>—</td><td>—</td></tr>
+              <tr><td>No new goal</td><td><span class="tag orange">GPT‑4.1 mini</span></td><td>15</td><td>100%</td><td>100.0%</td><td>100.0%</td><td>—</td><td>—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout warning" style="margin-top:14px">
+          <strong>Measure check.</strong> Human commitment in the 1P2G equal-distance condition is
+          68/90 = 75.6%. The 84.4% value in the notebook belongs to the distinct 2P3G
+          <code>equal_to_both</code> condition.
+        </div>
+      </div>
+    </section>
+
+    <section id="pilot-design">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" style="color:#3566ad">Proposed next pilot</p>
+          <h2>Five independent VLM–VLM pairs</h2>
+        </div>
+        <p>Human-matched maps, order, rules, and condition balance</p>
+      </div>
+
+      <div class="allocation" aria-label="Pilot trial allocation">
+        <div class="block">
+          <span class="big-number">5</span>
+          <strong>independent pairs</strong>
+          <div class="subtle">Two fresh VLM sessions per pair</div>
+        </div>
+        <div class="arrow" aria-hidden="true">×</div>
+        <div class="block">
+          <span class="big-number">8 + 12</span>
+          <strong>trials per pair</strong>
+          <div class="subtle">2P2G followed by 2P3G</div>
+        </div>
+        <div class="arrow" aria-hidden="true">=</div>
+        <div class="block">
+          <span class="big-number">100</span>
+          <strong>joint trials total</strong>
+          <div class="subtle">40 stable + 60 dynamic-goal trials</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:16px">
+        <article class="panel">
+          <h3>2P2G block: coordination baseline</h3>
+          <p class="subtle">Eight trials for each pair; 40 total.</p>
+          <ul class="checklist">
+            <li>Use the human experiment’s first eight maps: keys <code>198–205</code>.</li>
+            <li>Keep the current 2P2G game-rule text and sectioned prompt scaffold.</li>
+            <li>Both agents choose from the identical pre-move state; apply actions simultaneously.</li>
+            <li>Freeze an agent once it reaches a restaurant; let the partner finish.</li>
+            <li>Primary purpose: verify stable coordination and efficient joint navigation.</li>
+          </ul>
+        </article>
+
+        <article class="panel">
+          <h3>2P3G block: shared commitment</h3>
+          <p class="subtle">Twelve trials for each pair; 60 total.</p>
+          <ul class="checklist">
+            <li>Use the human experiment’s first twelve maps: keys <code>297–308</code>.</li>
+            <li>Exactly three trials per condition within every pair.</li>
+            <li>Conditions: closer to traveler 1, closer to traveler 2, equal to both, and no new goal.</li>
+            <li>Randomize the balanced condition sequence with a saved pair-level seed.</li>
+            <li>Trigger the new goal only after both inferred trajectories indicate the same original goal.</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="panel" style="margin-top:16px">
+        <h3>Lock these settings before the run</h3>
+        <div class="table-shell">
+          <table>
+            <thead><tr><th>Component</th><th>Locked specification</th><th>Reason</th></tr></thead>
+            <tbody>
+              <tr><td>Model</td><td><code>gpt-4.1-mini-2025-04-14</code>, temperature 0</td><td>Same snapshot as the completed control</td></tr>
+              <tr><td>API</td><td>Chat Completions with image input, detail <code>low</code></td><td>Same measured VLM path and pricing basis</td></tr>
+              <tr><td>Agent type</td><td>Base <code>vlm × vlm</code>; no ToM inference call</td><td>Clean dyadic control and lower cost</td></tr>
+              <tr><td>Prompt</td><td>Existing sectioned scaffold; revise only the game-rules block by experiment</td><td>Preserves comparability with the original 2P game</td></tr>
+              <tr><td>Memory</td><td>Both visible trajectories, maximum 50 steps</td><td>Matches current VLM configuration</td></tr>
+              <tr><td>Timing</td><td>Synchronized moves; both requests launched from one state</td><td>Matches locked-action human trials</td></tr>
+              <tr><td>Fallback</td><td>None in the primary analysis; retry transport failures and mark unresolved trials invalid</td><td>A committed/RL fallback would contaminate VLM behavior</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="analysis-plan">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" style="color:#3566ad">Pre-specified analysis</p>
+          <h2>What the pilot should answer</h2>
+        </div>
+        <p>Pair is the independent unit; trial summaries are descriptive</p>
+      </div>
+
+      <div class="grid-2">
+        <article class="panel">
+          <h3>2P2G: can two VLMs coordinate?</h3>
+          <ol class="steps">
+            <li><strong>Coordination success:</strong> both travelers finish at the same restaurant.</li>
+            <li><strong>Opportunity-adjusted makespan efficiency:</strong> shortest possible synchronized completion time divided by observed joint rounds; 100% is optimal.</li>
+            <li><strong>Total-path efficiency:</strong> optimal combined distance to a shared restaurant divided by the two observed path lengths.</li>
+            <li><strong>Coordination failures:</strong> split restaurants, timeout, loops, invalid actions, and transport failures reported separately.</li>
+          </ol>
+        </article>
+
+        <article class="panel">
+          <h3>2P3G: do two VLMs preserve a shared intention?</h3>
+          <ol class="steps">
+            <li><strong>Dyadic commitment:</strong> after a new goal appears, both finish at the originally inferred shared goal.</li>
+            <li><strong>Player-level commitment:</strong> each traveler’s final goal equals the original shared goal.</li>
+            <li><strong>Condition effects:</strong> report closer-to-P1, closer-to-P2, and equal-to-both separately; omit no-new-goal from commitment.</li>
+            <li><strong>Efficiency cost:</strong> compare opportunity efficiency and excess joint moves across all four conditions, including no-new-goal.</li>
+          </ol>
+        </article>
+      </div>
+
+      <div class="panel" style="margin-top:16px">
+        <h3>Recommended outputs</h3>
+        <div class="grid-2">
+          <ul class="checklist">
+            <li>Pair-level table: success, efficiency, commitment, switching, and failures.</li>
+            <li>2P2G bar plot: success and efficiency for each pair plus pooled descriptive mean.</li>
+            <li>2P3G commitment plot: overall, closer-to-P1, closer-to-P2, and equal-to-both.</li>
+          </ul>
+          <ul class="checklist">
+            <li>2P3G efficiency plot: all four conditions, including no-new-goal.</li>
+            <li>Human comparison recomputed with the same formulas from full trajectories.</li>
+            <li>Cluster bootstrap by pair and Wilson intervals shown as descriptive uncertainty only.</li>
+          </ul>
+        </div>
+        <div class="callout warning" style="margin-top:12px">
+          <strong>Inference limit.</strong> Five pairs are suitable for debugging the paradigm and estimating
+          effect direction and variance. They are not enough for a strong inferential human–VLM claim.
+        </div>
+      </div>
+    </section>
+
+    <section id="time-cost">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" style="color:#3566ad">Resource estimate</p>
+          <h2>Expected cost: about $1; safe budget: $1.50</h2>
+        </div>
+        <p>Base VLM only; retries included in the budget, not the midpoint</p>
+      </div>
+
+      <div class="cost-banner">
+        <div class="highlight">
+          <div class="metric-label">Recommended wall-clock estimate</div>
+          <div class="metric-value">10–15 min</div>
+          <div class="metric-note">Two pairs at a time with an adaptive rate limiter</div>
+        </div>
+        <div>
+          <div class="metric-label">Expected API cost</div>
+          <div class="metric-value">$0.95–$1.15</div>
+          <div class="metric-note">Approximately 2,400 action calls</div>
+        </div>
+        <div>
+          <div class="metric-label">Run budget</div>
+          <div class="metric-value">$1.50</div>
+          <div class="metric-note">Allows longer paths and limited retries</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:16px">
+        <article class="panel">
+          <h3>Measured calibration</h3>
+          <div class="table-shell">
+            <table>
+              <tbody>
+                <tr><td>Completed 1P2G pilot</td><td>60 trials</td></tr>
+                <tr><td>Vision action calls</td><td>734</td></tr>
+                <tr><td>Prompt / output tokens</td><td>674,973 / 734</td></tr>
+                <tr><td>Observed API cost</td><td>$0.27116</td></tr>
+                <tr><td>Wall time, 5 sessions parallel</td><td>123.23 s</td></tr>
+                <tr><td>Median / p95 call latency</td><td>701 / 1,267 ms</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel">
+          <h3>Projected workload</h3>
+          <div class="table-shell">
+            <table>
+              <tbody>
+                <tr><td>2P2G</td><td>40 trials × ~23.5 agent moves</td><td>~940 calls</td></tr>
+                <tr><td>2P3G</td><td>60 trials × ~24.3 agent moves</td><td>~1,460 calls</td></tr>
+                <tr><td>Total</td><td>100 joint trials</td><td>~2,400 calls</td></tr>
+                <tr><td>Projected prompt tokens</td><td colspan="2">~2.4–2.8 million</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="formula">2P2G: first 8 maps average 11.75 optimal moves per traveler<br>2P3G: matched human trajectories average 24.33 total traveler moves per trial</div>
+        </article>
+      </div>
+
+      <div class="panel" style="margin-top:16px">
+        <h3>Runtime scenarios</h3>
+        <div class="table-shell">
+          <table>
+            <thead><tr><th>Execution mode</th><th>Concurrent API requests</th><th>Estimated time</th><th>Use case</th></tr></thead>
+            <tbody>
+              <tr><td>One pair at a time</td><td>2</td><td>20–25 min</td><td>Safest for a low rate-limit tier</td></tr>
+              <tr><td><strong>Two pairs at a time</strong></td><td><strong>Up to 4</strong></td><td><strong>10–15 min</strong></td><td><strong>Recommended pilot setting</strong></td></tr>
+              <tr><td>All five pairs at once</td><td>Up to 10</td><td>5–8 min</td><td>Only if the account’s token/request limits support it</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="subtle" style="margin-top:12px">
+          Runtime is more sensitive to account rate limits than to local computation. The runner should
+          honor response headers, use exponential backoff, and preserve pair state across retries.
+        </p>
+      </div>
+
+      <div class="callout" style="margin-top:16px">
+        <strong>Pricing basis.</strong> The current official GPT‑4.1 mini price is $0.40 per million input
+        tokens, $0.10 per million cached input tokens, and $1.60 per million output tokens. The estimate
+        conservatively assumes no prompt-cache discount because the completed pilot recorded zero cached
+        prompt tokens. See the
+        <a href="https://developers.openai.com/api/docs/models/gpt-4.1-mini">official GPT‑4.1 mini model page</a>.
+      </div>
+    </section>
+
+    <section id="recording">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" style="color:#3566ad">Reproducibility</p>
+          <h2>Record the entire dyadic trajectory</h2>
+        </div>
+        <p>One row per trial plus one nested record per synchronized step</p>
+      </div>
+
+      <div class="grid-2">
+        <article class="panel">
+          <h3>At the trial level</h3>
+          <ul class="checklist">
+            <li>Pair and agent IDs, model snapshot, temperature, map key, condition, and random seeds.</li>
+            <li>Start positions, initial goals, generated goal, trigger step, and realized distances.</li>
+            <li>Final goals, success/failure reason, rounds, moves, efficiency, and commitment outcomes.</li>
+            <li>Aggregate prompt/output/cached tokens, latency, cost, retries, and errors.</li>
+          </ul>
+        </article>
+
+        <article class="panel">
+          <h3>At every synchronized step</h3>
+          <ul class="checklist">
+            <li>Shared pre-step state and grid image hash/path.</li>
+            <li>Exact prompt for each traveler, raw response, parsed action, usage, and latency.</li>
+            <li>Both inferred trajectory goals used by the game engine and the shared-goal trigger.</li>
+            <li>Both positions before/after applying the actions and the current restaurant set.</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="panel" style="margin-top:16px">
+        <h3>Operational sequence</h3>
+        <ol class="steps">
+          <li>Run one excluded smoke pair for one 2P2G and one 2P3G trial; inspect prompts, simultaneous updates, and new-goal generation.</li>
+          <li>Lock the exact model snapshot and save the generated condition schedules before any analyzed trial begins.</li>
+          <li>Run five analyzed pairs with concurrency two; do not replace VLM actions with RL or committed-agent actions.</li>
+          <li>Execute integrity checks before behavioral analysis: trial counts, balance, goal generation, missing data, retries, and fallback count.</li>
+          <li>Generate pair-level tables and the pre-specified plots, then compare against human locked-action trajectories using identical measures.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section>
+      <div class="panel">
+        <h3>Local result sources</h3>
+        <ul class="source-list">
+          <li><a href="pilot_analysis.md">Completed GPT‑4.1 mini 1P2G analysis</a></li>
+          <li><a href="pilot_summary.json">Machine-readable pilot summary</a></li>
+          <li><a href="pilot_results.json">Full 1P2G trial and step records</a></li>
+          <li><a href="human_comparison/human_vs_llm_1p2g.md">Human vs model comparison notes</a></li>
+          <li>Human notebook: <code>../collabAIdata/analysis_adults_unified_claude.ipynb</code> (sibling repository)</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      Estimates are for the base VLM configuration. A VLM‑ToM × VLM‑ToM study adds inference work at
+      each step and should be budgeted separately. Dollar estimates can change if OpenAI pricing or the
+      model configuration changes.
+    </footer>
+  </main>
+
+  <script>
+    const palette = {
+      human: '#3598ed',
+      llm: '#fb8535',
+      grid: '#e3e6e9',
+      frame: '#d5d9dd',
+      text: '#25282c',
+      ink: '#16191d'
+    };
+
+    function svgElement(svg, name, attributes = {}, text = null) {
+      const node = document.createElementNS(svg.namespaceURI, name);
+      Object.entries(attributes).forEach(([key, value]) => node.setAttribute(key, value));
+      if (text !== null) node.textContent = text;
+      svg.appendChild(node);
+      return node;
+    }
+
+    function academicGroupedBars(targetId, rows, yTitle) {
+      const host = document.getElementById(targetId);
+      const width = 1100;
+      const height = 555;
+      const margin = { top: 52, right: 28, bottom: 105, left: 104 };
+      const plotW = width - margin.left - margin.right;
+      const plotH = height - margin.top - margin.bottom;
+      const groupW = plotW / rows.length;
+      const barW = 78;
+      const gap = 10;
+      const y = value => margin.top + plotH - value * plotH;
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      svg.setAttribute('aria-hidden', 'true');
+
+      svgElement(svg, 'rect', {
+        x: margin.left,
+        y: margin.top,
+        width: plotW,
+        height: plotH,
+        fill: '#ffffff',
+        stroke: palette.frame,
+        'stroke-width': 1.2
+      });
+
+      [0, 0.2, 0.4, 0.6, 0.8, 1].forEach(tick => {
+        const yy = y(tick);
+        if (tick > 0 && tick < 1) {
+          svgElement(svg, 'line', {
+            x1: margin.left,
+            x2: width - margin.right,
+            y1: yy,
+            y2: yy,
+            stroke: palette.grid,
+            'stroke-width': 1
+          });
+        }
+        svgElement(svg, 'text', {
+          x: margin.left - 13,
+          y: yy + 7,
+          'text-anchor': 'end',
+          fill: palette.text,
+          'font-size': 18,
+          'font-weight': 500
+        }, `${Math.round(tick * 100)}%`);
+      });
+
+      svgElement(svg, 'text', {
+        x: 29,
+        y: margin.top + plotH / 2,
+        transform: `rotate(-90 29 ${margin.top + plotH / 2})`,
+        'text-anchor': 'middle',
+        fill: palette.text,
+        'font-size': 20,
+        'font-weight': 500
+      }, yTitle);
+
+      svgElement(svg, 'text', {
+        x: margin.left + plotW / 2,
+        y: height - 18,
+        'text-anchor': 'middle',
+        fill: palette.text,
+        'font-size': 20,
+        'font-weight': 500
+      }, 'New-goal condition');
+
+      rows.forEach((row, index) => {
+        const center = margin.left + groupW * (index + 0.5);
+        const series = [
+          { ...row.human, color: palette.human, x: center - barW - gap / 2, label: 'Human' },
+          { ...row.llm, color: palette.llm, x: center + gap / 2, label: 'GPT-4.1 mini' }
+        ];
+
+        series.forEach(item => {
+          const bar = svgElement(svg, 'rect', {
+            x: item.x,
+            y: y(item.value),
+            width: barW,
+            height: Math.max(0, margin.top + plotH - y(item.value)),
+            fill: item.color
+          });
+          const title = document.createElementNS(svg.namespaceURI, 'title');
+          title.textContent = `${row.label} · ${item.label}: ${Math.round(item.value * 100)}% (95% CI ${Math.round(item.low * 100)}–${Math.round(item.high * 100)}%)`;
+          bar.appendChild(title);
+
+          const mid = item.x + barW / 2;
+          const capHalf = barW * 0.28;
+          svgElement(svg, 'line', {
+            x1: mid,
+            x2: mid,
+            y1: y(item.low),
+            y2: y(item.high),
+            stroke: palette.ink,
+            'stroke-width': 2
+          });
+          [item.low, item.high].forEach(bound => {
+            svgElement(svg, 'line', {
+              x1: mid - capHalf,
+              x2: mid + capHalf,
+              y1: y(bound),
+              y2: y(bound),
+              stroke: palette.ink,
+              'stroke-width': 2
+            });
+          });
+
+          svgElement(svg, 'text', {
+            x: mid,
+            y: Math.max(27, y(item.high) - 11),
+            'text-anchor': 'middle',
+            fill: palette.ink,
+            'font-size': 20,
+            'font-weight': 750
+          }, `${Math.round(item.value * 100)}%`);
+        });
+
+        svgElement(svg, 'text', {
+          x: center,
+          y: margin.top + plotH + 34,
+          'text-anchor': 'middle',
+          fill: palette.text,
+          'font-size': 20,
+          'font-weight': 500
+        }, row.label);
+      });
+
+      host.replaceChildren(svg);
+    }
+
+    academicGroupedBars('commit-chart', [
+      {
+        label: 'Overall',
+        human: { value: 0.692593, low: 0.614815, high: 0.762963 },
+        llm: { value: 0.822222, low: 0.777778, high: 0.911111 }
+      },
+      {
+        label: 'Equal',
+        human: { value: 0.755556, low: 0.655556, high: 0.855556 },
+        llm: { value: 0.733333, low: 0.533333, high: 0.933333 }
+      },
+      {
+        label: 'Closer',
+        human: { value: 0.422222, low: 0.322222, high: 0.533333 },
+        llm: { value: 0.866667, low: 0.733333, high: 1.000000 }
+      },
+      {
+        label: 'Farther',
+        human: { value: 0.900000, low: 0.811111, high: 0.966667 },
+        llm: { value: 0.866667, low: 0.733333, high: 1.000000 }
+      }
+    ], 'Commitment rate (%)');
+
+    academicGroupedBars('efficiency-chart', [
+      {
+        label: 'Closer',
+        human: { value: 0.853490, low: 0.816097, high: 0.888867 },
+        llm: { value: 0.852705, low: 0.833420, high: 0.878022 }
+      },
+      {
+        label: 'Equal',
+        human: { value: 0.940835, low: 0.908432, high: 0.969254 },
+        llm: { value: 0.976852, low: 0.947222, high: 1.000000 }
+      },
+      {
+        label: 'Farther',
+        human: { value: 0.967821, low: 0.939498, high: 0.990404 },
+        llm: { value: 0.980220, low: 0.959707, high: 1.000000 }
+      },
+      {
+        label: 'No new goal',
+        human: { value: 0.987851, low: 0.973850, high: 0.998291 },
+        llm: { value: 1.000000, low: 1.000000, high: 1.000000 }
+      }
+    ], 'Opportunity efficiency (%)');
+  </script>
+</body>
+</html>

@@ -1,0 +1,1060 @@
+{
+  "metadata": {
+    "createdAt": "2026-08-06T17:50:55.120Z",
+    "runner": "dataAnalysis/scripts/run_vlm_single_agent_pilot.js",
+    "model": "gpt-4.1-mini",
+    "temperature": 0,
+    "visionDetail": "low",
+    "agents": 5,
+    "trialsPerAgentPerExperimentType": 12,
+    "mapSelection": "original-random",
+    "selectedMapKeysByAgent": {
+      "agent_01": [
+        {
+          "trialIndex": 0,
+          "experimentType": "1P2G",
+          "mapKey": "121"
+        },
+        {
+          "trialIndex": 1,
+          "experimentType": "1P2G",
+          "mapKey": "120"
+        },
+        {
+          "trialIndex": 2,
+          "experimentType": "1P2G",
+          "mapKey": "183"
+        },
+        {
+          "trialIndex": 3,
+          "experimentType": "1P2G",
+          "mapKey": "188"
+        },
+        {
+          "trialIndex": 4,
+          "experimentType": "1P2G",
+          "mapKey": "186"
+        },
+        {
+          "trialIndex": 5,
+          "experimentType": "1P2G",
+          "mapKey": "197"
+        },
+        {
+          "trialIndex": 6,
+          "experimentType": "1P2G",
+          "mapKey": "156"
+        },
+        {
+          "trialIndex": 7,
+          "experimentType": "1P2G",
+          "mapKey": "122"
+        },
+        {
+          "trialIndex": 8,
+          "experimentType": "1P2G",
+          "mapKey": "173"
+        },
+        {
+          "trialIndex": 9,
+          "experimentType": "1P2G",
+          "mapKey": "128"
+        },
+        {
+          "trialIndex": 10,
+          "experimentType": "1P2G",
+          "mapKey": "154"
+        },
+        {
+          "trialIndex": 11,
+          "experimentType": "1P2G",
+          "mapKey": "144"
+        }
+      ],
+      "agent_02": [
+        {
+          "trialIndex": 0,
+          "experimentType": "1P2G",
+          "mapKey": "102"
+        },
+        {
+          "trialIndex": 1,
+          "experimentType": "1P2G",
+          "mapKey": "136"
+        },
+        {
+          "trialIndex": 2,
+          "experimentType": "1P2G",
+          "mapKey": "190"
+        },
+        {
+          "trialIndex": 3,
+          "experimentType": "1P2G",
+          "mapKey": "149"
+        },
+        {
+          "trialIndex": 4,
+          "experimentType": "1P2G",
+          "mapKey": "130"
+        },
+        {
+          "trialIndex": 5,
+          "experimentType": "1P2G",
+          "mapKey": "181"
+        },
+        {
+          "trialIndex": 6,
+          "experimentType": "1P2G",
+          "mapKey": "182"
+        },
+        {
+          "trialIndex": 7,
+          "experimentType": "1P2G",
+          "mapKey": "185"
+        },
+        {
+          "trialIndex": 8,
+          "experimentType": "1P2G",
+          "mapKey": "157"
+        },
+        {
+          "trialIndex": 9,
+          "experimentType": "1P2G",
+          "mapKey": "164"
+        },
+        {
+          "trialIndex": 10,
+          "experimentType": "1P2G",
+          "mapKey": "157"
+        },
+        {
+          "trialIndex": 11,
+          "experimentType": "1P2G",
+          "mapKey": "184"
+        }
+      ],
+      "agent_03": [
+        {
+          "trialIndex": 0,
+          "experimentType": "1P2G",
+          "mapKey": "110"
+        },
+        {
+          "trialIndex": 1,
+          "experimentType": "1P2G",
+          "mapKey": "148"
+        },
+        {
+          "trialIndex": 2,
+          "experimentType": "1P2G",
+          "mapKey": "160"
+        },
+        {
+          "trialIndex": 3,
+          "experimentType": "1P2G",
+          "mapKey": "140"
+        },
+        {
+          "trialIndex": 4,
+          "experimentType": "1P2G",
+          "mapKey": "162"
+        },
+        {
+          "trialIndex": 5,
+          "experimentType": "1P2G",
+          "mapKey": "174"
+        },
+        {
+          "trialIndex": 6,
+          "experimentType": "1P2G",
+          "mapKey": "107"
+        },
+        {
+          "trialIndex": 7,
+          "experimentType": "1P2G",
+          "mapKey": "186"
+        },
+        {
+          "trialIndex": 8,
+          "experimentType": "1P2G",
+          "mapKey": "159"
+        },
+        {
+          "trialIndex": 9,
+          "experimentType": "1P2G",
+          "mapKey": "138"
+        },
+        {
+          "trialIndex": 10,
+          "experimentType": "1P2G",
+          "mapKey": "99"
+        },
+        {
+          "trialIndex": 11,
+          "experimentType": "1P2G",
+          "mapKey": "132"
+        }
+      ],
+      "agent_04": [
+        {
+          "trialIndex": 0,
+          "experimentType": "1P2G",
+          "mapKey": "171"
+        },
+        {
+          "trialIndex": 1,
+          "experimentType": "1P2G",
+          "mapKey": "123"
+        },
+        {
+          "trialIndex": 2,
+          "experimentType": "1P2G",
+          "mapKey": "99"
+        },
+        {
+          "trialIndex": 3,
+          "experimentType": "1P2G",
+          "mapKey": "179"
+        },
+        {
+          "trialIndex": 4,
+          "experimentType": "1P2G",
+          "mapKey": "133"
+        },
+        {
+          "trialIndex": 5,
+          "experimentType": "1P2G",
+          "mapKey": "185"
+        },
+        {
+          "trialIndex": 6,
+          "experimentType": "1P2G",
+          "mapKey": "173"
+        },
+        {
+          "trialIndex": 7,
+          "experimentType": "1P2G",
+          "mapKey": "127"
+        },
+        {
+          "trialIndex": 8,
+          "experimentType": "1P2G",
+          "mapKey": "182"
+        },
+        {
+          "trialIndex": 9,
+          "experimentType": "1P2G",
+          "mapKey": "150"
+        },
+        {
+          "trialIndex": 10,
+          "experimentType": "1P2G",
+          "mapKey": "132"
+        },
+        {
+          "trialIndex": 11,
+          "experimentType": "1P2G",
+          "mapKey": "116"
+        }
+      ],
+      "agent_05": [
+        {
+          "trialIndex": 0,
+          "experimentType": "1P2G",
+          "mapKey": "115"
+        },
+        {
+          "trialIndex": 1,
+          "experimentType": "1P2G",
+          "mapKey": "191"
+        },
+        {
+          "trialIndex": 2,
+          "experimentType": "1P2G",
+          "mapKey": "104"
+        },
+        {
+          "trialIndex": 3,
+          "experimentType": "1P2G",
+          "mapKey": "164"
+        },
+        {
+          "trialIndex": 4,
+          "experimentType": "1P2G",
+          "mapKey": "129"
+        },
+        {
+          "trialIndex": 5,
+          "experimentType": "1P2G",
+          "mapKey": "122"
+        },
+        {
+          "trialIndex": 6,
+          "experimentType": "1P2G",
+          "mapKey": "185"
+        },
+        {
+          "trialIndex": 7,
+          "experimentType": "1P2G",
+          "mapKey": "192"
+        },
+        {
+          "trialIndex": 8,
+          "experimentType": "1P2G",
+          "mapKey": "168"
+        },
+        {
+          "trialIndex": 9,
+          "experimentType": "1P2G",
+          "mapKey": "170"
+        },
+        {
+          "trialIndex": 10,
+          "experimentType": "1P2G",
+          "mapKey": "174"
+        },
+        {
+          "trialIndex": 11,
+          "experimentType": "1P2G",
+          "mapKey": "184"
+        }
+      ]
+    },
+    "oneP2GConditionAssignment": [
+      {
+        "agentId": "agent_01",
+        "trialIndex": 0,
+        "mapKey": "121",
+        "condition": "farther_to_player1"
+      },
+      {
+        "agentId": "agent_01",
+        "trialIndex": 1,
+        "mapKey": "120",
+        "condition": "no_new_goal"
+      },
+      {
+        "agentId": "agent_01",
+        "trialIndex": 2,
+        "mapKey": "183",
+        "condition": "no_new_goal"
+      },
+      {
+        "agentId": "agent_01",
+        "trialIndex": 3,
+        "mapKey": "188",
+        "condition": "closer_to_player1"
+      },
+      {
+        "agentId": "agent_01",
+        "trialIndex": 4,
+        "mapKey": "186",
+        "condition": "closer_to_player1"
+      },
+      {
+        "agentId": "agent_01",
+        "trialIndex": 5,
+        "mapKey": "197",
+        "condition": "equal_to_player1"
+      },
+      {
+        "agentId": "agent_01",
+        "trialIndex": 6,
+        "mapKey": "156",
+        "condition": "no_new_goal"
+      },
+      {
+        "agentId": "agent_01",
+        "trialIndex": 7,
+        "mapKey": "122",
+        "condition": "farther_to_player1"
+      },
+      {
+        "agentId": "agent_01",
+        "trialIndex": 8,
+        "mapKey": "173",
+        "condition": "equal_to_player1"
+      },
+      {
+        "agentId": "agent_01",
+        "trialIndex": 9,
+        "mapKey": "128",
+        "condition": "closer_to_player1"
+      },
+      {
+        "agentId": "agent_01",
+        "trialIndex": 10,
+        "mapKey": "154",
+        "condition": "farther_to_player1"
+      },
+      {
+        "agentId": "agent_01",
+        "trialIndex": 11,
+        "mapKey": "144",
+        "condition": "equal_to_player1"
+      },
+      {
+        "agentId": "agent_02",
+        "trialIndex": 0,
+        "mapKey": "102",
+        "condition": "no_new_goal"
+      },
+      {
+        "agentId": "agent_02",
+        "trialIndex": 1,
+        "mapKey": "136",
+        "condition": "no_new_goal"
+      },
+      {
+        "agentId": "agent_02",
+        "trialIndex": 2,
+        "mapKey": "190",
+        "condition": "equal_to_player1"
+      },
+      {
+        "agentId": "agent_02",
+        "trialIndex": 3,
+        "mapKey": "149",
+        "condition": "farther_to_player1"
+      },
+      {
+        "agentId": "agent_02",
+        "trialIndex": 4,
+        "mapKey": "130",
+        "condition": "closer_to_player1"
+      },
+      {
+        "agentId": "agent_02",
+        "trialIndex": 5,
+        "mapKey": "181",
+        "condition": "farther_to_player1"
+      },
+      {
+        "agentId": "agent_02",
+        "trialIndex": 6,
+        "mapKey": "182",
+        "condition": "farther_to_player1"
+      },
+      {
+        "agentId": "agent_02",
+        "trialIndex": 7,
+        "mapKey": "185",
+        "condition": "no_new_goal"
+      },
+      {
+        "agentId": "agent_02",
+        "trialIndex": 8,
+        "mapKey": "157",
+        "condition": "closer_to_player1"
+      },
+      {
+        "agentId": "agent_02",
+        "trialIndex": 9,
+        "mapKey": "164",
+        "condition": "equal_to_player1"
+      },
+      {
+        "agentId": "agent_02",
+        "trialIndex": 10,
+        "mapKey": "157",
+        "condition": "equal_to_player1"
+      },
+      {
+        "agentId": "agent_02",
+        "trialIndex": 11,
+        "mapKey": "184",
+        "condition": "closer_to_player1"
+      },
+      {
+        "agentId": "agent_03",
+        "trialIndex": 0,
+        "mapKey": "110",
+        "condition": "no_new_goal"
+      },
+      {
+        "agentId": "agent_03",
+        "trialIndex": 1,
+        "mapKey": "148",
+        "condition": "farther_to_player1"
+      },
+      {
+        "agentId": "agent_03",
+        "trialIndex": 2,
+        "mapKey": "160",
+        "condition": "equal_to_player1"
+      },
+      {
+        "agentId": "agent_03",
+        "trialIndex": 3,
+        "mapKey": "140",
+        "condition": "no_new_goal"
+      },
+      {
+        "agentId": "agent_03",
+        "trialIndex": 4,
+        "mapKey": "162",
+        "condition": "equal_to_player1"
+      },
+      {
+        "agentId": "agent_03",
+        "trialIndex": 5,
+        "mapKey": "174",
+        "condition": "farther_to_player1"
+      },
+      {
+        "agentId": "agent_03",
+        "trialIndex": 6,
+        "mapKey": "107",
+        "condition": "no_new_goal"
+      },
+      {
+        "agentId": "agent_03",
+        "trialIndex": 7,
+        "mapKey": "186",
+        "condition": "farther_to_player1"
+      },
+      {
+        "agentId": "agent_03",
+        "trialIndex": 8,
+        "mapKey": "159",
+        "condition": "closer_to_player1"
+      },
+      {
+        "agentId": "agent_03",
+        "trialIndex": 9,
+        "mapKey": "138",
+        "condition": "closer_to_player1"
+      },
+      {
+        "agentId": "agent_03",
+        "trialIndex": 10,
+        "mapKey": "99",
+        "condition": "closer_to_player1"
+      },
+      {
+        "agentId": "agent_03",
+        "trialIndex": 11,
+        "mapKey": "132",
+        "condition": "equal_to_player1"
+      },
+      {
+        "agentId": "agent_04",
+        "trialIndex": 0,
+        "mapKey": "171",
+        "condition": "equal_to_player1"
+      },
+      {
+        "agentId": "agent_04",
+        "trialIndex": 1,
+        "mapKey": "123",
+        "condition": "no_new_goal"
+      },
+      {
+        "agentId": "agent_04",
+        "trialIndex": 2,
+        "mapKey": "99",
+        "condition": "farther_to_player1"
+      },
+      {
+        "agentId": "agent_04",
+        "trialIndex": 3,
+        "mapKey": "179",
+        "condition": "no_new_goal"
+      },
+      {
+        "agentId": "agent_04",
+        "trialIndex": 4,
+        "mapKey": "133",
+        "condition": "closer_to_player1"
+      },
+      {
+        "agentId": "agent_04",
+        "trialIndex": 5,
+        "mapKey": "185",
+        "condition": "closer_to_player1"
+      },
+      {
+        "agentId": "agent_04",
+        "trialIndex": 6,
+        "mapKey": "173",
+        "condition": "farther_to_player1"
+      },
+      {
+        "agentId": "agent_04",
+        "trialIndex": 7,
+        "mapKey": "127",
+        "condition": "closer_to_player1"
+      },
+      {
+        "agentId": "agent_04",
+        "trialIndex": 8,
+        "mapKey": "182",
+        "condition": "equal_to_player1"
+      },
+      {
+        "agentId": "agent_04",
+        "trialIndex": 9,
+        "mapKey": "150",
+        "condition": "equal_to_player1"
+      },
+      {
+        "agentId": "agent_04",
+        "trialIndex": 10,
+        "mapKey": "132",
+        "condition": "farther_to_player1"
+      },
+      {
+        "agentId": "agent_04",
+        "trialIndex": 11,
+        "mapKey": "116",
+        "condition": "no_new_goal"
+      },
+      {
+        "agentId": "agent_05",
+        "trialIndex": 0,
+        "mapKey": "115",
+        "condition": "equal_to_player1"
+      },
+      {
+        "agentId": "agent_05",
+        "trialIndex": 1,
+        "mapKey": "191",
+        "condition": "farther_to_player1"
+      },
+      {
+        "agentId": "agent_05",
+        "trialIndex": 2,
+        "mapKey": "104",
+        "condition": "farther_to_player1"
+      },
+      {
+        "agentId": "agent_05",
+        "trialIndex": 3,
+        "mapKey": "164",
+        "condition": "equal_to_player1"
+      },
+      {
+        "agentId": "agent_05",
+        "trialIndex": 4,
+        "mapKey": "129",
+        "condition": "closer_to_player1"
+      },
+      {
+        "agentId": "agent_05",
+        "trialIndex": 5,
+        "mapKey": "122",
+        "condition": "no_new_goal"
+      },
+      {
+        "agentId": "agent_05",
+        "trialIndex": 6,
+        "mapKey": "185",
+        "condition": "farther_to_player1"
+      },
+      {
+        "agentId": "agent_05",
+        "trialIndex": 7,
+        "mapKey": "192",
+        "condition": "no_new_goal"
+      },
+      {
+        "agentId": "agent_05",
+        "trialIndex": 8,
+        "mapKey": "168",
+        "condition": "equal_to_player1"
+      },
+      {
+        "agentId": "agent_05",
+        "trialIndex": 9,
+        "mapKey": "170",
+        "condition": "closer_to_player1"
+      },
+      {
+        "agentId": "agent_05",
+        "trialIndex": 10,
+        "mapKey": "174",
+        "condition": "no_new_goal"
+      },
+      {
+        "agentId": "agent_05",
+        "trialIndex": 11,
+        "mapKey": "184",
+        "condition": "closer_to_player1"
+      }
+    ],
+    "seed": 4101,
+    "maxSteps": 60,
+    "concurrency": 5,
+    "promptVariant": "single-agent-original-scaffold-v3-blinded",
+    "systemPrompt": "You are a precise navigator. Consider the image and text; output only one token: up, down, left, or right.",
+    "gameRules": {
+      "1P2G": "You will play alone. Each round, you can win if you go to one of the identical restaurants. Note that some restaurants are already open when the round starts. Others may appear later. For each round that you win, you earn an additional 10 points."
+    },
+    "dynamicGoalDesign": "legacy-1P2G-exact-distance",
+    "internalConditionVisibleToAgent": false,
+    "pricingAssumption": {
+      "input": 0.4,
+      "output": 1.6
+    }
+  },
+  "aggregate": {
+    "overall": {
+      "n": 60,
+      "successes": 60,
+      "successRate": 1,
+      "meanStepsAll": 12.233333333333333,
+      "meanStepsSuccessful": 12.233333333333333,
+      "meanPathEfficiencySuccessful": 0.9770456857956857,
+      "meanChosenGoalPathEfficiency": 0.9905092592592593,
+      "meanOpportunityAdjustedEfficiency": 0.952444176194176,
+      "opportunityOptimalTrials": 43,
+      "newGoalGenerationFailures": 0,
+      "commitmentEligibleTrials": 45,
+      "committedToOriginalGoalTrials": 37,
+      "commitmentRate": 0.8222222222222222,
+      "dynamicGoalTrials": 45,
+      "dynamicGoalsReached": 8,
+      "dynamicGoalReachRate": 0.17777777777777778,
+      "meanPostChangePathEfficiency": 0.8982724682724683,
+      "totalPostChangeExcessSteps": 40,
+      "totalInvalidMoves": 0,
+      "totalInvalidResponses": 0,
+      "totalRepeatedStates": 13,
+      "meanApiLatencyMs": 779.8455058367559,
+      "totalApiCalls": 734,
+      "usage": {
+        "promptTokens": 674973,
+        "completionTokens": 734,
+        "totalTokens": 675707,
+        "cachedPromptTokens": 0
+      },
+      "estimatedCostUsd": 0.27116360000000006
+    },
+    "byExperimentType": {
+      "1P2G": {
+        "n": 60,
+        "successes": 60,
+        "successRate": 1,
+        "meanStepsAll": 12.233333333333333,
+        "meanStepsSuccessful": 12.233333333333333,
+        "meanPathEfficiencySuccessful": 0.9770456857956857,
+        "meanChosenGoalPathEfficiency": 0.9905092592592593,
+        "meanOpportunityAdjustedEfficiency": 0.952444176194176,
+        "opportunityOptimalTrials": 43,
+        "newGoalGenerationFailures": 0,
+        "commitmentEligibleTrials": 45,
+        "committedToOriginalGoalTrials": 37,
+        "commitmentRate": 0.8222222222222222,
+        "dynamicGoalTrials": 45,
+        "dynamicGoalsReached": 8,
+        "dynamicGoalReachRate": 0.17777777777777778,
+        "meanPostChangePathEfficiency": 0.8982724682724683,
+        "totalPostChangeExcessSteps": 40,
+        "totalInvalidMoves": 0,
+        "totalInvalidResponses": 0,
+        "totalRepeatedStates": 13,
+        "meanApiLatencyMs": 779.8455058367559,
+        "totalApiCalls": 734,
+        "usage": {
+          "promptTokens": 674973,
+          "completionTokens": 734,
+          "totalTokens": 675707,
+          "cachedPromptTokens": 0
+        },
+        "estimatedCostUsd": 0.27116360000000006
+      }
+    },
+    "byOneP2GCondition": {
+      "closer_to_player1": {
+        "n": 15,
+        "successes": 15,
+        "successRate": 1,
+        "meanStepsAll": 13.133333333333333,
+        "meanStepsSuccessful": 13.133333333333333,
+        "meanPathEfficiencySuccessful": 0.951111111111111,
+        "meanChosenGoalPathEfficiency": 0.9851851851851853,
+        "meanOpportunityAdjustedEfficiency": 0.8527050727050728,
+        "opportunityOptimalTrials": 2,
+        "newGoalGenerationFailures": 0,
+        "commitmentEligibleTrials": 15,
+        "committedToOriginalGoalTrials": 13,
+        "commitmentRate": 0.8666666666666667,
+        "dynamicGoalTrials": 15,
+        "dynamicGoalsReached": 2,
+        "dynamicGoalReachRate": 0.13333333333333333,
+        "meanPostChangePathEfficiency": 0.7469541569541569,
+        "totalPostChangeExcessSteps": 30,
+        "totalInvalidMoves": 0,
+        "totalInvalidResponses": 0,
+        "totalRepeatedStates": 11,
+        "meanApiLatencyMs": 825.7941865541867,
+        "totalApiCalls": 197,
+        "usage": {
+          "promptTokens": 182104,
+          "completionTokens": 197,
+          "totalTokens": 182301,
+          "cachedPromptTokens": 0
+        },
+        "estimatedCostUsd": 0.0731568
+      },
+      "farther_to_player1": {
+        "n": 15,
+        "successes": 15,
+        "successRate": 1,
+        "meanStepsAll": 11.866666666666667,
+        "meanStepsSuccessful": 11.866666666666667,
+        "meanPathEfficiencySuccessful": 0.9802197802197803,
+        "meanChosenGoalPathEfficiency": 1,
+        "meanOpportunityAdjustedEfficiency": 0.9802197802197803,
+        "opportunityOptimalTrials": 13,
+        "newGoalGenerationFailures": 0,
+        "commitmentEligibleTrials": 15,
+        "committedToOriginalGoalTrials": 13,
+        "commitmentRate": 0.8666666666666667,
+        "dynamicGoalTrials": 15,
+        "dynamicGoalsReached": 2,
+        "dynamicGoalReachRate": 0.13333333333333333,
+        "meanPostChangePathEfficiency": 0.9786324786324787,
+        "totalPostChangeExcessSteps": 4,
+        "totalInvalidMoves": 0,
+        "totalInvalidResponses": 0,
+        "totalRepeatedStates": 0,
+        "meanApiLatencyMs": 763.7509734709735,
+        "totalApiCalls": 178,
+        "usage": {
+          "promptTokens": 163538,
+          "completionTokens": 178,
+          "totalTokens": 163716,
+          "cachedPromptTokens": 0
+        },
+        "estimatedCostUsd": 0.0657
+      },
+      "equal_to_player1": {
+        "n": 15,
+        "successes": 15,
+        "successRate": 1,
+        "meanStepsAll": 12.533333333333333,
+        "meanStepsSuccessful": 12.533333333333333,
+        "meanPathEfficiencySuccessful": 0.9768518518518519,
+        "meanChosenGoalPathEfficiency": 0.9768518518518519,
+        "meanOpportunityAdjustedEfficiency": 0.9768518518518519,
+        "opportunityOptimalTrials": 13,
+        "newGoalGenerationFailures": 0,
+        "commitmentEligibleTrials": 15,
+        "committedToOriginalGoalTrials": 11,
+        "commitmentRate": 0.7333333333333333,
+        "dynamicGoalTrials": 15,
+        "dynamicGoalsReached": 4,
+        "dynamicGoalReachRate": 0.26666666666666666,
+        "meanPostChangePathEfficiency": 0.9692307692307693,
+        "totalPostChangeExcessSteps": 6,
+        "totalInvalidMoves": 0,
+        "totalInvalidResponses": 0,
+        "totalRepeatedStates": 2,
+        "meanApiLatencyMs": 741.526023051023,
+        "totalApiCalls": 188,
+        "usage": {
+          "promptTokens": 173242,
+          "completionTokens": 188,
+          "totalTokens": 173430,
+          "cachedPromptTokens": 0
+        },
+        "estimatedCostUsd": 0.0695976
+      },
+      "no_new_goal": {
+        "n": 15,
+        "successes": 15,
+        "successRate": 1,
+        "meanStepsAll": 11.4,
+        "meanStepsSuccessful": 11.4,
+        "meanPathEfficiencySuccessful": 1,
+        "meanChosenGoalPathEfficiency": 1,
+        "meanOpportunityAdjustedEfficiency": 1,
+        "opportunityOptimalTrials": 15,
+        "newGoalGenerationFailures": 0,
+        "commitmentEligibleTrials": 0,
+        "committedToOriginalGoalTrials": 0,
+        "commitmentRate": null,
+        "dynamicGoalTrials": 0,
+        "dynamicGoalsReached": 0,
+        "dynamicGoalReachRate": null,
+        "meanPostChangePathEfficiency": null,
+        "totalPostChangeExcessSteps": 0,
+        "totalInvalidMoves": 0,
+        "totalInvalidResponses": 0,
+        "totalRepeatedStates": 0,
+        "meanApiLatencyMs": 788.3108402708402,
+        "totalApiCalls": 171,
+        "usage": {
+          "promptTokens": 156089,
+          "completionTokens": 171,
+          "totalTokens": 156260,
+          "cachedPromptTokens": 0
+        },
+        "estimatedCostUsd": 0.06270919999999999
+      }
+    },
+    "byAgent": {
+      "agent_01": {
+        "n": 12,
+        "successes": 12,
+        "successRate": 1,
+        "meanStepsAll": 11.5,
+        "meanStepsSuccessful": 11.5,
+        "meanPathEfficiencySuccessful": 1,
+        "meanChosenGoalPathEfficiency": 1,
+        "meanOpportunityAdjustedEfficiency": 0.9613858363858365,
+        "opportunityOptimalTrials": 9,
+        "newGoalGenerationFailures": 0,
+        "commitmentEligibleTrials": 9,
+        "committedToOriginalGoalTrials": 9,
+        "commitmentRate": 1,
+        "dynamicGoalTrials": 9,
+        "dynamicGoalsReached": 0,
+        "dynamicGoalReachRate": 0,
+        "meanPostChangePathEfficiency": 0.898148148148148,
+        "totalPostChangeExcessSteps": 6,
+        "totalInvalidMoves": 0,
+        "totalInvalidResponses": 0,
+        "totalRepeatedStates": 0,
+        "meanApiLatencyMs": 765.3934468309467,
+        "totalApiCalls": 138,
+        "usage": {
+          "promptTokens": 126355,
+          "completionTokens": 138,
+          "totalTokens": 126493,
+          "cachedPromptTokens": 0
+        },
+        "estimatedCostUsd": 0.050762800000000004
+      },
+      "agent_02": {
+        "n": 12,
+        "successes": 12,
+        "successRate": 1,
+        "meanStepsAll": 12.083333333333334,
+        "meanStepsSuccessful": 12.083333333333334,
+        "meanPathEfficiencySuccessful": 0.9895833333333334,
+        "meanChosenGoalPathEfficiency": 0.9895833333333334,
+        "meanOpportunityAdjustedEfficiency": 0.9648580586080587,
+        "opportunityOptimalTrials": 9,
+        "newGoalGenerationFailures": 0,
+        "commitmentEligibleTrials": 9,
+        "committedToOriginalGoalTrials": 7,
+        "commitmentRate": 0.7777777777777778,
+        "dynamicGoalTrials": 9,
+        "dynamicGoalsReached": 2,
+        "dynamicGoalReachRate": 0.2222222222222222,
+        "meanPostChangePathEfficiency": 0.9088319088319088,
+        "totalPostChangeExcessSteps": 6,
+        "totalInvalidMoves": 0,
+        "totalInvalidResponses": 0,
+        "totalRepeatedStates": 1,
+        "meanApiLatencyMs": 779.1763872701372,
+        "totalApiCalls": 145,
+        "usage": {
+          "promptTokens": 133230,
+          "completionTokens": 145,
+          "totalTokens": 133375,
+          "cachedPromptTokens": 0
+        },
+        "estimatedCostUsd": 0.053524
+      },
+      "agent_03": {
+        "n": 12,
+        "successes": 12,
+        "successRate": 1,
+        "meanStepsAll": 13.333333333333334,
+        "meanStepsSuccessful": 13.333333333333334,
+        "meanPathEfficiencySuccessful": 0.9481481481481482,
+        "meanChosenGoalPathEfficiency": 0.9814814814814815,
+        "meanOpportunityAdjustedEfficiency": 0.9441077441077441,
+        "opportunityOptimalTrials": 8,
+        "newGoalGenerationFailures": 0,
+        "commitmentEligibleTrials": 9,
+        "committedToOriginalGoalTrials": 7,
+        "commitmentRate": 0.7777777777777778,
+        "dynamicGoalTrials": 9,
+        "dynamicGoalsReached": 2,
+        "dynamicGoalReachRate": 0.2222222222222222,
+        "meanPostChangePathEfficiency": 0.9031857031857032,
+        "totalPostChangeExcessSteps": 10,
+        "totalInvalidMoves": 0,
+        "totalInvalidResponses": 0,
+        "totalRepeatedStates": 8,
+        "meanApiLatencyMs": 721.2376882376883,
+        "totalApiCalls": 160,
+        "usage": {
+          "promptTokens": 147910,
+          "completionTokens": 160,
+          "totalTokens": 148070,
+          "cachedPromptTokens": 0
+        },
+        "estimatedCostUsd": 0.059419999999999994
+      },
+      "agent_04": {
+        "n": 12,
+        "successes": 12,
+        "successRate": 1,
+        "meanStepsAll": 11.833333333333334,
+        "meanStepsSuccessful": 11.833333333333334,
+        "meanPathEfficiencySuccessful": 0.9880952380952381,
+        "meanChosenGoalPathEfficiency": 1,
+        "meanOpportunityAdjustedEfficiency": 0.9443722943722944,
+        "opportunityOptimalTrials": 8,
+        "newGoalGenerationFailures": 0,
+        "commitmentEligibleTrials": 9,
+        "committedToOriginalGoalTrials": 7,
+        "commitmentRate": 0.7777777777777778,
+        "dynamicGoalTrials": 9,
+        "dynamicGoalsReached": 2,
+        "dynamicGoalReachRate": 0.2222222222222222,
+        "meanPostChangePathEfficiency": 0.888034188034188,
+        "totalPostChangeExcessSteps": 8,
+        "totalInvalidMoves": 0,
+        "totalInvalidResponses": 0,
+        "totalRepeatedStates": 0,
+        "meanApiLatencyMs": 815.9392538017538,
+        "totalApiCalls": 142,
+        "usage": {
+          "promptTokens": 130395,
+          "completionTokens": 142,
+          "totalTokens": 130537,
+          "cachedPromptTokens": 0
+        },
+        "estimatedCostUsd": 0.0523852
+      },
+      "agent_05": {
+        "n": 12,
+        "successes": 12,
+        "successRate": 1,
+        "meanStepsAll": 12.416666666666666,
+        "meanStepsSuccessful": 12.416666666666666,
+        "meanPathEfficiencySuccessful": 0.9594017094017094,
+        "meanChosenGoalPathEfficiency": 0.9814814814814815,
+        "meanOpportunityAdjustedEfficiency": 0.9474969474969476,
+        "opportunityOptimalTrials": 9,
+        "newGoalGenerationFailures": 0,
+        "commitmentEligibleTrials": 9,
+        "committedToOriginalGoalTrials": 7,
+        "commitmentRate": 0.7777777777777778,
+        "dynamicGoalTrials": 9,
+        "dynamicGoalsReached": 2,
+        "dynamicGoalReachRate": 0.2222222222222222,
+        "meanPostChangePathEfficiency": 0.8931623931623931,
+        "totalPostChangeExcessSteps": 10,
+        "totalInvalidMoves": 0,
+        "totalInvalidResponses": 0,
+        "totalRepeatedStates": 4,
+        "meanApiLatencyMs": 817.480753043253,
+        "totalApiCalls": 149,
+        "usage": {
+          "promptTokens": 137083,
+          "completionTokens": 149,
+          "totalTokens": 137232,
+          "cachedPromptTokens": 0
+        },
+        "estimatedCostUsd": 0.055071600000000005
+      }
+    }
+  }
+}
