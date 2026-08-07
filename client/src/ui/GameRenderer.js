@@ -46,10 +46,14 @@ export class GameRenderer {
       : this.canvasSize;
     const parentWidth = parent ? parent.clientWidth : viewportMin;
 
-    // Use 85% scale in fullscreen to ensure text fits, otherwise use baseScale
+    // Use 85% scale in fullscreen to ensure text fits, otherwise use baseScale.
+    // parent.clientWidth is already the available content width. Subtracting a
+    // margin here created a feedback loop for shrink-wrapped game containers:
+    // each render made the canvas smaller, which made the parent smaller, so
+    // the following render shrank it again.
     const scale = this.fullscreen ? 0.85 : this.baseScale;
-    const margin = this.fullscreen ? 20 : 16; // Add margin in fullscreen too
-    const targetCssSize = Math.max(200, Math.floor(Math.min(viewportMin * scale, parentWidth - margin)));
+    const availableParentWidth = parentWidth > 0 ? parentWidth : viewportMin;
+    const targetCssSize = Math.max(200, Math.floor(Math.min(viewportMin * scale, availableParentWidth)));
 
     // Compute integer cellSize based on padding formula:
     // total = N*cellSize + (N+1)*padding  => cellSize = (total - (N+1)*padding)/N

@@ -30,7 +30,8 @@ export class GameStateManager {
       currentGoals: [],
       experimentType: null,
       trialIndex: 0,
-      gameMode: 'human-ai'
+      gameMode: 'human-ai',
+      newGoalMetadata: null
     };
 
     // Clear real-time synchronization state
@@ -66,6 +67,8 @@ export class GameStateManager {
       player2RT: [],
       // AI theory-of-mind logging: per AI step, what goal did AI infer for the other player
       aiInferredOtherGoals: [],
+      // Per-request telemetry for reproducibility, latency, and token-cost audits.
+      aiApiCalls: [],
       // Track which player made each move (for human-human mode analysis)
       currentPlayerIndex: [], // 0-based index (0 or 1) for each move
       player1StartPosition: null,
@@ -86,6 +89,18 @@ export class GameStateManager {
       newGoalConditionType: null,
       newGoalPresented: false,
       isNewGoalCloserToPlayer2: null,
+      newGoalGeometryRuleVersion: null,
+      newGoalGenerationMode: null,
+      newGoalStrictCandidateCount: null,
+      newGoalOldDistanceToPlayer1: null,
+      newGoalOldDistanceToPlayer2: null,
+      newGoalOldDistanceSum: null,
+      newGoalDistanceToPlayer1: null,
+      newGoalDistanceToPlayer2: null,
+      newGoalDistanceSum: null,
+      newGoalJointDistanceDelta: null,
+      newGoalDistanceDifferenceBetweenPlayers: null,
+      newGoalTargetedDistanceImprovement: null,
       collaborationSucceeded: undefined,
       // Fallback logging: records when human-human switches to AI
       partnerFallbackOccurred: false,
@@ -93,6 +108,7 @@ export class GameStateManager {
       partnerFallbackStage: null,  // 'waiting-for-partner' | 'match-play' | 'in-game'
       partnerFallbackTime: null,
       partnerFallbackAIType: null, // 'gpt' | 'joint-rl' | 'individual-rl' | etc.
+      partnerFallbackProfile: null,
       // Which side is controlled by human vs AI (0-based index for consistency with app)
       humanPlayerIndex: null,
       aiPlayerIndex: null
@@ -115,6 +131,7 @@ export class GameStateManager {
       // Back-compat: GPT→RL fallback log (older notebooks)
       gptFallbackToRlEvents: []
     };
+    this.partnerFallbackState = null;
 
     this.stepCount = 0;
     this.gameStartTime = 0; // Will be properly set in initializeTrial
@@ -139,6 +156,8 @@ export class GameStateManager {
     this.trialData.player1RT = [];
     this.trialData.player2RT = [];
     this.trialData.currentPlayerIndex = [];
+    this.trialData.aiInferredOtherGoals = [];
+    this.trialData.aiApiCalls = [];
     this.trialData.gptErrorEvents = [];
     this.trialData.gptFallbackOccurred = false;
     this.trialData.gptFallbackAgentType = null;
@@ -175,6 +194,19 @@ export class GameStateManager {
     this.trialData.distanceCondition = null; // ensure no carry-over between trials
     this.trialData.newGoalPresented = false;
     this.trialData.isNewGoalCloserToPlayer2 = null;
+    this.trialData.newGoalGeometryRuleVersion = null;
+    this.trialData.newGoalGenerationMode = null;
+    this.trialData.newGoalStrictCandidateCount = null;
+    this.trialData.newGoalOldDistanceToPlayer1 = null;
+    this.trialData.newGoalOldDistanceToPlayer2 = null;
+    this.trialData.newGoalOldDistanceSum = null;
+    this.trialData.newGoalDistanceToPlayer1 = null;
+    this.trialData.newGoalDistanceToPlayer2 = null;
+    this.trialData.newGoalDistanceSum = null;
+    this.trialData.newGoalJointDistanceDelta = null;
+    this.trialData.newGoalDistanceDifferenceBetweenPlayers = null;
+    this.trialData.newGoalTargetedDistanceImprovement = null;
+    this.currentState.newGoalMetadata = null;
     this.trialData.collaborationSucceeded = undefined;
     // Reset finalization flag for new trial
     this.trialData._finalized = false;
@@ -183,6 +215,8 @@ export class GameStateManager {
     this.trialData.partnerFallbackReason = null;
     this.trialData.partnerFallbackStage = null;
     this.trialData.partnerFallbackTime = null;
+    this.trialData.partnerFallbackAIType = null;
+    this.trialData.partnerFallbackProfile = null;
     // Initialize who is human vs AI at trial start (for 2P modes)
     try {
       if (String(experimentType || '').includes('2P')) {
@@ -203,6 +237,25 @@ export class GameStateManager {
         this.trialData.aiPlayerIndex = null;
       }
     } catch (_) { /* noop */ }
+
+    // A matchmaking fallback occurs between Game 2 and Game 3. Carry that
+    // assignment into every subsequent two-player trial instead of losing it
+    // when initializeTrial resets per-trial fields.
+    if (String(experimentType || '').includes('2P') && this.partnerFallbackState) {
+      const activeFallback = this.partnerFallbackState;
+      this.trialData.partnerFallbackOccurred = true;
+      this.trialData.partnerFallbackReason = activeFallback.reason;
+      this.trialData.partnerFallbackStage = activeFallback.stage;
+      this.trialData.partnerFallbackTime = activeFallback.at;
+      this.trialData.partnerFallbackAIType = activeFallback.aiType;
+      this.trialData.partnerFallbackProfile = activeFallback.fallbackProfile || null;
+      this.trialData.aiPlayerIndex = Number.isInteger(activeFallback.aiPlayerNumber)
+        ? activeFallback.aiPlayerNumber - 1
+        : this.trialData.aiPlayerIndex;
+      this.trialData.humanPlayerIndex = Number.isInteger(this.trialData.aiPlayerIndex)
+        ? (this.trialData.aiPlayerIndex === 0 ? 1 : 0)
+        : this.trialData.humanPlayerIndex;
+    }
 
     // Add distance condition for trials (balanced sequence)
     if (experimentType === '2P3G') {
@@ -264,7 +317,10 @@ export class GameStateManager {
   }
 
   // Record a human→AI fallback event for the current run (and current trial if any)
-  recordPartnerFallback({ reason = 'disconnect', stage = 'in-game', at = Date.now(), fallbackAIType = null } = {}) {
+  recordPartnerFallback({
+    reason = 'disconnect', stage = 'in-game', at = Date.now(), fallbackAIType = null,
+    experimentType = null, aiPlayerNumber = null, fallbackProfile = null
+  } = {}) {
     try {
       // Determine actual AI type being used as fallback
       let aiTypeDesc = 'unknown';
@@ -315,6 +371,15 @@ export class GameStateManager {
         }
       }
 
+      this.partnerFallbackState = {
+        reason,
+        stage,
+        at,
+        aiType: aiTypeDesc,
+        aiPlayerNumber: Number.isInteger(aiPlayerNumber) ? aiPlayerNumber : null,
+        fallbackProfile: fallbackProfile || null
+      };
+
       // Tag current trial if active
       if (this.trialData) {
         this.trialData.partnerFallbackOccurred = true;
@@ -322,12 +387,20 @@ export class GameStateManager {
         this.trialData.partnerFallbackStage = stage;
         this.trialData.partnerFallbackTime = at;
         this.trialData.partnerFallbackAIType = aiTypeDesc;
+        this.trialData.partnerFallbackProfile = fallbackProfile || null;
       }
       // Push experiment-level event
       if (this.experimentData) {
         const trialIdx = (this.currentState && Number.isInteger(this.currentState.trialIndex)) ? this.currentState.trialIndex : -1;
-        const experimentType = (this.currentState && this.currentState.experimentType) || null;
-        const evt = { reason, stage, at, trialIndex: trialIdx, experimentType, aiType: aiTypeDesc };
+        const targetExperimentType = experimentType ||
+          ((this.currentState && this.currentState.experimentType) || null);
+        const evt = {
+          reason, stage, at, trialIndex: trialIdx,
+          experimentType: targetExperimentType,
+          aiType: aiTypeDesc,
+          aiPlayerNumber: Number.isInteger(aiPlayerNumber) ? aiPlayerNumber : null,
+          fallbackProfile: fallbackProfile || null
+        };
         if (Array.isArray(this.experimentData.fallbackEvents)) {
           this.experimentData.fallbackEvents.push(evt);
         } else {
@@ -493,6 +566,35 @@ export class GameStateManager {
     }
     if (typeof extra.isNewGoalCloserToPlayer2 === 'boolean') {
       this.trialData.isNewGoalCloserToPlayer2 = extra.isNewGoalCloserToPlayer2;
+    }
+    const metadataFields = {
+      geometryRuleVersion: 'newGoalGeometryRuleVersion',
+      generationMode: 'newGoalGenerationMode',
+      strictCandidateCount: 'newGoalStrictCandidateCount',
+      oldDistanceToPlayer1: 'newGoalOldDistanceToPlayer1',
+      oldDistanceToPlayer2: 'newGoalOldDistanceToPlayer2',
+      oldDistanceSum: 'newGoalOldDistanceSum',
+      distanceToPlayer1: 'newGoalDistanceToPlayer1',
+      distanceToPlayer2: 'newGoalDistanceToPlayer2',
+      distanceSum: 'newGoalDistanceSum',
+      jointDistanceDelta: 'newGoalJointDistanceDelta',
+      distanceDifferenceBetweenPlayers: 'newGoalDistanceDifferenceBetweenPlayers',
+      targetedDistanceImprovement: 'newGoalTargetedDistanceImprovement'
+    };
+    Object.entries(metadataFields).forEach(([source, destination]) => {
+      if (extra[source] !== undefined) {
+        this.trialData[destination] = extra[source];
+      }
+    });
+    if (this.currentState) {
+      this.currentState.newGoalMetadata = Object.fromEntries(
+        Object.keys(metadataFields)
+          .filter(source => extra[source] !== undefined)
+          .map(source => [source, extra[source]])
+      );
+      if (typeof extra.isNewGoalCloserToPlayer2 === 'boolean') {
+        this.currentState.newGoalMetadata.isNewGoalCloserToPlayer2 = extra.isNewGoalCloserToPlayer2;
+      }
     }
   }
 
@@ -733,6 +835,31 @@ export class GameStateManager {
         } catch (_) { /* safe fallback to null */ }
       }
       this.trialData.aiInferredOtherGoals.push(idx);
+    } catch (_) { /* noop */ }
+  }
+
+  recordAIApiCall(result, { agentType = null, phase = null, aiPlayerNumber = null } = {}) {
+    try {
+      if (!result || typeof result !== 'object') return;
+      if (!Array.isArray(this.trialData.aiApiCalls)) this.trialData.aiApiCalls = [];
+      this.trialData.aiApiCalls.push({
+        step: this.stepCount,
+        timeMs: Date.now() - (this.gameStartTime || Date.now()),
+        phase,
+        agentType,
+        aiPlayerNumber,
+        promptVersion: result.promptVersion || null,
+        profile: result.profile || null,
+        model: result.baseModel || result.responseModel || result.model || null,
+        responseModel: result.responseModel || null,
+        reasoningEffort: result.reasoningEffort || null,
+        serviceTierRequested: result.serviceTierRequested || null,
+        serviceTier: result.serviceTier || null,
+        latencyMs: Number.isFinite(result.latencyMs) ? result.latencyMs : null,
+        usage: result.usage || null,
+        rate: result.rate || null,
+        action: result.action || null
+      });
     } catch (_) { /* noop */ }
   }
 
@@ -1151,7 +1278,13 @@ export class GameStateManager {
           // Mark as presented using remote state's legacy condition field when available
           const cond = (remoteState && (remoteState.distanceCondition || remoteState.newGoalConditionType))
             || this.trialData.distanceCondition || this.trialData.newGoalConditionType || null;
-          this.markNewGoalPresented([...newOnRemote], cond, {});
+          this.markNewGoalPresented(
+            [...newOnRemote],
+            cond,
+            (remoteState?.newGoalMetadata && typeof remoteState.newGoalMetadata === 'object')
+              ? remoteState.newGoalMetadata
+              : {}
+          );
         }
       }
     } catch (_) {

@@ -19,6 +19,9 @@ export class GameApplication {
     this.gameConfig = null; // Store game configuration from server
     this.useTimelineFlow = true; // Enable timeline flow by default
     this.currentRoomId = null; // Track active multiplayer room ID for export
+    this.lastRoomId = null; // Preserve room provenance after matchmaking fallback
+    this._legacyExperimentType = null; // Direct/legacy experiment requested by URL
+    this._legacyExperimentStarted = false;
 
     // Synchronized human-human turn state
     this._hhSync = {
@@ -152,8 +155,14 @@ export class GameApplication {
         console.log('🌐 Enabling real multiplayer integration for collaboration phases');
         this.setupMultiplayerTimelineIntegration(experimentType, roomId);
       } else {
-        console.log('🤖 Using mock multiplayer for timeline (server not available or skipped)');
-        this.setupMockMultiplayerForTimeline();
+        if (CONFIG?.study?.formal || CONFIG?.study?.requiresRealMatchmaking) {
+          // A formal participant must never be assigned a synthetic mock human.
+          // The waiting stage will use its registered timeout and VLM fallback.
+          console.warn('⚠️ Formal study has no network connection; matchmaking will time out to the registered fallback');
+        } else {
+          console.log('🤖 Using mock multiplayer for timeline (server not available or skipped)');
+          this.setupMockMultiplayerForTimeline();
+        }
       }
     }
 
@@ -175,7 +184,8 @@ export class GameApplication {
         const room = await this.networkManager.joinRoom({
           roomId,
           gameMode: 'human-human',
-          experimentType: data.experimentType
+          experimentType: data.experimentType,
+          matchPool: CONFIG?.multiplayer?.matchPool || 'default'
         });
 
         console.log('Joined room during timeline flow:', room);
@@ -196,10 +206,10 @@ export class GameApplication {
     });
 
     // Handle match-play space readiness from timeline
-    this.timelineManager.on('match-play-ready', () => {
+    this.timelineManager.on('match-play-ready', (data = {}) => {
       console.log('🎮 Timeline match-play SPACE pressed - forwarding to network');
       if (this.networkManager && this.networkManager.isConnected) {
-        this.networkManager.setMatchPlayReady();
+        this.networkManager.setMatchPlayReady(data);
       } else {
         console.warn('⚠️ Network manager not available for match-play-ready');
       }
@@ -357,12 +367,25 @@ export class GameApplication {
     // Record AI fallback events initiated by the timeline (waiting/match timeouts)
     this.timelineManager.on('fallback-to-ai', (payload) => {
       try {
-        const { reason = 'unknown', stage = 'waiting-for-partner', at = Date.now(), fallbackAIType = null } = payload || {};
+        const {
+          reason = 'unknown', stage = 'waiting-for-partner', at = Date.now(),
+          fallbackAIType = null, experimentType = null, aiPlayerNumber = null
+        } = payload || {};
         // Best-effort: ensure exact GPT model cached before recording
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
-        this.gameStateManager?.recordPartnerFallback?.({ reason, stage, at, fallbackAIType });
+        this.gameStateManager?.recordPartnerFallback?.({
+          reason, stage, at, fallbackAIType, experimentType, aiPlayerNumber,
+          fallbackProfile: CONFIG?.game?.agent?.vlm?.profile || null
+        });
         // Proactively fetch and persist GPT model so fallback AI type can be exact (e.g., gpt-4o)
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
+      } catch (_) { /* noop */ }
+    });
+
+    this.timelineManager.on('cancel-matchmaking', () => {
+      try {
+        this.networkManager?.leaveRoom?.();
+        this.currentRoomId = null;
       } catch (_) { /* noop */ }
     });
 
@@ -410,7 +433,7 @@ export class GameApplication {
       }
 
       // Determine room id (from runtime or payload)
-      const roomId = this.currentRoomId || data.roomId || null;
+      const roomId = this.currentRoomId || this.lastRoomId || data.roomId || null;
 
       // Legacy-compatible export object
       const exportObj = {
@@ -418,6 +441,9 @@ export class GameApplication {
         prolificPid: prolificPid || null,
         timestamp: new Date().toISOString(),
         experimentOrder: (CONFIG?.game?.experiments?.order) || [],
+        studyId: CONFIG?.study?.id || null,
+        assignedCondition: CONFIG?.study?.assignedCondition || null,
+        configuredFallback: CONFIG?.study?.fallback || null,
         allTrialsData: gsData.allTrialsData || [],
         questionnaireData: data.questionnaire || null,
         successThreshold: gsData.successThreshold || {},
@@ -427,7 +453,8 @@ export class GameApplication {
         roomId,
         // Add waiting time data
         waitingDuration: data.waitingDuration || 0,
-        waitingDetails: data.waitingDetails || []
+        waitingDetails: data.waitingDetails || [],
+        waitingMinigame: data.waitingMinigame || null
       };
 
       const dataStr = JSON.stringify(exportObj, null, 2);
@@ -461,6 +488,8 @@ export class GameApplication {
               o.participantId = exportObj.participantId;
               // Also include explicit prolificPid for verification/debugging
               o.prolificPid = exportObj.prolificPid || '';
+              o.studyId = exportObj.studyId || '';
+              o.assignedCondition = exportObj.assignedCondition || '';
               // Add current player number (1 or 2) for human-human mode analysis
               o.currentPlayer = (this.playerIndex !== undefined) ? (this.playerIndex + 1) : null;
               // Legacy naming: prefer distanceCondition in exports
@@ -479,20 +508,28 @@ export class GameApplication {
             // Prefer a sensible column order for readability; include common fields first if present
             const preferredOrder = [
               'trialIndex', 'experimentType', 'partnerAgentType',
+              'studyId', 'assignedCondition',
               'currentPlayer', 'participantId', 'roomId',
               'humanPlayerIndex', 'aiPlayerIndex',
               'player1StartPosition', 'player2StartPosition', 'initialGoalPositions',
               'partnerFallbackOccurred', 'partnerFallbackReason', 'partnerFallbackStage', 'partnerFallbackTime',
               'partnerFallbackAIType',
+              'partnerFallbackProfile',
               'collaborationSucceeded',
               'player1GoalReachedStep', 'player2GoalReachedStep',
               'newGoalPresented', 'newGoalPosition', 'distanceCondition', 'isNewGoalCloserToPlayer2',
+              'newGoalGeometryRuleVersion', 'newGoalGenerationMode', 'newGoalStrictCandidateCount',
+              'newGoalOldDistanceToPlayer1', 'newGoalOldDistanceToPlayer2', 'newGoalOldDistanceSum',
+              'newGoalDistanceToPlayer1', 'newGoalDistanceToPlayer2', 'newGoalDistanceSum',
+              'newGoalJointDistanceDelta', 'newGoalDistanceDifferenceBetweenPlayers',
+              'newGoalTargetedDistanceImprovement',
               'trialStartTime',
               'gptFallbackOccurred', 'gptFallbackAgentType', 'gptFallbackCount', 'gptFallbackFirstStep', 'gptFallbackFirstTimeMs',
               'gptFallbackLastError', 'gptFallbackLastFallbackDirection',
               'gptFallbackToRlOccurred', 'gptFallbackToRlCount', 'gptFallbackToRlFirstStep', 'gptFallbackToRlFirstTimeMs',
               'gptFallbackToRlLastError', 'gptFallbackToRlLastFallbackDirection',
               'gptErrorEvents',
+              'aiApiCalls',
               'currentPlayerIndex',
               'player1Trajectory', 'player2Trajectory', 'player1Actions', 'player2Actions', 'player1RT', 'player2RT',
               'player1CurrentGoal', 'player2CurrentGoal', 'player1FirstDetectedGoal', 'player2FirstDetectedGoal',
@@ -572,6 +609,9 @@ export class GameApplication {
             ['participantId', exportObj.participantId],
             ['prolificPid', exportObj.prolificPid || ''],
             ['roomId', exportObj.roomId || ''],
+            ['studyId', exportObj.studyId || ''],
+            ['assignedCondition', exportObj.assignedCondition || ''],
+            ['configuredFallback', JSON.stringify(exportObj.configuredFallback || null)],
             ['experimentOrder', JSON.stringify(exportObj.experimentOrder || [])],
             ['experimentType', exportObj.experimentType],
             ['partnerAgentType', partnerAgentType],
@@ -683,16 +723,23 @@ export class GameApplication {
 
   async startSinglePlayerMode(experimentType) {
     // Configure for human-AI mode
-    GameConfigUtils.setPlayerType(2, CONFIG.multiplayer.fallbackAIType || 'rl_joint');
+    // Preserve an explicit `?ai=...` selection. Previously this was always
+    // overwritten by fallbackAIType, so `?ai=vlm` silently ran another agent.
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestedAI = urlParams.get('ai');
+    GameConfigUtils.setPlayerType(
+      2,
+      requestedAI || CONFIG.multiplayer.fallbackAIType || 'rl_joint'
+    );
+    GameConfigUtils.setExperimentOrder([experimentType]);
+    this._legacyExperimentType = experimentType;
+    this._legacyExperimentStarted = false;
 
     // Set player info for single player (always player 0 - red)
     this.uiManager.setPlayerInfo(0, 'human-ai');
 
     // Show main UI
     this.uiManager.showMainScreen();
-
-    // Start experiment sequence
-    await this.experimentManager.startExperimentSequence([experimentType]);
   }
 
   async startMultiplayerMode(experimentType, roomId) {
@@ -729,6 +776,7 @@ export class GameApplication {
       console.log('Room joined:', data);
       if (data && data.roomId) {
         this.currentRoomId = data.roomId;
+        this.lastRoomId = data.roomId;
         // Expose room id and a deterministic session seed for client-side sync logic
         try {
           window.__ROOM_ID__ = data.roomId;
@@ -762,6 +810,10 @@ export class GameApplication {
         // Legacy flow
         this.uiManager.updateLobbyInfo(data);
       }
+    });
+
+    this.networkManager.on('room-left', () => {
+      this.currentRoomId = null;
     });
 
     this.networkManager.on('player-joined', (data) => {
@@ -824,12 +876,28 @@ export class GameApplication {
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
         // Record fallback event for export (no UI message)
         try {
-          this.gameStateManager?.recordPartnerFallback?.({ reason: 'disconnect', stage: 'in-game', at: Date.now(), fallbackAIType: fallbackType });
+          const timelineStage = this.timelineManager?.stages?.[this.timelineManager?.currentStageIndex];
+          const fallbackStage = timelineStage?.type === 'match_play'
+            ? 'match-play'
+            : (timelineStage?.type === 'waiting_for_partner' ? 'waiting-for-partner' : 'in-game');
+          this.gameStateManager?.recordPartnerFallback?.({
+            reason: 'disconnect',
+            stage: fallbackStage,
+            at: Date.now(),
+            fallbackAIType: fallbackType,
+            fallbackProfile: CONFIG?.game?.agent?.vlm?.profile || null,
+            experimentType: timelineStage?.experimentType || this.gameStateManager?.currentState?.experimentType || null,
+            aiPlayerNumber
+          });
         } catch (_) { /* noop */ }
         // Post-upgrade in case model resolved after recording
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
         try {
           this.uiManager.setPlayerInfo(this.playerIndex, 'human-ai');
+        } catch (_) { /* noop */ }
+        try {
+          this.networkManager?.leaveRoom?.();
+          this.currentRoomId = null;
         } catch (_) { /* noop */ }
         try {
           if (this.timelineManager) {
@@ -862,7 +930,13 @@ export class GameApplication {
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
         // Record fallback event for export (no UI message)
         try {
-          this.gameStateManager?.recordPartnerFallback?.({ reason: 'disconnect', stage: 'in-game', at: Date.now(), fallbackAIType: fallbackType });
+          this.gameStateManager?.recordPartnerFallback?.({
+            reason: 'disconnect', stage: 'in-game', at: Date.now(),
+            fallbackAIType: fallbackType,
+            fallbackProfile: CONFIG?.game?.agent?.vlm?.profile || null,
+            experimentType: this.gameStateManager?.currentState?.experimentType || null,
+            aiPlayerNumber
+          });
         } catch (_) { /* noop */ }
         // Post-upgrade in case model resolved after recording
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
@@ -1078,8 +1152,20 @@ export class GameApplication {
     });
 
     // Experiment controls
-    this.uiManager.on('start-experiment', (experimentType) => {
-      this.experimentManager.startExperiment(experimentType);
+    this.uiManager.on('start-experiment', async (experimentType) => {
+      // The legacy/direct flow must explicitly replace the welcome screen with
+      // the game canvas before initializing the requested experiment.
+      if (this._legacyExperimentStarted) return;
+      this._legacyExperimentStarted = true;
+      const requestedExperiment = this._legacyExperimentType || experimentType;
+      this.uiManager.showGameScreen();
+      try {
+        await this.experimentManager.startExperiment(requestedExperiment);
+      } catch (error) {
+        this._legacyExperimentStarted = false;
+        console.error('Failed to start direct experiment:', error);
+        this.uiManager.showError(`Failed to start the experiment: ${error?.message || error}`);
+      }
     });
 
     this.uiManager.on('restart-experiment', () => {
@@ -1519,7 +1605,10 @@ export class GameApplication {
         reason: 'partner-disconnected',
         stage: 'experiment-transition',
         at: Date.now(),
-        fallbackAIType: fallbackType
+        fallbackAIType: fallbackType,
+        fallbackProfile: CONFIG?.game?.agent?.vlm?.profile || null,
+        experimentType,
+        aiPlayerNumber
       });
     } catch (error) {
       console.error('Error recording fallback event:', error);

@@ -216,15 +216,21 @@ export const CONFIG = {
       NO_NEW_GOAL: 'no_new_goal'
     },
     distanceConstraint: {
-      closerThreshold: 2,
-      allowEqualDistance: false,
-      maxDistanceIncrease: 5
+      // Match the adult individual-/joint-RL studies: a "closer" goal must
+      // improve the targeted player's distance by at least two grid cells.
+      minDistanceImprovement: 2,
+      // Keep null for the adult-RL rule, which did not impose an upper bound.
+      maxDistanceImprovement: null
     },
     goalConstraints: {
       minDistanceFromHuman: 1,
-      maxDistanceFromHuman: 12,
+      // 28 is the largest Manhattan distance on a 15 x 15 grid, so this is
+      // equivalent to the adult-RL generator's lack of a maximum-distance cut.
+      maxDistanceFromHuman: 28,
       avoidRectangleArea: false,
-      maintainDistanceSum: false,
+      // All three new-goal conditions in the adult RL data used exact joint
+      // distance matching: d1(new) + d2(new) == d1(old) + d2(old).
+      maintainDistanceSum: true,
       blockPathCheck: false
     }
   },
@@ -241,6 +247,16 @@ export const CONFIG = {
     // Max wait (ms) on the "Game is Ready! Press SPACE" screen for the other
     // human to press space before falling back to AI partner
     matchPlayReadyTimeout: 10000,
+    // Pilot/debug flows may allow SPACE to skip matching. Formal study presets
+    // disable this so assignment changes only after the registered timeout.
+    allowWaitingSkip: true,
+    // Optional engagement task shown only while real human matchmaking is active.
+    // Keep disabled by default so legacy and pilot URLs do not change silently.
+    waitingMinigame: {
+      enabled: false
+    },
+    // Only participants in the same pool may be matched together.
+    matchPool: 'default',
     // Fallback AI partner type when human-human matching fails
     // Allowed (canonical): 'llm' | 'llm-tom' | 'vlm' | 'vlm-tom' | 'rl_individual' | 'rl_joint' | 'committedAgent'
     fallbackAIType: 'vlm-tom',

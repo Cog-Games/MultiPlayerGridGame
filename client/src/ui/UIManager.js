@@ -78,7 +78,15 @@ export class UIManager {
   showMainScreen() {
     this.cleanupCanvas();
     this.currentScreen = 'main';
-    const preferFullscreen = !!(CONFIG?.game?.fullscreen?.defaultEnabled ?? CONFIG?.fullscreen?.defaultEnabled);
+    let preferFullscreen = !!(CONFIG?.game?.fullscreen?.defaultEnabled ?? CONFIG?.fullscreen?.defaultEnabled);
+    let requestedExperiment = CONFIG.game.experiments.order[0];
+    try {
+      const params = new URLSearchParams(window.location.search || '');
+      const fullscreenOverride = params.get('fullscreen');
+      if (fullscreenOverride === 'false') preferFullscreen = false;
+      if (fullscreenOverride === 'true') preferFullscreen = true;
+      requestedExperiment = params.get('experiment') || requestedExperiment;
+    } catch (_) { /* keep configured defaults */ }
     const startHint = preferFullscreen
       ? 'press the spacebar to enter the fullscreen and start the game!'
       : 'press the spacebar to start the game!';
@@ -120,9 +128,9 @@ export class UIManager {
     // Add event listener
     document.getElementById('start-experiment').addEventListener('click', async () => {
       if (preferFullscreen && !document.fullscreenElement) {
-        await this.enterFullscreen().catch(() => {});
+        await this.enterFullscreenWithoutBlocking();
       }
-      this.emit('start-experiment', CONFIG.game.experiments.order[0]);
+      this.emit('start-experiment', requestedExperiment);
     });
 
     // Spacebar start (optionally enter fullscreen first)
@@ -134,11 +142,11 @@ export class UIManager {
         e.preventDefault();
         if (preferFullscreen) {
           // Enter fullscreen first, then start the experiment
-          await this.enterFullscreen();
-          this.emit('start-experiment', CONFIG.game.experiments.order[0]);
+          await this.enterFullscreenWithoutBlocking();
+          this.emit('start-experiment', requestedExperiment);
         } else {
           // Windowed default: start immediately
-          this.emit('start-experiment', CONFIG.game.experiments.order[0]);
+          this.emit('start-experiment', requestedExperiment);
         }
       }
     };
@@ -153,6 +161,15 @@ export class UIManager {
     } catch (err) {
       this.showNotification('Fullscreen is not allowed by the browser');
     }
+  }
+
+  async enterFullscreenWithoutBlocking(timeoutMs = 750) {
+    // Some embedded browsers expose requestFullscreen() but never settle its
+    // promise. Starting the experiment must not depend on that browser API.
+    await Promise.race([
+      this.enterFullscreen().catch(() => {}),
+      new Promise(resolve => setTimeout(resolve, timeoutMs))
+    ]);
   }
 
   showLobbyScreen() {

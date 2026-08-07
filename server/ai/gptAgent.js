@@ -16,13 +16,32 @@ function logExactPrompt(prompt) {
 }
 
 // Log GPT output summary per step
-function logGptOutput({ kind = 'base', modelLabel, baseModel, content, action, inferredGoal, usage, latencyMs, rate }) {
+function logGptOutput({
+  kind = 'base',
+  modelLabel,
+  baseModel,
+  responseModel,
+  reasoningEffort,
+  serviceTierRequested,
+  serviceTier,
+  content,
+  action,
+  inferredGoal,
+  usage,
+  latencyMs,
+  rate
+}) {
   if (process.env.ENABLE_GPT_DEBUG !== 'true') return;
   const timestamp = new Date().toISOString();
   const header = kind === 'tom' ? 'GPT-ToM OUTPUT' : 'GPT OUTPUT';
   console.log(`\n${'-'.repeat(80)}`);
   console.log(`[${header} ${timestamp}]`);
   if (modelLabel) console.log(`model: ${modelLabel}${baseModel ? ` (api: ${baseModel})` : ''}`);
+  if (responseModel) console.log(`responseModel: ${responseModel}`);
+  if (reasoningEffort) console.log(`reasoningEffort: ${reasoningEffort}`);
+  if (serviceTierRequested || serviceTier) {
+    console.log(`serviceTier: requested=${serviceTierRequested || 'auto'}, actual=${serviceTier || 'unknown'}`);
+  }
   if (typeof action === 'string') console.log(`action: ${action}`);
   if (Array.isArray(inferredGoal)) console.log(`inferred_goal: (${inferredGoal[0]}, ${inferredGoal[1]})`);
   if (content) {
@@ -69,17 +88,21 @@ function findAllCoords(matrix, value) {
 
 // Shared prompt context derivation (no prompt-specific strings here).
 function derivePromptContext({ matrix, currentPlayer, goals }) {
-  const legend = `Legend: 0=blank, 1=traveler1, 2=traveler2, 3=restaurant`;
+  const legend = 'Legend: 0=blank, 1=traveler1, 2=traveler2, 3=restaurant, 4=obstacle (cannot be entered)';
   const matrixStr = formatMatrix(matrix);
   // Derive coordinates for players and goals
-  const p1 = findFirstCoord(matrix, 1);
-  const inferredP2 = findFirstCoord(matrix, 2);
-  const p2 = (currentPlayer && Array.isArray(currentPlayer.pos)) ? currentPlayer.pos : inferredP2;
+  const matrixP1 = findFirstCoord(matrix, 1);
+  const matrixP2 = findFirstCoord(matrix, 2);
+  const currentPosition = (currentPlayer && Array.isArray(currentPlayer.pos))
+    ? currentPlayer.pos
+    : null;
+  const isPlayer1 = Boolean(currentPlayer && currentPlayer.label === 'player1');
+  const p1 = isPlayer1 && currentPosition ? currentPosition : matrixP1;
+  const p2 = !isPlayer1 && currentPosition ? currentPosition : matrixP2;
   const goalsList = (Array.isArray(goals) && goals.length > 0) ? goals : findAllCoords(matrix, 3);
   const p1Str = p1 ? `(${p1[0]}, ${p1[1]})` : 'unknown';
   const p2Str = p2 ? `(${p2[0]}, ${p2[1]})` : 'unknown';
   const goalsStr = goalsList.length ? goalsList.map(g => `(${g[0]}, ${g[1]})`).join('; ') : 'none';
-  const isPlayer1 = Boolean(currentPlayer && currentPlayer.label === 'player1');
   return { legend, matrixStr, p1Str, p2Str, goalsStr, isPlayer1 };
 }
 
@@ -98,7 +121,7 @@ function buildSectionedScaffold({ currentPlayer, matrix, goals, memory, guidance
   const { legend, matrixStr, p1Str, p2Str, goalsStr, isPlayer1 } = derivePromptContext({ matrix, currentPlayer, goals });
   const lines = [
     '=== GAME CONTEXT ===',
-    'You are playing a navigation game in a 2D grid world with another player. You are hungry travelers who need to reach restaurants as quickly as possible.',
+    'You are playing a navigation game in a 2D grid world with another player. You are hungry travelers who need to reach restaurants.',
     '',
     (typeof guidance === 'string' && guidance.trim().length > 0)
       ? `GAME RULES: ${guidance.trim()}`
@@ -285,20 +308,87 @@ export function getLlmConfigInfo() {
 
 // === Vision (VLM) variant ===
 
+export const VLM_BASE_PROMPT_VERSION = 'vlm-human-visible-v3';
+export const VLM_TOM_PROMPT_VERSION = 'vlm-tom-human-visible-v3';
+
 function getVlmModel() {
   // Vision-capable model; allow override via VLM_API_MODEL else reuse GPT_API_MODEL
   return process.env.VLM_API_MODEL || process.env.GPT_API_MODEL || process.env.GPT_MODEL || 'gpt-4o-mini';
 }
 
-export function getVlmConfigInfo() {
+function readOptionalEnumEnv(name, allowedValues) {
+  const value = String(process.env[name] || '').trim().toLowerCase();
+  if (!value) return undefined;
+  if (!allowedValues.has(value)) {
+    throw new Error(`${name} must be one of: ${Array.from(allowedValues).join(', ')}`);
+  }
+  return value;
+}
+
+function getVlmReasoningEffort() {
+  return readOptionalEnumEnv(
+    'VLM_REASONING_EFFORT',
+    new Set(['none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max'])
+  );
+}
+
+function getVlmServiceTier() {
+  return readOptionalEnumEnv(
+    'VLM_SERVICE_TIER',
+    new Set(['auto', 'default', 'flex', 'priority', 'fast'])
+  );
+}
+
+const VLM_EXECUTION_PROFILES = Object.freeze({
+  'human-human-fallback-luna-fast': Object.freeze({
+    model: 'gpt-5.6-luna',
+    reasoningEffort: 'none',
+    serviceTier: 'fast'
+  })
+});
+
+function getVlmExecutionConfig(profileName = null) {
+  const normalizedProfile = String(profileName || '').trim();
+  const profile = normalizedProfile ? VLM_EXECUTION_PROFILES[normalizedProfile] : null;
+  if (normalizedProfile && !profile) {
+    throw new Error(`Unknown VLM execution profile: ${normalizedProfile}`);
+  }
   return {
-    model: getVlmModel(),
-    apiModel: getVlmModel(),
+    profile: normalizedProfile || null,
+    model: profile?.model || getVlmModel(),
+    reasoningEffort: profile?.reasoningEffort ?? getVlmReasoningEffort() ?? null,
+    serviceTier: profile?.serviceTier ?? getVlmServiceTier() ?? null
+  };
+}
+
+export function getVlmConfigInfo(profileName = null) {
+  const execution = getVlmExecutionConfig(profileName);
+  return {
+    profile: execution.profile,
+    model: execution.model,
+    apiModel: execution.model,
+    reasoningEffort: execution.reasoningEffort,
+    serviceTier: execution.serviceTier,
+    basePromptVersion: VLM_BASE_PROMPT_VERSION,
+    tomPromptVersion: VLM_TOM_PROMPT_VERSION,
     hasApiKey: Boolean(process.env.OPENAI_API_KEY)
   };
 }
 
-async function callOpenAIChatVision({ text, imageDataUrl, model = getVlmModel(), temperature = 0, systemMessage } = {}) {
+function parseBaseVlmAction(raw) {
+  const action = String(raw || '').trim().toLowerCase();
+  return new Set(['up', 'down', 'left', 'right']).has(action) ? action : null;
+}
+
+async function callOpenAIChatVision({
+  text,
+  imageDataUrl,
+  model = getVlmModel(),
+  temperature = 0,
+  reasoningEffort = getVlmReasoningEffort(),
+  serviceTier = getVlmServiceTier(),
+  systemMessage
+} = {}) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error('OPENAI_API_KEY is not set on the server');
 
@@ -309,17 +399,21 @@ async function callOpenAIChatVision({ text, imageDataUrl, model = getVlmModel(),
   }
 
   const t0 = Date.now();
+  const requestBody = {
+    model,
+    temperature,
+    messages: [
+      { role: 'system', content: systemMessage || 'You output only one token: up, down, left, or right.' },
+      { role: 'user', content: userContent }
+    ]
+  };
+  if (reasoningEffort) requestBody.reasoning_effort = reasoningEffort;
+  if (serviceTier) requestBody.service_tier = serviceTier;
+
   const resp = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model,
-      temperature,
-      messages: [
-        { role: 'system', content: systemMessage || 'You output only one token: up, down, left, or right.' },
-        { role: 'user', content: userContent }
-      ]
-    })
+    body: JSON.stringify(requestBody)
   });
 
   if (!resp.ok) {
@@ -338,15 +432,25 @@ async function callOpenAIChatVision({ text, imageDataUrl, model = getVlmModel(),
     resetRequests: resp.headers.get('x-ratelimit-reset-requests'),
     resetTokens: resp.headers.get('x-ratelimit-reset-tokens')
   };
-  return { content, usage, latencyMs, rate };
+  return {
+    content,
+    usage,
+    latencyMs,
+    rate,
+    responseModel: data?.model || model,
+    reasoningEffort: reasoningEffort || null,
+    serviceTierRequested: serviceTier || null,
+    serviceTier: data?.service_tier || null
+  };
 }
 
 export async function decideGptVlmAction(payload) {
   const { imageDataUrl } = payload || {};
   // Build the same prompt as text but include image for visual grounding
   const prompt = buildPrompt(payload);
-  const externalModel = payload?.model || 'vlm';
-  const apiModel = getVlmModel();
+  const execution = getVlmExecutionConfig(payload?.profile);
+  const apiModel = execution.model;
+  const externalModel = payload?.model || apiModel;
   const temperature = typeof payload?.temperature === 'number' ? payload.temperature : 0;
 
   const result = await callOpenAIChatVision({
@@ -354,19 +458,15 @@ export async function decideGptVlmAction(payload) {
     imageDataUrl,
     model: apiModel,
     temperature,
+    reasoningEffort: execution.reasoningEffort,
+    serviceTier: execution.serviceTier,
     systemMessage: 'You are a precise navigator. Consider the image and text; output only one token: up, down, left, or right.'
   });
 
   const raw = (result && typeof result === 'object') ? result.content : result;
-  const allowed = new Set(['up', 'down', 'left', 'right']);
-  const token = String(raw || '').split(/\s+/)[0];
-  let action = token;
-  if (!allowed.has(action)) {
-    for (const a of allowed) { if ((raw || '').includes(a)) { action = a; break; } }
-  }
-  if (!allowed.has(action)) {
-    const arr = Array.from(allowed);
-    action = arr[Math.floor(Math.random() * arr.length)];
+  const action = parseBaseVlmAction(raw);
+  if (!action) {
+    throw new Error(`Invalid VLM action response: ${JSON.stringify(String(raw || ''))}`);
   }
 
   try {
@@ -374,6 +474,10 @@ export async function decideGptVlmAction(payload) {
       kind: 'base',
       modelLabel: externalModel,
       baseModel: apiModel,
+      responseModel: result?.responseModel,
+      reasoningEffort: result?.reasoningEffort,
+      serviceTierRequested: result?.serviceTierRequested,
+      serviceTier: result?.serviceTier,
       content: String(raw || ''),
       action,
       usage: (result && result.usage) || null,
@@ -384,8 +488,14 @@ export async function decideGptVlmAction(payload) {
 
   return {
     action,
+    promptVersion: VLM_BASE_PROMPT_VERSION,
+    profile: execution.profile,
     model: externalModel,
     baseModel: apiModel,
+    responseModel: result?.responseModel || apiModel,
+    reasoningEffort: result?.reasoningEffort || null,
+    serviceTierRequested: result?.serviceTierRequested || null,
+    serviceTier: result?.serviceTier || null,
     usage: (result && result.usage) || null,
     latencyMs: (result && result.latencyMs) || null,
     rate: (result && result.rate) || null
@@ -396,8 +506,9 @@ export async function decideGptVlmTomAction(payload) {
   const { imageDataUrl } = payload || {};
   // Reuse ToM prompt content and add image
   const prompt = buildTomPrompt(payload);
-  const externalModel = payload?.model || 'vlm-tom';
-  const apiModel = getVlmModel();
+  const execution = getVlmExecutionConfig(payload?.profile);
+  const apiModel = execution.model;
+  const externalModel = payload?.model || apiModel;
   const temperature = typeof payload?.temperature === 'number' ? payload.temperature : 0;
 
   const result = await callOpenAIChatVision({
@@ -405,6 +516,8 @@ export async function decideGptVlmTomAction(payload) {
     imageDataUrl,
     model: apiModel,
     temperature,
+    reasoningEffort: execution.reasoningEffort,
+    serviceTier: execution.serviceTier,
     systemMessage: 'You are a collaborative navigation AI with theory-of-mind capabilities. Analyze the visual grid image and text context to infer the other player\'s intended goal, then choose your next action to coordinate with them. Output ONLY valid JSON with keys "inferred_goal" (array [row,col] or null) and "action" (one of: "up", "down", "left", "right"). No explanations, no markdown, no additional text.'
   });
 
@@ -416,8 +529,7 @@ export async function decideGptVlmTomAction(payload) {
     for (const a of allowed) { if ((raw || '').includes(a)) { action = a; break; } }
   }
   if (!allowed.has(action)) {
-    const arr = Array.from(allowed);
-    action = arr[Math.floor(Math.random() * arr.length)];
+    throw new Error(`Invalid VLM-ToM action response: ${JSON.stringify(String(raw || ''))}`);
   }
 
   try {
@@ -425,6 +537,10 @@ export async function decideGptVlmTomAction(payload) {
       kind: 'tom',
       modelLabel: externalModel,
       baseModel: apiModel,
+      responseModel: result?.responseModel,
+      reasoningEffort: result?.reasoningEffort,
+      serviceTierRequested: result?.serviceTierRequested,
+      serviceTier: result?.serviceTier,
       content: String(raw || ''),
       action,
       inferredGoal: Array.isArray(parsed.inferredGoal) ? parsed.inferredGoal : null,
@@ -437,10 +553,16 @@ export async function decideGptVlmTomAction(payload) {
   return {
     action,
     inferredGoal: Array.isArray(parsed.inferredGoal) ? parsed.inferredGoal : null,
+    promptVersion: VLM_TOM_PROMPT_VERSION,
+    profile: execution.profile,
     // Mirror GPT ToM behavior: if caller passed a real model name, don't overwrite it with the ToM label.
     // The underlying model actually used is always `baseModel`.
     model: (externalModel && /^vlm-?tom$/i.test(String(externalModel))) ? 'vlm-tom' : (externalModel || 'vlm-tom'),
     baseModel: apiModel,
+    responseModel: result?.responseModel || apiModel,
+    reasoningEffort: result?.reasoningEffort || null,
+    serviceTierRequested: result?.serviceTierRequested || null,
+    serviceTier: result?.serviceTier || null,
     usage: (result && result.usage) || null,
     latencyMs: (result && result.latencyMs) || null,
     rate: (result && result.rate) || null
@@ -477,6 +599,10 @@ export function __debug_buildBasePrompt(payload) {
 
 export function __debug_buildTomPrompt(payload) {
   return buildTomPrompt(payload);
+}
+
+export function __debug_parseBaseVlmAction(raw) {
+  return parseBaseVlmAction(raw);
 }
 
 function parseTomResponse(raw) {

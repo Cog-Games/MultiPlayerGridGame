@@ -16,7 +16,7 @@ export class VlmAgentClient {
         return 'You will collaborate with another player. Each round, you can win if both of you go to the same restaurant. You lose the round if you end up at different restaurants. Movement: Both players move one step at a time - the action will only take effect after both players have pressed their buttons. For each round that you win, you earn an additional 10 points.';
       case '2P3G':
         // 2P3G: same partner; some restaurants may appear later
-        return 'You will collaborate  with another player. Each round, you can win if both of you go to the same restaurant. You lose the round if you end up at different restaurants. Note that some restaurants are already open when the round starts. Others may appear later. For each round that you win, you earn an additional 10 points.';
+        return 'You will collaborate with the same player as before. Each round, you can win if both of you go to the same restaurant. You lose the round if you end up at different restaurants. Movement: Both players move one step at a time - the action will only take effect after both players have pressed their buttons. Note that some restaurants are already open when the round starts. Others may appear later. For each round that you win, you earn an additional 10 points.';
       case '1P2G':
         return 'Single player: reach any open goal.';
       case '1P1G':
@@ -24,20 +24,6 @@ export class VlmAgentClient {
       default:
         return 'Choose the best single step to reach a valid goal.';
     }
-  }
-
-  // Build a compact relative info summary (optional)
-  static buildRelativeInfo(state, forPlayer = 'player2') {
-    const player = state[forPlayer];
-    const goals = state.currentGoals || [];
-    if (!player || goals.length === 0) return null;
-    let nearest = null, dist = Infinity;
-    for (const g of goals) {
-      const d = Math.abs(g[0] - player[0]) + Math.abs(g[1] - player[1]);
-      if (d < dist) { dist = d; nearest = g; }
-    }
-    const delta = nearest ? { dRow: nearest[0] - player[0], dCol: nearest[1] - player[1] } : null;
-    return { nearestGoal: nearest, manhattanDistance: dist, deltaToNearest: delta };
   }
 
   // Render the matrix into an offscreen canvas and return a PNG data URL
@@ -122,10 +108,10 @@ export class VlmAgentClient {
       matrix: state.gridMatrix,
       currentPlayer: { label: aiLabel, pos: state[aiLabel] },
       goals: state.currentGoals,
-      relativeInfo: VlmAgentClient.buildRelativeInfo(state, aiLabel),
       // IMPORTANT: `model` is the underlying VLM model (shared by vlm and vlm-tom).
       // ToM vs base is requested via `tom: true`.
       model: options.model || agentCfg.model || undefined,
+      profile: options.profile || agentCfg.profile || undefined,
       temperature: typeof options.temperature === 'number' ? options.temperature : (typeof agentCfg.temperature === 'number' ? agentCfg.temperature : undefined),
       tom: useTom,
       memory: {
@@ -162,10 +148,10 @@ export class VlmAgentClient {
         }
       }
     } catch (_) { /* ignore */ }
-    // If ToM variant returned an inferred goal, surface it to caller
-    if (data && Object.prototype.hasOwnProperty.call(data, 'inferredGoal')) {
-      return { action: data?.action || null, inferredGoal: (data?.inferredGoal ?? null), model: data?.model };
-    }
-    return data?.action || null;
+    // Preserve API telemetry for formal-study audit and cost/latency analysis.
+    // ExperimentManager extracts `action` for movement and records the rest.
+    return data && typeof data === 'object'
+      ? { ...data, action: data?.action || null }
+      : { action: null };
   }
 }

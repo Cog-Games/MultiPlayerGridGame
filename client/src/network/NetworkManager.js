@@ -69,6 +69,7 @@ export class NetworkManager {
   setupEventForwarding() {
     const events = [
       'room-joined',
+      'room-left',
       'player-joined',
       'room-full',
       'player-disconnected',
@@ -154,9 +155,15 @@ export class NetworkManager {
     }
   }
 
-  setMatchPlayReady() {
+  setMatchPlayReady(data = {}) {
     if (this.isConnected) {
-      this.socket.emit('match-play-ready');
+      this.socket.emit('match-play-ready', data);
+    }
+  }
+
+  leaveRoom() {
+    if (this.isConnected) {
+      this.socket.emit('leave-room');
     }
   }
 

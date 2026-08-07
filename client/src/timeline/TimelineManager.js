@@ -1,4 +1,5 @@
 import { CONFIG, GameConfigUtils } from '../config/gameConfig.js';
+import { WaitingMinigame } from './WaitingMinigame.js';
 
 /**
  * Timeline Manager - Orchestrates the complete experiment flow
@@ -19,10 +20,19 @@ export class TimelineManager {
       consentTime: null,
       experiments: {},
       questionnaire: {},
+      waitingMinigame: {
+        enabled: false,
+        startTime: null,
+        endTime: null,
+        durationMs: null,
+        jumpCount: 0,
+        collisionCount: 0
+      },
       totalScore: 0,
       completed: false
     };
     this.eventHandlers = new Map();
+    this.waitingMinigame = null;
 
     // Success threshold tracking for collaboration experiments
     this.successThreshold = {
@@ -278,6 +288,9 @@ export class TimelineManager {
    */
   nextStage() {
     console.log(`➡️ Advancing from stage ${this.currentStageIndex} to ${this.currentStageIndex + 1}`);
+    if (this.stages[this.currentStageIndex]?.type === 'waiting_for_partner') {
+      this.stopWaitingMinigame();
+    }
     this.currentStageIndex++;
     this.runCurrentStage();
   }
@@ -443,7 +456,8 @@ export class TimelineManager {
     console.log(`🔍 Checking partner presence for ${experimentType} transition...`);
 
     // Check if we're in human-human mode and if partner is still connected
-    const isP2Human = (CONFIG?.game?.players?.player2?.type === 'human');
+    const isP2Human = CONFIG?.game?.players?.player1?.type === 'human' &&
+      CONFIG?.game?.players?.player2?.type === 'human';
 
     if (isP2Human) {
       // Check if we have network connection and partner
@@ -462,7 +476,8 @@ export class TimelineManager {
         }
 
         // If we're still in human-human mode after the check, proceed to match-play
-        const stillHuman = (CONFIG?.game?.players?.player2?.type === 'human');
+        const stillHuman = CONFIG?.game?.players?.player1?.type === 'human' &&
+          CONFIG?.game?.players?.player2?.type === 'human';
         if (stillHuman && !this.shouldSkipMatchPlay) {
           console.log('✅ Partner still connected, proceeding to match-play stage');
           this.nextStage();
@@ -481,36 +496,113 @@ export class TimelineManager {
     }
   }
 
+  resetWaitingMinigameData() {
+    this.experimentData.waitingMinigame = {
+      enabled: false,
+      startTime: null,
+      endTime: null,
+      durationMs: null,
+      jumpCount: 0,
+      collisionCount: 0
+    };
+  }
+
+  updateWaitingMinigameData(stats = {}) {
+    if (!stats || stats.enabled !== true) return;
+
+    const current = this.experimentData.waitingMinigame || {};
+    this.experimentData.waitingMinigame = {
+      enabled: true,
+      startTime: current.startTime || (stats.startTime ? new Date(stats.startTime).toISOString() : null),
+      endTime: stats.endTime ? new Date(stats.endTime).toISOString() : (current.endTime || null),
+      durationMs: typeof stats.durationMs === 'number' ? stats.durationMs : (current.durationMs || null),
+      jumpCount: typeof stats.jumpCount === 'number' ? stats.jumpCount : (current.jumpCount || 0),
+      collisionCount: typeof stats.collisionCount === 'number' ? stats.collisionCount : (current.collisionCount || 0)
+    };
+  }
+
+  startWaitingMinigame(canvasId) {
+    this.stopWaitingMinigame();
+    this.resetWaitingMinigameData();
+
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || typeof canvas.getContext !== 'function') return;
+
+    try {
+      this.waitingMinigame = new WaitingMinigame(canvas, {
+        onStats: stats => this.updateWaitingMinigameData(stats)
+      });
+      this.updateWaitingMinigameData(this.waitingMinigame.start());
+    } catch (error) {
+      console.warn('Unable to start waiting mini-game:', error);
+      this.waitingMinigame = null;
+      this.resetWaitingMinigameData();
+    }
+  }
+
+  stopWaitingMinigame() {
+    if (!this.waitingMinigame) return null;
+
+    const minigame = this.waitingMinigame;
+    this.waitingMinigame = null;
+    const stats = minigame.stop();
+    this.updateWaitingMinigameData(stats);
+    this.emit('data-checkpoint', {
+      eventType: 'waiting_minigame_completed',
+      payload: { ...this.experimentData.waitingMinigame }
+    });
+    return stats;
+  }
+
   showWaitingForPartnerStage(experimentType, experimentIndex) {
     // Configurable min/max wait windows (fallback to legacy single value)
-    const minWaitMs = (CONFIG?.game?.timing?.waitingForPartnerMinDuration)
-      || (CONFIG?.game?.timing?.waitingForPartnerDuration) || 5000;
-    const maxWaitMs = (CONFIG?.game?.timing?.waitingForPartnerMaxDuration) || 15000;
+    const minWaitMs = CONFIG?.game?.timing?.waitingForPartnerMinDuration
+      ?? CONFIG?.game?.timing?.waitingForPartnerDuration
+      ?? 5000;
+    const maxWaitMs = CONFIG?.game?.timing?.waitingForPartnerMaxDuration ?? 15000;
     const readyAt = Date.now() + minWaitMs;
     let partnerFound = false;
+    const isP2Human = CONFIG?.game?.players?.player1?.type === 'human' &&
+      CONFIG?.game?.players?.player2?.type === 'human';
+    const waitingMinigameEnabled = isP2Human &&
+      CONFIG?.multiplayer?.waitingMinigame?.enabled === true;
+    const allowWaitingSkip = CONFIG?.multiplayer?.allowWaitingSkip !== false;
+    const waitingSkipKey = CONFIG?.multiplayer?.waitingSkipKey || 'Space';
+    const waitingSkipHint = allowWaitingSkip ? `
+      <p style="font-size: 14px; color: #8a5a00; margin: 14px 0 0;">
+        Test mode: press <strong>${waitingSkipKey === 'Enter' ? 'ENTER' : 'SPACE'}</strong>
+        to skip matchmaking and continue with the computer partner.
+      </p>
+    ` : '';
+    const waitingMinigameMarkup = waitingMinigameEnabled ? `
+      <div class="waiting-minigame" aria-label="Waiting mini-game">
+        <canvas id="waitingMinigameCanvas" class="waiting-minigame-canvas" width="640" height="240"></canvas>
+        <p class="waiting-minigame-hint">Press <strong>SPACE</strong> to hop over the obstacles while you wait.</p>
+      </div>
+    ` : '';
 
     // Record waiting start time
     const waitingStartTime = Date.now();
     console.log('⏱️ [WAITING] Partner search started at:', new Date(waitingStartTime).toISOString());
     this.container.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-        <div id="waiting-room" style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 600px; text-align: center;">
-          <h2 style="color: #333; margin-bottom: 30px;">Finding another player ...</h2>
+        <div id="waiting-room" style="background: white; padding: 32px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: calc(100% - 40px); max-width: 720px; text-align: center;">
+          <h2 style="color: #333; margin-bottom: 16px;">Finding another player ...</h2>
 
-          <div style="margin-bottom: 30px;">
-            <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-          </div>
-
-          <p style="font-size: 18px; color: #666; margin-bottom: 20px;">Connecting you with another player...</p>
+          <p id="waiting-status" aria-live="polite" style="font-size: 18px; color: #666; margin-bottom: 12px;">Connecting you with another player...</p>
 
           <p style="font-size: 14px; color: #999; margin-bottom: 15px;">
             This may take a few moments.
           </p>
 
+          ${waitingMinigameMarkup}
+
+          ${waitingSkipHint}
+
           <div style="background: #e8f4fd; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px; margin-top: 20px;">
             <p style="font-size: 14px; color: #0c5460; margin: 0; font-weight: 500;">
-              💰 Your waiting time (if it exceeds 5 minutes) will be compensated ($0.5 per minute).<br/>
-              Thank you for your patience!
+              We will search for a human partner for up to 5 minutes.<br/>
+              If no partner is available, the experiment will continue with a computer partner.
             </p>
           </div>
 
@@ -523,11 +615,36 @@ export class TimelineManager {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
+        .waiting-minigame {
+          margin: 18px auto 22px;
+          max-width: 640px;
+          border: 2px solid #b9d7ff;
+          border-radius: 12px;
+          background: #eef7ff;
+          overflow: hidden;
+          box-shadow: inset 0 0 0 1px rgba(255,255,255,.7);
+        }
+        .waiting-minigame-canvas {
+          display: block;
+          width: 100%;
+          height: 240px;
+        }
+        .waiting-minigame-hint {
+          margin: 0;
+          padding: 10px 12px 12px;
+          font-size: 16px;
+          color: #28536b;
+          background: #fff;
+          border-top: 1px solid #d8e9ff;
+        }
+        .waiting-minigame.is-finished {
+          opacity: .58;
+          filter: grayscale(.25);
+        }
       </style>
     `;
 
     // If player2 is NOT human, only wait for the minimum duration, then proceed
-    const isP2Human = (CONFIG?.game?.players?.player2?.type === 'human');
     if (!isP2Human) {
       this.gameMode = 'human-ai';
       setTimeout(() => {
@@ -537,10 +654,17 @@ export class TimelineManager {
       return;
     }
 
+    if (waitingMinigameEnabled) {
+      this.startWaitingMinigame('waitingMinigameCanvas');
+    }
+
     // HUMAN-HUMAN FLOW BELOW
     // Add spacebar skip option for testing (only allowed after minimum wait window)
     const handleSkipWaiting = (event) => {
-      if (event.code === 'Space' || event.key === ' ') {
+      const pressedConfiguredKey = waitingSkipKey === 'Enter'
+        ? (event.code === 'Enter' || event.key === 'Enter')
+        : (event.code === 'Space' || event.key === ' ');
+      if (pressedConfiguredKey) {
         event.preventDefault();
         if (Date.now() < readyAt) return; // enforce minimum wait
 
@@ -552,15 +676,22 @@ export class TimelineManager {
         // Store waiting time data for export
         this.recordWaitingTime(waitingStartTime, waitingEndTime, waitingDuration, 'skip', experimentType, experimentIndex);
 
+        partnerFound = true;
+        this.stopWaitingMinigame();
         document.removeEventListener('keydown', handleSkipWaiting);
         console.log('⏭️ Skipping multiplayer waiting after min wait - continuing with AI partner');
-        const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
-        GameConfigUtils.setPlayerType(2, fallbackType);
-        try { this.emit('fallback-to-ai', { reason: 'waiting-skip', stage: 'waiting-for-partner', at: Date.now(), fallbackAIType: fallbackType }); } catch (_) { /* noop */ }
+        this.activatePartnerFallback({
+          reason: 'waiting-skip',
+          stage: 'waiting-for-partner',
+          experimentType,
+          cancelMatchmaking: true
+        });
         this.nextStage();
       }
     };
-    document.addEventListener('keydown', handleSkipWaiting);
+    if (allowWaitingSkip) {
+      document.addEventListener('keydown', handleSkipWaiting);
+    }
 
     // Attempt real partner connection for human-human
     this.emit('waiting-for-partner', { experimentType, experimentIndex });
@@ -588,7 +719,16 @@ export class TimelineManager {
       // Store waiting time data for export
       this.recordWaitingTime(waitingStartTime, waitingEndTime, waitingDuration, 'partner_found', experimentType, experimentIndex);
 
-      document.removeEventListener('keydown', handleSkipWaiting);
+      this.stopWaitingMinigame();
+      const waitingStatus = document.getElementById('waiting-status');
+      if (waitingStatus) {
+        waitingStatus.textContent = 'Partner found. Preparing the game...';
+        waitingStatus.style.color = '#218838';
+        waitingStatus.style.fontWeight = '600';
+      }
+      document.querySelector('.waiting-minigame')?.classList.add('is-finished');
+
+      if (allowWaitingSkip) document.removeEventListener('keydown', handleSkipWaiting);
       this.off('partner-connected', partnerConnectedHandler);
       let targetAt = readyAt;
       if (payload && payload.connectedAt) {
@@ -615,22 +755,24 @@ export class TimelineManager {
         this.recordWaitingTime(waitingStartTime, waitingEndTime, waitingDuration, 'timeout', experimentType, experimentIndex);
 
         console.log(`⌛ No partner found after ${maxWaitMs}ms - falling back to AI mode`);
-        const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
-        GameConfigUtils.setPlayerType(2, fallbackType);
-        this.gameMode = 'human-ai';
-        document.removeEventListener('keydown', handleSkipWaiting);
-        // Notify app to record this fallback event
-        try { this.emit('fallback-to-ai', { reason: 'waiting-timeout', stage: 'waiting-for-partner', at: Date.now(), fallbackAIType: fallbackType }); } catch (_) { /* noop */ }
-        // Notify ExperimentManager to activate AI fallback
-        try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] Timeline emitting ai-fallback-activated event (waiting timeout)`); } catch (_) {}
-        this.emit('ai-fallback-activated', { fallbackType, aiPlayerNumber: 2 });
+        this.stopWaitingMinigame();
+        if (allowWaitingSkip) document.removeEventListener('keydown', handleSkipWaiting);
+        this.off('partner-connected', partnerConnectedHandler);
+        this.activatePartnerFallback({
+          reason: 'waiting-timeout',
+          stage: 'waiting-for-partner',
+          experimentType,
+          cancelMatchmaking: true
+        });
         this.nextStage();
       }
     }, maxWaitMs);
   }
 
   showReadyToPlayStage(experimentType, experimentIndex) {
-    const humanHuman = this.isHumanHumanMode() && CONFIG.game.players.player2.type === 'human';
+    const humanHuman = this.isHumanHumanMode() &&
+      CONFIG.game.players.player1.type === 'human' &&
+      CONFIG.game.players.player2.type === 'human';
 
     if (humanHuman) {
       // Human-human: Ready button flow
@@ -707,11 +849,13 @@ export class TimelineManager {
         document.removeEventListener('keydown', handleSpacebar);
 
         // Signal match-play readiness
-        this.emit('match-play-ready');
+        this.emit('match-play-ready', { experimentType, experimentIndex });
 
         // In human-human mode, wait for server game-started (mapped to all-players-ready)
         // In human-AI mode, proceed immediately
-        if (this.isHumanHumanMode() && CONFIG.game.players.player2.type === 'human') {
+        if (this.isHumanHumanMode() &&
+            CONFIG.game.players.player1.type === 'human' &&
+            CONFIG.game.players.player2.type === 'human') {
           const status = document.getElementById('match-status');
           if (status) status.style.display = 'block';
 
@@ -722,17 +866,14 @@ export class TimelineManager {
           const fallbackToAI = () => {
             try {
               console.log(`⌛ Match-play wait exceeded (${readyTimeoutMs}ms) - falling back to AI mode`);
-              const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
-            try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] Timeline fallback - fallbackType: ${fallbackType}`); } catch (_) {}
-              GameConfigUtils.setPlayerType(2, fallbackType);
-            try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] Timeline fallback - After setPlayerType, Player2: ${CONFIG.game.players.player2.type}`); } catch (_) {}
-              this.gameMode = 'human-ai';
               // Clean up listener to avoid double-proceed if server emits later
               this.off('all-players-ready', allReadyHandler);
-
-              // Notify ExperimentManager to activate AI fallback
-            try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] Timeline emitting ai-fallback-activated event`); } catch (_) {}
-              this.emit('ai-fallback-activated', { fallbackType, aiPlayerNumber: 2 });
+              this.activatePartnerFallback({
+                reason: 'match-play-timeout',
+                stage: 'match-play',
+                experimentType,
+                cancelMatchmaking: true
+              });
             } catch (_) { /* noop */ }
             this.nextStage();
           };
@@ -751,8 +892,6 @@ export class TimelineManager {
 
           // Arm the timeout after we start listening for readiness
           timeoutId = setTimeout(() => {
-            const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';
-            try { this.emit('fallback-to-ai', { reason: 'match-play-timeout', stage: 'match-play', at: Date.now(), fallbackAIType: fallbackType }); } catch (_) { /* noop */ }
             fallbackToAI();
           }, readyTimeoutMs);
         } else {
@@ -1382,6 +1521,7 @@ export class TimelineManager {
   isHumanHumanMode() {
     // Prefer explicit runtime state, then config, then URL param
     if (this.gameMode === 'human-human') return true;
+    if (this.gameMode === 'human-ai') return false;
 
     if (GameConfigUtils && typeof GameConfigUtils.isHumanHumanMode === 'function') {
       if (GameConfigUtils.isHumanHumanMode()) return true;
@@ -1390,6 +1530,35 @@ export class TimelineManager {
     const urlParams = new URLSearchParams(window.location.search);
     const mode = urlParams.get('mode');
     return mode === 'human-human';
+  }
+
+  activatePartnerFallback({
+    reason = 'waiting-timeout',
+    stage = 'waiting-for-partner',
+    experimentType = null,
+    cancelMatchmaking = false
+  } = {}) {
+    const fallbackType = CONFIG?.multiplayer?.fallbackAIType || 'rl_joint';
+    const aiPlayerNumber = this.playerIndex === 1 ? 1 : 2;
+    const humanPlayerNumber = aiPlayerNumber === 1 ? 2 : 1;
+
+    GameConfigUtils.setPlayerType(aiPlayerNumber, fallbackType);
+    GameConfigUtils.setPlayerType(humanPlayerNumber, 'human');
+    this.gameMode = 'human-ai';
+
+    if (cancelMatchmaking) {
+      this.emit('cancel-matchmaking', { reason, stage, experimentType });
+    }
+    this.emit('fallback-to-ai', {
+      reason,
+      stage,
+      experimentType,
+      at: Date.now(),
+      fallbackAIType: fallbackType,
+      aiPlayerNumber,
+      fallbackProfile: CONFIG?.game?.agent?.vlm?.profile || null
+    });
+    this.emit('ai-fallback-activated', { fallbackType, aiPlayerNumber });
   }
 
   getInstructionsForExperiment(experimentType) {
@@ -1404,6 +1573,7 @@ export class TimelineManager {
                 <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
                   <li>You are the traveler <span style=\"display: inline-block; width: 20px; height: 20px; background-color: red; border-radius: 50%; vertical-align: middle; margin: 0 4px;\"></span>.</li>
                   <li>There is one restaurant <span style=\"display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;\"></span> on the map.</li>
+                  <li>Dark squares are obstacles and cannot be entered.</li>
                   <li>Use the arrow keys (↑↓←→) to reach a restaurant.</li>
                 </ul>
               </div>

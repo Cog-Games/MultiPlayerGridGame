@@ -314,10 +314,15 @@ export class ExperimentManager {
 
   async logCurrentAIModel() {
     try {
+      const p1Type = CONFIG?.game?.players?.player1?.type;
       const p2Type = CONFIG?.game?.players?.player2?.type;
+      const configuredAIType = this.aiPlayerNumber === 1 ? p1Type : p2Type;
+      const detectedAIType = configuredAIType !== 'human'
+        ? configuredAIType
+        : (p1Type !== 'human' ? p1Type : (p2Type !== 'human' ? p2Type : 'human'));
       const base = (CONFIG.server.url || '').replace(/\/$/, '');
       // Normalize legacy aliases: gpt/gpt-ToM -> llm/llm-tom, vlm-ToM -> vlm-tom
-      const raw = String(p2Type || '');
+      const raw = String(detectedAIType || '');
       const t = raw.toLowerCase().trim();
       const normalizedType =
         (t === 'gpt' ? 'llm'
@@ -344,7 +349,9 @@ export class ExperimentManager {
           } catch (_) { /* noop */ }
         }
       } else if (normalizedType === 'vlm' || normalizedType === 'vlm-tom') {
-        const resp = await fetch(`${base}/api/ai/vlm/config`);
+        const profile = CONFIG?.game?.agent?.vlm?.profile;
+        const profileQuery = profile ? `?profile=${encodeURIComponent(profile)}` : '';
+        const resp = await fetch(`${base}/api/ai/vlm/config${profileQuery}`);
         if (resp.ok) {
           const info = await resp.json();
           const model = info?.model || '(unknown)';
@@ -352,6 +359,9 @@ export class ExperimentManager {
             if (model && model !== '(unknown)') {
               if (!CONFIG.game.agent.vlm) CONFIG.game.agent.vlm = {};
               CONFIG.game.agent.vlm.model = model; // API model cache only
+              CONFIG.game.agent.vlm.profile = info?.profile || profile || null;
+              CONFIG.game.agent.vlm.reasoningEffort = info?.reasoningEffort || null;
+              CONFIG.game.agent.vlm.serviceTier = info?.serviceTier || null;
               const td = this.gameStateManager?.trialData;
               const st = this.gameStateManager?.currentState;
               if (td && st && String(st.experimentType || '').includes('2P')) {
@@ -361,8 +371,8 @@ export class ExperimentManager {
             }
           } catch (_) { /* noop */ }
         }
-      } else if (p2Type === 'rl_joint' || p2Type === 'rl_individual' || p2Type === 'ai') {
-        const mode = CONFIG?.game?.agent?.type || (p2Type === 'rl_joint' ? 'joint' : 'individual');
+      } else if (detectedAIType === 'rl_joint' || detectedAIType === 'rl_individual' || detectedAIType === 'ai') {
+        const mode = CONFIG?.game?.agent?.type || (detectedAIType === 'rl_joint' ? 'joint' : 'individual');
         console.log(`🤖 AI partner: RL mode = ${mode}`);
       }
     } catch (e) {
@@ -443,6 +453,11 @@ export class ExperimentManager {
           { aiPlayerNumber: this.aiPlayerNumber, tom: (aiType === 'llm-tom') }
         );
         if (aiDirection && typeof aiDirection === 'object') {
+          this.gameStateManager.recordAIApiCall(aiDirection, {
+            agentType: aiType,
+            phase: 'synchronized',
+            aiPlayerNumber: this.aiPlayerNumber
+          });
           if (Object.prototype.hasOwnProperty.call(aiDirection, 'inferredGoal')) {
             this.gameStateManager.recordAIInferredOtherGoal(aiDirection.inferredGoal ?? null);
           }
@@ -464,6 +479,11 @@ export class ExperimentManager {
           { aiPlayerNumber: this.aiPlayerNumber, tom: (aiType === 'vlm-tom') }
         );
         if (aiDirection && typeof aiDirection === 'object') {
+          this.gameStateManager.recordAIApiCall(aiDirection, {
+            agentType: aiType,
+            phase: 'synchronized',
+            aiPlayerNumber: this.aiPlayerNumber
+          });
           if (Object.prototype.hasOwnProperty.call(aiDirection, 'inferredGoal')) {
             this.gameStateManager.recordAIInferredOtherGoal(aiDirection.inferredGoal ?? null);
           }
@@ -632,6 +652,11 @@ export class ExperimentManager {
         );
         // If ToM variant, store inferred goal and use only the action for movement
         if (direction && typeof direction === 'object') {
+          this.gameStateManager.recordAIApiCall(direction, {
+            agentType: aiType,
+            phase: 'independent',
+            aiPlayerNumber: this.aiPlayerNumber
+          });
           if (Object.prototype.hasOwnProperty.call(direction, 'inferredGoal')) {
             this.gameStateManager.recordAIInferredOtherGoal(direction.inferredGoal ?? null);
           }
@@ -653,6 +678,11 @@ export class ExperimentManager {
           { aiPlayerNumber: this.aiPlayerNumber, tom: (aiType === 'vlm-tom') }
         );
         if (direction && typeof direction === 'object') {
+          this.gameStateManager.recordAIApiCall(direction, {
+            agentType: aiType,
+            phase: 'independent',
+            aiPlayerNumber: this.aiPlayerNumber
+          });
           if (Object.prototype.hasOwnProperty.call(direction, 'inferredGoal')) {
             this.gameStateManager.recordAIInferredOtherGoal(direction.inferredGoal ?? null);
           }
@@ -919,7 +949,11 @@ export class ExperimentManager {
       const closerInfo = (typeof gen.distanceToPlayer2 === 'number' && typeof gen.distanceToPlayer1 === 'number')
         ? { isNewGoalCloserToPlayer2: gen.distanceToPlayer2 < gen.distanceToPlayer1 }
         : {};
-      this.gameStateManager.markNewGoalPresented(gen.position, distanceCondition, closerInfo);
+      this.gameStateManager.markNewGoalPresented(
+        gen.position,
+        distanceCondition,
+        { ...gen, ...closerInfo }
+      );
 
       // Reset RL pre-calculation if available
       if (this.rlAgent && typeof this.rlAgent.resetNewGoalPreCalculationFlag === 'function') {

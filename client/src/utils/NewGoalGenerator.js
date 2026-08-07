@@ -4,6 +4,10 @@ import { GameHelpers } from './GameHelpers.js';
 
 export class NewGoalGenerator {
 
+  // Version saved with every generated 2P3G goal so analyses can distinguish
+  // these RL-aligned trials from data produced by earlier fallback rules.
+  static GOAL_GEOMETRY_RULE_VERSION = 'adult-rl-aligned-exact-joint-v1';
+
   // Distance conditions for new goal generation (matching legacy)
   static DISTANCE_CONDITIONS = {
     CLOSER_TO_PLAYER2: 'closer_to_player2',
@@ -224,7 +228,21 @@ export class NewGoalGenerator {
             conditionType: distanceCondition,
             distanceToPlayer1: newGoalDistanceToPlayer1,
             distanceToPlayer2: newGoalDistanceToPlayer2,
-            distanceSum: newDistanceSum
+            distanceSum: newDistanceSum,
+            oldDistanceToPlayer1: player1DistanceToOldGoal,
+            oldDistanceToPlayer2: player2DistanceToOldGoal,
+            oldDistanceSum,
+            jointDistanceDelta: newDistanceSum - oldDistanceSum,
+            distanceDifferenceBetweenPlayers: newGoalDistanceToPlayer1 - newGoalDistanceToPlayer2,
+            targetedDistanceImprovement: this.getTargetedDistanceImprovement(
+              distanceCondition,
+              newGoalDistanceToPlayer1,
+              newGoalDistanceToPlayer2,
+              player1DistanceToOldGoal,
+              player2DistanceToOldGoal
+            ),
+            geometryRuleVersion: this.GOAL_GEOMETRY_RULE_VERSION,
+            generationMode: 'strict'
           });
         }
       }
@@ -235,21 +253,31 @@ export class NewGoalGenerator {
     if (validPositions.length > 0) {
       const selectedGoalData = validPositions[Math.floor(Math.random() * validPositions.length)];
       // console.log('generateNewGoal: Selected position:', selectedGoalData.position);
-      return selectedGoalData;
+      return {
+        ...selectedGoalData,
+        strictCandidateCount: validPositions.length
+      };
     }
 
-    // If no strict matches found, try relaxed constraints
-    // console.log('generateNewGoal: No valid goals found with strict constraints, trying relaxed constraints');
-    const relaxedValidPositions = this.findRelaxedValidPositions(
-      player1Pos, player2Pos, oldGoals, distanceCondition
-    );
+    // Do not relabel an arbitrary position as closer/equal. The caller checks
+    // again as the players move and presents a goal only when exact geometry is
+    // available. This prevents the invalid-geometry trials seen in LLM/VLM data.
+    return null;
+  }
 
-    if (relaxedValidPositions.length > 0) {
-      const selectedRelaxedGoalData = relaxedValidPositions[Math.floor(Math.random() * relaxedValidPositions.length)];
-      // console.log('generateNewGoal: Selected relaxed position:', selectedRelaxedGoalData.position);
-      return selectedRelaxedGoalData;
+  static getTargetedDistanceImprovement(
+    condition,
+    newGoalDistanceToPlayer1,
+    newGoalDistanceToPlayer2,
+    player1DistanceToOldGoal,
+    player2DistanceToOldGoal
+  ) {
+    if (condition === this.DISTANCE_CONDITIONS.CLOSER_TO_PLAYER1) {
+      return player1DistanceToOldGoal - newGoalDistanceToPlayer1;
     }
-
+    if (condition === this.DISTANCE_CONDITIONS.CLOSER_TO_PLAYER2) {
+      return player2DistanceToOldGoal - newGoalDistanceToPlayer2;
+    }
     return null;
   }
 
@@ -283,85 +311,44 @@ export class NewGoalGenerator {
     newDistanceSum,
     oldDistanceSum
   ) {
-    // Read thresholds from config to avoid over‑restrictive defaults
+    // Match the geometry of the adult individual-/joint-RL conditions.
     const dc = (CONFIG && CONFIG.twoP3G && CONFIG.twoP3G.distanceConstraint) || {};
     const gc = (CONFIG && CONFIG.twoP3G && CONFIG.twoP3G.goalConstraints) || {};
-    const closerThreshold = Number.isFinite(dc.closerThreshold) ? dc.closerThreshold : 1;
-    const allowEqualDistance = Boolean(dc.allowEqualDistance);
-    const maxDistanceIncrease = Number.isFinite(dc.maxDistanceIncrease) ? dc.maxDistanceIncrease : 0; // 0 = do not allow increase by default
-
-    const maintainEqualSum = Boolean(gc.maintainDistanceSum);
-    const equalSumOk = maintainEqualSum
-      ? (newDistanceSum === oldDistanceSum) // Manhattan distances are integers
-      : (newDistanceSum <= (oldDistanceSum + maxDistanceIncrease));
+    const minDistanceImprovement = Number.isFinite(dc.minDistanceImprovement)
+      ? dc.minDistanceImprovement
+      : 2;
+    const maxDistanceImprovement = Number.isFinite(dc.maxDistanceImprovement)
+      ? dc.maxDistanceImprovement
+      : Infinity;
+    const exactJointDistance = gc.maintainDistanceSum !== false;
+    const jointDistanceOK = exactJointDistance
+      ? newDistanceSum === oldDistanceSum
+      : true;
 
     switch (condition) {
       case this.DISTANCE_CONDITIONS.CLOSER_TO_PLAYER2: {
-        const closerOK = allowEqualDistance
-          ? (newGoalDistanceToPlayer2 <= player2DistanceToOldGoal - closerThreshold)
-          : (newGoalDistanceToPlayer2 < player2DistanceToOldGoal - closerThreshold);
-        return closerOK && equalSumOk;
+        const improvement = player2DistanceToOldGoal - newGoalDistanceToPlayer2;
+        return improvement >= minDistanceImprovement &&
+               improvement <= maxDistanceImprovement &&
+               jointDistanceOK;
       }
       case this.DISTANCE_CONDITIONS.CLOSER_TO_PLAYER1: {
-        const closerOK = allowEqualDistance
-          ? (newGoalDistanceToPlayer1 <= player1DistanceToOldGoal - closerThreshold)
-          : (newGoalDistanceToPlayer1 < player1DistanceToOldGoal - closerThreshold);
-        return closerOK && equalSumOk;
+        const improvement = player1DistanceToOldGoal - newGoalDistanceToPlayer1;
+        return improvement >= minDistanceImprovement &&
+               improvement <= maxDistanceImprovement &&
+               jointDistanceOK;
       }
       case this.DISTANCE_CONDITIONS.EQUAL_TO_BOTH: {
-        // Match legacy implementation with 4 equal constraints
-        const distanceDiff1 = Math.abs(newGoalDistanceToPlayer1 - player1DistanceToOldGoal);
-        const distanceDiff2 = Math.abs(newGoalDistanceToPlayer2 - player2DistanceToOldGoal);
-        const distanceDiff3 = Math.abs(newGoalDistanceToPlayer2 - newGoalDistanceToPlayer1);
-
-        const equalTolerance = allowEqualDistance ? 1 : 0; // tolerance for equal distance
-        const sumTolerance = allowEqualDistance ? 1 : 0; // relaxed sum tolerance for EQUAL_TO_BOTH
-
-        const meetsEqualCondition = distanceDiff1 <= equalTolerance &&
-                                  distanceDiff2 <= equalTolerance &&
-                                  distanceDiff3 <= equalTolerance &&
-                                  Math.abs(newDistanceSum - oldDistanceSum) <= sumTolerance;
-        return meetsEqualCondition;
+        // The RL conditions constrained the NEW goal to be equidistant from
+        // both players while preserving joint distance. Requiring each new
+        // individual distance to equal its own old distance over-constrains the
+        // geometry whenever the players were not already equidistant.
+        return newGoalDistanceToPlayer1 === newGoalDistanceToPlayer2 &&
+               jointDistanceOK;
       }
       default:
         return false;
     }
-  }
-
-  // Find valid positions with relaxed constraints when strict matching fails
-  static findRelaxedValidPositions(player1Pos, player2Pos, oldGoals, distanceCondition) {
-    const relaxedValidPositions = [];
-    const matrixSize = CONFIG.game.matrixSize;
-    const dc = (CONFIG && CONFIG.twoP3G && CONFIG.twoP3G.distanceConstraint) || {};
-    const gc = (CONFIG && CONFIG.twoP3G && CONFIG.twoP3G.goalConstraints) || {};
-    const minD = Number.isFinite(gc.minDistanceFromHuman) ? gc.minDistanceFromHuman : 2;
-    const maxD = Number.isFinite(gc.maxDistanceFromHuman) ? gc.maxDistanceFromHuman : (Number.isFinite(dc.maxDistanceIncrease) ? Math.max(10, 2 + dc.maxDistanceIncrease) : 10);
-
-    for (let row = 0; row < matrixSize; row++) {
-      for (let col = 0; col < matrixSize; col++) {
-        const newGoalPosition = [row, col];
-
-        // Only check basic constraints: not occupied and reasonable distance from players
-        if (!this.isPositionOccupied(newGoalPosition, oldGoals, player1Pos, player2Pos)) {
-          const distanceToPlayer1 = GameHelpers.calculateGridDistance(player1Pos, newGoalPosition);
-          const distanceToPlayer2 = GameHelpers.calculateGridDistance(player2Pos, newGoalPosition);
-
-          // Ensure reasonable distances (not too close, not too far)
-          if (distanceToPlayer1 >= minD && distanceToPlayer1 <= maxD &&
-              distanceToPlayer2 >= minD && distanceToPlayer2 <= maxD) {
-            relaxedValidPositions.push({
-              position: newGoalPosition,
-              conditionType: distanceCondition,
-              distanceToPlayer1: distanceToPlayer1,
-              distanceToPlayer2: distanceToPlayer2,
-              distanceSum: distanceToPlayer1 + distanceToPlayer2
-            });
-          }
-        }
-      }
-    }
-
-    return relaxedValidPositions;
   }
 
   // Check if both players are heading to the same goal (triggers new goal generation)
@@ -399,12 +386,7 @@ export class NewGoalGenerator {
         console.log('New goal position:', newGoalResult.position);
         console.log('Distance condition:', distanceCondition);
 
-        return {
-          position: newGoalResult.position,
-          conditionType: newGoalResult.conditionType,
-          distanceToPlayer1: newGoalResult.distanceToPlayer1,
-          distanceToPlayer2: newGoalResult.distanceToPlayer2
-        };
+        return { ...newGoalResult };
       }
     }
 

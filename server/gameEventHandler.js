@@ -7,14 +7,15 @@ export class GameEventHandler {
     // Join room
     socket.on('join-room', (data) => {
       try {
-        const { roomId, gameMode = 'human-ai', experimentType = '2P2G' } = data;
-        const room = this.roomManager.joinRoom(socket.id, roomId, gameMode);
+        const { roomId, gameMode = 'human-ai', experimentType = '2P2G', matchPool = 'default' } = data;
+        const room = this.roomManager.joinRoom(socket.id, roomId, gameMode, experimentType, matchPool);
 
         socket.join(room.id);
         socket.emit('room-joined', {
           roomId: room.id,
           gameMode: room.gameMode,
           experimentType: room.experimentType,
+          matchPool: room.matchPool,
           players: room.players,
           isHost: room.players[0].id === socket.id
         });
@@ -29,6 +30,9 @@ export class GameEventHandler {
         if (room.players.length === room.maxPlayers) {
           io.to(room.id).emit('room-full', {
             roomId: room.id,
+            gameMode: room.gameMode,
+            experimentType: room.experimentType,
+            matchPool: room.matchPool,
             players: room.players,
             connectedAt: Date.now()
           });
@@ -38,6 +42,25 @@ export class GameEventHandler {
       } catch (error) {
         socket.emit('error', { message: error.message });
       }
+    });
+
+    // Explicitly leave a waiting room when matchmaking falls back to AI. This
+    // prevents a later participant from joining a stale Human-Human room.
+    socket.on('leave-room', () => {
+      const room = this.roomManager.getPlayerRoom(socket.id);
+      if (!room) {
+        socket.emit('room-left', { roomId: null });
+        return;
+      }
+      const roomId = room.id;
+      const remainingPlayers = room.players.filter(player => player.id !== socket.id);
+      socket.to(roomId).emit('player-disconnected', {
+        playerId: socket.id,
+        players: remainingPlayers
+      });
+      socket.leave(roomId);
+      this.roomManager.leaveRoom(socket.id);
+      socket.emit('room-left', { roomId });
     });
 
     // Player ready at the Ready screen (button click)
@@ -55,9 +78,13 @@ export class GameEventHandler {
     });
 
     // Match play ready (SPACE pressed on "Game is Ready" screen)
-    socket.on('match-play-ready', () => {
+    socket.on('match-play-ready', (data = {}) => {
       const room = this.roomManager.getPlayerRoom(socket.id);
       if (room) {
+        const requestedExperiment = data?.experimentType;
+        if (['2P2G', '2P3G'].includes(requestedExperiment)) {
+          room.experimentType = requestedExperiment;
+        }
         this.roomManager.setPlayerMatchReady(socket.id, true);
 
         // Optionally broadcast status updates here if UI needs it
@@ -178,6 +205,7 @@ export class GameEventHandler {
 
     const gameConfig = {
       experimentType: room.experimentType,
+      matchPool: room.matchPool,
       gameMode: room.gameMode,
       players: room.players.map((p, index) => ({
         id: p.id,

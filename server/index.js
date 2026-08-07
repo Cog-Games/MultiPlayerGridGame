@@ -253,7 +253,7 @@ app.post('/api/ai/gpt/action', async (req, res) => {
 // VLM agent endpoints
 app.get('/api/ai/vlm/config', (req, res) => {
   try {
-    res.json(getVlmConfigInfo());
+    res.json(getVlmConfigInfo(req.query?.profile || null));
   } catch (e) {
     res.status(500).json({ error: 'Failed to read VLM config' });
   }
@@ -261,7 +261,7 @@ app.get('/api/ai/vlm/config', (req, res) => {
 
 app.post('/api/ai/vlm/action', async (req, res) => {
   try {
-    const { guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory, imageDataUrl, tom } = req.body || {};
+    const { guidance, matrix, currentPlayer, goals, model, profile, temperature, memory, imageDataUrl, tom } = req.body || {};
     if (!Array.isArray(matrix) || matrix.length === 0) {
       return res.status(400).json({ error: 'Invalid matrix' });
     }
@@ -277,9 +277,9 @@ app.post('/api/ai/vlm/action', async (req, res) => {
     const hasTomFlag = (typeof tom === 'boolean');
     const useTom = hasTomFlag ? tom : Boolean(model && /^vlm-?tom$/i.test(String(model)));
     if (useTom) {
-      result = await decideGptVlmTomAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory, imageDataUrl });
+      result = await decideGptVlmTomAction({ guidance, matrix, currentPlayer, goals, model, profile, temperature, memory, imageDataUrl });
     } else {
-      result = await decideGptVlmAction({ guidance, matrix, currentPlayer, goals, relativeInfo, model, temperature, memory, imageDataUrl });
+      result = await decideGptVlmAction({ guidance, matrix, currentPlayer, goals, model, profile, temperature, memory, imageDataUrl });
     }
     res.json(result);
   } catch (err) {

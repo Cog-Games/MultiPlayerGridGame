@@ -6,12 +6,13 @@ export class GameRoomManager {
     this.playerRooms = new Map(); // Track which room each player is in
   }
 
-  createRoom(gameMode = 'human-ai', experimentType = '2P2G') {
+  createRoom(gameMode = 'human-ai', experimentType = '2P2G', matchPool = 'default') {
     const roomId = uuidv4();
     const room = {
       id: roomId,
       gameMode, // 'human-ai' or 'human-human'
       experimentType, // '1P1G', '1P2G', '2P2G', '2P3G'
+      matchPool,
       players: [],
       gameState: null,
       status: 'waiting', // 'waiting', 'playing', 'finished'
@@ -23,7 +24,7 @@ export class GameRoomManager {
     return room;
   }
 
-  joinRoom(playerId, roomId = null, gameMode = 'human-ai') {
+  joinRoom(playerId, roomId = null, gameMode = 'human-ai', experimentType = '2P2G', matchPool = 'default') {
     let room;
     
     if (roomId) {
@@ -31,9 +32,13 @@ export class GameRoomManager {
       if (!room) {
         throw new Error('Room not found');
       }
+      if (room.matchPool !== matchPool) {
+        throw new Error('Room belongs to a different study pool');
+      }
     } else {
       // Find available room or create new one
-      room = this.findAvailableRoom(gameMode) || this.createRoom(gameMode);
+      room = this.findAvailableRoom(gameMode, experimentType, matchPool) ||
+        this.createRoom(gameMode, experimentType, matchPool);
     }
 
     if (room.players.length >= room.maxPlayers) {
@@ -73,9 +78,11 @@ export class GameRoomManager {
     }
   }
 
-  findAvailableRoom(gameMode) {
+  findAvailableRoom(gameMode, experimentType = '2P2G', matchPool = 'default') {
     for (const room of this.rooms.values()) {
       if (room.gameMode === gameMode && 
+          room.experimentType === experimentType &&
+          room.matchPool === matchPool &&
           room.status === 'waiting' && 
           room.players.length < room.maxPlayers) {
         return room;
@@ -145,7 +152,12 @@ export class GameRoomManager {
       totalRooms: this.rooms.size,
       activeRooms: Array.from(this.rooms.values()).filter(r => r.status === 'playing').length,
       waitingRooms: Array.from(this.rooms.values()).filter(r => r.status === 'waiting').length,
-      totalPlayers: this.playerRooms.size
+      totalPlayers: this.playerRooms.size,
+      roomsByPool: Array.from(this.rooms.values()).reduce((counts, room) => {
+        const pool = room.matchPool || 'default';
+        counts[pool] = (counts[pool] || 0) + 1;
+        return counts;
+      }, {})
     };
   }
 
