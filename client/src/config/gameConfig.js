@@ -293,6 +293,11 @@ export const CONFIG = {
   twoP3G: {
     minStepsBeforeNewGoal: 1,
     newGoalMessageDuration: 5000,
+    conditionQuota: {
+      enabled: true,
+      // Eight scheduled trials: two fixed controls, six dynamic new-goal slots.
+      trialsPerCondition: 2
+    },
     distanceConditions: {
       CLOSER_TO_PLAYER2: 'closer_to_player2',
       CLOSER_TO_PLAYER1: 'closer_to_player1',
@@ -300,16 +305,25 @@ export const CONFIG = {
       NO_NEW_GOAL: 'no_new_goal'
     },
     distanceConstraint: {
-      closerThreshold: 1,
-      allowEqualDistance: false,
-      maxDistanceIncrease: 5
+      // Strict rule matches vlm: minimum improvement, without a '<' off-by-one.
+      minDistanceImprovement: 2,
+      maxDistanceImprovement: null
     },
     goalConstraints: {
       minDistanceFromHuman: 1,
-      maxDistanceFromHuman: 12,
+      maxDistanceFromHuman: 28,
       avoidRectangleArea: false,
       maintainDistanceSum: true,
       blockPathCheck: false
+    },
+    generationTolerance: {
+      enabled: true,
+      // Manhattan joint-distance errors are even: mean +/-1 = total +/-2.
+      maxMeanDistanceDelta: 1,
+      maxEqualDistanceGap: 1,
+      minRelaxedDistanceImprovement: 1,
+      // Balance signed errors across generated trials of the SAME condition.
+      balanceAcrossTrials: true
     }
   },
 

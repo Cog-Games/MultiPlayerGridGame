@@ -1,5 +1,7 @@
 import { CONFIG, GAME_OBJECTS, DIRECTIONS } from '../config/gameConfig.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
+import { NewGoalGenerator } from '../utils/NewGoalGenerator.js';
+import { NewGoalQuotaScheduler } from '../utils/NewGoalQuotaScheduler.js';
 
 export class GameStateManager {
   constructor() {
@@ -122,6 +124,9 @@ export class GameStateManager {
     this.gameStartTime = 0; // Will be properly set in initializeTrial
     this.isMoving = false;
     this.conditionSequences = {};
+    this.goalGenerationBalance = {};
+    this.afterMove = null;
+    this.resetNewGoalDiagnostics();
   }
 
   initializeTrial(trialIndex, experimentType, design) {
@@ -181,6 +186,7 @@ export class GameStateManager {
     this.trialData.collaborationSucceeded = undefined;
     // Reset finalization flag for new trial
     this.trialData._finalized = false;
+    this.resetNewGoalDiagnostics();
     // Reset fallback flags for new trial
     this.trialData.partnerFallbackOccurred = false;
     this.trialData.partnerFallbackReason = null;
@@ -210,6 +216,12 @@ export class GameStateManager {
     // Add distance condition for trials (balanced sequence)
     if (experimentType === '2P3G') {
       const cond = this.getRandomDistanceConditionFor2P3G(trialIndex);
+      this.trialData.newGoalScheduledCondition = cond;
+      this.trialData.newGoalAllocationPolicy = CONFIG.twoP3G.conditionQuota?.enabled
+        ? NewGoalQuotaScheduler.POLICY_VERSION : 'fixed-schedule';
+      this.trialData.newGoalQuotaAtTrialStart = NewGoalQuotaScheduler.counts(this.goalGenerationBalance);
+      this.currentState.newGoalScheduledCondition = cond;
+      if (cond === 'no_new_goal') this.trialData.newGoalStatus = 'planned_no_new_goal';
       this.trialData.newGoalConditionType = cond;
       this.trialData.distanceCondition = cond; // legacy naming for saving
       this.currentState.newGoalConditionType = cond;
@@ -490,22 +502,147 @@ export class GameStateManager {
     this.currentState.currentGoals.push([row, col]);
   }
 
+  resetNewGoalDiagnostics() {
+    this.trialData.newGoalStatus = this.trialData.experimentType === '2P3G' ? 'pending' : 'not_applicable';
+    delete this.trialData.newGoalGenerationError;
+    this.trialData.newGoalMetadata = null;
+    this.trialData.newGoalRealizedCondition = null;
+    this.trialData.newGoalGenerationAttempts = [];
+    for (const key of ['ScheduledCondition', 'AllocationPolicy', 'ConditionReassigned', 'QuotaAtTrialStart',
+      'QuotaBefore', 'QuotaAfter', 'QuotaTarget', 'QuotaSummary']) {
+      this.trialData[`newGoal${key}`] = null;
+    }
+    this.trialData.newGoalGeometryRuleVersion = this.trialData.experimentType === '2P3G'
+      ? NewGoalGenerator.GOAL_GEOMETRY_RULE_VERSION : null;
+    for (const suffix of ['GenerationMode', 'StrictCandidateCount', 'RelaxedCandidateCount',
+      'OldDistanceToPlayer1', 'OldDistanceToPlayer2', 'OldDistanceSum', 'DistanceToPlayer1',
+      'DistanceToPlayer2', 'DistanceSum', 'JointDistanceDelta', 'DistanceDifferenceBetweenPlayers',
+      'TargetedDistanceImprovement', 'MeanDistanceDelta', 'ReferenceGoal', 'BalanceBefore', 'BalanceAfter']) {
+      this.trialData[`newGoal${suffix}`] = null;
+    }
+    this.trialData.newGoalGenerationConfig = structuredClone({
+      distanceConstraint: CONFIG.twoP3G.distanceConstraint,
+      goalConstraints: CONFIG.twoP3G.goalConstraints,
+      tolerance: CONFIG.twoP3G.generationTolerance,
+      conditionQuota: CONFIG.twoP3G.conditionQuota
+    });
+    this.currentState.newGoalMetadata = null;
+    this.currentState.newGoalScheduledCondition = null;
+  }
+
+  adoptGoalGenerationBalance(condition, balance) {
+    if (!Object.values(NewGoalGenerator.DISTANCE_CONDITIONS).includes(condition) || !balance) return;
+    const keys = ['meanDistanceDelta', 'equalDistanceGap', 'generatedCount', 'relaxedCount'];
+    if (!keys.every(key => Number.isFinite(balance[key]))) return;
+    if (!Number.isInteger(balance.generatedCount) || balance.generatedCount < 0 ||
+        !Number.isInteger(balance.relaxedCount) || balance.relaxedCount < 0 ||
+        balance.relaxedCount > balance.generatedCount) return;
+    this.goalGenerationBalance ||= {};
+    const previous = this.goalGenerationBalance[condition];
+    // Absolute snapshots make repeated sync/finalize delivery idempotent.
+    if (!previous || balance.generatedCount > previous.generatedCount) {
+      this.goalGenerationBalance[condition] = Object.fromEntries(keys.map(key => [key, balance[key]]));
+    }
+  }
+
+  adoptGoalGenerationBalances(balances) {
+    if (!balances || typeof balances !== 'object') return;
+    for (const condition of NewGoalQuotaScheduler.CONDITIONS) {
+      this.adoptGoalGenerationBalance(condition, balances[condition]);
+    }
+  }
+
+  getNewGoalQuotaSummary(includeCurrentTrial = false) {
+    const trials = this.experimentData.allTrialsData.filter(t => t.experimentType === '2P3G');
+    if (includeCurrentTrial && this.trialData.experimentType === '2P3G') trials.push(this.trialData);
+    const isControl = t => (t.newGoalScheduledCondition || t.distanceCondition) === 'no_new_goal';
+    const target = { ...NewGoalQuotaScheduler.targets(), no_new_goal: CONFIG.twoP3G.conditionQuota.trialsPerCondition };
+    const realized = { ...NewGoalQuotaScheduler.counts(this.goalGenerationBalance),
+      no_new_goal: trials.filter(t => isControl(t) && !t.newGoalPresented).length };
+    const remaining = Object.fromEntries(Object.keys(target).map(c => [c, Math.max(0, target[c] - realized[c])]));
+    return { target, realized, remaining, completedTrials: trials.length,
+      failedNewGoalTrials: trials.filter(t => !isControl(t) && !t.newGoalPresented).length,
+      trialLimit: CONFIG.game.experiments.numTrials['2P3G'],
+      targetReached: Object.keys(target).every(c => target[c] === realized[c]) };
+  }
+
+  notifyAfterMove() {
+    try {
+      this.afterMove?.();
+    } catch (error) {
+      this.trialData.newGoalStatus = 'generation_error';
+      this.trialData.newGoalGenerationError = String(error?.message || error);
+      console.error('New-goal round callback failed:', error);
+    }
+  }
+
   // Record trial metadata for a newly presented goal
   markNewGoalPresented(position, conditionType, extra = {}) {
-    if (!this.trialData) return;
+    if (!this.trialData || this.trialData.newGoalPresented) return;
+    const scheduled = extra.scheduledCondition || this.trialData.newGoalScheduledCondition || this.trialData.distanceCondition;
     this.trialData.newGoalPresented = true;
-    this.trialData.newGoalPresentedTime = this.stepCount;
+    this.trialData.newGoalPresentedTime = Number.isFinite(extra.presentedAtRound) ? extra.presentedAtRound : this.stepCount;
     this.trialData.newGoalPosition = position ? [...position] : null;
     const cond = conditionType || this.trialData.newGoalConditionType || this.trialData.distanceCondition || null;
+    if (this.trialData.experimentType === '2P3G') {
+      this.trialData.newGoalScheduledCondition = scheduled;
+      this.trialData.newGoalConditionReassigned = cond !== scheduled;
+      this.trialData.newGoalAllocationPolicy = extra.allocationPolicy || this.trialData.newGoalAllocationPolicy;
+    }
     this.trialData.newGoalConditionType = cond;
     this.trialData.distanceCondition = cond; // keep legacy field in sync
     // Mirror in state for network sync visibility
     if (this.currentState) {
       this.currentState.newGoalConditionType = cond;
       this.currentState.distanceCondition = cond;
+      this.currentState.newGoalScheduledCondition = this.trialData.newGoalScheduledCondition;
     }
     if (typeof extra.isNewGoalCloserToPlayer2 === 'boolean') {
       this.trialData.isNewGoalCloserToPlayer2 = extra.isNewGoalCloserToPlayer2;
+    }
+    this.trialData.newGoalStatus = 'presented';
+    this.trialData.newGoalMetadata = structuredClone(extra);
+    this.trialData.newGoalRealizedCondition = cond;
+    this.adoptGoalGenerationBalances(extra.goalGenerationBalancesAfter);
+    this.adoptGoalGenerationBalance(cond, extra.balanceAfter);
+    const metadataFields = {
+      geometryRuleVersion: 'newGoalGeometryRuleVersion',
+      generationMode: 'newGoalGenerationMode',
+      strictCandidateCount: 'newGoalStrictCandidateCount',
+      oldDistanceToPlayer1: 'newGoalOldDistanceToPlayer1',
+      oldDistanceToPlayer2: 'newGoalOldDistanceToPlayer2',
+      oldDistanceSum: 'newGoalOldDistanceSum',
+      distanceToPlayer1: 'newGoalDistanceToPlayer1',
+      distanceToPlayer2: 'newGoalDistanceToPlayer2',
+      distanceSum: 'newGoalDistanceSum',
+      jointDistanceDelta: 'newGoalJointDistanceDelta',
+      distanceDifferenceBetweenPlayers: 'newGoalDistanceDifferenceBetweenPlayers',
+      targetedDistanceImprovement: 'newGoalTargetedDistanceImprovement',
+      relaxedCandidateCount: 'newGoalRelaxedCandidateCount',
+      meanDistanceDelta: 'newGoalMeanDistanceDelta',
+      generationReferenceGoal: 'newGoalReferenceGoal',
+      balanceBefore: 'newGoalBalanceBefore',
+      balanceAfter: 'newGoalBalanceAfter',
+      quotaBefore: 'newGoalQuotaBefore',
+      quotaAfter: 'newGoalQuotaAfter',
+      quotaTarget: 'newGoalQuotaTarget'
+    };
+    Object.entries(metadataFields).forEach(([source, destination]) => {
+      if (extra[source] !== undefined) {
+        this.trialData[destination] = extra[source];
+      }
+    });
+    if (this.currentState) {
+      this.currentState.newGoalMetadata = Object.fromEntries(
+        Object.keys(metadataFields)
+          .filter(source => extra[source] !== undefined)
+          .map(source => [source, extra[source]])
+      );
+      this.currentState.newGoalMetadata.presentedAtRound = this.trialData.newGoalPresentedTime;
+      this.currentState.newGoalMetadata = { ...extra, ...this.currentState.newGoalMetadata };
+      if (typeof extra.isNewGoalCloserToPlayer2 === 'boolean') {
+        this.currentState.newGoalMetadata.isNewGoalCloserToPlayer2 = extra.isNewGoalCloserToPlayer2;
+      }
     }
   }
 
@@ -553,6 +690,7 @@ export class GameStateManager {
       this.detectAndRecordGoals(playerIndex, movement);
 
       this.stepCount++;
+      this.notifyAfterMove();
 
       // Check for trial completion
       const trialComplete = this.checkTrialCompletion();
@@ -618,11 +756,13 @@ export class GameStateManager {
       }
 
       // Detect goals after movement
-      if (p1 && move1) this.detectAndRecordGoals(1, move1);
-      if (p2 && move2) this.detectAndRecordGoals(2, move2);
+      if (p1 && move1 && !GameHelpers.isGoalReached(p1, this.currentState.currentGoals)) this.detectAndRecordGoals(1, move1, true);
+      if (p2 && move2 && !GameHelpers.isGoalReached(p2, this.currentState.currentGoals)) this.detectAndRecordGoals(2, move2, true);
+      this.detectSharedGoal();
 
       // Increment step count once for the synchronized step
       this.stepCount++;
+      this.notifyAfterMove();
 
       // Check completion
       results.trialComplete = this.checkTrialCompletion();
@@ -676,11 +816,13 @@ export class GameStateManager {
       if (p1 && next1 && (next1 !== p1)) this.updatePlayerPosition(1, p1, next1);
       if (p2 && next2 && (next2 !== p2)) this.updatePlayerPosition(2, p2, next2);
 
-      if (p1 && move1) this.detectAndRecordGoals(1, move1);
-      if (p2 && move2) this.detectAndRecordGoals(2, move2);
+      if (p1 && move1 && !GameHelpers.isGoalReached(p1, this.currentState.currentGoals)) this.detectAndRecordGoals(1, move1, true);
+      if (p2 && move2 && !GameHelpers.isGoalReached(p2, this.currentState.currentGoals)) this.detectAndRecordGoals(2, move2, true);
+      this.detectSharedGoal();
 
       // Increment step count once for the synchronized step (mapped variant)
       this.stepCount++;
+      this.notifyAfterMove();
 
       results.trialComplete = this.checkTrialCompletion();
       return results;
@@ -749,7 +891,7 @@ export class GameStateManager {
     } catch (_) { /* noop */ }
   }
 
-  detectAndRecordGoals(playerIndex, action) {
+  detectAndRecordGoals(playerIndex, action, deferSharedGoal = false) {
     const player = playerIndex === 1 ? this.currentState.player1 : this.currentState.player2;
     const goalHistory = playerIndex === 1 ? this.trialData.player1CurrentGoal : this.trialData.player2CurrentGoal;
 
@@ -771,6 +913,11 @@ export class GameStateManager {
       }
     }
 
+    if (!deferSharedGoal) this.detectSharedGoal();
+  }
+
+  detectSharedGoal() {
+    // Check only complete round histories in synchronized modes.
     // Check for first shared goal (2P3G only)
     if (this.currentState.experimentType === '2P3G' &&
         this.trialData.player1CurrentGoal.length > 0 &&
@@ -860,6 +1007,14 @@ export class GameStateManager {
       }
     } catch (_) { /* noop */ }
 
+    this.adoptGoalGenerationBalances(this.trialData.newGoalMetadata?.goalGenerationBalancesAfter);
+    this.adoptGoalGenerationBalance(this.trialData.distanceCondition, this.trialData.newGoalBalanceAfter);
+    if (this.trialData.experimentType === '2P3G') {
+      if (this.trialData.newGoalScheduledCondition === 'no_new_goal' && !this.trialData.newGoalPresented) {
+        this.trialData.newGoalRealizedCondition = 'no_new_goal';
+      }
+      this.trialData.newGoalQuotaSummary = this.getNewGoalQuotaSummary(true);
+    }
     this.trialData.completed = !!success;
     this.trialData.endTime = Date.now();
     this.trialData.totalSteps = this.getDerivedTotalSteps();
@@ -1115,6 +1270,9 @@ export class GameStateManager {
     // Use or create a balanced sequence for the experiment
     const key = '2P3G';
     const numTrials = (CONFIG.game.experiments?.numTrials?.[key]) || 12;
+    if (CONFIG.twoP3G.conditionQuota?.enabled && numTrials !== 4 * CONFIG.twoP3G.conditionQuota.trialsPerCondition) {
+      throw new Error('2P3G trial count must match four condition quotas (8 trials at the default quota of 2)');
+    }
     if (!this.conditionSequences[key]) {
       // If human-human mode, use a shared seed so both clients get identical sequences
       const isHumanHuman = (CONFIG?.game?.players?.player2?.type === 'human');
@@ -1195,7 +1353,7 @@ export class GameStateManager {
           // Mark as presented using remote state's legacy condition field when available
           const cond = (remoteState && (remoteState.distanceCondition || remoteState.newGoalConditionType))
             || this.trialData.distanceCondition || this.trialData.newGoalConditionType || null;
-          this.markNewGoalPresented([...newOnRemote], cond, {});
+          this.markNewGoalPresented([...newOnRemote], cond, remoteState.newGoalMetadata || {});
         }
       }
     } catch (_) {
@@ -1270,7 +1428,17 @@ export class GameStateManager {
       }
     }
 
+    // A delayed two-goal packet must not erase the metadata for a goal that
+    // was already generated locally and protected by the goal merge above.
+    if (this.currentState?.newGoalMetadata && this.trialData?.newGoalPresented) {
+      mergedState.newGoalMetadata = this.currentState.newGoalMetadata;
+      mergedState.distanceCondition = this.trialData.distanceCondition;
+      mergedState.newGoalConditionType = this.trialData.newGoalConditionType;
+      mergedState.newGoalScheduledCondition = this.trialData.newGoalScheduledCondition;
+    }
     this.currentState = mergedState;
+    this.adoptGoalGenerationBalances(remoteState?.newGoalMetadata?.goalGenerationBalancesAfter);
+    this.adoptGoalGenerationBalance(remoteState?.distanceCondition, remoteState?.newGoalMetadata?.balanceAfter);
   }
 
   getDerivedTotalSteps() {

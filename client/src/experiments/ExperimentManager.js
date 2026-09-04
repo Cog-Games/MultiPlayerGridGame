@@ -9,6 +9,7 @@ import { LlmAgentClient } from '../ai/LlmAgentClient.js';
 import { VlmAgentClient } from '../ai/VlmAgentClient.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
 import { NewGoalGenerator } from '../utils/NewGoalGenerator.js';
+import { NewGoalQuotaScheduler } from '../utils/NewGoalQuotaScheduler.js';
 import { mapLoader } from '../utils/MapLoader.js';
 
 export class ExperimentManager {
@@ -959,113 +960,87 @@ export class ExperimentManager {
   }
 
   setupNewGoalCheck2P3G() {
-    // Present third goal when both players first reveal same goal
-    const checkInterval = 100;
-    // Clear any existing new-goal interval first
-    if (this.newGoalIntervalId) {
-      clearInterval(this.newGoalIntervalId);
-      this.newGoalIntervalId = null;
+    if (this.newGoalIntervalId) clearInterval(this.newGoalIntervalId);
+    this._newGoalRoundCallback = () => this.tryPresentNewGoal2P3G();
+    // Evaluate immediately after a completed move/round, before another input.
+    this.gameStateManager.afterMove = this._newGoalRoundCallback;
+    // Keep the timer as a fallback for restored/network state, not the main trigger.
+    this.newGoalIntervalId = setInterval(this._newGoalRoundCallback, 100);
+  }
+
+  tryPresentNewGoal2P3G() {
+    const gsm = this.gameStateManager;
+    const state = gsm.currentState;
+    const trial = gsm.trialData;
+    if (!state || !trial || state.experimentType !== '2P3G' || trial._finalized || trial.newGoalPresented) return;
+    const humanHuman = CONFIG.game.players.player1.type === 'human' && CONFIG.game.players.player2.type === 'human';
+    if (humanHuman && this.timelineManager?.playerIndex !== 0) return;
+    const scheduledCondition = trial.newGoalScheduledCondition || trial.distanceCondition || trial.newGoalConditionType;
+    const dynamicQuota = trial.newGoalAllocationPolicy
+      ? trial.newGoalAllocationPolicy === NewGoalQuotaScheduler.POLICY_VERSION
+      : CONFIG.twoP3G.conditionQuota?.enabled === true;
+    const latest1 = NewGoalGenerator.getPlayerCurrentGoal(trial.player1CurrentGoal);
+    const latest2 = NewGoalGenerator.getPlayerCurrentGoal(trial.player2CurrentGoal);
+    const key = JSON.stringify([trial.trialStartTime, trial.trialIndex, gsm.stepCount,
+      state.player1, state.player2, latest1, latest2, scheduledCondition,
+      dynamicQuota ? NewGoalQuotaScheduler.counts(gsm.goalGenerationBalance) : null]);
+    if (key === this._lastNewGoalAttemptKey) return;
+    this._lastNewGoalAttemptKey = key;
+    const record = (reason, details = {}) => {
+      trial.newGoalStatus = reason;
+      trial.newGoalGenerationAttempts ||= [];
+      trial.newGoalGenerationAttempts.push({ round: gsm.stepCount, reason, ...details });
+    };
+    if (scheduledCondition === NewGoalGenerator.DISTANCE_CONDITIONS.NO_NEW_GOAL) {
+      trial.newGoalStatus = 'planned_no_new_goal';
+      return;
     }
-    // Reset debug logging flag for this setup
-    this._loggedFallbackMode = false;
-
-    const intervalId = setInterval(() => {
-      // In human-human mode, only the host (playerIndex 0) should generate the new goal
-      // After fallback to AI, we should continue generating goals (no longer need host restriction)
-      const isCurrentlyHumanHuman = (CONFIG.game.players.player1.type === 'human' && CONFIG.game.players.player2.type === 'human');
-      if (isCurrentlyHumanHuman) {
-        const isHost = !!this.timelineManager && this.timelineManager.playerIndex === 0;
-        if (!isHost) {
-          return; // Non-host waits for host to broadcast state
-        }
-      }
-      // After AI fallback, both human-AI combinations should generate goals locally
-
-      // Debug logging for fallback scenarios (only log once per setup)
-      if (!isCurrentlyHumanHuman && !this._loggedFallbackMode) {
-        // This means we're in human-AI mode (either originally or after fallback)
-        const p1Type = CONFIG.game.players.player1.type;
-        const p2Type = CONFIG.game.players.player2.type;
-        try { if (!CONFIG?.debug?.disableConsoleLogs) console.log(`[DEBUG] New goal check active in human-AI mode: P1=${p1Type}, P2=${p2Type}, aiPlayerNumber=${this.aiPlayerNumber}`); } catch (_) {}
-        this._loggedFallbackMode = true;
-      }
-
-      // Use live internal references to avoid mutating getter copies
-      const state = this.gameStateManager.currentState;
-      const trial = this.gameStateManager.trialData;
-      if (!state || !trial) return;
-      if (trial.newGoalPresented) return;
-      if (state.experimentType !== '2P3G') return;
-
-      // Ensure we currently have exactly two goals (third will be added)
-      if (!state.currentGoals || state.currentGoals.length < 2) return;
-
-      // Ensure both players exist
-      if (!state.player1 || !state.player2) return;
-
-      const distanceCondition = trial.distanceCondition || trial.newGoalConditionType || CONFIG.twoP3G.distanceConditions.CLOSER_TO_PLAYER2;
-      let gen = NewGoalGenerator.checkNewGoalPresentation2P3G(
-        this.gameStateManager.getCurrentState(),
-        this.gameStateManager.getCurrentTrialData(),
-        distanceCondition
-      );
-      // Fallback: if we previously detected a shared goal but missed generation timing,
-      // synthesize the new goal directly from the recorded shared goal index
-      if (!gen && typeof trial.firstDetectedSharedGoal === 'number' && trial.firstDetectedSharedGoal !== null) {
-        try {
-          const p1CurrentGoal = NewGoalGenerator.getPlayerCurrentGoal(trial.player1CurrentGoal);
-          const p2CurrentGoal = NewGoalGenerator.getPlayerCurrentGoal(trial.player2CurrentGoal);
-          if (p1CurrentGoal === trial.firstDetectedSharedGoal && p2CurrentGoal === trial.firstDetectedSharedGoal) {
-            const direct = NewGoalGenerator.generateNewGoal(
-              state.player2, state.player1, state.currentGoals,
-              trial.firstDetectedSharedGoal, distanceCondition
-            );
-            if (direct && direct.position) {
-              gen = direct;
-            }
-          }
-        } catch (_) { /* ignore fallback errors */ }
-      }
-
-      if (!gen) return;
-
-      // Double-check that we haven't already presented a goal (race condition protection)
-      if (this.gameStateManager.trialData?.newGoalPresented) {
-        console.log('🔧 [RACE PROTECTION] Goal already presented, skipping duplicate generation');
-        return;
-      }
-
-      console.log('🎯 [GOAL GEN] Generating new goal at position:', gen.position);
-
-      // Apply changes to internal state via GameStateManager APIs
-      this.gameStateManager.addGoal(gen.position);
-      const closerInfo = (typeof gen.distanceToPlayer2 === 'number' && typeof gen.distanceToPlayer1 === 'number')
-        ? { isNewGoalCloserToPlayer2: gen.distanceToPlayer2 < gen.distanceToPlayer1 }
-        : {};
-      this.gameStateManager.markNewGoalPresented(gen.position, distanceCondition, closerInfo);
-
-      // Reset RL pre-calculation if available
-      if (this.rlAgent && typeof this.rlAgent.resetNewGoalPreCalculationFlag === 'function') {
-        this.rlAgent.resetNewGoalPreCalculationFlag();
-      }
-
-      // Redraw
-      this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
-
-      // Broadcast synchronized state to partner in human-human mode
-      // After AI fallback, no network sync needed since AI is local
-      if (isCurrentlyHumanHuman) {
-        try {
-          const nm = window.__NETWORK_MANAGER__;
-          if (nm && typeof nm.syncGameState === 'function') {
-            nm.syncGameState(this.gameStateManager.getCurrentState());
-          }
-        } catch (_) { /* ignore */ }
-      }
-    }, checkInterval);
-
-    // Track interval for cleanup
-    this.newGoalIntervalId = intervalId;
+    if (!NewGoalQuotaScheduler.CONDITIONS.includes(scheduledCondition)) return record('invalid_scheduled_condition');
+    if (!state.player1 || !state.player2 || state.currentGoals?.length !== 2) return record('invalid_state');
+    if (GameHelpers.isGoalReached(state.player1, state.currentGoals) ||
+        GameHelpers.isGoalReached(state.player2, state.currentGoals)) return record('player_already_finished');
+    if (gsm.stepCount < (CONFIG.twoP3G.minStepsBeforeNewGoal ?? 1)) return record('before_minimum_round');
+    const currentShared = Number.isInteger(latest1) && latest1 === latest2 && latest1 >= 0 && latest1 < 2;
+    const reference = currentShared ? latest1 : trial.firstDetectedSharedGoal;
+    if (!Number.isInteger(reference) || reference < 0 || reference >= 2) return record('no_shared_goal_yet');
+    let diagnostics = {}, gen, missingReason = 'no_candidate_within_tolerance';
+    if (dynamicQuota) {
+      const allocation = NewGoalQuotaScheduler.select({
+        player1: state.player1, player2: state.player2, goals: state.currentGoals,
+        referenceGoal: reference, balances: gsm.goalGenerationBalance, gridMatrix: state.gridMatrix
+      });
+      gen = allocation.goal;
+      diagnostics = allocation.diagnostics;
+      missingReason = allocation.reason;
+    } else {
+      gen = NewGoalGenerator.generateNewGoal(state.player2, state.player1, state.currentGoals,
+        reference, scheduledCondition, {
+          allowTolerance: CONFIG.twoP3G.generationTolerance?.enabled === true,
+          balance: gsm.goalGenerationBalance?.[scheduledCondition] || NewGoalGenerator.emptyBalance(),
+          diagnostics, gridMatrix: state.gridMatrix
+        });
+    }
+    if (!gen) return record(missingReason, { referenceGoal: reference, ...diagnostics });
+    const condition = gen.conditionType;
+    const goalCountBefore = state.currentGoals.length;
+    gsm.addGoal(gen.position);
+    if (state.currentGoals.length !== goalCountBefore + 1) return record('goal_add_failed', diagnostics);
+    gsm.markNewGoalPresented(gen.position, condition, {
+      ...gen,
+      scheduledCondition,
+      allocationPolicy: dynamicQuota ? NewGoalQuotaScheduler.POLICY_VERSION : 'fixed-schedule',
+      triggerSource: currentShared ? 'current_shared_goal' : 'remembered_shared_goal',
+      presentedAtRound: gsm.stepCount,
+      isNewGoalCloserToPlayer2: gen.distanceToPlayer2 < gen.distanceToPlayer1
+    });
+    record('presented', { referenceGoal: reference, scheduledCondition, selectedCondition: condition,
+      generationMode: gen.generationMode, ...diagnostics });
+    this.rlAgent?.resetNewGoalPreCalculationFlag?.();
+    this.uiManager.updateGameDisplay(gsm.getCurrentState());
+    if (humanHuman) {
+      const nm = typeof window !== 'undefined' ? window.__NETWORK_MANAGER__ : null;
+      nm?.syncGameState?.(gsm.getCurrentState());
+    }
   }
 
   actionToDirection(action) {
@@ -1269,6 +1244,11 @@ export class ExperimentManager {
   }
 
   clearGameIntervals() {
+    if (this.gameStateManager.afterMove === this._newGoalRoundCallback) {
+      this.gameStateManager.afterMove = null;
+    }
+    this._newGoalRoundCallback = null;
+    this._lastNewGoalAttemptKey = null;
     if (this.gameLoopInterval) {
       clearInterval(this.gameLoopInterval);
       this.gameLoopInterval = null;

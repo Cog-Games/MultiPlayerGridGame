@@ -10,7 +10,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "node server/index.js",
-    "render-build": "npm install && vite build"
+    "render-build": "npm install && vite build",
+    "test": "node --test test/*.test.js"
   },
   "dependencies": {
     "express": "^4.18.2",
