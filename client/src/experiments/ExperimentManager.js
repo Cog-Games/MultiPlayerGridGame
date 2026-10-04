@@ -599,7 +599,7 @@ export class ExperimentManager {
         if (!this.alwaysSignalAgent) this.alwaysSignalAgent = this.createAlwaysSignalAgent();
         aiAction = this.alwaysSignalAgent.getAIAction(
           gameState,
-          this.gameStateManager.getCurrentTrialData(),
+          this.gameStateManager.trialData,
           this.aiPlayerNumber,
           humanMovement
         );
@@ -818,7 +818,7 @@ export class ExperimentManager {
         if (!this.alwaysSignalAgent) this.alwaysSignalAgent = this.createAlwaysSignalAgent();
         aiAction = this.alwaysSignalAgent.getAIAction(
           gameState,
-          this.gameStateManager.getCurrentTrialData(),
+          this.gameStateManager.trialData,
           this.aiPlayerNumber
         );
       } else if (aiType === 'signalagent' || fallbackPolicy === 'signalAgent') {

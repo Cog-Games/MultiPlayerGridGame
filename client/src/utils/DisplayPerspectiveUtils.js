@@ -1,7 +1,8 @@
 import { CONFIG, GAME_OBJECTS } from '../config/gameConfig.js';
 
 export function isHumanHumanDisplayPerspective(gameMode) {
-  return gameMode === 'human-human';
+  // Children keep their own dot red when a human teammate becomes AI.
+  return gameMode === 'human-human' || (CONFIG.kids?.enabled && gameMode === 'human-ai');
 }
 
 export function getCanonicalPlayerIndexFromObjectType(objectType) {

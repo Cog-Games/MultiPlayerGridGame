@@ -1,6 +1,6 @@
 # Two kids play：SA fallback 与分析数据检查（2026-10-04）
 
-修改位于 `kids` 工作目录。没有部署或修改既有采集数据。
+修改位于 `kids` 工作目录；已推送修复，线上 Render 部署状态仍待登录确认。没有修改既有参与者数据；浏览器验证产生的记录均以 `DEPLOY-TEST-` 命名且 `isTestSession=true`，分析时应排除。
 
 ## SA 的对照依据
 
@@ -21,6 +21,9 @@
 ## 数据修复
 
 - fallback 状态持续到后续合作 trial，记录原因、时点、阶段和 AI 玩家位置；不会错误标记之前的单人热身。
+- 每个真人同步回合同时传递主端动作记录与棋盘状态，客端接管后保留此前的真人动作、新目标和计时；忽略过期回合以及接管后的迟到状态包。
+- 断线接管停止旧 inactivity 计时器，防止重复 fallback；第二位孩子接管后继续看到自己为红点。
+- 模型始终接收当前 trial 的稳定记录对象，避免临时副本导致每步重置后验及丢失模型元数据、决策历史。
 - trial 途中接管保留动作边界，`mixedPartnerTrial=true`，并保存 `partnerAgentTypeAtTrialStart`，避免把真人片段误当成纯 SA。
 - 每个 trial 使用独立的数据对象，保存时深拷贝；模型决策历史和新目标元数据不再串到下一 trial。异步 checkpoint 同样使用快照。
 - trial 超过 60 秒时保持原计时起点。
@@ -59,7 +62,7 @@ python3 scripts/collab_ai_data_adapter.py new_export.xlsx --output /tmp/trial-ev
 
 ## 验证与限制
 
-31 项测试全部通过，`npm run build` 成功。回归覆盖 SA 一致性、fallback 跨 trial/角色、数据隔离、长 trial 时钟、Excel 事件表和 JSON 降级下载。另用合成数据做 Excel/JSON 往返，并实际调用本地 collabAIdata 的 `snapshots`、`prospective`、`build_states` 和 `actor_first_moves`。
+35 项测试全部通过，`npm run build` 成功。回归覆盖 SA 一致性、fallback 跨 trial/角色、数据隔离、长 trial 时钟、Excel 事件表和 JSON 降级下载。另用合成数据做 Excel/JSON 往返，并实际调用本地 collabAIdata 的 `snapshots`、`prospective`、`build_states` 和 `actor_first_moves`。
 
 复现验证（从 kids 工作目录运行）：
 
@@ -69,4 +72,12 @@ python3 scripts/validate-kids-analysis.py --collab-data ../../../collabAIdata
 npm run build
 ```
 
-未进行线上部署、真实双浏览器联网游戏或 Google Drive 写入。现有 Apps Script 使用 `no-cors`，浏览器无法确认服务器最终落盘；本地 checkpoint 保留，并把发送状态标为 `sent_unconfirmed`。正式采集前仍需用测试参与者完成一次端到端上传核对。
+已使用本地生产构建和实际 Socket.IO 服务完成浏览器验证：等待后 SA fallback、两页真人匹配/同步、主端断线后由 SA 控制 canonical P1、第二位孩子继续控制红点、协作成功及 Excel 导出。短测试入口的八轮配额冲突已修复；正式八轮配额不变。
+
+最终测试 `DEPLOY-TEST-H-20261004` 的 2P3G trial 协作成功：26 个动作事件（接管前 2 个真人事件）、12 条 SA 决策，fallback 仅一次且发生在 eventIndex=2。导出包含 `local-fallback-2026-05-28`、lambda=0.2、alpha=0.5、beta=3 及模型完整参数。该次未触发新目标；新目标时序由固定参考与合成往返测试覆盖。
+
+[Drive 最终测试文件](https://docs.google.com/spreadsheets/d/11YjDV_eoUY-egHZUbOOXwCLSrTc9Tkad/edit) 已重新下载，与浏览器本地导出逐字节一致，SHA-256 为 `9bf5e0ad58e94836afd8b9d6b75451100df0985836c8924de5cf3571648b2567`。该真实导出通过 adapter 重建，并调用最新 collabAIdata 产生 26 个 snapshots、13 个 states 和 26 次 prospective 计算。
+
+较早测试 A/C/E 用于定位问题，不能视为最终版本验证数据；所有 DEPLOY-TEST 文件均为合成测试，应从研究样本排除。没有删除这些审计记录。
+
+目前验证的是 localhost 生产构建，不等于线上 Render 已部署。Render 登录停留在 GitHub 账号选择，自动审批拒绝使用个人账号（仓库属于 Cog-Games），等待用户确认部署账号或提供线上地址。现有 Apps Script 使用 `no-cors`，正常客户端仍将状态标为 `sent_unconfirmed` 并保留本地 checkpoint；本次另通过 Drive 读回独立确认了落盘。

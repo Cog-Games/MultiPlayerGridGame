@@ -104,7 +104,7 @@ test('disconnect, transition and inactivity routes activate SA on the departed s
     app.experimentManager = manager;
     app.timelineManager = { gameMode: 'human-human', emit() {}, recordKidMatchFallback() {} };
     app.uiManager = { setPlayerInfo() {}, showGameStatus() {} };
-    app.shouldApplyPartnerFallbackNow = () => true;
+    app._inactivityTracking.enabled = true;
     if (route === 'disconnect') {
       const listeners = {};
       app.networkManager = { on: (name, callback) => { listeners[name] = callback; } };
@@ -113,6 +113,12 @@ test('disconnect, transition and inactivity routes activate SA on the departed s
     } else if (route === 'transition') app.activateAIFallbackForExperiment('2P2G');
     else app.activateAIFallbackDueToInactivity();
     assert.equal(manager.aiPlayerNumber, 2 - local);
+    if (route === 'disconnect') {
+      assert.equal(app._inactivityTracking.enabled, false);
+      const count = app.gameStateManager.trialData.partnerFallbackEvents.length;
+      app.activateAIFallbackDueToInactivity();
+      assert.equal(app.gameStateManager.trialData.partnerFallbackEvents.length, count);
+    }
     assert.equal(CONFIG.game.players[`player${2 - local}`].type, 'alwaysSignalAgent');
     assert.equal(app.gameStateManager.trialData.partnerAgentType, 'SA-model');
     assert.equal(app.gameStateManager.trialData.humanPlayerIndex, local);
@@ -128,6 +134,7 @@ test('synchronized SA observes current input once and does not decide on wall bu
   Object.assign(manager, { aiPlayerNumber: 1, gameStateManager: gsm,
     uiManager: { updateGameDisplay() {} }, alwaysSignalAgent: { getAIAction(state, td, side, pending) {
       calls++;
+      assert.equal(td, gsm.trialData, 'model must receive the stable live recording');
       assert.equal(side, 1); assert.deepEqual(pending, [1, 0]);
       assert.equal(td.player2Actions.length, 0);
       return [1, 0];
@@ -143,4 +150,27 @@ test('synchronized SA observes current input once and does not decide on wall bu
   gsm.currentState.player1 = [4, 4]; gsm.isMoving = false;
   await manager.handleSynchronizedMove('down');
   assert.equal(calls, 1);
+});
+
+
+test('real SA decisions persist across manager moves and into the finalized export', async () => {
+  const app = fixture();
+  const gsm = app.gameStateManager;
+  gsm.initializeTrial(1, '2P2G', { initPlayerGrid: [0, 0], initAIGrid: [0, 2], target1: [4, 4], target2: [8, 8] });
+  const manager = Object.create(ExperimentManager.prototype);
+  Object.assign(manager, { aiPlayerNumber: 1, gameStateManager: gsm,
+    uiManager: { updateGameDisplay() {} }, alwaysSignalAgent: manager.createAlwaysSignalAgent() });
+  GameConfigUtils.setPlayerType(1, 'alwaysSignalAgent');
+  GameConfigUtils.setPlayerType(2, 'human');
+  let resets = 0;
+  const reset = manager.alwaysSignalAgent.reset.bind(manager.alwaysSignalAgent);
+  manager.alwaysSignalAgent.reset = () => { resets++; reset(); };
+  await manager.handleSynchronizedMove('down');
+  gsm.isMoving = false;
+  await manager.handleSynchronizedMove('down');
+  assert.equal(resets, 1);
+  assert.equal(gsm.trialData.sharedAgencyModelVersion, 'local-fallback-2026-05-28');
+  assert.equal(gsm.trialData.alwaysSignalAgentPlayer1SampledJointGoalHistory.length, 2);
+  gsm.finalizeTrial(false);
+  assert.equal(gsm.experimentData.allTrialsData.at(-1).alwaysSignalAgentPlayer1SampledJointGoalHistory.length, 2);
 });

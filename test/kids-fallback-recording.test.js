@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CONFIG, GameConfigUtils } from '../client/src/config/gameConfig.js';
+import { CONFIG, GAME_OBJECTS, GameConfigUtils } from '../client/src/config/gameConfig.js';
 import { GameStateManager } from '../client/src/game/GameStateManager.js';
 import { DataSyncManager } from '../client/src/utils/DataSyncManager.js';
+
+import { getPlayerDisplayColor, getPlayerDisplayInfo } from '../client/src/utils/DisplayPerspectiveUtils.js';
 
 const design = { initPlayerGrid: [0, 0], initAIGrid: [0, 2], target1: [4, 4], target2: [8, 8] };
 const human = () => { GameConfigUtils.setPlayerType(1, 'human'); GameConfigUtils.setPlayerType(2, 'human'); };
@@ -99,4 +101,56 @@ test('queued checkpoints snapshot nested trial data before asynchronous persiste
   payload.trialData.player1Actions.push([0, 1]);
   await pending;
   assert.equal(saved.payload.trialData.player1Actions.length, 1);
+});
+
+
+test('guest preserves authoritative human moves, reveal and clock when host disconnects', () => {
+  human();
+  const host = new GameStateManager();
+  const guest = new GameStateManager();
+  host.initializeTrial(0, '2P3G', design);
+  guest.initializeTrial(0, '2P3G', design);
+  host.gameStartTime = Date.now() - 65000;
+  host.processSynchronizedMoves('down', 'down');
+  host.addGoal([5, 5]);
+  host.markNewGoalPresented([5, 5], 'equal_to_both');
+  const first = host.getSynchronizedRecordingState();
+  guest.syncState(first);
+  guest.syncState(first); // duplicate delivery cannot duplicate events
+  assert.deepEqual(guest.trialData, host.trialData);
+  assert.equal(guest.stepCount, 1);
+  assert(Date.now() - guest.gameStartTime >= 65000);
+  host.isMoving = false;
+  host.processSynchronizedMoves('down', 'down');
+  const second = host.getSynchronizedRecordingState();
+  guest.syncState(second);
+  guest.syncState(first); // delayed earlier round cannot roll back state/data
+  assert.equal(guest.stepCount, 2);
+  assert.equal(guest.trialData.moveEvents.length, 4);
+  GameConfigUtils.setPlayerType(1, 'alwaysSignalAgent');
+  guest.recordPartnerFallback({ reason: 'disconnect', fallbackAIType: 'alwaysSignalAgent', aiPlayerNumber: 1 });
+  guest.processSynchronizedMovesMapped(2, 'down', 'down');
+  guest.syncState(second); // delayed packet cannot replace the AI continuation
+  assert.equal(guest.stepCount, 3);
+  assert.equal(guest.trialData.mixedPartnerTrial, true);
+  assert.equal(guest.trialData.partnerFallbackEvents[0].eventIndex, 4);
+  assert.deepEqual(guest.trialData.moveEvents.map(e => e.actorType), ['human', 'human', 'human', 'human', 'alwaysSignalAgent', 'human']);
+  assert(guest.trialData.moveEvents[4].timeMs >= guest.trialData.moveEvents[2].timeMs);
+  assert.equal(first.synchronizedRecording.trialData.moveEvents.length, 2);
+  human();
+});
+
+
+test('either child keeps their own dot red across a human-to-SA takeover', () => {
+  const enabled = CONFIG.kids.enabled;
+  CONFIG.kids.enabled = true;
+  for (const viewer of [0, 1]) {
+    const self = viewer === 0 ? GAME_OBJECTS.player : GAME_OBJECTS.ai_player;
+    const before = getPlayerDisplayColor(self, viewer, 'human-human');
+    assert.equal(getPlayerDisplayColor(self, viewer, 'human-ai'), before);
+    assert.equal(getPlayerDisplayInfo(viewer, 'human-ai').displaySelfColor, 'red');
+  }
+  CONFIG.kids.enabled = false;
+  assert.equal(getPlayerDisplayInfo(1, 'human-ai').displaySelfColor, 'orange');
+  CONFIG.kids.enabled = enabled;
 });

@@ -1364,6 +1364,9 @@ export class GameApplication {
         return;
       }
 
+      this.stopInactivityTracking();
+      this.clearKidWaitingForTeammateResponse();
+
       if (this.useTimelineFlow) {
         // Switch to AI partner and continue via timeline
         console.log('Partner disconnected during timeline flow - switching to AI');
@@ -1512,6 +1515,9 @@ export class GameApplication {
       if (!this.isNetworkPayloadForCurrentTrial(gameState, 'game-state-update', { requireTrialSequenceId: true })) {
         return;
       }
+
+      // Once AI takes over, delayed human packets must not roll back its state.
+      if (this.gameStateManager.trialData?.partnerFallbackOccurred) return;
 
       // Check if we're in human-human real-time mode
       const isHumanHuman = CONFIG.game.players.player1.type === 'human' &&
@@ -1802,7 +1808,10 @@ export class GameApplication {
   }
 
   shouldApplyPartnerFallbackNow() {
-    return this.isTwoPlayerExperimentState();
+    return this.isTwoPlayerExperimentState() &&
+      !this.gameStateManager?.trialData?._finalized &&
+      CONFIG.game.players.player1.type === 'human' &&
+      CONFIG.game.players.player2.type === 'human';
   }
 
   isKidKidSynchronizedTurnState() {
@@ -2120,9 +2129,10 @@ export class GameApplication {
     const result = this.gameStateManager.processSynchronizedMoves(applyM0, applyM1);
     // Redraw
     this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
-    // Broadcast full state to partner
+    // Include the authoritative recording at every resolved turn, so a guest
+    // can retain the human segment if the host disconnects before completion.
     if (this.networkManager && this.networkManager.isConnected) {
-      this.networkManager.syncGameState(this.gameStateManager.getCurrentState());
+      this.networkManager.syncGameState(this.gameStateManager.getSynchronizedRecordingState());
     }
     // Clear pending moves
     this._hhSync.pendingMoves[0] = null;
@@ -2377,8 +2387,8 @@ export class GameApplication {
       return;
     }
 
-    if (!this.isTwoPlayerExperimentState()) {
-      console.log('⚠️ Inactivity tracking stopped because current trial is not a 2P game');
+    if (!this.shouldApplyPartnerFallbackNow()) {
+      console.log('Inactivity tracking stopped outside an active human-human trial');
       this.stopInactivityTracking();
       return;
     }
@@ -2403,6 +2413,7 @@ export class GameApplication {
   }
 
   activateAIFallbackDueToInactivity() {
+    if (!this.shouldApplyPartnerFallbackNow()) return;
     console.log('🤖 Activating AI fallback due to partner inactivity');
 
     const fallbackType = (CONFIG?.multiplayer?.fallbackAIType) || 'rl_joint';

@@ -49,6 +49,11 @@ if (CONFIG.kids.enabled) {
       ? [testExperiment]
       : GameConfigUtils.getKidMainExperimentOrder();
     const testTrialCount = trialCountOverride || 1;
+    // Short smoke tests cannot satisfy the production 2/2/2/2 quota.
+    // Keep the quota unchanged for full-length tests and normal study sessions.
+    if (testTrialCount !== 4 * CONFIG.twoP3G.conditionQuota.trialsPerCondition) {
+      CONFIG.twoP3G.conditionQuota.enabled = false;
+    }
     CONFIG.kids.kidMainExperimentOrder = mainExperimentOrder;
     CONFIG.kids.mainExperimentType = mainExperimentOrder[mainExperimentOrder.length - 1] || '2P3G';
     CONFIG.kids.warmupExperimentOrder = [];

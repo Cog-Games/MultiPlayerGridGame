@@ -1,4 +1,4 @@
-import { CONFIG, GAME_OBJECTS, DIRECTIONS } from '../config/gameConfig.js';
+import { CONFIG, GAME_OBJECTS, DIRECTIONS, GameConfigUtils } from '../config/gameConfig.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
 import { NewGoalGenerator } from '../utils/NewGoalGenerator.js';
 import { NewGoalQuotaScheduler } from '../utils/NewGoalQuotaScheduler.js';
@@ -140,6 +140,7 @@ export class GameStateManager {
     this.trialData.moveEvents = [];
     this.trialData.partnerFallbackEvents = [];
     this.trialData.assignedPartnerMode = CONFIG.kids?.partnerMode || null;
+    this.trialData.isTestSession = CONFIG.kids?.gameTestMode === true;
     this.trialData.trialIndex = trialIndex;
     this.trialData.experimentType = experimentType;
     this.trialData.trialPhase = null;
@@ -1384,7 +1385,36 @@ export class GameStateManager {
   }
 
   // State synchronization for multiplayer
+  getSynchronizedRecordingState() {
+    return structuredClone({
+      ...this.currentState,
+      synchronizedRecording: {
+        trialData: this.trialData,
+        stepCount: this.stepCount,
+        elapsedMs: Date.now() - this.gameStartTime
+      }
+    });
+  }
+
   syncState(remoteState) {
+    const recording = remoteState?.synchronizedRecording;
+    if (recording && GameConfigUtils.isSynchronizedHumanTurnsEnabled(this.currentState?.experimentType)) {
+      // Snapshot and state are one authoritative host turn. Never replace an
+      // AI continuation or a later turn with a duplicate/delayed human packet.
+      if (this.trialData?.partnerFallbackOccurred || this.trialData?._finalized) return;
+      if (recording.trialData?.trialIndex !== this.trialData?.trialIndex ||
+          recording.trialData?.experimentType !== this.trialData?.experimentType ||
+          recording.stepCount < this.stepCount) return;
+      const { synchronizedRecording, ...state } = remoteState;
+      this.currentState = structuredClone(state);
+      this.trialData = structuredClone(recording.trialData);
+      this.stepCount = recording.stepCount;
+      // Carry elapsed time, not the host's wall clock, across machines.
+      this.gameStartTime = Date.now() - recording.elapsedMs;
+      this.adoptGoalGenerationBalances(state.newGoalMetadata?.goalGenerationBalancesAfter);
+      this.adoptGoalGenerationBalance(state.distanceCondition, state.newGoalMetadata?.balanceAfter);
+      return;
+    }
     // Before merging, detect if a new goal was added remotely so we can mirror trial flags
     try {
       const localGoals = Array.isArray(this.currentState?.currentGoals) ? this.currentState.currentGoals : [];
