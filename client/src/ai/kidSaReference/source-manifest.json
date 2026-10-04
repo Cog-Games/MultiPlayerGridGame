@@ -1,0 +1,9 @@
+{
+  "source": "nsfExp1.1-nodeGameVersion/js",
+  "modelVersion": "local-fallback-2026-05-28",
+  "files": {
+    "sharedAgencyAgent.js": "b427877fbde3a36075ea4e1e7c478ec8c0b10b68b07357483ac6301b1fec3da2",
+    "rlAgent.js": "e99ee87c46159a00b87f51b2ce5e51ae7973abc62ca78f72b487331489520bb9"
+  },
+  "extraction": "sharedAgencyAgent.js whole file inside private-window factory; rlAgent.js RL_AGENT_CONFIG and getSoftmaxOptimalJointRLActionFast copied verbatim"
+}

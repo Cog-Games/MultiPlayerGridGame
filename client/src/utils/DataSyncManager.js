@@ -178,7 +178,7 @@ export class DataSyncManager {
       uploadAttempts: 0,
       nextRetryAt: 0,
       lastError: null,
-      payload,
+      payload: structuredClone(payload),
       priority: options.priority || 'normal'
     };
 
@@ -238,6 +238,8 @@ export class DataSyncManager {
       });
 
       record.uploaded = true;
+      // An opaque no-cors response confirms dispatch only. Keep the local record.
+      record.uploadStatus = 'sent_unconfirmed';
       record.uploadedAt = new Date().toISOString();
       record.updatedAt = record.uploadedAt;
       record.lastError = null;

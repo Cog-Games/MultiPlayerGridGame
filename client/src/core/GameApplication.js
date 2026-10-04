@@ -29,6 +29,7 @@ export class GameApplication {
     this.gameConfig = null; // Store game configuration from server
     this.useTimelineFlow = true; // Enable timeline flow by default
     this.currentRoomId = null; // Track active multiplayer room ID for export
+    this.lastRoomId = null;
     this.excelSnapshotFilename = null;
     this.excelSnapshotTimer = null;
     this.excelSnapshotInProgress = false;
@@ -79,7 +80,7 @@ export class GameApplication {
       const rawKidPartner = String(urlParams.get('kidPartner') || CONFIG.kids.partnerMode || 'human').toLowerCase();
       const kidPartner = rawKidPartner === 'committed' ? 'committed' : 'human';
       const kidCommittedAgent = GameConfigUtils.configureKidCommittedAgent(
-        urlParams.get('kidCommittedAgent') ||
+        kidPartner === 'human' ? 'sa-model' : urlParams.get('kidCommittedAgent') ||
         urlParams.get('kidCommittedAgentType') ||
         urlParams.get('kidAI')
       );
@@ -94,7 +95,7 @@ export class GameApplication {
     }
 
     const aiParam = urlParams.get('ai');
-    if (aiParam) {
+    if (aiParam && !CONFIG.kids.enabled) {
       // Accept (canonical): 'llm' | 'llm-tom' | 'vlm' | 'vlm-tom' | 'rl_joint' | 'rl_individual' | 'committedAgent'
       // Legacy aliases accepted: 'gpt' | 'gpt-ToM' | 'vlm-ToM' | 'ai'
       GameConfigUtils.setPlayerType(2, aiParam);
@@ -210,7 +211,7 @@ export class GameApplication {
 
     if (CONFIG.kids?.enabled) {
       const kidCommittedAgent = GameConfigUtils.configureKidCommittedAgent(
-        urlParams.get('kidCommittedAgent') ||
+        CONFIG.kids.partnerMode === 'human' ? 'sa-model' : urlParams.get('kidCommittedAgent') ||
         urlParams.get('kidCommittedAgentType') ||
         urlParams.get('kidAI')
       );
@@ -317,6 +318,7 @@ export class GameApplication {
       console.log('🚪 Kid matchmaking cancelled - leaving room', data);
       try {
         this.networkManager?.leaveRoom?.(data.reason || 'kid-matchmaking-cancelled');
+        this.lastRoomId = this.currentRoomId || this.lastRoomId;
         this.currentRoomId = null;
         this._timelineRoomJoinPromise = null;
         this._timelineRoomJoinKey = null;
@@ -535,7 +537,9 @@ export class GameApplication {
         const { reason = 'unknown', stage = 'waiting-for-partner', at = Date.now(), fallbackAIType = null } = payload || {};
         // Best-effort: ensure exact GPT model cached before recording
         try { this.experimentManager?.logCurrentAIModel?.(); } catch (_) { /* noop */ }
-        this.gameStateManager?.recordPartnerFallback?.({ reason, stage, at, fallbackAIType });
+        this.gameStateManager?.recordPartnerFallback?.({ reason, stage, at, fallbackAIType,
+          aiPlayerNumber: payload?.aiPlayerNumber || (this.playerIndex === 0 ? 2 : 1),
+          experimentType: payload?.experimentType || null });
         this.timelineManager?.recordKidMatchFallback?.(reason, fallbackAIType);
         this.recordDataCheckpoint('fallback_to_ai', {
           reason,
@@ -572,7 +576,7 @@ export class GameApplication {
       participantAgeTotalDays: timelineData.participantAgeTotalDays ?? null,
       eventId: timelineData.eventId || CONFIG?.kids?.eventId || getKidEventIdFromUrl() || null,
       stationId: timelineData.stationId || CONFIG?.kids?.stationId || getKidStationIdFromUrl() || null,
-      roomId: this.currentRoomId || null,
+      roomId: this.currentRoomId || this.lastRoomId || null,
       gameMode: currentMode,
       playerIndex: this.playerIndex,
       currentStageIndex: this.timelineManager?.currentStageIndex ?? null,
@@ -713,6 +717,16 @@ export class GameApplication {
     }, 0);
   }
 
+  downloadJsonExport(exportObj) {
+    const bytes = new TextEncoder().encode(JSON.stringify(exportObj));
+    let binary = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    }
+    const id = String(exportObj.participantId || 'participant').replace(/[^a-zA-Z0-9_-]/g, '_');
+    return this.downloadBase64File(btoa(binary), `experiment-data-${id}-${Date.now()}.json`, 'application/json');
+  }
+
   saveExperimentData(data, options = {}) {
     // Save/export experiment data in legacy-compatible shape
     try {
@@ -739,7 +753,7 @@ export class GameApplication {
       }
 
       // Determine room id (from runtime or payload)
-      const roomId = this.currentRoomId || data.roomId || null;
+      const roomId = this.currentRoomId || this.lastRoomId || data.roomId || null;
       const sessionGameMode = (this.timelineManager?.gameMode === 'human-human') ? 'human-human' : 'human-ai';
       const displayPerspective = getPlayerDisplayInfo(this.playerIndex, sessionGameMode);
 
@@ -751,6 +765,8 @@ export class GameApplication {
         timestamp: new Date().toISOString(),
         experimentOrder: data.experimentOrder || (CONFIG?.game?.experiments?.order) || [],
         allTrialsData: gsData.allTrialsData || [],
+        fallbackEvents: gsData.fallbackEvents || [],
+        dataSchemaVersion: 'kids-canonical-events-v1',
         questionnaireData: data.questionnaire || null,
         participantDob: data.participantDob || null,
         participantAgeReferenceDate: data.participantAgeReferenceDate || null,
@@ -772,7 +788,8 @@ export class GameApplication {
         kidCommittedAgentType: CONFIG?.kids?.committedAgentType || null,
         kidCommittedAgentLabel: CONFIG?.kids?.committedAgentLabel || null,
         kidCommittedAgentFitSource: CONFIG?.kids?.committedAgentFitSource || null,
-        kidCommittedAgentParameters: CONFIG?.game?.agent?.alwaysSignal || null,
+        kidCommittedAgentParameters: this.experimentManager?.alwaysSignalAgent?.getConfig?.()
+          || CONFIG?.game?.agent?.alwaysSignal || null,
         displayPerspectiveEnabled: displayPerspective.displayPerspectiveEnabled,
         displaySelfColor: displayPerspective.displaySelfColor,
         displayPartnerColor: displayPerspective.displayPartnerColor,
@@ -796,6 +813,8 @@ export class GameApplication {
         waitingDetails: data.waitingDetails || []
       };
 
+      if (!isSnapshot) this.recordDataCheckpoint('final_export', exportObj, { priority: 'high' });
+
       // Local Excel download uses the exact workbook bytes that are uploaded to Google Drive.
 
       // Try legacy-style Excel export using SheetJS if available
@@ -815,6 +834,8 @@ export class GameApplication {
             const processed = trials.map(t => {
               const o = {};
               for (const k in t) {
+                // Store the unbounded event stream in its own sheet (Excel cells cap at 32767 chars).
+                if (k === 'moveEvents') continue;
                 const v = t[k];
                 // Flatten arrays/objects for Excel cells
                 o[k] = (Array.isArray(v) || (v && typeof v === 'object')) ? JSON.stringify(v) : v;
@@ -844,6 +865,10 @@ export class GameApplication {
               o.kidCommittedAgentType = exportObj.kidCommittedAgentType || '';
               o.kidCommittedAgentLabel = exportObj.kidCommittedAgentLabel || '';
               o.kidCommittedAgentFitSource = exportObj.kidCommittedAgentFitSource || '';
+              o.age = exportObj.participantAgeTotalDays != null
+                ? exportObj.participantAgeTotalDays / 365.2425 : '';
+              o.rlAgentType = t.partnerAgentType === 'SA-model' ? 'sa-model'
+                : t.partnerAgentType === 'human' ? 'human' : t.partnerAgentType;
               // Also include explicit prolificPid for verification/debugging
               o.prolificPid = exportObj.prolificPid || '';
               // Add current player number (1 or 2) for human-human mode analysis
@@ -908,6 +933,13 @@ export class GameApplication {
 
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             XLSX.utils.book_append_sheet(wb, ws, 'ExperimentData');
+            const events = trials.flatMap(t => (t.moveEvents || []).map(event => ({
+              participantId: exportObj.participantId, roomId: exportObj.roomId || '',
+              experimentType: t.experimentType, trialIndex: t.trialIndex,
+              trialPhase: t.trialPhase, ...Object.fromEntries(Object.entries(event).map(([key, value]) =>
+                [key, Array.isArray(value) ? JSON.stringify(value) : value]))
+            })));
+            if (events.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(events), 'MoveEvents');
           } else {
             const ws = XLSX.utils.aoa_to_sheet([["No experimental data available"], [new Date().toISOString()]]);
             XLSX.utils.book_append_sheet(wb, ws, 'ExperimentData');
@@ -969,6 +1001,7 @@ export class GameApplication {
             : 0;
 
           const metaRows = [
+            ['dataSchemaVersion', exportObj.dataSchemaVersion],
             ['participantId', exportObj.participantId],
             ['childId', exportObj.childId || ''],
             ['prolificPid', exportObj.prolificPid || ''],
@@ -1174,9 +1207,11 @@ export class GameApplication {
           }
         } catch (e) {
           console.warn('⚠️ Excel export failed. Local Excel download and Google Drive upload were not completed.', e);
+          if (!isSnapshot && options.localDownload !== false) this.downloadJsonExport(exportObj);
         }
       } else {
         console.warn('⚠️ XLSX not available. Excel file could not be created for local download or Google Drive upload.');
+        if (!isSnapshot && options.localDownload !== false) this.downloadJsonExport(exportObj);
       }
     } catch (error) {
       console.error('Failed to save/export experiment data:', error);
@@ -1231,6 +1266,7 @@ export class GameApplication {
       console.log('Room joined:', data);
       if (data && data.roomId) {
         this.currentRoomId = data.roomId;
+        this.lastRoomId = data.roomId;
         // Expose room id and a deterministic session seed for client-side sync logic
         try {
           window.__ROOM_ID__ = data.roomId;

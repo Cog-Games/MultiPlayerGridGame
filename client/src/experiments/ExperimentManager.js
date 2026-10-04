@@ -3,6 +3,7 @@ import { RLAgent } from '../ai/RLAgent.js';
 import { CommittedAgent } from '../ai/CommittedAgent.js';
 import { AlwaysCommittedAgent } from '../ai/AlwaysCommittedAgent.js';
 import { AlwaysSignalAgent } from '../ai/AlwaysSignalAgent.js';
+import { KidSharedAgencyAgent } from '../ai/KidSharedAgencyAgent.js';
 import { SignalAgent } from '../ai/SignalAgent.js';
 import { TwoStageSignalAgent } from '../ai/TwoStageSignalAgent.js';
 import { LlmAgentClient } from '../ai/LlmAgentClient.js';
@@ -65,6 +66,7 @@ export class ExperimentManager {
   }
 
   createAlwaysSignalAgent() {
+    if (CONFIG.kids?.enabled) return new KidSharedAgencyAgent();
     const cfg = CONFIG?.game?.agent?.alwaysSignal || {};
     return new AlwaysSignalAgent({
       rlAgent: this.rlAgent,
@@ -157,7 +159,7 @@ export class ExperimentManager {
       // Update current trial's recorded partner agent type
       try {
         const td = this.gameStateManager?.trialData;
-        if (td) {
+        if (td && String(td.experimentType || '').includes('2P') && !td._finalized) {
           const ft = this.normalizeAgentType(fallbackType);
           if (ft === 'llm' || ft === 'llm-tom') {
             const model = CONFIG?.game?.agent?.llm?.model;
@@ -526,6 +528,15 @@ export class ExperimentManager {
       : CONFIG.game.players.player2.type;
     const aiType = this.normalizeAgentType(aiTypeRaw);
 
+    // Match the kid-SA experiment: no AI decision on a blocked human move or
+    // after the AI has arrived. Its independent tail is handled separately.
+    const kidSa = CONFIG.kids?.enabled && aiType === 'alwayssignalagent';
+    const humanMovement = DIRECTIONS[`arrow${humanDirection}`]?.movement;
+    const aiPosition = gameState[`player${this.aiPlayerNumber}`];
+    const humanPosition = gameState[`player${humanPlayerNumber}`];
+    const blockedHuman = humanMovement && GameHelpers.isValidMove(gameState.gridMatrix, humanPosition, humanMovement).every(v => v === 0);
+    const skipKidSaDecision = kidSa && (blockedHuman || GameHelpers.isGoalReached(aiPosition, gameState.currentGoals));
+
     if ((aiType === 'llm' || aiType === 'llm-tom') && isGptAllowed) {
       try {
         aiDirection = await this.llmClient.getNextAction(
@@ -569,7 +580,7 @@ export class ExperimentManager {
         console.warn('VLM agent request failed during synchronized move; falling back to RL:', e?.message || e);
       }
     }
-    if (!aiDirection) {
+    if (!aiDirection && !skipKidSaDecision) {
       const fallbackPolicy = (() => {
         const fp = CONFIG?.game?.agent?.fallbackPolicy || {};
         const key = (aiType && aiType.startsWith('vlm')) ? 'vlm' : 'llm';
@@ -589,7 +600,8 @@ export class ExperimentManager {
         aiAction = this.alwaysSignalAgent.getAIAction(
           gameState,
           this.gameStateManager.getCurrentTrialData(),
-          this.aiPlayerNumber
+          this.aiPlayerNumber,
+          humanMovement
         );
       } else if (aiType === 'signalagent' || fallbackPolicy === 'signalAgent') {
         if (!this.signalAgent) this.signalAgent = this.createSignalAgent();

@@ -1,0 +1,3761 @@
+{
+  "sourceSHA256": "b427877fbde3a36075ea4e1e7c478ec8c0b10b68b07357483ac6301b1fec3da2",
+  "cases": [
+    {
+      "seed": 13,
+      "pending": false,
+      "inputs": [
+        {
+          "state": {
+            "player1": [
+              3,
+              4
+            ],
+            "player2": [
+              5,
+              4
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 0
+          },
+          "player1Actions": [],
+          "player1Trajectory": [],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              4,
+              4
+            ],
+            "player2": [
+              5,
+              5
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 1
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ]
+          ],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              4,
+              5
+            ],
+            "player2": [
+              5,
+              6
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 2
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ]
+          ],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              5,
+              5
+            ],
+            "player2": [
+              5,
+              7
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 3
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              5,
+              6
+            ],
+            "player2": [
+              4,
+              7
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 4
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ]
+          ],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              6,
+              6
+            ],
+            "player2": [
+              4,
+              6
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 5
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              5,
+              6
+            ]
+          ],
+          "pendingAction": null
+        }
+      ],
+      "expected": [
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.5,
+            0.5
+          ],
+          "weights": [
+            0.5,
+            0.5
+          ],
+          "goalIndex": 0,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.5,
+            0.5
+          ],
+          "weights": [
+            0.9975273768433652,
+            0.0024726231566347743
+          ],
+          "goalIndex": 0,
+          "baseAction": [
+            0,
+            -1
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9989932291799144,
+            0.001006770820085637
+          ],
+          "weights": [
+            0.9999999961684638,
+            3.831536252623533e-9
+          ],
+          "goalIndex": 0,
+          "baseAction": [
+            -1,
+            0
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            -1,
+            0
+          ],
+          "posterior": [
+            0.9950023595585431,
+            0.0010027488798319876,
+            0.003994891561624999
+          ],
+          "weights": [
+            0.00741760155873777,
+            7.044814313489933e-14,
+            0.9925823984411917
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            -1,
+            0
+          ],
+          "legibilityAction": [
+            -1,
+            0
+          ]
+        },
+        {
+          "action": [
+            0,
+            -1
+          ],
+          "posterior": [
+            0.9960000910205473,
+            0.0000010115690375618143,
+            0.003998897410415244
+          ],
+          "weights": [
+            0.000018523455038755203,
+            2.749385657685305e-19,
+            0.9999814765449612
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            0,
+            -1
+          ],
+          "legibilityAction": [
+            0,
+            -1
+          ]
+        },
+        {
+          "action": [
+            -1,
+            0
+          ],
+          "posterior": [
+            0.9999909082828217,
+            0.0000010156222371684,
+            0.00000807609494111043
+          ],
+          "weights": [
+            0.0000387657857667493,
+            2.319432912118451e-16,
+            0.9999612342142331
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            -1,
+            0
+          ],
+          "legibilityAction": null
+        }
+      ]
+    },
+    {
+      "seed": 42,
+      "pending": false,
+      "inputs": [
+        {
+          "state": {
+            "player1": [
+              3,
+              4
+            ],
+            "player2": [
+              5,
+              4
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 0
+          },
+          "player1Actions": [],
+          "player1Trajectory": [],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              4,
+              4
+            ],
+            "player2": [
+              5,
+              3
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 1
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ]
+          ],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              4,
+              5
+            ],
+            "player2": [
+              5,
+              2
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 2
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ]
+          ],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              5,
+              5
+            ],
+            "player2": [
+              5,
+              1
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 3
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              5,
+              6
+            ],
+            "player2": [
+              4,
+              1
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 4
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ]
+          ],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              6,
+              6
+            ],
+            "player2": [
+              4,
+              2
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 5
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              5,
+              6
+            ]
+          ],
+          "pendingAction": null
+        }
+      ],
+      "expected": [
+        {
+          "action": [
+            0,
+            -1
+          ],
+          "posterior": [
+            0.5,
+            0.5
+          ],
+          "weights": [
+            0.5,
+            0.5
+          ],
+          "goalIndex": 0,
+          "baseAction": [
+            0,
+            -1
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            0,
+            -1
+          ],
+          "posterior": [
+            0.5,
+            0.5
+          ],
+          "weights": [
+            0.0024726231566347743,
+            0.9975273768433652
+          ],
+          "goalIndex": 1,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            0,
+            -1
+          ]
+        },
+        {
+          "action": [
+            0,
+            -1
+          ],
+          "posterior": [
+            0.9989932291799144,
+            0.0010067708200856378
+          ],
+          "weights": [
+            0.009756665624551358,
+            0.9902433343754486
+          ],
+          "goalIndex": 1,
+          "baseAction": [
+            0,
+            -1
+          ],
+          "legibilityAction": [
+            0,
+            -1
+          ]
+        },
+        {
+          "action": [
+            -1,
+            0
+          ],
+          "posterior": [
+            0.9950023595585431,
+            0.0010027488798319876,
+            0.003994891561624995
+          ],
+          "weights": [
+            0.000010533941934094954,
+            0.43131873011511107,
+            0.5686707359429549
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            -1,
+            0
+          ],
+          "legibilityAction": [
+            -1,
+            0
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9960000910205473,
+            0.0000010115690375618143,
+            0.00399889741041524
+          ],
+          "weights": [
+            4.5915768000915336e-8,
+            0.0000029381696520066646,
+            0.99999701591458
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9999909082828217,
+            0.0000010156222371684,
+            0.000008076094941110422
+          ],
+          "weights": [
+            0.000038765547592226275,
+            0.00000614393641992176,
+            0.9999550905159879
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "seed": 197,
+      "pending": false,
+      "inputs": [
+        {
+          "state": {
+            "player1": [
+              3,
+              4
+            ],
+            "player2": [
+              5,
+              4
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 0
+          },
+          "player1Actions": [],
+          "player1Trajectory": [],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              4,
+              4
+            ],
+            "player2": [
+              5,
+              3
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 1
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ]
+          ],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              4,
+              5
+            ],
+            "player2": [
+              4,
+              3
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 2
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ]
+          ],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              5,
+              5
+            ],
+            "player2": [
+              4,
+              4
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 3
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              5,
+              6
+            ],
+            "player2": [
+              4,
+              5
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 4
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ]
+          ],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              6,
+              6
+            ],
+            "player2": [
+              4,
+              6
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 5
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              5,
+              6
+            ]
+          ],
+          "pendingAction": null
+        }
+      ],
+      "expected": [
+        {
+          "action": [
+            0,
+            -1
+          ],
+          "posterior": [
+            0.5,
+            0.5
+          ],
+          "weights": [
+            0.5,
+            0.5
+          ],
+          "goalIndex": 0,
+          "baseAction": [
+            0,
+            -1
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            -1,
+            0
+          ],
+          "posterior": [
+            0.5,
+            0.5
+          ],
+          "weights": [
+            0.0024726231566347743,
+            0.9975273768433652
+          ],
+          "goalIndex": 1,
+          "baseAction": [
+            -1,
+            0
+          ],
+          "legibilityAction": [
+            0,
+            -1
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9989932291799144,
+            0.0010067708200856378
+          ],
+          "weights": [
+            0.7989910002494707,
+            0.20100899975052938
+          ],
+          "goalIndex": 0,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9950023595585431,
+            0.0010027488798319867,
+            0.003994891561624999
+          ],
+          "weights": [
+            4.59159029083131e-8,
+            2.8633197735088507e-11,
+            0.9999999540554639
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9960000910205473,
+            0.0000010115690375618126,
+            0.003998897410415244
+          ],
+          "weights": [
+            4.59159029096278e-8,
+            1.1092018340474519e-16,
+            0.9999999540840969
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            1,
+            0
+          ],
+          "posterior": [
+            0.9999909082828217,
+            0.0000010156222371683984,
+            0.00000807609494111043
+          ],
+          "weights": [
+            0.0000387657857667493,
+            2.319432912118451e-16,
+            0.9999612342142331
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            1,
+            0
+          ],
+          "legibilityAction": null
+        }
+      ]
+    },
+    {
+      "seed": 880,
+      "pending": false,
+      "inputs": [
+        {
+          "state": {
+            "player1": [
+              3,
+              4
+            ],
+            "player2": [
+              5,
+              4
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 0
+          },
+          "player1Actions": [],
+          "player1Trajectory": [],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              4,
+              4
+            ],
+            "player2": [
+              5,
+              3
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 1
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ]
+          ],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              4,
+              5
+            ],
+            "player2": [
+              6,
+              3
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 2
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ]
+          ],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              5,
+              5
+            ],
+            "player2": [
+              6,
+              4
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 3
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              5,
+              6
+            ],
+            "player2": [
+              5,
+              4
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 4
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ]
+          ],
+          "pendingAction": null
+        },
+        {
+          "state": {
+            "player1": [
+              6,
+              6
+            ],
+            "player2": [
+              5,
+              5
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 5
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              5,
+              6
+            ]
+          ],
+          "pendingAction": null
+        }
+      ],
+      "expected": [
+        {
+          "action": [
+            0,
+            -1
+          ],
+          "posterior": [
+            0.5,
+            0.5
+          ],
+          "weights": [
+            0.5,
+            0.5
+          ],
+          "goalIndex": 1,
+          "baseAction": [
+            0,
+            -1
+          ],
+          "legibilityAction": [
+            0,
+            -1
+          ]
+        },
+        {
+          "action": [
+            1,
+            0
+          ],
+          "posterior": [
+            0.5,
+            0.5
+          ],
+          "weights": [
+            0.0024726231566347743,
+            0.9975273768433652
+          ],
+          "goalIndex": 1,
+          "baseAction": [
+            1,
+            0
+          ],
+          "legibilityAction": [
+            0,
+            -1
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9989932291799144,
+            0.0010067708200856378
+          ],
+          "weights": [
+            0.7989910002494707,
+            0.20100899975052938
+          ],
+          "goalIndex": 0,
+          "baseAction": [
+            1,
+            0
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            -1,
+            0
+          ],
+          "posterior": [
+            0.9950023595585431,
+            0.0010027488798319876,
+            0.003994891561624999
+          ],
+          "weights": [
+            0.007417567247869339,
+            0.00000462560150773178,
+            0.9925778071506228
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            -1,
+            0
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9960000910205473,
+            0.0000010115690375618143,
+            0.003998897410415244
+          ],
+          "weights": [
+            0.000018523455038420808,
+            1.8052457742697737e-11,
+            0.9999814765269092
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            -1,
+            0
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9999909082828217,
+            0.0000010156222371684,
+            0.00000807609494111043
+          ],
+          "weights": [
+            0.01539900252784737,
+            3.717001237748458e-11,
+            0.9846009974349825
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            -1,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "seed": 13,
+      "pending": true,
+      "inputs": [
+        {
+          "state": {
+            "player1": [
+              3,
+              4
+            ],
+            "player2": [
+              5,
+              4
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 0
+          },
+          "player1Actions": [],
+          "player1Trajectory": [],
+          "pendingAction": [
+            1,
+            0
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              4,
+              4
+            ],
+            "player2": [
+              5,
+              5
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 1
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ]
+          ],
+          "pendingAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              4,
+              5
+            ],
+            "player2": [
+              5,
+              6
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 2
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ]
+          ],
+          "pendingAction": [
+            1,
+            0
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              5,
+              5
+            ],
+            "player2": [
+              5,
+              7
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 3
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "pendingAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              5,
+              6
+            ],
+            "player2": [
+              4,
+              7
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 4
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ]
+          ],
+          "pendingAction": [
+            1,
+            0
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              6,
+              6
+            ],
+            "player2": [
+              4,
+              6
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 5
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              5,
+              6
+            ]
+          ],
+          "pendingAction": [
+            0,
+            1
+          ]
+        }
+      ],
+      "expected": [
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.5,
+            0.5
+          ],
+          "weights": [
+            0.5,
+            0.5
+          ],
+          "goalIndex": 0,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9989932291799144,
+            0.001006770820085637
+          ],
+          "weights": [
+            0.9993767877497121,
+            0.0006232122502879991
+          ],
+          "goalIndex": 0,
+          "baseAction": [
+            0,
+            -1
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9989932291799144,
+            0.001006770820085637
+          ],
+          "weights": [
+            0.9999999961684638,
+            3.831536252623533e-9
+          ],
+          "goalIndex": 0,
+          "baseAction": [
+            -1,
+            0
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            -1,
+            0
+          ],
+          "posterior": [
+            0.9960000910205473,
+            0.0000010115690375618143,
+            0.003998897410415244
+          ],
+          "weights": [
+            0.007417601558737962,
+            4.441647203421243e-14,
+            0.9925823984412177
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            -1,
+            0
+          ],
+          "legibilityAction": [
+            -1,
+            0
+          ]
+        },
+        {
+          "action": [
+            0,
+            -1
+          ],
+          "posterior": [
+            0.9999909082828217,
+            0.0000010156222371684,
+            0.00000807609494111043
+          ],
+          "weights": [
+            0.00003876578576674931,
+            5.749299379545202e-19,
+            0.9999612342142333
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            0,
+            -1
+          ],
+          "legibilityAction": [
+            0,
+            -1
+          ]
+        },
+        {
+          "action": [
+            -1,
+            0
+          ],
+          "posterior": [
+            0.9999999827310828,
+            1.0235385800840135e-9,
+            1.624537857897977e-8
+          ],
+          "weights": [
+            0.00003876585612002961,
+            2.3194329119552647e-16,
+            0.9999612341438797
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            -1,
+            0
+          ],
+          "legibilityAction": null
+        }
+      ]
+    },
+    {
+      "seed": 42,
+      "pending": true,
+      "inputs": [
+        {
+          "state": {
+            "player1": [
+              3,
+              4
+            ],
+            "player2": [
+              5,
+              4
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 0
+          },
+          "player1Actions": [],
+          "player1Trajectory": [],
+          "pendingAction": [
+            1,
+            0
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              4,
+              4
+            ],
+            "player2": [
+              5,
+              3
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 1
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ]
+          ],
+          "pendingAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              4,
+              5
+            ],
+            "player2": [
+              5,
+              2
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 2
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ]
+          ],
+          "pendingAction": [
+            1,
+            0
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              5,
+              5
+            ],
+            "player2": [
+              5,
+              1
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 3
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "pendingAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              5,
+              6
+            ],
+            "player2": [
+              4,
+              1
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 4
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ]
+          ],
+          "pendingAction": [
+            1,
+            0
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              6,
+              6
+            ],
+            "player2": [
+              4,
+              2
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 5
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              5,
+              6
+            ]
+          ],
+          "pendingAction": [
+            0,
+            1
+          ]
+        }
+      ],
+      "expected": [
+        {
+          "action": [
+            0,
+            -1
+          ],
+          "posterior": [
+            0.5,
+            0.5
+          ],
+          "weights": [
+            0.5,
+            0.5
+          ],
+          "goalIndex": 0,
+          "baseAction": [
+            0,
+            -1
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            0,
+            -1
+          ],
+          "posterior": [
+            0.9989932291799144,
+            0.0010067708200856378
+          ],
+          "weights": [
+            0.009756665624551358,
+            0.9902433343754486
+          ],
+          "goalIndex": 1,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            0,
+            -1
+          ]
+        },
+        {
+          "action": [
+            0,
+            -1
+          ],
+          "posterior": [
+            0.9989932291799144,
+            0.0010067708200856378
+          ],
+          "weights": [
+            0.009756665624551358,
+            0.9902433343754486
+          ],
+          "goalIndex": 1,
+          "baseAction": [
+            0,
+            -1
+          ],
+          "legibilityAction": [
+            0,
+            -1
+          ]
+        },
+        {
+          "action": [
+            -1,
+            0
+          ],
+          "posterior": [
+            0.9960000910205473,
+            0.0000010115690375618143,
+            0.00399889741041524
+          ],
+          "weights": [
+            0.000012531141428364402,
+            0.32349869923583613,
+            0.6764887696227355
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            -1,
+            0
+          ],
+          "legibilityAction": [
+            -1,
+            0
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9999909082828217,
+            0.0000010156222371684,
+            0.000008076094941110422
+          ],
+          "weights": [
+            9.609390137292039e-8,
+            0.00000614417401179701,
+            0.9999937597320867
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9999999827310828,
+            1.0235385800840135e-9,
+            1.6245378578979758e-8
+          ],
+          "weights": [
+            0.00003876561794507437,
+            0.0000061439364194895,
+            0.9999550904456354
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "seed": 197,
+      "pending": true,
+      "inputs": [
+        {
+          "state": {
+            "player1": [
+              3,
+              4
+            ],
+            "player2": [
+              5,
+              4
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 0
+          },
+          "player1Actions": [],
+          "player1Trajectory": [],
+          "pendingAction": [
+            1,
+            0
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              4,
+              4
+            ],
+            "player2": [
+              5,
+              3
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 1
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ]
+          ],
+          "pendingAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              4,
+              5
+            ],
+            "player2": [
+              4,
+              3
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 2
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ]
+          ],
+          "pendingAction": [
+            1,
+            0
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              5,
+              5
+            ],
+            "player2": [
+              4,
+              4
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 3
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "pendingAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              5,
+              6
+            ],
+            "player2": [
+              4,
+              5
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 4
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ]
+          ],
+          "pendingAction": [
+            1,
+            0
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              6,
+              6
+            ],
+            "player2": [
+              4,
+              6
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 5
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              5,
+              6
+            ]
+          ],
+          "pendingAction": [
+            0,
+            1
+          ]
+        }
+      ],
+      "expected": [
+        {
+          "action": [
+            0,
+            -1
+          ],
+          "posterior": [
+            0.5,
+            0.5
+          ],
+          "weights": [
+            0.5,
+            0.5
+          ],
+          "goalIndex": 0,
+          "baseAction": [
+            0,
+            -1
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            -1,
+            0
+          ],
+          "posterior": [
+            0.9989932291799144,
+            0.0010067708200856378
+          ],
+          "weights": [
+            0.009756665624551358,
+            0.9902433343754486
+          ],
+          "goalIndex": 1,
+          "baseAction": [
+            -1,
+            0
+          ],
+          "legibilityAction": [
+            0,
+            -1
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9989932291799144,
+            0.0010067708200856378
+          ],
+          "weights": [
+            0.7989910002494707,
+            0.20100899975052938
+          ],
+          "goalIndex": 0,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9960000910205473,
+            0.0000010115690375618126,
+            0.003998897410415244
+          ],
+          "weights": [
+            4.59159029087989e-8,
+            1.805279131387106e-11,
+            0.9999999540660442
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9999909082828217,
+            0.0000010156222371683984,
+            0.00000807609494111043
+          ],
+          "weights": [
+            9.609449179419954e-8,
+            2.3195226073502015e-16,
+            0.999999903905508
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            1,
+            0
+          ],
+          "posterior": [
+            0.9999999827310828,
+            1.0235385800840118e-9,
+            1.624537857897977e-8
+          ],
+          "weights": [
+            0.00003876585612002961,
+            2.3194329119552647e-16,
+            0.9999612341438797
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            1,
+            0
+          ],
+          "legibilityAction": null
+        }
+      ]
+    },
+    {
+      "seed": 880,
+      "pending": true,
+      "inputs": [
+        {
+          "state": {
+            "player1": [
+              3,
+              4
+            ],
+            "player2": [
+              5,
+              4
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 0
+          },
+          "player1Actions": [],
+          "player1Trajectory": [],
+          "pendingAction": [
+            1,
+            0
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              4,
+              4
+            ],
+            "player2": [
+              5,
+              3
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 1
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ]
+          ],
+          "pendingAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              4,
+              5
+            ],
+            "player2": [
+              6,
+              3
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 2
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ]
+          ],
+          "pendingAction": [
+            1,
+            0
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              5,
+              5
+            ],
+            "player2": [
+              6,
+              4
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 3
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "pendingAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              5,
+              6
+            ],
+            "player2": [
+              5,
+              4
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 4
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ]
+          ],
+          "pendingAction": [
+            1,
+            0
+          ]
+        },
+        {
+          "state": {
+            "player1": [
+              6,
+              6
+            ],
+            "player2": [
+              5,
+              5
+            ],
+            "currentGoals": [
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                1
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "currentExperiment": "2P3G",
+            "currentTrial": 0,
+            "stepCount": 5
+          },
+          "player1Actions": [
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "player1Trajectory": [
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              5,
+              6
+            ]
+          ],
+          "pendingAction": [
+            0,
+            1
+          ]
+        }
+      ],
+      "expected": [
+        {
+          "action": [
+            0,
+            -1
+          ],
+          "posterior": [
+            0.5,
+            0.5
+          ],
+          "weights": [
+            0.5,
+            0.5
+          ],
+          "goalIndex": 1,
+          "baseAction": [
+            0,
+            -1
+          ],
+          "legibilityAction": [
+            0,
+            -1
+          ]
+        },
+        {
+          "action": [
+            1,
+            0
+          ],
+          "posterior": [
+            0.9989932291799144,
+            0.0010067708200856378
+          ],
+          "weights": [
+            0.009756665624551358,
+            0.9902433343754486
+          ],
+          "goalIndex": 1,
+          "baseAction": [
+            1,
+            0
+          ],
+          "legibilityAction": [
+            0,
+            -1
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9989932291799144,
+            0.0010067708200856378
+          ],
+          "weights": [
+            0.7989910002494707,
+            0.20100899975052938
+          ],
+          "goalIndex": 0,
+          "baseAction": [
+            1,
+            0
+          ],
+          "legibilityAction": [
+            0,
+            1
+          ]
+        },
+        {
+          "action": [
+            -1,
+            0
+          ],
+          "posterior": [
+            0.9960000910205473,
+            0.0000010115690375618143,
+            0.003998897410415244
+          ],
+          "weights": [
+            0.00741757992622552,
+            0.000002916375677683723,
+            0.9925795036980968
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            -1,
+            0
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9999909082828217,
+            0.0000010156222371684,
+            0.00000807609494111043
+          ],
+          "weights": [
+            0.0000387657857652859,
+            3.7749881980796086e-11,
+            0.9999612341764849
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            -1,
+            0
+          ]
+        },
+        {
+          "action": [
+            0,
+            1
+          ],
+          "posterior": [
+            0.9999999827310828,
+            1.0235385800840126e-9,
+            1.624537857897977e-8
+          ],
+          "weights": [
+            0.015399030045123767,
+            3.717001133867038e-11,
+            0.9846009699177062
+          ],
+          "goalIndex": 2,
+          "baseAction": [
+            0,
+            1
+          ],
+          "legibilityAction": [
+            -1,
+            0
+          ]
+        }
+      ]
+    }
+  ]
+}

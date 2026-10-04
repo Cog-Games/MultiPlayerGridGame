@@ -101,6 +101,8 @@ export class GameStateManager {
       humanPlayerIndex: null,
       aiPlayerIndex: null
     };
+    this.emptyTrialData = structuredClone(this.trialData);
+    this.partnerFallbackState = null;
 
     this.experimentData = {
       allTrialsData: [],
@@ -130,10 +132,20 @@ export class GameStateManager {
   }
 
   initializeTrial(trialIndex, experimentType, design) {
+    // A fresh object prevents model histories and nested metadata leaking across trials.
+    this.trialData = structuredClone(this.emptyTrialData);
+    this.trialData.dataSchemaVersion = 'kids-canonical-events-v1';
+    this.trialData.trajectoryConvention = 'pre-action';
+    this.trialData.rtConvention = 'elapsed-ms-from-trial-start';
+    this.trialData.moveEvents = [];
+    this.trialData.partnerFallbackEvents = [];
+    this.trialData.assignedPartnerMode = CONFIG.kids?.partnerMode || null;
     this.trialData.trialIndex = trialIndex;
     this.trialData.experimentType = experimentType;
     this.trialData.trialPhase = null;
     this.trialData.partnerAgentType = this.getPartnerAgentType(experimentType);
+    this.trialData.partnerAgentTypeAtTrialStart = this.trialData.partnerAgentType;
+    this.trialData.mixedPartnerTrial = false;
     this.trialData.trialStartTime = Date.now();
     this.gameStartTime = Date.now();
     this.stepCount = 0;
@@ -213,6 +225,10 @@ export class GameStateManager {
       }
     } catch (_) { /* noop */ }
 
+    if (String(experimentType).includes('2P') && this.partnerFallbackState) {
+      this.applyPartnerFallback(this.partnerFallbackState);
+    }
+
     // Add distance condition for trials (balanced sequence)
     if (experimentType === '2P3G') {
       const cond = this.getRandomDistanceConditionFor2P3G(trialIndex);
@@ -279,7 +295,8 @@ export class GameStateManager {
   }
 
   // Record a human→AI fallback event for the current run (and current trial if any)
-  recordPartnerFallback({ reason = 'disconnect', stage = 'in-game', at = Date.now(), fallbackAIType = null } = {}) {
+  recordPartnerFallback({ reason = 'disconnect', stage = 'in-game', at = Date.now(), fallbackAIType = null,
+    aiPlayerNumber = null, experimentType = null } = {}) {
     try {
       // Determine actual AI type being used as fallback
       let aiTypeDesc = 'unknown';
@@ -332,19 +349,26 @@ export class GameStateManager {
         }
       }
 
-      // Tag current trial if active
-      if (this.trialData) {
-        this.trialData.partnerFallbackOccurred = true;
-        this.trialData.partnerFallbackReason = reason;
-        this.trialData.partnerFallbackStage = stage;
-        this.trialData.partnerFallbackTime = at;
-        this.trialData.partnerFallbackAIType = aiTypeDesc;
+      const aiIndex = aiPlayerNumber === 1 || aiPlayerNumber === 2 ? aiPlayerNumber - 1
+        : CONFIG.game.players.player1.type !== 'human' ? 0 : 1;
+      const active = String(this.currentState?.experimentType || '').includes('2P') && !this.trialData?._finalized;
+      const evt = { reason, stage, at, aiType: aiTypeDesc, aiPlayerIndex: aiIndex,
+        trialIndex: active ? this.currentState.trialIndex : null,
+        experimentType: experimentType || (active ? this.currentState.experimentType : null),
+        step: active ? this.stepCount : 0,
+        eventIndex: active ? (this.trialData.moveEvents?.length || 0) : 0 };
+      this.partnerFallbackState = evt;
+      // Matching can end during a warmup; do not relabel that solo trial.
+      if (active) {
+        if (this.trialData.moveEvents?.some(event => event.playerIndex === aiIndex && event.actorType === 'human')) {
+          this.trialData.mixedPartnerTrial = true;
+        }
+        this.applyPartnerFallback(evt);
+        this.trialData.partnerFallbackEvents ||= [];
+        this.trialData.partnerFallbackEvents.push(structuredClone(evt));
       }
       // Push experiment-level event
       if (this.experimentData) {
-        const trialIdx = (this.currentState && Number.isInteger(this.currentState.trialIndex)) ? this.currentState.trialIndex : -1;
-        const experimentType = (this.currentState && this.currentState.experimentType) || null;
-        const evt = { reason, stage, at, trialIndex: trialIdx, experimentType, aiType: aiTypeDesc };
         if (Array.isArray(this.experimentData.fallbackEvents)) {
           this.experimentData.fallbackEvents.push(evt);
         } else {
@@ -352,6 +376,17 @@ export class GameStateManager {
         }
       }
     } catch (_) { /* noop */ }
+  }
+
+  applyPartnerFallback(event) {
+    Object.assign(this.trialData, {
+      partnerFallbackOccurred: true, partnerFallbackReason: event.reason,
+      partnerFallbackStage: event.stage, partnerFallbackTime: event.at,
+      partnerFallbackAIType: event.aiType, partnerAgentType: event.aiType,
+      partnerFallbackFirstStep: event.trialIndex === this.trialData.trialIndex &&
+        event.experimentType === this.trialData.experimentType ? event.step : 0,
+      humanPlayerIndex: 1 - event.aiPlayerIndex, aiPlayerIndex: event.aiPlayerIndex
+    });
   }
 
   // Record a GPT API error event during this trial
@@ -583,6 +618,10 @@ export class GameStateManager {
     this.trialData.newGoalPresented = true;
     this.trialData.newGoalPresentedTime = Number.isFinite(extra.presentedAtRound) ? extra.presentedAtRound : this.stepCount;
     this.trialData.newGoalPosition = position ? [...position] : null;
+    this.trialData.newGoalPresentedAtMs = Date.now() - this.gameStartTime;
+    this.trialData.newGoalPresentedAfterEventIndex = this.trialData.moveEvents?.length || 0;
+    this.trialData.player1PositionAtNewGoal = this.currentState.player1?.slice() || null;
+    this.trialData.player2PositionAtNewGoal = this.currentState.player2?.slice() || null;
     const cond = conditionType || this.trialData.newGoalConditionType || this.trialData.distanceCondition || null;
     if (this.trialData.experimentType === '2P3G') {
       this.trialData.newGoalScheduledCondition = scheduled;
@@ -671,8 +710,8 @@ export class GameStateManager {
       }
 
       // Record the move
-      // Ensure gameStartTime is valid (not 0 or very old timestamp)
-      if (this.gameStartTime === 0 || (Date.now() - this.gameStartTime) > 60000) {
+      // Initialize a missing clock; long trials must retain their original time origin.
+      if (this.gameStartTime === 0) {
         console.warn('Invalid gameStartTime detected, resetting to current time');
         this.gameStartTime = Date.now();
       }
@@ -850,6 +889,16 @@ export class GameStateManager {
 
   recordPlayerMove(playerIndex, action, reactionTime, currentPlayerIndex = null) {
     const player = playerIndex === 1 ? this.currentState.player1 : this.currentState.player2;
+    const actualAction = GameHelpers.isValidMove(this.currentState.gridMatrix, player, action);
+    this.trialData.moveEvents ||= [];
+    this.trialData.moveEvents.push({
+      eventIndex: this.trialData.moveEvents.length, round: this.stepCount + 1,
+      playerIndex: playerIndex - 1, timeMs: reactionTime,
+      before: [...player], action: [...action], actualAction: [...actualAction],
+      after: GameHelpers.transition(player, actualAction),
+      availableGoals: this.currentState.currentGoals.map(goal => [...goal]),
+      actorType: CONFIG.game.players[`player${playerIndex}`].type
+    });
 
     if (playerIndex === 1) {
       this.trialData.player1Actions.push(action);
@@ -1018,6 +1067,10 @@ export class GameStateManager {
     this.trialData.completed = !!success;
     this.trialData.endTime = Date.now();
     this.trialData.totalSteps = this.getDerivedTotalSteps();
+    this.trialData.stepCount = this.stepCount;
+    this.trialData.player1FinalPosition = this.currentState.player1?.slice() || null;
+    this.trialData.player2FinalPosition = this.currentState.player2?.slice() || null;
+    this.trialData.finalGoalPositions = this.currentState.currentGoals.map(goal => [...goal]);
 
     // Normalize partnerAgentType just before saving to ensure it reflects current AI model/mode
     try {
@@ -1075,7 +1128,7 @@ export class GameStateManager {
     this.fixMissingGoalValues();
 
     // Add to experiment data
-    this.experimentData.allTrialsData.push({ ...this.trialData });
+    this.experimentData.allTrialsData.push(structuredClone(this.trialData));
 
     // Mark as finalized to prevent duplicates
     this.trialData._finalized = true;
