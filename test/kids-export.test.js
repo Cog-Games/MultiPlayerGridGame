@@ -166,9 +166,15 @@ test('real SA decisions persist across manager moves and into the finalized expo
   const reset = manager.alwaysSignalAgent.reset.bind(manager.alwaysSignalAgent);
   manager.alwaysSignalAgent.reset = () => { resets++; reset(); };
   await manager.handleSynchronizedMove('down');
+  await manager.handleSynchronizedMove('down'); // throttled input must not sample again
+  await manager.makeAIMove(); // nor an independent timer in the same gate window
+  assert.equal(gsm.trialData.alwaysSignalAgentPlayer1SampledJointGoalHistory.length, 1);
   gsm.isMoving = false;
   await manager.handleSynchronizedMove('down');
   assert.equal(resets, 1);
+  assert.equal(gsm.trialData.humanInputEvents.length, 2);
+  assert(gsm.trialData.humanInputEvents.every(e => e.appliedTimeMs >= e.inputTimeMs));
+  assert.equal(gsm.trialData.sharedAgencyDecisionTimings.length, 2);
   assert.equal(gsm.trialData.sharedAgencyModelVersion, 'local-fallback-2026-05-28');
   assert.equal(gsm.trialData.alwaysSignalAgentPlayer1SampledJointGoalHistory.length, 2);
   gsm.finalizeTrial(false);

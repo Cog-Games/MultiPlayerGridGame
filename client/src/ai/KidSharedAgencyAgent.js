@@ -1,5 +1,5 @@
 import { createSharedAgencyCore } from './kidSaReference/sharedAgencyCore.js';
-import { getSoftmaxOptimalJointRLActionFast } from './kidSaReference/jointRLFast.js';
+import { getSoftmaxOptimalJointRLActionFast } from './kidSaPlanner.js';
 import { GameHelpers } from '../utils/GameHelpers.js';
 
 // Adapt canonical player numbers to the reference experiment's human=P1, AI=P2.
@@ -17,6 +17,7 @@ export class KidSharedAgencyAgent {
   getConfig() { return this.core.getConfig(); }
 
   getAIAction(gameState, trialData, aiPlayerNumber = 2, pendingHumanAction = null) {
+    const decisionStarted = performance.now();
     if (this.lastTrialData !== trialData) {
       this.reset();
       this.lastTrialData = trialData;
@@ -57,6 +58,10 @@ export class KidSharedAgencyAgent {
     }
     trialData.sharedAgencyModelAdapterVersion = 'canonical-player-adapter-v1';
     trialData.sharedAgencyAIPlayerIndex = aiPlayerNumber - 1;
+    trialData.sharedAgencyPlannerImplementation = 'cached-transitions-v1';
+    const timing = trialData.sharedAgencyDecisionTimings || (trialData.sharedAgencyDecisionTimings = []);
+    timing.push({ eventIndexBefore: trialData.moveEvents?.length || 0,
+      planningMs: performance.now() - decisionStarted });
     return action;
   }
 }

@@ -277,8 +277,8 @@ export const CONFIG = {
     distanceConstraint: {
       closerThreshold: 2,
       fartherThreshold: 2,
-      equalTolerance: false,
-      allowEqualDistance: false
+      equalTolerance: 0,
+      allowEqualDistance: true
     },
     goalConstraints: {
       minDistanceFromHuman: 1,

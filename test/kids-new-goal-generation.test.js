@@ -14,6 +14,34 @@ const CLOSER = 'closer_to_player1';
 const generator = (p1,p2,goals,condition,balance={}) => G.generateNewGoal(p2,p1,goals,0,condition,
   {allowTolerance:true,balance});
 
+test('solo equal trials are actually equal at the recorded reveal position', () => {
+  // Both equal-labelled trials in the uploaded Csz001 session violated equality.
+  for (const [position, goals, intended] of [
+    [[6,12], [[1,8],[13,8]], 0], [[0,6], [[6,2],[6,12]], 0],
+    [[8,1], [[2,7],[12,7]], 1]
+  ]) {
+    const result = G.checkNewGoalPresentation1P2G({player1:position,currentGoals:goals},
+      {player1CurrentGoal:[intended]}, 'equal_to_player1');
+    assert(result);
+    assert.equal(result.distanceToPlayer1,result.oldDistanceToPlayer1);
+    assert.equal(result.generationReferenceGoal,intended);
+    assert.equal(result.geometryRuleVersion,'solo-intended-goal-strict-v1');
+  }
+});
+
+test('solo closer/farther use the expressed goal and never silently relax the condition', () => {
+  for (const condition of ['closer_to_player1','farther_to_player1']) {
+    const result = G.checkNewGoalPresentation1P2G({player1:[8,1],currentGoals:[[2,7],[12,7]]},
+      {player1CurrentGoal:[1]}, condition);
+    assert(result);
+    const delta=result.distanceToPlayer1-result.oldDistanceToPlayer1;
+    assert(condition==='closer_to_player1' ? delta<=-2 : delta>=2);
+  }
+  assert.equal(G.generateNewGoal1P2G([0,0],[0,1],[[0,1],[14,14]],'closer_to_player1'),null);
+  assert.equal(G.checkNewGoalPresentation1P2G({player1:[0,1],currentGoals:[[0,1],[14,14]]},
+    {player1CurrentGoal:[0]}, 'equal_to_player1'),null);
+});
+
 function fixture(condition=EQUAL) {
   const gsm = new GameStateManager();
   gsm.currentState = { experimentType:'2P3G', trialIndex:0, player1:[0,0], player2:[2,0],

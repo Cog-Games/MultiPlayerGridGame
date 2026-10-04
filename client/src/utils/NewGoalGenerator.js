@@ -118,26 +118,18 @@ export class NewGoalGenerator {
       }
     }
 
-    if (validPositions.length === 0) {
-      // Relaxed criteria: only enforce occupancy and basic distance from human
-      for (let row = 0; row < matrixSize; row++) {
-        for (let col = 0; col < matrixSize; col++) {
-          if (isOccupied(row, col)) continue;
-          const candidate = [row, col];
-          const dHuman = GameHelpers.calculateGridDistance(player1Pos, candidate);
-          if (dHuman >= 1 && dHuman <= Math.max(10, maxDistFromHuman)) {
-            validPositions.push(candidate);
-          }
-        }
-      }
-    }
-
+    // Never attach a scheduled condition to a position that violates it.
+    // The controller can try again after the participant's next move.
     if (validPositions.length === 0) return null;
     const selected = validPositions[Math.floor(Math.random() * validPositions.length)];
     return {
       position: selected,
       conditionType: distanceCondition,
-      distanceToPlayer1: GameHelpers.calculateGridDistance(player1Pos, selected)
+      distanceToPlayer1: GameHelpers.calculateGridDistance(player1Pos, selected),
+      oldDistanceToPlayer1: player1DistanceToFirst,
+      geometryRuleVersion: 'solo-intended-goal-strict-v1',
+      generationMode: 'strict',
+      strictCandidateCount: validPositions.length
     };
   }
 
@@ -156,16 +148,17 @@ export class NewGoalGenerator {
 
     const history = trialData.player1CurrentGoal;
     const latest = Array.isArray(history) && history.length > 0 ? history[history.length - 1] : null;
-    if (latest === null) return null;
+    if (!Number.isInteger(latest) || latest < 0 || latest >= gameState.currentGoals.length) return null;
+    if (gameState.currentGoals.some(g => g[0] === gameState.player1[0] && g[1] === gameState.player1[1])) return null;
 
-    const firstGoal = gameState.currentGoals[0];
+    // The solo baseline compares the new goal with the goal just expressed.
+    const firstGoal = gameState.currentGoals[latest];
     const result = this.generateNewGoal1P2G(gameState.player1, firstGoal, gameState.currentGoals, distanceCondition);
     if (!result) return null;
 
     return {
-      position: result.position,
-      conditionType: result.conditionType,
-      distanceToPlayer1: result.distanceToPlayer1
+      ...result,
+      generationReferenceGoal: latest
     };
   }
 

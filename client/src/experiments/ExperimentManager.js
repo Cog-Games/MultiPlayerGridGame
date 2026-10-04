@@ -2,6 +2,7 @@ import { CONFIG, GAME_OBJECTS, GameConfigUtils, DIRECTIONS } from '../config/gam
 import { RLAgent } from '../ai/RLAgent.js';
 import { CommittedAgent } from '../ai/CommittedAgent.js';
 import { AlwaysCommittedAgent } from '../ai/AlwaysCommittedAgent.js';
+import { prepareKidSaGoals } from '../ai/kidSaPlanner.js';
 import { AlwaysSignalAgent } from '../ai/AlwaysSignalAgent.js';
 import { KidSharedAgencyAgent } from '../ai/KidSharedAgencyAgent.js';
 import { SignalAgent } from '../ai/SignalAgent.js';
@@ -223,6 +224,12 @@ export class ExperimentManager {
     }
   }
 
+  prepareKidSaTrial(design, experimentType) {
+    if (!CONFIG.kids?.enabled || !String(experimentType).includes('2P')) return;
+    if (![1, 2].some(p => CONFIG.game.players[`player${p}`].type === 'alwaysSignalAgent')) return;
+    prepareKidSaGoals([design.target1, design.target2].filter(g => Array.isArray(g)));
+  }
+
   async startExperiment(experimentType) {
     // Single experiment wrapper
     await this.startExperimentSequence([experimentType]);
@@ -310,6 +317,7 @@ export class ExperimentManager {
       }
     } catch (_) { /* noop */ }
 
+    this.prepareKidSaTrial(design, experimentType);
     // Initialize trial
     this.gameStateManager.initializeTrial(this.currentTrialIndex, experimentType, design);
 
@@ -490,6 +498,10 @@ export class ExperimentManager {
 
   // Handle synchronized move: apply human + AI/GPT moves together, then redraw once
   async handleSynchronizedMove(humanDirection) {
+    // Do not advance SA posterior/RNG for input that the movement gate rejects.
+    if (this.gameStateManager.isMoving || this.gameStateManager.trialData?._finalized) return;
+    const inputTimeMs = Date.now() - this.gameStateManager.gameStartTime;
+    const eventIndexBefore = this.gameStateManager.trialData?.moveEvents?.length || 0;
     // Active when either player is AI/GPT
     const p1Type = CONFIG.game.players.player1.type;
     const p2Type = CONFIG.game.players.player2.type;
@@ -673,6 +685,17 @@ export class ExperimentManager {
       syncResult = this.gameStateManager.processSynchronizedMovesMapped(2, humanDirection, aiDirection);
     }
 
+    if (kidSa && syncResult?.success) {
+      const td = this.gameStateManager.trialData;
+      const humanEvent = td.moveEvents.slice(eventIndexBefore).find(e => e.playerIndex === humanPlayerNumber - 1);
+      if (humanEvent) {
+        const inputs = td.humanInputEvents || (td.humanInputEvents = []);
+        inputs.push({ eventIndex: humanEvent.eventIndex, playerIndex: humanPlayerNumber - 1,
+          inputTimeMs, appliedTimeMs: humanEvent.timeMs, direction: humanDirection,
+          inputToAppliedMs: humanEvent.timeMs - inputTimeMs });
+      }
+    }
+
     // Redraw once with both positions updated
     this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
 
@@ -735,6 +758,7 @@ export class ExperimentManager {
   }
 
   async makeAIMove() {
+    if (this.gameStateManager.isMoving || this.gameStateManager.trialData?._finalized) return;
     const gameState = this.gameStateManager.getCurrentState();
     const aiPos = (this.aiPlayerNumber === 1) ? gameState.player1 : gameState.player2;
     if (!aiPos || !gameState.currentGoals) return;
@@ -942,6 +966,7 @@ export class ExperimentManager {
       const trial = this.gameStateManager.trialData;
 
       if (!state || !trial) return;
+      if (trial._finalized) return;
       if (trial.newGoalPresented) return;
       if (state.experimentType !== '1P2G') return;
 
@@ -961,7 +986,7 @@ export class ExperimentManager {
 
       // Apply changes to internal state via GameStateManager APIs
       this.gameStateManager.addGoal(result.position);
-      this.gameStateManager.markNewGoalPresented(result.position, distanceCondition, {});
+      this.gameStateManager.markNewGoalPresented(result.position, distanceCondition, result);
 
       // Redraw
       this.uiManager.updateGameDisplay(this.gameStateManager.getCurrentState());
@@ -1357,6 +1382,7 @@ export class ExperimentManager {
         design = GameHelpers.createFallbackDesign(experimentType);
       }
 
+      this.prepareKidSaTrial(design, experimentType);
       // Initialize trial
       this.gameStateManager.initializeTrial(trialIndex, experimentType, design);
       if (trialPhase && this.gameStateManager.trialData) {

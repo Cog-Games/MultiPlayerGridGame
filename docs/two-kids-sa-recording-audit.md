@@ -1,6 +1,6 @@
 # Two kids play：SA fallback 与分析数据检查（2026-10-04）
 
-修改位于 `kids` 工作目录；已推送修复，线上 Render 部署状态仍待登录确认。没有修改既有参与者数据；浏览器验证产生的记录均以 `DEPLOY-TEST-` 命名且 `isTestSession=true`，分析时应排除。
+修改位于 `kids` 工作目录；线上 Render 部署状态仍待登录确认。没有修改既有参与者数据；浏览器短程验证记录均为 `isTestSession=true`，包括 `DEPLOY-TEST-` 和自动生成的测试 ID，分析时应排除。
 
 ## SA 的对照依据
 
@@ -81,3 +81,25 @@ npm run build
 较早测试 A/C/E 用于定位问题，不能视为最终版本验证数据；所有 DEPLOY-TEST 文件均为合成测试，应从研究样本排除。没有删除这些审计记录。
 
 目前验证的是 localhost 生产构建，不等于线上 Render 已部署。Render 登录停留在 GitHub 账号选择，自动审批拒绝使用个人账号（仓库属于 Cog-Games），等待用户确认部署账号或提供线上地址。现有 Apps Script 使用 `no-cors`，正常客户端仍将状态标为 `sent_unconfirmed` 并保留本地 checkpoint；本次另通过 Drive 读回独立确认了落盘。
+
+## 首步/新目标卡顿修复
+
+原 fast planner 在首次遇到一个目标时同步构建 50,625 状态、810,000 Q 值，阻塞浏览器主线程。SA 按一个抽样目标调用 planner；首次抽到新目标会再次触发计算。
+
+`kidSaPlanner.js` 预先计算不变的转移和奖励、只排序一次状态顺序，保留 Float32 Q/V、Gauss-Seidel 更新顺序、停止条件和抽样次序。参考文件与 SA 决策核心不改动。四组角落、内部与双目标测试对全部 Q 值做完全相等比较；原固定随机种子的模型行为测试也通过。
+
+本机 Node 单目标冷启动测量为 398–1371 ms → 21–59 ms；不是所有浏览器/设备的性能保证。开局两个目标在 trial 时钟开始前预热，不消耗随机数。新目标第一次采样仍同步计算，但使用优化实现。
+
+移动门关闭时提前拒绝输入，避免先改变模型后验/随机数、再拒绝动作。新增 `sharedAgencyDecisionTimings` 与 `humanInputEvents`，分别记录规划耗时，以及按键处理开始到动作应用的延迟。既有 RT 仍保持原含义；不能用新字段倒推旧文件的纯按键时间。
+
+优化后的本地 Chrome 2P3G 短程触发新目标并协作成功，导出重建通过：26 个事件、13 条实际 AI 动作、13 条模型历史；本轮规划耗时 0.1–0.3 ms，输入处理到应用 0–1 ms。本轮 AI 始终选择已预热目标，因此新目标冷启动耗时由上述独立基准验证。最终代码通过 39 项测试、生产构建和 Excel/JSON 分析接口验证。
+
+## 单人基线条件与论文覆盖
+
+发现 1P2G 旧配置禁止等距生成，却仍分配等距 trial；没有候选位置时旧实现随机放目标并保留原条件标签。新实现启用精确等距、严格保持 closer/farther 条件，无候选则等待后续位置，且以刚表达的目标为参照。保存参照目标、原/新距离、候选数与 `solo-intended-goal-strict-v1` 版本。旧数据不改写；分析必须从出现时的坐标重新计算距离，不应把旧标签当成几何事实，也不能认为每个参与者必然有有效等距单人 trial。
+
+核对依据为 `AgencyGap_Main_Intro_Results_1001.docx`、`AgencyGap_SI_Appendix_1001.docx` 与 collabAIdata 当前源码。canonical 事件可支持成功率、效率、目标保持/改变、行动可读性、信号响应、冲突过程及单人基线。实际调用了 `score`、原 notebook 的无噪声 BToM 策略、`actor_first_moves`、`initiation`、`process_actor`、`signal_uptake`、`solo_scores`。
+
+接入正式分析仍需在加载入口选用新 adapter，关联 session 的伙伴条件到单人 trial，生成统一参与者 ID、规范化问卷和标记测试/混合条件。既有 frozen notebook/样本未更改。旧时间数据混有计算延迟，旧模型历史可能包含未执行决策；不能据此宣称所有时间与逐步模型复现分析都完备。跨条件群体模型、self/cross-play 模拟、参数恢复等还需要各自的数据集。
+
+匹配页 Enter 在满 10 秒后对普通和测试场次都生效，取消真人匹配并进入 SA，原因记录为 `teammate-wait-enter-skip`；本次保留此行为。
