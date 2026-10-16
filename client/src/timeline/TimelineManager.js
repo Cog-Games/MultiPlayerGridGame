@@ -2738,10 +2738,12 @@ export class TimelineManager {
     } catch (_) { /* noop */ }
 
     // Update UI when data save succeeds (legacy-style: auto-advance)
-    const handleSaved = () => {
+    const handleSaved = (receipt = {}) => {
+      this.lastDataSaveReceipt = receipt;
       const el = document.getElementById('saving-status');
       if (el) {
-        el.textContent = '✅ Data saved successfully!';
+        el.textContent = receipt.cloudConfirmed === false
+          ? 'Local backup downloaded. Google Drive save is not confirmed.' : '✅ Data saved successfully!';
         el.style.color = '#28a745';
       }
       if (continueBtn) {
@@ -2791,18 +2793,20 @@ export class TimelineManager {
         <div style="background:white;padding:40px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:600px;text-align:center;">
           <h2 style="color:#28a745;margin-bottom:20px;">Experiment Complete!</h2>
           <p style="font-size:18px;margin-bottom:12px;">Thank you for playing the game.</p>
-          <p id="kid-local-save-status" style="font-size:16px;color:#666;margin-bottom:0;">${shouldSaveHere ? 'Saving your data...' : 'You may close this page now.'}</p>
+          <p id="kid-local-save-status" style="font-size:16px;color:#666;margin-bottom:0;">${shouldSaveHere ? 'Saving your data...' : this.lastDataSaveReceipt?.cloudConfirmed === false ? 'Google Drive save is not confirmed. Please keep the downloaded backup.' : 'You may close this page now.'}</p>
         </div>
       </div>
     `;
 
     if (!shouldSaveHere) return;
 
-    const handleSaved = () => {
+    const handleSaved = (receipt = {}) => {
       const status = document.getElementById('kid-local-save-status');
       if (status) {
-        status.textContent = 'Data saved. You may close this page now.';
-        status.style.color = '#28a745';
+        status.textContent = receipt.cloudConfirmed === false
+          ? 'Google Drive save is not confirmed. Please keep the downloaded backup.'
+          : 'Data saved to Google Drive. You may close this page now.';
+        status.style.color = receipt.cloudConfirmed === false ? '#666' : '#28a745';
       }
       this.off('data-save-success', handleSaved);
     };
@@ -2811,10 +2815,9 @@ export class TimelineManager {
     setTimeout(() => {
       const status = document.getElementById('kid-local-save-status');
       if (status && status.textContent === 'Saving your data...') {
-        status.textContent = 'Data saved locally. You may close this page now.';
+        status.textContent = 'Google Drive save is still pending. Please keep this page open and retain your backup.';
         status.style.color = '#666';
       }
-      this.off('data-save-success', handleSaved);
     }, 15000);
 
     this.emit('save-data', this.experimentData);

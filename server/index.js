@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { GameRoomManager } from './gameRoomManager.js';
 import { GameEventHandler } from './gameEventHandler.js';
+import { uploadKidsWorkbook } from './kidsDriveUpload.js';
 import {
   decideGptAction,
   decideGptTomAction,
@@ -61,6 +62,14 @@ const io = new Server(server, {
 });
 
 app.use(cors());
+// Read the provider's response server-side; no-cors in the browser hides errors.
+app.post('/api/kids/drive-upload', express.json({ limit: '21mb' }), async (req, res) => {
+  try {
+    res.json(await uploadKidsWorkbook(req.body));
+  } catch (error) {
+    res.status(502).json({ status: 'error', message: error.message || 'Google Drive upload failed' });
+  }
+});
 app.use(express.json());
 
 // Initialize game managers

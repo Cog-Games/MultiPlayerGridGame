@@ -14,6 +14,7 @@ import {
 } from '../utils/ParticipantUtils.js';
 import { getPlayerDisplayInfo } from '../utils/DisplayPerspectiveUtils.js';
 import { DataSyncManager } from '../utils/DataSyncManager.js';
+import { uploadKidsWorkbook } from '../utils/KidsDriveUpload.js';
 
 export class GameApplication {
   constructor(container) {
@@ -709,7 +710,7 @@ export class GameApplication {
     setTimeout(() => {
       try {
         if (this.timelineManager) {
-          this.timelineManager.emit('data-save-success');
+          this.timelineManager.emit('data-save-success', { cloudConfirmed: false });
         }
       } catch (_) {
         // Ignore UI feedback errors
@@ -1161,20 +1162,29 @@ export class GameApplication {
               formData.append('participantId', exportObj.participantId || '');
             }
 
-            const uploadExcelWorkbook = () => fetch(scriptUrl, { method: 'POST', mode: 'no-cors', body: formData })
-              .then(() => {
+            this.excelUploadRevision = Math.max(Date.now(), (this.excelUploadRevision || 0) + 1);
+            const uploadRevision = this.excelUploadRevision;
+            const uploadExcelWorkbook = () => (CONFIG.kids?.enabled
+              ? uploadKidsWorkbook(excelFilename, base64, uploadRevision, isSnapshot, CONFIG.server.url || '')
+              : fetch(scriptUrl, { method: 'POST', mode: 'no-cors', body: formData }))
+              .then((receipt) => {
                 console.log('✅ Google Drive save attempted via Apps Script:', excelFilename);
                 this.recordDataCheckpoint(isSnapshot ? 'excel_snapshot_google_drive_upload_attempted' : 'final_google_drive_upload_attempted', {
                   filename: excelFilename,
                   uploadAttemptedAt: new Date().toISOString(),
                   snapshot: isSnapshot,
-                  snapshotReason
+                  snapshotReason,
+                  cloudConfirmed: CONFIG.kids?.enabled === true,
+                  fileId: receipt?.fileId || null,
+                  folderId: receipt?.folderId || null,
+                  sha256: receipt?.sha256 || null,
+                  uploadRevision
                 }, { priority: 'high' });
                 if (isSnapshot) return;
                 // Provide user feedback like legacy and notify timeline
                 try {
                   if (options.notifyTimeline !== false && this.timelineManager) {
-                    this.timelineManager.emit('data-save-success');
+                    this.timelineManager.emit('data-save-success', { cloudConfirmed: true });
                   }
                   if (options.showAlert !== false) {
                     alert('Data saved successfully!');
