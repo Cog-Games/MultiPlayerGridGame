@@ -75,3 +75,13 @@ test('legacy two-kids routing requires its filename and workbook schema; other s
   p.context.Utilities.unzip = () => [{ getName: () => 'xl/sharedStrings.xml', getDataAsString: () => 'other-study' }];
   assert.equal(p.write({ uploadRevision: '12' }).status, 'error');
 });
+
+// A reused participant/session filename must never replace a completed experiment.
+test('completed workbook rejects different final content but accepts an identical retry', () => {
+  const p = provider();
+  assert.equal(p.write({ snapshot: 'false' }).status, 'success');
+  assert.equal(p.write({ snapshot: 'false', uploadRevision: '11',
+    filedata: Buffer.from('PK another experiment').toString('base64') }).status, 'error');
+  assert.equal(p.writes, 1);
+  assert.equal(p.write({ snapshot: 'false' }).disposition, 'unchanged');
+});

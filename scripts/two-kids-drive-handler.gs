@@ -41,6 +41,9 @@ function saveTwoKids_(p) {
       if (revision < stored) throw new Error('A newer workbook is already saved');
       if (revision === stored && sha256 !== previous.twoKidsSha256) throw new Error('Revision content conflict');
       if (previous.twoKidsStatus === 'completed' && status !== 'completed') throw new Error('Completed session cannot be reopened');
+      if (previous.twoKidsStatus === 'completed' && sha256 !== previous.twoKidsSha256) {
+        throw new Error('Completed workbook is immutable; start a new experiment session');
+      }
     }
     let disposition = 'unchanged';
     if (!file || Number(previous.twoKidsRevision) !== revision) {

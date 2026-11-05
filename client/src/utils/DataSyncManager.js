@@ -11,8 +11,10 @@ export class DataSyncManager {
     this.flushTimer = null;
     this.flushInProgress = false;
     this.dbPromise = null;
-    this.sequenceNumber = this.restoreSequenceNumber();
-    this.sessionId = this.restoreSessionId();
+    // A page initialization starts a new experiment; gameplay is not restored on reload.
+    // Reusing sessionStorage here lets repeated participant IDs overwrite earlier runs.
+    this.sequenceNumber = 0;
+    this.sessionId = this.createSessionId();
 
     if (typeof window !== 'undefined') {
       window.addEventListener('online', () => this.scheduleFlush(250));
@@ -25,12 +27,10 @@ export class DataSyncManager {
     }
   }
 
-  restoreSessionId() {
+  createSessionId() {
     const fallbackId = `session_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
     try {
       const key = 'kidExperimentDataSyncSessionId';
-      const existing = window.sessionStorage.getItem(key);
-      if (existing) return existing;
       const generated = (window.crypto?.randomUUID?.() || fallbackId);
       window.sessionStorage.setItem(key, generated);
       return generated;
